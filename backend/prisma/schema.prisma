@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+//
+// ADMIN
+//
+model Admin {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+  name     String
+  position String
+
+  createdAt DateTime @default(now())
+}
+
+//
+// PERSON
+//
+model Person {
+  id String @id @default(uuid())
+
+  prefix    String?
+  firstName String
+  lastName  String
+  fullName  String
+
+  birthYear  Int?
+  birthMonth Int?
+  birthDay   Int?
+
+  nationality String?
+  ethnicity   String?
+
+  weight Float?
+  height Float?
+
+  citizenId String @unique
+
+  father String?
+  mother String?
+  spouse String?
+
+  distinguishingMarks String?
+  address             String?
+
+  createdAt DateTime @default(now())
+
+  requests VerificationRequest[]
+}
+
+//
+// ORGANIZATION
+//
+model Organization {
+  id String @id @default(uuid())
+
+  key String @unique @default("MAIN")
+
+  organizationName String
+
+  rank String?
+  firstName String
+  lastName String
+
+  fullName String
+  fullNameWithRank String
+  position String?
+
+  createdAt DateTime @default(now())
+
+  requests VerificationRequest[]
+}
+
+//
+// REQUEST
+//
+model VerificationRequest {
+  id String @id @default(uuid())
+
+  personId String
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  purpose          String?
+  requestingAgency String?
+
+  receiptBookNo String?
+  receiptNo     String?
+
+  submittedDate DateTime?
+
+  status Int @default(0)
+
+  expireAt  DateTime
+  createdAt DateTime @default(now())
+
+  files VerificationFile[]
+
+  @@index([status])
+  @@index([expireAt])
+}
+
+//
+// FILE
+//
+model VerificationFile {
+  id String @id @default(uuid())
+
+  requestId String
+  request   VerificationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  filePath String
+  fileName String
+
+  createdAt DateTime @default(now())
+}
