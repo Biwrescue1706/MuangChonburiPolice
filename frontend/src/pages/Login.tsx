@@ -39,10 +39,11 @@ export default function Login() {
         "
       >
         <div className="text-center mb-4">
+          <img src="https://policy-muangchonburi.smartdorm-biwboong.shop/muangchonburi.webp" alt="website logo" />
           <h3 className="fw-bold">งานพิมพ์มือตรวจประวัติอาชญากรรม</h3>
-          <p className="text-muted small">
+          <h4 className="fw-bold">
             งานนโยบายและแผน
-          </p>
+          </h4>
         </div>
 
         <form onSubmit={submit}>
