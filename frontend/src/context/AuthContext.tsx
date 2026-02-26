@@ -26,58 +26,41 @@ const AuthContext = createContext<AuthType>(
 
 export const AuthProvider = ({
   children,
-}: {
-  children: React.ReactNode;
-}) => {
-
+}: any) => {
   const [admin, setAdmin] =
     useState<Admin | null>(null);
 
   const [loading, setLoading] =
     useState(true);
 
-  // ================= VERIFY =================
   const verify = async () => {
     try {
-      const res = await api.get("/admin/verify");
+      const res =
+        await api.get("/admin/verify");
 
-      if (res.data.valid) {
-        setAdmin(res.data.admin);
-      } else {
-        setAdmin(null);
-      }
-
+      setAdmin(res.data.admin);
     } catch {
-      // ❌ ไม่ log อะไรเลย
       setAdmin(null);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
     verify();
   }, []);
 
-  // ================= LOGIN =================
   const login = async (
     username: string,
     password: string
   ) => {
-
-    const res = await api.post(
-      "/admin/login",
-      { username, password }
-    );
-
-    if (!res.data.success) {
-      throw new Error(res.data.error);
-    }
+    await api.post("/admin/login", {
+      username,
+      password,
+    });
 
     await verify();
   };
 
-  // ================= LOGOUT =================
   const logout = async () => {
     await api.post("/admin/logout");
     setAdmin(null);
