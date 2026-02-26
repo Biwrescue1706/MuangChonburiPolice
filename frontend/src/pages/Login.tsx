@@ -16,29 +16,65 @@ export default function Login() {
       await login(username, password);
       nav("/");
     } catch (err: any) {
-      console.log(err.response?.data);
       alert(err.response?.data?.error || "Login failed");
     }
   };
 
   return (
-    <form onSubmit={submit}>
-      <h2>Admin Login</h2>
+    <div className="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
+      
+      <div
+        className="
+          card shadow-lg border-0 p-4
+          col-11
+          col-sm-8
+          col-md-6
+          col-lg-4
+          col-xl-3
+        "
+      >
+        <div className="text-center mb-4">
+          <h3 className="fw-bold">Admin Login</h3>
+          <p className="text-muted small">
+            กรุณาเข้าสู่ระบบ
+          </p>
+        </div>
 
-      <input
-        placeholder="username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
+        <form onSubmit={submit}>
+          {/* Username */}
+          <div className="mb-3">
+            <label className="form-label">Username</label>
+            <input
+              className="form-control"
+              placeholder="Enter username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
 
-      <input
-        type="password"
-        placeholder="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+          {/* Password */}
+          <div className="mb-4">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              className="form-control"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-      <button>Login</button>
-    </form>
+          {/* Button */}
+          <button
+            type="submit"
+            className="btn btn-primary w-100 fw-semibold"
+          >
+            Login
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
