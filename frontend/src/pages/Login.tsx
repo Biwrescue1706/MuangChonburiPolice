@@ -39,9 +39,9 @@ export default function Login() {
         "
       >
         <div className="text-center mb-4">
-          <h3 className="fw-bold">Admin Login</h3>
+          <h3 className="fw-bold">งานพิมพ์มือตรวจประวัติอาชญากรรม</h3>
           <p className="text-muted small">
-            กรุณาเข้าสู่ระบบ
+            งานนโยบายและแผน
           </p>
         </div>
 
