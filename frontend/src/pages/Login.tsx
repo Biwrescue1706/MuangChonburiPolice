@@ -39,51 +39,41 @@ export default function Login() {
         "
       >
         <div className="text-center mb-4">
-          <img src="https://policy-muangchonburi.smartdorm-biwboong.shop/muangchonburi.webp" alt="website logo" />
+          <img
+            src="https://policy-muangchonburi.smartdorm-biwboong.shop/muangchonburi.webp"
+            alt="website logo" height={65} className="mb-3"
+          />
           <h3 className="fw-bold">งานพิมพ์มือตรวจประวัติอาชญากรรม</h3>
-          <h4 className="fw-bold">
-            งานนโยบายและแผน
-          </h4>
+          <h4 className="fw-bold">งานนโยบายและแผน</h4>
         </div>
 
         <form onSubmit={submit}>
           {/* Username */}
           <div className="mb-3">
-            <label className="form-label">
-              Username
-            </label>
+            <label className="form-label">Username</label>
             <input
               className="form-control"
               placeholder="Enter username"
               value={username}
-              onChange={(e) =>
-                setUsername(e.target.value)
-              }
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
 
           {/* Password */}
           <div className="mb-4">
-            <label className="form-label">
-              Password
-            </label>
+            <label className="form-label">Password</label>
             <input
               type="password"
               className="form-control"
               placeholder="Enter password"
               value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary w-100 fw-semibold"
-          >
+          <button type="submit" className="btn btn-primary w-100 fw-semibold">
             Login
           </button>
         </form>
