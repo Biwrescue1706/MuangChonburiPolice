@@ -50,76 +50,105 @@ export default function Profile() {
   };
 
   return (
-    <div className="container-fluid py-4 px-3">
-      {/* ===== PAGE TITLE ===== */}
-      <div className="mb-4">
-        <h3 className="fw-bold text-dark">👤 โปรไฟล์ผู้ใช้งาน</h3>
-        <small className="text-muted">
-          จัดการข้อมูลส่วนตัวและความปลอดภัยบัญชี
-        </small>
-      </div>
+  <div className="container py-4">
 
-      <div className="row g-4">
-        {/* ================= PROFILE ================= */}
-        <div className="col-lg-7">
-          <div className="card border-0 shadow-sm h-100">
-            <div
-              className="card-header text-white fw-bold"
-              style={{ background: "#800020" }}
-            >
-              ข้อมูลส่วนตัว
+    {/* ===== TITLE ===== */}
+    <div className="text-center text-md-start mb-4">
+      <h3 className="fw-bold">👤 โปรไฟล์ผู้ใช้งาน</h3>
+      <small className="text-muted">
+        จัดการข้อมูลส่วนตัวและความปลอดภัยบัญชี
+      </small>
+    </div>
+
+    {/* ===== CENTER ROW ===== */}
+    <div className="row justify-content-center">
+
+      <div
+        className="
+          col-12
+          col-sm-10
+          col-md-8
+          col-lg-6
+          col-xl-5
+        "
+      >
+
+        <div className="card shadow-sm border-0">
+
+          <div
+            className="card-header text-white fw-bold text-center"
+            style={{ backgroundColor: "#800020" }}
+          >
+            ข้อมูลส่วนตัว
+          </div>
+
+          <div className="card-body">
+
+            {/* Username */}
+            <div className="mb-3">
+              <label className="form-label fw-semibold">
+                Username
+              </label>
+              <input
+                className="form-control"
+                value={profile.username}
+                onChange={(e)=>
+                  setProfile({
+                    ...profile,
+                    username:e.target.value
+                  })
+                }
+              />
             </div>
 
-            <div className="card-body">
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Username</label>
-                <input
-                  className="form-control"
-                  value={profile.username}
-                  onChange={(e) =>
-                    setProfile({
-                      ...profile,
-                      username: e.target.value,
-                    })
-                  }
-                />
-              </div>
+            {/* Name */}
+            <div className="mb-3">
+              <label className="form-label fw-semibold">
+                ชื่อ - นามสกุล
+              </label>
+              <input
+                className="form-control"
+                value={profile.name}
+                onChange={(e)=>
+                  setProfile({
+                    ...profile,
+                    name:e.target.value
+                  })
+                }
+              />
+            </div>
 
-              <div className="mb-3">
-                <label className="form-label fw-semibold">ชื่อ - นามสกุล</label>
-                <input
-                  className="form-control"
-                  value={profile.name}
-                  onChange={(e) =>
-                    setProfile({
-                      ...profile,
-                      name: e.target.value,
-                    })
-                  }
-                />
-              </div>
+            {/* Position */}
+            <div className="mb-4">
+              <label className="form-label fw-semibold">
+                ตำแหน่ง
+              </label>
+              <input
+                className="form-control"
+                value={profile.position}
+                onChange={(e)=>
+                  setProfile({
+                    ...profile,
+                    position:e.target.value
+                  })
+                }
+              />
+            </div>
 
-              <div className="mb-4">
-                <label className="form-label fw-semibold">ตำแหน่ง</label>
-                <input
-                  className="form-control"
-                  value={profile.position}
-                  onChange={(e) =>
-                    setProfile({
-                      ...profile,
-                      position: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <button className="btn btn-success px-4" onClick={handleUpdate}>
+            <div className="text-center">
+              <button
+                className="btn btn-success px-4"
+                onClick={handleUpdate}
+              >
                 💾 บันทึกข้อมูล
               </button>
             </div>
+
           </div>
         </div>
+
       </div>
+
     </div>
-  );
-}
+  </div>
+);
