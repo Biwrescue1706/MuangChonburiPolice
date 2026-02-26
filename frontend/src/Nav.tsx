@@ -10,86 +10,98 @@ export default function Nav() {
     navigate("/");
   };
 
+  const shortText = (text?: string, max = 10) => {
+    if (!text) return "";
+    return text.length > max ? text.substring(0, max) + "" : text;
+  };
+
   return (
     <div>
       {/* ================= TOP NAV ================= */}
       <nav
-        className="navbar navbar-dark position-fixed top-0 start-0 w-100 px-3 shadow"
+        className="navbar navbar-dark shadow position-fixed top-0 start-0 w-100"
         style={{
-          height: 60,
           backgroundColor: "#800020",
-          zIndex: 2000,
+          height: 60,
+          zIndex: 999,
         }}
       >
-        {/* MOBILE MENU */}
-        <button
-          className="btn btn-warning d-xl-none me-3"
-          data-bs-toggle="offcanvas"
-          data-bs-target="#mobileSidebar"
-        >
-          ☰
-        </button>
-
-        {/* TITLE CENTER */}
-        <div className="flex-grow-1 text-center">
-          <div className="text-warning fw-bold">
-            🏠 ระบบตรวจประวัติอาชญากรรม
+        <div className="container-fluid">
+          {/* ========= LEFT ========= */}
+          <div className="d-flex align-items-center mb-0">
+            <button
+              className="btn btn-warning d-xl-none"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#mobileSidebar"
+            >
+              ☰
+            </button>
           </div>
-          <div className="text-white small">งานนโยบายและแผน</div>
-        </div>
 
-        {/* PROFILE */}
-        <div className="dropdown">
+          {/* ========= CENTER ========= */}
           <div
-            role="button"
-            data-bs-toggle="dropdown"
-            className="text-end"
-            style={{ cursor: "pointer" }}
+            className="position-absolute start-50 translate-middle-x text-center"
+            style={{ marginLeft: "-18px" }}
           >
-            <div className="text-warning fw-bold small">👤 {admin?.name}</div>
-            <small className="text-white">( {admin?.position} )</small>
+            <div className="d-flex align-items-center">
+              <img
+                src="/muangchonburi.webp"
+                width={30}
+                height={30}
+                style={{ borderRadius: 1 }}
+              />
+              <div className="lh-sm">
+                <div className="fw-bold text-warning small text-truncate h5 mb-0 small">
+                  🏠 งานพิมพ์มือตรวจประวัติ ฯ
+                </div>
+
+                <small className="text-white d-block h6 mb-0 small">งานนโยบายและแผน</small>
+              </div>
+            </div>
           </div>
 
-          <ul className="dropdown-menu dropdown-menu-end shadow width-auto">
-            <li className="px-1 py-1 mx-2 border-bottom small">
-              <strong>{admin?.name}</strong>
-              <br />
-              <span className="text-muted">( {admin?.position } )</span>
-              <br />
-              <span className="text-muted">@{admin?.username}</span>
-            </li>
+          {/* ========= RIGHT ========= */}
+          <div className="dropdown ms-auto">
+            <div
+              role="button"
+              data-bs-toggle="dropdown"
+              className="text-end"
+              style={{ cursor: "pointer" }}
+            >
+              <div className="text-warning fw-bold small">
+                👤 {shortText(admin?.name, 10)}
+              </div>
 
-            <li>
-              <button
-                className="dropdown-item"
-                onClick={() => navigate("/profile")}
-              >
-                ⚙️ โปรไฟล์
-              </button>
-            </li>
+              <small className="text-white">
+                ({shortText(admin?.position, 9)})
+              </small>
+            </div>
 
-            <li>
-              <button
-                className="dropdown-item"
-                onClick={() => navigate("/change-password")}
-              >
-                🔑 เปลี่ยนรหัสผ่าน
-              </button>
-            </li>
+            <ul className="dropdown-menu dropdown-menu-end shadow">
+              <li className="px-3 py-2 small">
+                <strong>{admin?.name}</strong>
+                <br />( {admin?.position} )
+              </li>
 
-            <li>
-              <hr />
-            </li>
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/profile")}
+                >
+                  ⚙️ โปรไฟล์
+                </button>
+              </li>
 
-            <li>
-              <button
-                className="dropdown-item text-danger fw-bold"
-                onClick={handleLogout}
-              >
-                🚪 ออกจากระบบ
-              </button>
-            </li>
-          </ul>
+              <li>
+                <button
+                  className="dropdown-item text-danger"
+                  onClick={handleLogout}
+                >
+                  🚪 ออกจากระบบ
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </nav>
 
@@ -168,16 +180,17 @@ export default function Nav() {
 
       {/* ================= PAGE CONTENT ================= */}
       <main
+        className="pt-3"
         style={{
           marginTop: 60,
-          marginLeft: 0,
-          padding: 10,
+          marginLeft: "0px",
           background: "#f4f6f9",
           minHeight: "100vh",
         }}
-        className="ms-xl-0"
       >
-        <Outlet />
+        <div className="ms-xl-0 ms-0">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
