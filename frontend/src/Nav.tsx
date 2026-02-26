@@ -1,6 +1,12 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 
+declare global {
+  interface Window {
+    bootstrap: any;
+  }
+}
+
 export default function Nav() {
 
   const { admin, logout } = useAuth();
