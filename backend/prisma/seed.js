@@ -19,12 +19,12 @@ async function main() {
         },
         {
             username: "admin2",
-            name: "ส.ต.ต.ธาดา แสนสุข",
+            name: "ส.ต.ต.ธาดา เสาวโค",
             position: "งานนโยบายและแผนงาน"
         },
         {
             username: "admin3",
-            name: "จ.ส.ต.ชาญณรงค์ แสนสุข",
+            name: "จ.ส.ต.ชาญณรงค์เดช กันตพัชรโรจน์",
             position: "งานนโยบายและแผนงาน"
         }
     ];
@@ -49,7 +49,7 @@ async function main() {
     // ORGANIZATION PROFILE
 
     const firstName = "ธาดา";
-    const lastName = "แสนสุข";
+    const lastName = "เสาวโค";
     const rank = "ส.ต.ต.";
     const position = "ผบ.หมู่ (ผช.พงส.) ฯ";
     const organizationName = "สถานีตำรวจภูธรเมืองชลบุรี";
