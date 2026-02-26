@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import Security from "./pages/Security";
 import ForgotCheck from "./pages/ForgotCheck";
 import ResetPassword from "./pages/ResetPassword";
+import CreateAdmin from "./pages/CreateAdmin";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/security" element={<Security />} />
+<Route path="/admin/create" element={<CreateAdmin />} />
           </Route>
         </Routes>
       </AuthProvider>
