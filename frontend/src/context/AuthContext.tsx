@@ -9,6 +9,8 @@ import api from "../api/axios";
 type Admin = {
   adminId: string;
   username: string;
+  name: string;
+  position: string;
 };
 
 type AuthType = {
