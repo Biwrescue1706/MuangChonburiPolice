@@ -1,32 +1,34 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
+
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import Security from "./pages/Security";
+import Nav from "./Nav";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route
-            path="/"
-            element={<Login />}
-          />
+          {/* ✅ หน้า Login ไม่มี Nav */}
+          <Route path="/" element={<Login />} />
 
+          {/* ✅ ทุกหน้าหลัง login มี Nav */}
           <Route
-            path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Nav />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/security" element={<Security />} />
+          </Route>
         </Routes>
       </AuthProvider>
     </BrowserRouter>

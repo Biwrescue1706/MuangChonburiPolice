@@ -1,38 +1,25 @@
-import Nav from "../Nav";
 import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
   const { admin } = useAuth();
 
   return (
-    <>
-      <Nav />
+    <div className="p-4">
+      <div className="card shadow-sm border-0 p-4">
+        <h3 className="fw-bold mb-3">
+          หน้าหลัก (Dashboard)
+        </h3>
 
-      {/* ✅ CONTENT AREA */}
-      <div
-        style={{
-          marginTop: 60,     // กัน Topbar
-          marginLeft: 250,   // กัน Sidebar
-          padding: 20,
-        }}
-        className="ms-xl-0"
-      >
-        <div className="card shadow-sm border-0 p-4">
-          <h3 className="fw-bold mb-3">
-            หน้าหลัก (Dashboard)
-          </h3>
+        <p>ยินดีต้อนรับ</p>
 
-          <p>ยินดีต้อนรับ</p>
+        <h5 className="text-primary">
+          {admin?.name}
+        </h5>
 
-          <h5 className="text-primary">
-            {admin?.name}
-          </h5>
-
-          <small className="text-muted">
-            ตำแหน่ง : {admin?.position}
-          </small>
-        </div>
+        <small className="text-muted">
+          ตำแหน่ง : {admin?.position}
+        </small>
       </div>
-    </>
+    </div>
   );
 }

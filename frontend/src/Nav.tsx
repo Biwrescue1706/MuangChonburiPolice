@@ -55,7 +55,9 @@ export default function Nav() {
                   🏠 งานพิมพ์มือตรวจประวัติ ฯ
                 </div>
 
-                <small className="text-white d-block h6 mb-0 small">งานนโยบายและแผน</small>
+                <small className="text-white d-block h6 mb-0 small">
+                  งานนโยบายและแผน
+                </small>
               </div>
             </div>
           </div>
@@ -89,6 +91,15 @@ export default function Nav() {
                   onClick={() => navigate("/profile")}
                 >
                   ⚙️ โปรไฟล์
+                </button>
+              </li>
+
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/security")}
+                >
+                  🔒 ความปลอดภัยบัญชี
                 </button>
               </li>
 
