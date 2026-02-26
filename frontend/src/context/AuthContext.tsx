@@ -50,16 +50,20 @@ export const AuthProvider = ({
   }, []);
 
   const login = async (
-    username: string,
-    password: string
-  ) => {
-    await api.post("/admin/login", {
-      username,
-      password,
-    });
+  username: string,
+  password: string
+) => {
 
-    await verify();
-  };
+  await api.post("/admin/login", {
+    username,
+    password,
+  });
+
+  // ⭐ รอ cookie set ก่อน
+  await new Promise(res => setTimeout(res, 300));
+
+  await verify();
+};
 
   const logout = async () => {
     await api.post("/admin/logout");
