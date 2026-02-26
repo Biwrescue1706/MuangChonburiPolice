@@ -9,16 +9,21 @@ const admin = Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) throw new Error("JWT_SECRET missing");
 
-// ================= REGISTER =================
+
+/* ================= REGISTER ================= */
 admin.post("/register", async (req, res) => {
+try {
 
-  const { username, password, name, position } =
-    req.body;
+  const { username, password, name, position } = req.body;
 
-  const exist =
-    await prisma.admin.findUnique({
-      where: { username },
+  if (!username || !password)
+    return res.status(400).json({
+      error: "ข้อมูลไม่ครบ",
     });
+
+  const exist = await prisma.admin.findUnique({
+    where: { username },
+  });
 
   if (exist)
     return res.status(400).json({
@@ -28,41 +33,45 @@ admin.post("/register", async (req, res) => {
   const hash = await bcrypt.hash(password, 10);
 
   const user = await prisma.admin.create({
-    data: {
-      username,
-      password: hash,
-      name,
-      position,
-    },
+    data: { username, password: hash, name, position },
   });
 
   res.json({
     message: "สร้างสมาชิกสำเร็จ",
     admin: user,
   });
+
+} catch (err) {
+  console.error(err);
+  res.status(500).json({ error: "Server error" });
+}
 });
 
 
-// ================= LOGIN =================
+/* ================= LOGIN ================= */
 admin.post("/login", async (req, res) => {
+try {
 
   const { username, password } = req.body;
 
-  const user =
-    await prisma.admin.findUnique({
-      where: { username },
+  if (!username || !password)
+    return res.status(400).json({
+      error: "กรอกข้อมูลไม่ครบ",
     });
 
+  const user = await prisma.admin.findUnique({
+    where: { username },
+  });
+
   if (!user)
-    return res.status(401).json({
+    return res.status(404).json({
       error: "ไม่พบผู้ใช้",
     });
 
-  const valid =
-    await bcrypt.compare(
-      password,
-      user.password
-    );
+  const valid = await bcrypt.compare(
+    password,
+    user.password
+  );
 
   if (!valid)
     return res.status(401).json({
@@ -77,25 +86,34 @@ admin.post("/login", async (req, res) => {
     JWT_SECRET,
     { expiresIn: "90m" }
   );
-const isProd = process.env.NODE_ENV === "production";
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? "none" : "lax",
-      path: "/",
-      maxAge: 90 * 60 * 1000,
-    });
+  const isProd =
+    process.env.NODE_ENV === "production";
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    path: "/",
+    maxAge: 90 * 60 * 1000,
+  });
 
   res.json({
     message: "เข้าสู่ระบบสำเร็จ",
   });
+
+} catch (err) {
+  console.error(err);
+  res.status(500).json({ error: "Login error" });
+}
 });
 
 
-// ================= LOGOUT =================
+/* ================= LOGOUT ================= */
 admin.post("/logout", (_req, res) => {
-  const isProd = process.env.NODE_ENV === "production";
+
+  const isProd =
+    process.env.NODE_ENV === "production";
 
   res.clearCookie("token", {
     httpOnly: true,
@@ -109,92 +127,128 @@ admin.post("/logout", (_req, res) => {
   });
 });
 
-// ================= VERIFY SESSION =================
+
+/* ================= VERIFY ================= */
 admin.get("/verify", async (req, res) => {
+try {
 
   const token = req.cookies?.token;
+
   if (!token)
-    return res.status(401).json({ valid:false });
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-
-    const user = await prisma.admin.findUnique({
-      where: { id: decoded.adminId },
-      select: {
-        id: true,
-        username: true,
-        name: true,
-        position: true,
-      },
+    return res.status(401).json({
+      valid:false,
     });
 
-    res.json({
-      valid: true,
-      admin: {
-        adminId: user.id,
-        username: user.username,
-        name: user.name,
-        position: user.position,
-      },
+  const decoded = jwt.verify(
+    token,
+    JWT_SECRET
+  );
+
+  // ⭐ กัน JWT crash
+  if (typeof decoded === "string")
+    return res.status(401).json({
+      valid:false,
     });
 
-  } catch {
-    res.status(401).json({ valid:false });
-  }
-});
+  const user = await prisma.admin.findUnique({
+    where: { id: decoded.adminId },
+    select: {
+      id: true,
+      username: true,
+      name: true,
+      position: true,
+    },
+  });
 
-// ================= MY PROFILE =================
-admin.get("/me",
-authMiddleware,
-async (req, res) => {
-
-  const user =
-    await prisma.admin.findUnique({
-      where: { id: req.admin.adminId },
-    });
-
-  res.json(user);
-});
-
-
-// ================= UPDATE MY PROFILE =================
-admin.put("/me",
-authMiddleware,
-async (req, res) => {
-
-  const { username, name, position } =
-    req.body;
-
-  const updated =
-    await prisma.admin.update({
-      where: { id: req.admin.adminId },
-      data: {
-        username,
-        name,
-        position,
-      },
+  if (!user)
+    return res.status(404).json({
+      valid:false,
     });
 
   res.json({
-    message: "อัปเดตสำเร็จ",
-    admin: updated,
+    valid:true,
+    admin:{
+      adminId:user.id,
+      username:user.username,
+      name:user.name,
+      position:user.position,
+    },
   });
+
+} catch (err) {
+  console.error("VERIFY:", err);
+  res.status(401).json({ valid:false });
+}
 });
 
 
-// ================= CHANGE PASSWORD =================
-admin.put(
-"/change-password",
+/* ================= PROFILE ================= */
+admin.get("/me",
 authMiddleware,
 async (req, res) => {
-
-  const { oldPassword, newPassword } =
-    req.body;
+try {
 
   const user =
     await prisma.admin.findUnique({
-      where: { id: req.admin.adminId },
+      where:{ id:req.admin.adminId },
+    });
+
+  if (!user)
+    return res.status(404).json({
+      error:"ไม่พบข้อมูล",
+    });
+
+  res.json(user);
+
+} catch(err){
+  console.error(err);
+  res.status(500).json({error:"Server error"});
+}
+});
+
+
+/* ================= UPDATE PROFILE ================= */
+admin.put("/me",
+authMiddleware,
+async (req,res)=>{
+try{
+
+  const {username,name,position}=req.body;
+
+  const updated =
+    await prisma.admin.update({
+      where:{ id:req.admin.adminId },
+      data:{ username,name,position },
+    });
+
+  res.json({
+    message:"อัปเดตสำเร็จ",
+    admin:updated,
+  });
+
+}catch(err){
+  console.error(err);
+  res.status(500).json({error:"Update failed"});
+}
+});
+
+
+/* ================= CHANGE PASSWORD ================= */
+admin.put("/change-password",
+authMiddleware,
+async(req,res)=>{
+try{
+
+  const {oldPassword,newPassword}=req.body;
+
+  const user =
+    await prisma.admin.findUnique({
+      where:{ id:req.admin.adminId },
+    });
+
+  if(!user)
+    return res.status(404).json({
+      error:"ไม่พบผู้ใช้",
     });
 
   const valid =
@@ -203,70 +257,84 @@ async (req, res) => {
       user.password
     );
 
-  if (!valid)
-    return res.status(400).json({
-      error: "รหัสเดิมไม่ถูกต้อง",
+  if(!valid)
+    return res.status(401).json({
+      error:"รหัสเดิมไม่ถูกต้อง",
     });
 
   const hash =
-    await bcrypt.hash(newPassword, 10);
+    await bcrypt.hash(newPassword,10);
 
   await prisma.admin.update({
-    where: { id: user.id },
-    data: { password: hash },
+    where:{ id:user.id },
+    data:{ password:hash },
   });
 
   res.json({
-    message: "เปลี่ยนรหัสผ่านสำเร็จ",
+    message:"เปลี่ยนรหัสผ่านสำเร็จ",
   });
+
+}catch(err){
+  console.error(err);
+  res.status(500).json({error:"Change password error"});
+}
 });
 
 
-// ================= FORGOT CHECK =================
-admin.post("/forgot/check",
-async (req, res) => {
+/* ================= FORGOT CHECK ================= */
+admin.post("/forgot/check",async(req,res)=>{
+try{
 
-  const { username } = req.body;
+  const {username}=req.body;
 
   const user =
     await prisma.admin.findUnique({
-      where: { username },
-      select: {
-        username: true,
-        name: true,
-      },
+      where:{ username },
+      select:{ username:true,name:true },
     });
 
-  if (!user)
+  if(!user)
     return res.status(404).json({
-      found: false,
+      error:"ไม่พบผู้ใช้",
     });
 
-  res.json({
-    found: true,
-      admin: user,
-  });
+  res.json({ admin:user });
+
+}catch(err){
+  console.error(err);
+  res.status(500).json({error:"Server error"});
+}
 });
 
 
-// ================= RESET PASSWORD =================
-admin.put("/forgot/reset",
-async (req, res) => {
+/* ================= RESET PASSWORD ================= */
+admin.put("/forgot/reset",async(req,res)=>{
+try{
 
-  const { username, newPassword } =
-    req.body;
+  const {username,newPassword}=req.body;
+
+  if(!username||!newPassword)
+    return res.status(400).json({
+      error:"ข้อมูลไม่ครบ",
+    });
 
   const hash =
-    await bcrypt.hash(newPassword, 10);
+    await bcrypt.hash(newPassword,10);
 
   await prisma.admin.update({
-    where: { username },
-    data: { password: hash },
+    where:{ username },
+    data:{ password:hash },
   });
 
   res.json({
-    message: "ตั้งรหัสใหม่สำเร็จ",
+    message:"ตั้งรหัสใหม่สำเร็จ",
   });
+
+}catch(err){
+  console.error(err);
+  res.status(500).json({error:"Reset error"});
+}
 });
+
 
 export default admin;
