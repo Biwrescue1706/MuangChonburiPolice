@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 export default function Login() {
   const { login, admin } = useAuth();
@@ -9,12 +10,9 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  // ✅ redirect เมื่อ login สำเร็จจริง
   useEffect(() => {
-    if (admin) {
-      nav("/dashboard");
-    }
-  }, [admin, nav]);
+    if (admin) nav("/dashboard");
+  }, [admin]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,61 +20,63 @@ export default function Login() {
     try {
       await login(username, password);
     } catch (err: any) {
-      alert(err.response?.data?.error || "Login failed");
+      Swal.fire({
+        icon: "error",
+        title: err.response?.data?.error || "Login failed",
+      });
     }
   };
 
   return (
-    <div className="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
-      <div
-        className="
-          card shadow-lg border-0 p-4
-          col-11
-          col-sm-8
-          col-md-6
-          col-lg-4
-          col-xl-3
-        "
-      >
+    <div
+      className="vh-100 d-flex justify-content-center align-items-center"
+      style={{
+        background: "linear-gradient(135deg,#800020,#3b000d)",
+      }}
+    >
+      <div className="card shadow-lg border-0 p-4 col-11 col-md-4">
         <div className="text-center mb-4">
-          <img
-            src="https://policy-muangchonburi.smartdorm-biwboong.shop/muangchonburi.webp"
-            alt="website logo" height={65} className="mb-3"
-          />
-          <h3 className="fw-bold">งานพิมพ์มือตรวจประวัติอาชญากรรม</h3>
-          <h4 className="fw-bold">งานนโยบายและแผน</h4>
+          <img src="/muangchonburi.webp" height={70} className="mb-3" />
+
+          <h4 className="fw-bold text-dark">งานพิมพ์มือตรวจประวัติ</h4>
+
+          <small className="text-muted">งานนโยบายและแผน</small>
         </div>
 
         <form onSubmit={submit}>
-          {/* Username */}
-          <div className="mb-3">
-            <label className="form-label">Username</label>
-            <input
-              className="form-control"
-              placeholder="Enter username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
+          <input
+            className="form-control mb-3"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
 
-          {/* Password */}
-          <div className="mb-4">
-            <label className="form-label">Password</label>
-            <input
-              type="password"
-              className="form-control"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          <input
+            type="password"
+            className="form-control mb-4"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          <button type="submit" className="btn btn-primary w-100 fw-semibold">
-            Login
+          <button
+            className="btn w-100 text-white fw-bold"
+            style={{ background: "#800020" }}
+          >
+            เข้าสู่ระบบ
           </button>
         </form>
+
+        <div className="text-center mt-3">
+          <span
+            role="button"
+            className="fw-semibold"
+            style={{ color: "#800020" }}
+            onClick={() => nav("/forgot")}
+          >
+            ลืมรหัสผ่าน ?
+          </span>
+        </div>
       </div>
     </div>
   );

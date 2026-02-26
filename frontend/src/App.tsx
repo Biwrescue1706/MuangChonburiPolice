@@ -1,13 +1,15 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import Login from "./pages/Login";
+import Nav from "./Nav";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Security from "./pages/Security";
-import Nav from "./Nav";
+import ForgotCheck from "./pages/ForgotCheck";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
         <Routes>
           {/* ✅ หน้า Login ไม่มี Nav */}
           <Route path="/" element={<Login />} />
+          <Route path="/forgot" element={<ForgotCheck />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* ✅ ทุกหน้าหลัง login มี Nav */}
           <Route

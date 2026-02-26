@@ -8,21 +8,11 @@ type AdminProfile = {
   position: string;
 };
 
-type PasswordState = {
-  oldPassword: string;
-  newPassword: string;
-};
-
 export default function Profile() {
   const [profile, setProfile] = useState<AdminProfile>({
     username: "",
     name: "",
     position: "",
-  });
-
-  const [password, setPassword] = useState<PasswordState>({
-    oldPassword: "",
-    newPassword: "",
   });
 
   const loadProfile = async () => {
