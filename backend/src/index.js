@@ -17,7 +17,8 @@ const allowedOrigins = [
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175",
-    "https://hub-muangchonburi.onrender.com",
+"https://policy-muangchonburi.smartdorm-biwboong.shop",    "https://hub-muangchonburi.smartdorm-biwboong.shop",
+
 ];
 
 // cors config
