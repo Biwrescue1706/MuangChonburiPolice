@@ -9,18 +9,6 @@ const admin = Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) throw new Error("JWT_SECRET missing");
 
-const cookieOption = () => ({
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite:
-    process.env.NODE_ENV === "production"
-      ? "none"
-      : "lax",
-  path: "/",
-  maxAge: 90 * 60 * 1000,
-});
-
-
 // ================= REGISTER =================
 admin.post("/register", async (req, res) => {
 
@@ -89,8 +77,15 @@ admin.post("/login", async (req, res) => {
     JWT_SECRET,
     { expiresIn: "90m" }
   );
+const isProd = process.env.NODE_ENV === "production";
 
-  res.cookie("token", token, cookieOption());
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
+      maxAge: 90 * 60 * 1000,
+    });
 
   res.json({
     message: "เข้าสู่ระบบสำเร็จ",
@@ -100,14 +95,19 @@ admin.post("/login", async (req, res) => {
 
 // ================= LOGOUT =================
 admin.post("/logout", (_req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
 
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    path: "/",
+  });
 
   res.json({
     message: "ออกจากระบบสำเร็จ",
   });
 });
-
 
 // ================= VERIFY SESSION =================
 admin.get("/verify", (req, res) => {
