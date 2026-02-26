@@ -149,6 +149,13 @@ export default function Nav() {
         >
           📄 ประวัติคนตรวจ
         </button>
+<button
+  className="btn btn-warning text-start fw-bold"
+  onClick={() => navigate("/admin/create")}
+>
+  ➕ เพิ่ม Admin
+</button>
+
       </div>
 
       {/* ================= MOBILE SIDEBAR ================= */}
@@ -186,6 +193,12 @@ export default function Nav() {
           >
             📄 ประวัติคนตรวจ
           </button>
+<button
+  className="btn btn-warning text-start fw-bold"
+  onClick={() => navigate("/admin/create")}
+>
+  ➕ เพิ่ม Admin
+</button>
         </div>
       </div>
 
