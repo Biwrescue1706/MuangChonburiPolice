@@ -6,20 +6,23 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* Navbar */}
       <Nav />
 
-      {/* Content */}
-      <div className="container mt-4">
-
+      {/* ✅ CONTENT AREA */}
+      <div
+        style={{
+          marginTop: 60,     // กัน Topbar
+          marginLeft: 250,   // กัน Sidebar
+          padding: 20,
+        }}
+        className="ms-xl-0"
+      >
         <div className="card shadow-sm border-0 p-4">
           <h3 className="fw-bold mb-3">
-            Dashboard
+            หน้าหลัก (Dashboard)
           </h3>
 
-          <p className="mb-1">
-            ยินดีต้อนรับ
-          </p>
+          <p>ยินดีต้อนรับ</p>
 
           <h5 className="text-primary">
             {admin?.name}
@@ -29,7 +32,6 @@ export default function Dashboard() {
             ตำแหน่ง : {admin?.position}
           </small>
         </div>
-
       </div>
     </>
   );
