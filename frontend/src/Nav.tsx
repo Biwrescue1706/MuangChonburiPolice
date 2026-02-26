@@ -1,29 +1,22 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
-
-declare global {
-  interface Window {
-    bootstrap: any;
-  }
-}
+import { Offcanvas } from "bootstrap";
 
 export default function Nav() {
 
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
 
-  /* ================= CLOSE MOBILE SIDEBAR ================= */
+  /* ================= CLOSE MOBILE ================= */
   const closeMobileSidebar = () => {
     const el = document.getElementById("mobileSidebar");
-
     if (!el) return;
 
-    // bootstrap global
-    const offcanvas =
-      window.bootstrap?.Offcanvas.getInstance(el)
-      || new window.bootstrap.Offcanvas(el);
+    const instance =
+      Offcanvas.getInstance(el) ||
+      new Offcanvas(el);
 
-    offcanvas.hide();
+    instance.hide();
   };
 
   /* ================= NAVIGATE ================= */
@@ -49,7 +42,7 @@ export default function Nav() {
 
       {/* ================= TOP NAV ================= */}
       <nav
-        className="navbar navbar-dark shadow position-fixed top-0 start-0 w-100"
+        className="navbar navbar-dark shadow position-fixed w-100"
         style={{
           backgroundColor: "#800020",
           height: 60,
@@ -58,7 +51,7 @@ export default function Nav() {
       >
         <div className="container-fluid">
 
-          {/* LEFT */}
+          {/* MOBILE BUTTON */}
           <button
             className="btn btn-warning d-xl-none"
             data-bs-toggle="offcanvas"
@@ -69,15 +62,19 @@ export default function Nav() {
 
           {/* CENTER */}
           <div
-            className="position-absolute start-50 translate-middle-x text-center"
-            style={{ marginLeft: "-18px" }}
+            className="position-absolute start-50 translate-middle-x"
           >
             <div className="d-flex align-items-center">
-              <img src="/muangchonburi.webp" width={30}/>
-              <div className="lh-sm">
+              <img
+                src="/muangchonburi.webp"
+                width={30}
+              />
+
+              <div className="lh-sm ms-2">
                 <div className="fw-bold text-warning small">
                   🏠 งานพิมพ์มือตรวจประวัติ ฯ
                 </div>
+
                 <small className="text-white">
                   งานนโยบายและแผน
                 </small>
@@ -102,6 +99,7 @@ export default function Nav() {
             </div>
 
             <ul className="dropdown-menu dropdown-menu-end shadow">
+
               <li className="px-3 py-2 small">
                 <strong>{admin?.name}</strong>
                 <br/>({admin?.position})
@@ -133,6 +131,7 @@ export default function Nav() {
                   🚪 ออกจากระบบ
                 </button>
               </li>
+
             </ul>
           </div>
 
