@@ -110,29 +110,39 @@ admin.post("/logout", (_req, res) => {
 });
 
 // ================= VERIFY SESSION =================
-admin.get("/verify", (req, res) => {
+admin.get("/verify", async (req, res) => {
 
   const token = req.cookies?.token;
   if (!token)
-    return res.status(401).json({
-      valid: false,
-    });
+    return res.status(401).json({ valid:false });
 
   try {
-    const decoded =
-      jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const user = await prisma.admin.findUnique({
+      where: { id: decoded.adminId },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        position: true,
+      },
+    });
 
     res.json({
       valid: true,
-      admin: decoded,
+      admin: {
+        adminId: user.id,
+        username: user.username,
+        name: user.name,
+        position: user.position,
+      },
     });
+
   } catch {
-    res.status(401).json({
-      valid: false,
-    });
+    res.status(401).json({ valid:false });
   }
 });
-
 
 // ================= MY PROFILE =================
 admin.get("/me",
