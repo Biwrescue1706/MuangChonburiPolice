@@ -55,7 +55,6 @@ auth.post("/login", async (req, res) => {
   httpOnly: true,
   secure: true,
   sameSite: "none",
-  domain: ".smartdorm-biwboong.shop", // ⭐ เพิ่มบรรทัดนี้
   path: "/",
   maxAge: 90 * 60 * 1000,
 });
@@ -83,7 +82,6 @@ auth.post("/logout", (_req, res) => {
   httpOnly: true,
   secure: true,
   sameSite: "none",
-  domain: ".smartdorm-biwboong.shop",
   path: "/",
 });
 
