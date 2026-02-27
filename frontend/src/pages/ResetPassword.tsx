@@ -21,7 +21,7 @@ export default function ResetPassword() {
     e.preventDefault();
 
     try {
-      await api.put("/auth/forgot/reset", {
+      await api.put("/admin/forgot/reset", {
         username,
         newPassword: password,
       });
