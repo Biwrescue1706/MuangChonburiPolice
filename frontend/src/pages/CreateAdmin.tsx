@@ -8,6 +8,8 @@ export default function CreateAdmin() {
   const [showModal,setShowModal]=useState(false);
   const [editing,setEditing]=useState<any>(null);
 
+  const [screenWidth,setScreenWidth]=useState(window.innerWidth);
+
   const [form,setForm]=useState({
     username:"",
     password:"",
@@ -16,6 +18,17 @@ export default function CreateAdmin() {
   });
 
   const isEdit = !!editing;
+  const isTable = screenWidth > 1280;
+
+  /* ================= SCREEN ================= */
+  useEffect(()=>{
+    const handleResize=()=>{
+      setScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize",handleResize);
+    return ()=>window.removeEventListener("resize",handleResize);
+  },[]);
 
   /* ================= LOAD ================= */
   const loadAdmins=async()=>{
@@ -27,7 +40,7 @@ export default function CreateAdmin() {
     loadAdmins();
   },[]);
 
-  /* ================= OPEN CREATE ================= */
+  /* ================= CREATE ================= */
   const openCreate=()=>{
     setEditing(null);
     setForm({
@@ -39,7 +52,7 @@ export default function CreateAdmin() {
     setShowModal(true);
   };
 
-  /* ================= OPEN EDIT ================= */
+  /* ================= EDIT ================= */
   const openEdit=(admin:any)=>{
     setEditing(admin);
     setForm({
@@ -101,26 +114,15 @@ export default function CreateAdmin() {
 
     if(!confirm.isConfirmed)return;
 
-    try{
-
-      await api.delete(`/admin/${id}`);
-
-      Swal.fire("ลบสำเร็จ","","success");
-      loadAdmins();
-
-    }catch(err:any){
-      Swal.fire(
-        "ผิดพลาด",
-        err.response?.data?.error,
-        "error"
-      );
-    }
+    await api.delete(`/admin/${id}`);
+    Swal.fire("ลบสำเร็จ","","success");
+    loadAdmins();
   };
 
   return(
 <div className="container-fluid p-4">
 
-{/* ===== ADD BUTTON ===== */}
+{/* ===== ADD ===== */}
 <button
 className="btn text-white mb-3"
 style={{background:"#800020"}}
@@ -129,16 +131,17 @@ onClick={openCreate}
 ➕ เพิ่ม Admin
 </button>
 
-{/* ===== TABLE ===== */}
 <div className="card shadow">
-
 <div className="card-header fw-bold">
 ประวัติผู้ดูแลระบบ
 </div>
 
 <div className="card-body">
 
-<table className="table table-bordered">
+{/* ================= TABLE MODE ================= */}
+{isTable && (
+
+<table className="table table-bordered align-middle">
 
 <thead>
 <tr>
@@ -146,14 +149,11 @@ onClick={openCreate}
 <th>Username</th>
 <th>ชื่อ</th>
 <th>ตำแหน่ง</th>
-<th style={{width:"180px"}}>
-จัดการ
-</th>
+<th width="120">จัดการ</th>
 </tr>
 </thead>
 
 <tbody>
-
 {admins.map((a,index)=>(
 <tr key={a.id}>
 
@@ -168,16 +168,15 @@ onClick={openCreate}
 className="btn btn-warning btn-sm me-2"
 onClick={()=>openEdit(a)}
 >
-แก้ไข
+<i className="bi bi-pencil-fill"></i>
 </button>
 
-{/* ❌ ห้ามลบ admin คนแรก */}
 {index!==0&&(
 <button
 className="btn btn-danger btn-sm"
 onClick={()=>removeAdmin(a.id)}
 >
-ลบ
+<i className="bi bi-trash-fill"></i>
 </button>
 )}
 
@@ -185,9 +184,66 @@ onClick={()=>removeAdmin(a.id)}
 
 </tr>
 ))}
-
 </tbody>
+
 </table>
+)}
+
+{/* ================= CARD MODE ================= */}
+{!isTable && (
+
+<div className="row">
+
+{admins.map((a,index)=>(
+<div
+key={a.id}
+className="col-6 col-sm-3 col-md-2 mb-3"
+>
+
+<div className="card shadow h-100">
+
+<div className="card-body">
+
+<h6 className="fw-bold">
+{i‌nputFix(a.username)}
+</h6>
+
+<p className="mb-1">
+<b>ชื่อ:</b> {a.name}
+</p>
+
+<p>
+<b>ตำแหน่ง:</b> {a.position}
+</p>
+
+<div className="d-flex justify-content-between">
+
+<button
+className="btn btn-warning btn-sm"
+onClick={()=>openEdit(a)}
+>
+<i className="bi bi-pencil-fill"></i>
+</button>
+
+{index!==0&&(
+<button
+className="btn btn-danger btn-sm"
+onClick={()=>removeAdmin(a.id)}
+>
+<i className="bi bi-trash-fill"></i>
+</button>
+)}
+
+</div>
+
+</div>
+</div>
+
+</div>
+))}
+
+</div>
+)}
 
 </div>
 </div>
@@ -203,9 +259,7 @@ onClick={()=>removeAdmin(a.id)}
 className="modal-header text-white"
 style={{background:"#800020"}}
 >
-<h5>
-{isEdit?"แก้ไข Admin":"เพิ่ม Admin"}
-</h5>
+<h5>{isEdit?"แก้ไข Admin":"เพิ่ม Admin"}</h5>
 
 <button
 className="btn-close btn-close-white"
@@ -285,4 +339,9 @@ style={{background:"#800020"}}
 
 </div>
 );
+}
+
+/* ป้องกัน username null */
+function inputFix(v:any){
+  return v || "-";
 }
