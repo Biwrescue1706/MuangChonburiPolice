@@ -184,18 +184,26 @@ try {
       error: "กรอกข้อมูลไม่ครบ",
     });
 
-  const user = await prisma.admin.findUnique({
+  // ✅ query ครั้งเดียว
+  const adminUser = await prisma.admin.findUnique({
     where: { username },
+    select: {
+      id: true,
+      username: true,
+      name: true,
+      position: true,
+      password: true,
+    },
   });
 
-  if (!user)
-    return res.status(404).json({
-      error: "ไม่พบผู้ใช้",
+  if (!adminUser)
+    return res.status(401).json({
+      error: "ไม่พบบัญชีผู้ใช้",
     });
 
   const valid = await bcrypt.compare(
     password,
-    user.password
+    adminUser.password
   );
 
   if (!valid)
@@ -205,10 +213,10 @@ try {
 
   const token = jwt.sign(
     {
-      adminId: user.id,
-      username: user.username,
-      name:user.name,
-      position: user.position,
+      adminId: adminUser.id,
+      username: adminUser.username,
+      name: adminUser.name,
+      position: adminUser.position,
     },
     JWT_SECRET,
     { expiresIn: "90m" }
@@ -221,18 +229,27 @@ try {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
-    domain: ".smartdorm-biwboong.shop",
+    domain: ".smartdorm-biwboong.shop", // ⭐ ใช้ cross-subdomain
     path: "/",
     maxAge: 90 * 60 * 1000,
   });
 
+  // ✅ ส่ง admin กลับทันที (ไม่ต้อง verify ซ้ำ)
   res.json({
     message: "เข้าสู่ระบบสำเร็จ",
+    admin: {
+      adminId: adminUser.id,
+      username: adminUser.username,
+      name: adminUser.name,
+      position: adminUser.position,
+    },
   });
 
 } catch (err) {
   console.error(err);
-  res.status(500).json({ error: "Login error" });
+  res.status(500).json({
+    error: "Login error",
+  });
 }
 });
 
