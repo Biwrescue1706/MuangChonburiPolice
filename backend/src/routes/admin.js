@@ -9,6 +9,131 @@ const admin = Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) throw new Error("JWT_SECRET missing");
 
+/* =====GET ALL ADMINS ===== */
+admin.get(
+  "/getall",
+  authMiddleware,
+  async (req, res) => {
+    try {
+
+      const admins = await prisma.admin.findMany({
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          position: true,
+          createdAt: true,
+        },
+        orderBy: {
+          id: "asc",
+        },
+      });
+
+      res.json(admins);
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        error: "Fetch admins failed",
+      });
+    }
+  }
+);
+
+/* ================= GET ADMIN BY ID ================= */
+admin.get(
+  "/:id",
+  authMiddleware,
+  async (req, res) => {
+    try {
+
+      const id = Number(req.params.id);
+
+      const user = await prisma.admin.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          position: true,
+        },
+      });
+
+      if (!user)
+        return res.status(404).json({
+          error: "ไม่พบ admin",
+        });
+
+      res.json(user);
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        error: "Fetch admin failed",
+      });
+    }
+  }
+);
+
+/* ================= UPDATE ADMIN BY ID ================= */
+admin.put(
+  "/:id",
+  authMiddleware,
+  async (req, res) => {
+    try {
+
+      const id = Number(req.params.id);
+      const { username, name, position } = req.body;
+
+      const updated =
+        await prisma.admin.update({
+          where: { id },
+          data: {
+            username,
+            name,
+            position,
+          },
+        });
+
+      res.json({
+        message: "แก้ไข admin สำเร็จ",
+        admin: updated,
+      });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        error: "Update admin failed",
+      });
+    }
+  }
+);
+
+/* ================= DELETE ADMIN ================= */
+admin.delete(
+  "/:id",
+  authMiddleware,
+  async (req, res) => {
+    try {
+
+      const id = Number(req.params.id);
+
+      await prisma.admin.delete({
+        where: { id },
+      });
+
+      res.json({
+        message: "ลบ admin สำเร็จ",
+      });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        error: "Delete failed",
+      });
+    }
+  }
+);
 
 /* ================= REGISTER ================= */
 admin.post("/register", async (req, res) => {
