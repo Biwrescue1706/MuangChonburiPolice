@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Swal from "sweetalert2";
 
-export default function AdminManagement() {
+export default function CreateAdmin() {
 
   const [admins,setAdmins]=useState<any[]>([]);
   const [showModal,setShowModal]=useState(false);
@@ -66,10 +66,7 @@ export default function AdminManagement() {
     try{
 
       if(isEdit){
-        await api.put(
-          `/admin/${editing.id}`,
-          form
-        );
+        await api.put(`/admin/${editing.id}`,form);
       }else{
         await api.post("/admin",form);
       }
@@ -149,7 +146,9 @@ onClick={openCreate}
 <th>Username</th>
 <th>ชื่อ</th>
 <th>ตำแหน่ง</th>
-<th width="180">จัดการ</th>
+<th style={{width:"180px"}}>
+จัดการ
+</th>
 </tr>
 </thead>
 
@@ -188,7 +187,6 @@ onClick={()=>removeAdmin(a.id)}
 ))}
 
 </tbody>
-
 </table>
 
 </div>
@@ -198,7 +196,7 @@ onClick={()=>removeAdmin(a.id)}
 {showModal&&(
 <>
 <div className="modal fade show d-block">
-<div className="modal-dialog">
+<div className="modal-dialog modal-dialog-centered">
 <div className="modal-content">
 
 <div
