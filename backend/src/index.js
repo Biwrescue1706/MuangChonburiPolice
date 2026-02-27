@@ -42,9 +42,10 @@ app.use(
 
 
 // ROUTES
-
+import authRoute from "./routes/auth.js";
 import adminRoute from "./routes/admin.js";
 
+app.use("/api/auth", authRoute);
 app.use("/api/admin", adminRoute);
 
 /* ================= THAI TIME ================= */
