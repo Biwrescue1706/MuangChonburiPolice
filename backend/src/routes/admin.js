@@ -207,6 +207,8 @@ try {
     {
       adminId: user.id,
       username: user.username,
+      name:user.name,
+      position: user.position,
     },
     JWT_SECRET,
     { expiresIn: "90m" }
@@ -219,6 +221,7 @@ try {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
+    domain: ".smartdorm-biwboong.shop",
     path: "/",
     maxAge: 90 * 60 * 1000,
   });
@@ -244,6 +247,7 @@ admin.post("/logout", (_req, res) => {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
+domain: ".smartdorm-biwboong.shop",
     path: "/",
   });
 
