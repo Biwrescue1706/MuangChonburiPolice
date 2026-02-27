@@ -19,100 +19,102 @@ model Admin {
   position String
 
   createdAt DateTime @default(now())
+updatedAt DateTime?
 }
 
-//
 // PERSON
-//
 model Person {
   id String @id @default(uuid())
 
-  prefix    String?
-  firstName String
-  lastName  String
-  fullName  String
+  createdAt DateTime @default(now()) // วันที่ทำรายการ (วันที่บันทึกข้อมูล)
 
-  birthYear  Int?
-  birthMonth Int?
-  birthDay   Int?
+  prefix    String   // คำนำหน้าชื่อ
+  firstName String   // ชื่อ
+  lastName  String   // นามสกุล
+  fullName  String   // คำนำหน้า + ชื่อ + นามสกุล
 
-  nationality String?
-  ethnicity   String?
+  citizenId String @unique // เลขบัตรประชาชน
 
-  weight Float?
-  height Float?
+  birthDate DateTime? // วันเกิดเต็ม
 
-  citizenId String @unique
+  birthDay   Int? // วันเกิด
+  birthMonth Int? // เดือนเกิด
+  birthYear  Int? // ปีเกิด
 
-  father String?
-  mother String?
-  spouse String?
+  nationality String? // สัญชาติ
+  ethnicity   String? // เชื้อชาติ
 
-  distinguishingMarks String?
-  address             String?
+  weight Int? // น้ำหนัก (จำนวนเต็ม)
+  height Int? // ส่วนสูง (จำนวนเต็ม)
 
-  createdAt DateTime @default(now())
+  distinguishingMarks String? // ตำหนิ / บาดแผล
+
+  address String? // ที่อยู่
+  occupation String? // อาชีพ
+  workplaceAddress String? // ที่อยู่ที่ทำงาน
+
+  father String? // ชื่อบิดา
+  mother String? // ชื่อมารดา
+  spouse String? @default("-") // คู่สมรส (ไม่มีให้เป็น -)
+
+updatedAt DateTime?
 
   requests VerificationRequest[]
 }
 
-//
-// ORGANIZATION
-//
+// องค์กร
 model Organization {
   id String @id @default(uuid())
 
   key String @unique @default("MAIN")
 
-  organizationName String
+  organizationName String //ชื่อองค์กร
 
-  rank String?
-  firstName String
-  lastName String
+  rank String? //ยศ
+  firstName String //ชื่อจริง
+  lastName String //นามสกุล
 
-  fullName String
-  fullNameWithRank String
-  position String?
+  fullName String // รวมชื่อ-นาสกุล
+  fullNameWithRank String //รวมยศชื่อสกุล
+  position String //ตำแหน่ง
 
   createdAt DateTime @default(now())
+  updatedAt DateTime?
 
   requests VerificationRequest[]
 }
 
-//
 // REQUEST
-//
 model VerificationRequest {
   id String @id @default(uuid())
 
   personId String
-  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id])
 
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  purpose String? // วัตถุประสงค์ในการขอ
 
-  purpose          String?
   requestingAgency String?
+  // สถานประกอบการที่ขอ
 
-  receiptBookNo String?
-  receiptNo     String?
+  receiptBookNo String? // เลขที่เล่มใบเสร็จ
+  receiptNo     String? // เลขใบเสร็จ
 
-  submittedDate DateTime?
+  receiptDate DateTime? // วันที่ออกเลข
+
+  submittedDate DateTime? // วันที่ยื่นคำร้อง
 
   status Int @default(0)
+  // 0 = รอดำเนินการส่งศพฐ
+  // 1 = ส่งศพฐแล้ว รอรับจากศพฐ
+  // 2 = รับจาก ศพฐ แล้ว
+  // 3 = ส่งผลเรียบร้อยแล้ว
 
-  expireAt  DateTime
+  expireAt DateTime
   createdAt DateTime @default(now())
-
-  files VerificationFile[]
-
-  @@index([status])
-  @@index([expireAt])
+updatedAt DateTime?
 }
 
-//
 // FILE
-//
 model VerificationFile {
   id String @id @default(uuid())
 
@@ -123,4 +125,5 @@ model VerificationFile {
   fileName String
 
   createdAt DateTime @default(now())
+updatedAt DateTime?
 }
