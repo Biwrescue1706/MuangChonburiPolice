@@ -3,7 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import prisma from "./prisma.js"; 
-if (process.env.NODE_ENV !== "production") dotenv.config();
+
+dotenv.config();
 
 const app = express();
 
