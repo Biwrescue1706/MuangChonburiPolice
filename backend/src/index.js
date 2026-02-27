@@ -37,13 +37,13 @@ app.use(
       }
     },
     credentials: true,
-    methods: ["GET","POST","PUT","DELETE","OPTIONS"], // ⭐ เพิ่ม
-    allowedHeaders: ["Content-Type","Authorization"], // ⭐ เพิ่ม
+    methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+    allowedHeaders: ["Content-Type","Authorization"],
   })
 );
 
-// ⭐⭐⭐ สำคัญมาก (แก้ login ไม่ redirect)
-app.options("*", cors()); // ⭐ เพิ่ม
+// ✅ FIX NODE 22 (แก้จาก "*" → "/*")
+app.options("/*", cors());
 
 
 // ROUTES
@@ -130,7 +130,7 @@ app.use((err, _req, res, _next) => {
 
 
 // SERVER START
-const PORT = process.env.PORT || 10000; // ⭐ แก้ Render port
+const PORT = process.env.PORT || 10000;
 
 const ENV = process.env.NODE_ENV || "development";
 
