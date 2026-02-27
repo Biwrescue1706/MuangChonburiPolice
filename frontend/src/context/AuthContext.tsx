@@ -59,9 +59,6 @@ export const AuthProvider = ({
     password,
   });
 
-  // ⭐ รอ cookie set ก่อน
-  await new Promise(res => setTimeout(res, 300));
-
   await verify();
 };
 
