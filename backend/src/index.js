@@ -42,10 +42,6 @@ app.use(
   })
 );
 
-// ✅ FIX NODE 22 (แก้จาก "*" → "/*")
-app.options("/*", cors());
-
-
 // ROUTES
 import adminRoute from "./routes/admin.js";
 app.use("/api/admin", adminRoute);
