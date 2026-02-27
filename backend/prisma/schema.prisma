@@ -1,129 +1,115 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js" // สร้าง Prisma Client
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider  = "postgresql" // ใช้ฐานข้อมูล PostgreSQL
+  url       = env("DATABASE_URL") // connection หลัก
+  directUrl = env("DIRECT_URL") // ใช้ตอน migrate
 }
 
-//
-// ADMIN
-//
 model Admin {
-  id       String @id @default(uuid())
-  username String @unique
-  password String
-  name     String
-  position String
-
-  createdAt DateTime @default(now())
-updatedAt DateTime?
+  id String @id @default(uuid()) // รหัสผู้ดูแลระบบ
+  username String @unique // ชื่อเข้าสู่ระบบ
+  password String // รหัสผ่านแบบเข้ารหัส
+  name String // ชื่อผู้ดูแล
+  position String // ตำแหน่งงาน
+  createdAt DateTime @default(now()) // วันที่สร้างบัญชี
+  updatedAt DateTime? // วันที่แก้ไขล่าสุด
 }
 
-// PERSON
 model Person {
-  id String @id @default(uuid())
+  id String @id @default(uuid()) // รหัสบุคคล
+  createdAt DateTime @default(now()) // วันที่บันทึกข้อมูล
 
-  createdAt DateTime @default(now()) // วันที่ทำรายการ (วันที่บันทึกข้อมูล)
-
-  prefix    String   // คำนำหน้าชื่อ
-  firstName String   // ชื่อ
-  lastName  String   // นามสกุล
-  fullName  String   // คำนำหน้า + ชื่อ + นามสกุล
+  prefix String // คำนำหน้าชื่อ
+  firstName String // ชื่อจริง
+  lastName String // นามสกุล
+  fullName String // ชื่อเต็ม
 
   citizenId String @unique // เลขบัตรประชาชน
 
   birthDate DateTime? // วันเกิดเต็ม
-
-  birthDay   Int? // วันเกิด
+  birthDay Int? // วันเกิด
   birthMonth Int? // เดือนเกิด
-  birthYear  Int? // ปีเกิด
+  birthYear Int? // ปีเกิด
 
   nationality String? // สัญชาติ
-  ethnicity   String? // เชื้อชาติ
+  ethnicity String? // เชื้อชาติ
 
-  weight Int? // น้ำหนัก (จำนวนเต็ม)
-  height Int? // ส่วนสูง (จำนวนเต็ม)
+  weight Int? // น้ำหนัก
+  height Int? // ส่วนสูง
 
-  distinguishingMarks String? // ตำหนิ / บาดแผล
+  distinguishingMarks String? // ตำหนิร่างกาย
 
   address String? // ที่อยู่
   occupation String? // อาชีพ
-  workplaceAddress String? // ที่อยู่ที่ทำงาน
+  workplaceAddress String? // ที่ทำงาน
 
   father String? // ชื่อบิดา
   mother String? // ชื่อมารดา
-  spouse String? @default("-") // คู่สมรส (ไม่มีให้เป็น -)
+  spouse String? @default("-") // คู่สมรส
 
-updatedAt DateTime?
+  updatedAt DateTime? // วันที่แก้ไขข้อมูล
 
-  requests VerificationRequest[]
+  requests VerificationRequest[] // รายการคำร้องของบุคคล
 }
 
-// องค์กร
 model Organization {
-  id String @id @default(uuid())
+  id String @id @default(uuid()) // รหัสองค์กร
+  key String @unique @default("MAIN") // key องค์กร
+  organizationName String // ชื่อองค์กร
 
-  key String @unique @default("MAIN")
+  rank String? // ยศผู้ลงนาม
+  firstName String // ชื่อผู้ลงนาม
+  lastName String // นามสกุลผู้ลงนาม
 
-  organizationName String //ชื่อองค์กร
+  fullName String // ชื่อเต็ม
+  fullNameWithRank String // ชื่อพร้อมยศ
+  position String // ตำแหน่ง
 
-  rank String? //ยศ
-  firstName String //ชื่อจริง
-  lastName String //นามสกุล
+  createdAt DateTime @default(now()) // วันที่สร้าง
+  updatedAt DateTime? // วันที่แก้ไข
 
-  fullName String // รวมชื่อ-นาสกุล
-  fullNameWithRank String //รวมยศชื่อสกุล
-  position String //ตำแหน่ง
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime?
-
-  requests VerificationRequest[]
+  requests VerificationRequest[] // คำร้องขององค์กร
 }
 
-// REQUEST
 model VerificationRequest {
-  id String @id @default(uuid())
+  id String @id @default(uuid()) // รหัสคำร้อง
 
-  personId String
-  person Person @relation(fields: [personId], references: [id])
+  personId String // อ้างอิงบุคคล
+  person Person @relation(fields: [personId], references: [id]) // บุคคลที่ถูกตรวจ
 
-  purpose String? // วัตถุประสงค์ในการขอ
+  organizationId String? // อ้างอิงองค์กร
+  organization Organization? @relation(fields: [organizationId], references: [id]) // องค์กรผู้ร้อง
 
-  requestingAgency String?
-  // สถานประกอบการที่ขอ
+  files VerificationFile[] // ไฟล์เอกสารคำร้อง
 
-  receiptBookNo String? // เลขที่เล่มใบเสร็จ
-  receiptNo     String? // เลขใบเสร็จ
+  purpose String? // วัตถุประสงค์
+  requestingAgency String? // หน่วยงานที่ขอ
 
-  receiptDate DateTime? // วันที่ออกเลข
+  receiptBookNo String? // เล่มใบเสร็จ
+  receiptNo String? // เลขใบเสร็จ
 
+  receiptDate DateTime? // วันที่ใบเสร็จ
   submittedDate DateTime? // วันที่ยื่นคำร้อง
 
-  status Int @default(0)
-  // 0 = รอดำเนินการส่งศพฐ
-  // 1 = ส่งศพฐแล้ว รอรับจากศพฐ
-  // 2 = รับจาก ศพฐ แล้ว
-  // 3 = ส่งผลเรียบร้อยแล้ว
+  status Int @default(0) // สถานะคำร้อง
 
-  expireAt DateTime
-  createdAt DateTime @default(now())
-updatedAt DateTime?
+  expireAt DateTime // วันหมดอายุ
+  createdAt DateTime @default(now()) // วันที่สร้าง
+  updatedAt DateTime? // วันที่แก้ไข
 }
 
-// FILE
 model VerificationFile {
-  id String @id @default(uuid())
+  id String @id @default(uuid()) // รหัสไฟล์
 
-  requestId String
-  request   VerificationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  requestId String // อ้างอิงคำร้อง
+  request VerificationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade) // เจ้าของไฟล์
 
-  filePath String
-  fileName String
+  filePath String // ที่อยู่ไฟล์
+  fileName String // ชื่อไฟล์
 
-  createdAt DateTime @default(now())
-updatedAt DateTime?
+  createdAt DateTime @default(now()) // วันที่อัปโหลด
+  updatedAt DateTime? // วันที่แก้ไข
 }
