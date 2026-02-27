@@ -276,55 +276,44 @@ domain: ".smartdorm-biwboong.shop",
 
 /* ================= VERIFY ================= */
 admin.get("/verify", async (req, res) => {
-try {
+  try {
+    const token = req.cookies.token;
 
-  const token = req.cookies?.token;
+    if (!token)
+      return res.sendStatus(401);
 
-  if (!token)
-    return res.status(401).json({
-      valid:false,
+    const decoded = jwt.verify(
+      token,
+      JWT_SECRET
+    );
+
+    const adminUser =
+      await prisma.admin.findUnique({
+        where: { id: decoded.adminId },
+        select: {
+          id: true,
+          username: true,
+          name: true,
+          position: true,
+        },
+      });
+
+    if (!adminUser)
+      return res.sendStatus(401);
+
+    res.json({
+      admin: {
+        adminId: adminUser.id,
+        username: adminUser.username,
+        name: adminUser.name,
+        position: adminUser.position,
+      },
     });
 
-  const decoded = jwt.verify(
-    token,
-    JWT_SECRET
-  );
-
-  // ⭐ กัน JWT crash
-  if (typeof decoded === "string")
-    return res.status(401).json({
-      valid:false,
-    });
-
-  const user = await prisma.admin.findUnique({
-    where: { id: decoded.adminId },
-    select: {
-      id: true,
-      username: true,
-      name: true,
-      position: true,
-    },
-  });
-
-  if (!user)
-    return res.status(404).json({
-      valid:false,
-    });
-
-  res.json({
-    valid:true,
-    admin:{
-      adminId:user.id,
-      username:user.username,
-      name:user.name,
-      position:user.position,
-    },
-  });
-
-} catch (err) {
-  console.error("VERIFY:", err);
-  res.status(401).json({ valid:false });
-}
+  } catch (err) {
+    console.error("VERIFY ERROR:", err);
+    res.sendStatus(401);
+  }
 });
 
 
