@@ -19,7 +19,7 @@ export default function Profile() {
   /* ================= LOAD PROFILE ================= */
   const loadProfile = async () => {
     try {
-      const res = await api.get("/admin/me");
+      const res = await api.get("/auth/me");
       setProfile(res.data);
     } catch {
       Swal.fire({
@@ -36,7 +36,7 @@ export default function Profile() {
   /* ================= UPDATE ================= */
   const handleUpdate = async () => {
     try {
-      await api.put("/admin/me", profile);
+      await api.put("/auth/me", profile);
 
       Swal.fire({
         icon: "success",
