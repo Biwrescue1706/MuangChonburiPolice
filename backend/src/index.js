@@ -20,7 +20,6 @@ const allowedOrigins = [
     "http://localhost:5175",
     "https://policy-muangchonburi.smartdorm-biwboong.shop", 
     "https://hub-muangchonburi.smartdorm-biwboong.shop",
-
 ];
 
 // cors config
@@ -38,15 +37,19 @@ app.use(
       }
     },
     credentials: true,
+    methods: ["GET","POST","PUT","DELETE","OPTIONS"], // ⭐ เพิ่ม
+    allowedHeaders: ["Content-Type","Authorization"], // ⭐ เพิ่ม
   })
 );
 
+// ⭐⭐⭐ สำคัญมาก (แก้ login ไม่ redirect)
+app.options("*", cors()); // ⭐ เพิ่ม
+
 
 // ROUTES
-
 import adminRoute from "./routes/admin.js";
-
 app.use("/api/admin", adminRoute);
+
 
 /* ================= THAI TIME ================= */
 
@@ -76,6 +79,7 @@ app.get("/", (_req, res) => {
     const mode = process.env.NODE_ENV || "development";
     const port = process.env.PORT;
     const { date, time } = thaiNow();
+
     res.send(`
         status OK
         MuangChonburi API Running 🚀<br/>
@@ -85,6 +89,7 @@ app.get("/", (_req, res) => {
         🕒 เวลา: ${time} 
     `);
 });
+
 
 app.get("/health", async (_req, res) => {
     const { date, time } = thaiNow();
@@ -106,6 +111,7 @@ app.get("/health", async (_req, res) => {
     });
 });
 
+
 // 404 HANDLER
 app.use((req, res) => {
     res.status(404).json({
@@ -122,12 +128,14 @@ app.use((err, _req, res, _next) => {
     });
 });
 
+
 // SERVER START
-const PORT = Number(process.env.PORT);
+const PORT = process.env.PORT || 10000; // ⭐ แก้ Render port
+
 const ENV = process.env.NODE_ENV || "development";
 
 const server = app.listen(PORT, "0.0.0.0", () => {
-    
+
     console.log("\n==========SERVER STARTED==========");
 
     if (ENV === "production") {
@@ -138,6 +146,7 @@ const server = app.listen(PORT, "0.0.0.0", () => {
         console.log(`🚀 Server running on http://localhost:${PORT}\n`);
     }
 });
+
 
 /* ================= DB INIT ================= */
 
@@ -152,6 +161,7 @@ const server = app.listen(PORT, "0.0.0.0", () => {
         console.error("❌ Database connection failed:", err);
     }
 })();
+
 
 /* ================= SHUTDOWN ================= */
 
