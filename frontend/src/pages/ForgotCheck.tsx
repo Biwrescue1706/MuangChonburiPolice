@@ -11,7 +11,7 @@ export default function ForgotCheck() {
     e.preventDefault();
 
     try {
-      const res = await api.post("/auth/forgot/check", { username });
+      const res = await api.post("/admin/forgot/check", { username });
 
       Swal.fire({
         icon: "success",
