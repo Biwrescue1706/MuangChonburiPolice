@@ -36,7 +36,7 @@ export const AuthProvider = ({
   const verify = async () => {
     try {
       const res =
-        await api.get("/admin/verify");
+        await api.get("/auth/verify");
 
       setAdmin(res.data.admin);
     } catch {
@@ -54,7 +54,7 @@ export const AuthProvider = ({
   password: string
 ) => {
 
-  await api.post("/admin/login", {
+  await api.post("/auth/login", {
     username,
     password,
   });
@@ -66,7 +66,7 @@ export const AuthProvider = ({
 };
 
   const logout = async () => {
-    await api.post("/admin/logout");
+    await api.post("/auth/logout");
     setAdmin(null);
   };
 
