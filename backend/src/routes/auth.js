@@ -52,12 +52,13 @@ auth.post("/login", async (req, res) => {
       process.env.NODE_ENV === "production";
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? "none" : "lax",
-      path: "/",
-      maxAge: 90 * 60 * 1000,
-    });
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  domain: ".smartdorm-biwboong.shop", // ⭐ เพิ่มบรรทัดนี้
+  path: "/",
+  maxAge: 90 * 60 * 1000,
+});
 
     res.json({
       message: "เข้าสู่ระบบสำเร็จ",
@@ -79,11 +80,12 @@ auth.post("/logout", (_req, res) => {
     process.env.NODE_ENV === "production";
 
   res.clearCookie("token", {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? "none" : "lax",
-    path: "/",
-  });
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  domain: ".smartdorm-biwboong.shop",
+  path: "/",
+});
 
   res.json({
     message: "ออกจากระบบสำเร็จ",
