@@ -7,7 +7,6 @@ export default function CreateAdmin() {
   const [admins,setAdmins]=useState<any[]>([]);
   const [showModal,setShowModal]=useState(false);
   const [editing,setEditing]=useState<any>(null);
-
   const [screenWidth,setScreenWidth]=useState(window.innerWidth);
 
   const [form,setForm]=useState({
@@ -22,12 +21,9 @@ export default function CreateAdmin() {
 
   /* ================= SCREEN ================= */
   useEffect(()=>{
-    const handleResize=()=>{
-      setScreenWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize",handleResize);
-    return ()=>window.removeEventListener("resize",handleResize);
+    const resize=()=>setScreenWidth(window.innerWidth);
+    window.addEventListener("resize",resize);
+    return ()=>window.removeEventListener("resize",resize);
   },[]);
 
   /* ================= LOAD ================= */
@@ -58,8 +54,8 @@ export default function CreateAdmin() {
     setForm({
       username:admin.username,
       password:"",
-      name:admin.name||"",
-      position:admin.position||""
+      name:admin.name || "",
+      position:admin.position || ""
     });
     setShowModal(true);
   };
@@ -112,9 +108,10 @@ export default function CreateAdmin() {
       showCancelButton:true
     });
 
-    if(!confirm.isConfirmed)return;
+    if(!confirm.isConfirmed) return;
 
     await api.delete(`/admin/${id}`);
+
     Swal.fire("ลบสำเร็จ","","success");
     loadAdmins();
   };
@@ -122,7 +119,7 @@ export default function CreateAdmin() {
   return(
 <div className="container-fluid p-4">
 
-{/* ===== ADD ===== */}
+{/* ===== ADD BUTTON ===== */}
 <button
 className="btn text-white mb-3"
 style={{background:"#800020"}}
@@ -132,13 +129,14 @@ onClick={openCreate}
 </button>
 
 <div className="card shadow">
+
 <div className="card-header fw-bold">
 ประวัติผู้ดูแลระบบ
 </div>
 
 <div className="card-body">
 
-{/* ================= TABLE MODE ================= */}
+{/* ================= TABLE ================= */}
 {isTable && (
 
 <table className="table table-bordered align-middle">
@@ -149,11 +147,12 @@ onClick={openCreate}
 <th>Username</th>
 <th>ชื่อ</th>
 <th>ตำแหน่ง</th>
-<th width="120">จัดการ</th>
+<th style={{width:"120px"}}>จัดการ</th>
 </tr>
 </thead>
 
 <tbody>
+
 {admins.map((a,index)=>(
 <tr key={a.id}>
 
@@ -171,7 +170,7 @@ onClick={()=>openEdit(a)}
 <i className="bi bi-pencil-fill"></i>
 </button>
 
-{index!==0&&(
+{index!==0 && (
 <button
 className="btn btn-danger btn-sm"
 onClick={()=>removeAdmin(a.id)}
@@ -184,12 +183,12 @@ onClick={()=>removeAdmin(a.id)}
 
 </tr>
 ))}
-</tbody>
 
+</tbody>
 </table>
 )}
 
-{/* ================= CARD MODE ================= */}
+{/* ================= CARD ================= */}
 {!isTable && (
 
 <div className="row">
@@ -205,7 +204,7 @@ className="col-6 col-sm-3 col-md-2 mb-3"
 <div className="card-body">
 
 <h6 className="fw-bold">
-{i‌nputFix(a.username)}
+{inputFix(a.username)}
 </h6>
 
 <p className="mb-1">
@@ -225,7 +224,7 @@ onClick={()=>openEdit(a)}
 <i className="bi bi-pencil-fill"></i>
 </button>
 
-{index!==0&&(
+{index!==0 && (
 <button
 className="btn btn-danger btn-sm"
 onClick={()=>removeAdmin(a.id)}
@@ -249,7 +248,7 @@ onClick={()=>removeAdmin(a.id)}
 </div>
 
 {/* ================= MODAL ================= */}
-{showModal&&(
+{showModal && (
 <>
 <div className="modal fade show d-block">
 <div className="modal-dialog modal-dialog-centered">
@@ -279,7 +278,7 @@ onChange={handleChange}
 required
 />
 
-{!isEdit&&(
+{!isEdit && (
 <input
 type="password"
 name="password"
@@ -341,7 +340,7 @@ style={{background:"#800020"}}
 );
 }
 
-/* ป้องกัน username null */
+/* ===== FIX NULL ===== */
 function inputFix(v:any){
   return v || "-";
 }
