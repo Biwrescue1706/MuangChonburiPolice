@@ -45,7 +45,9 @@ function App() {
             <Route path="/security" element={<Security />} />
             <Route path="/admin/create" element={<CreateAdmin />} />
           </Route>
-            <Route path="/person" element={<PersonPage />} />
+            <Route path="/person/create" element={<PersonPage />} />
+
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
