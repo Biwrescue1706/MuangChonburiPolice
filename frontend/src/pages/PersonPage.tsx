@@ -1,300 +1,188 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import api from "../api/axios";
 
-interface Person {
-  personId: string;
-  prefix: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  citizenId: string;
-}
+export default function CreatePerson() {
+  const navigate = useNavigate();
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 70 }, (_, i) => currentYear - i);
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
-export default function PersonPage() {
-  const [persons, setPersons] = useState<Person[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const months = [
+    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
+    "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
+  ];
+
+  const convertMoneyToText = (amount: number) => {
+    const th = ["ศูนย์","หนึ่ง","สอง","สาม","สี่","ห้า","หก","เจ็ด","แปด","เก้า"];
+    if (amount === 100) return "หนึ่งร้อยบาทถ้วน";
+    if (amount < 10) return th[amount] + "บาทถ้วน";
+    return amount + "บาทถ้วน";
+  };
+
   const [form, setForm] = useState<any>({
-    prefix: "",
+    prefix: "นาย",
     firstName: "",
     lastName: "",
-    fullName: "",
     citizenId: "",
-    birthDate: "",
     birthDay: "",
     birthMonth: "",
     birthYear: "",
-    nationality: "",
-    ethnicity: "",
-    weight: "",
-    height: "",
-    distinguishingMarks: "",
-    address: "",
-    occupation: "",
-    workplaceAddress: "",
-    father: "",
-    mother: "",
-    spouse: "-",
-    purpose: "",
-    requestingAgency: "",
-    receiptBookNo: "",
-    receiptNo: "",
-    receiptDate: "",
-    submittedDate: "",
-    status: 0,
+    nationality: "ไทย",
+    ethnicity: "ไทย",
+    bodyType: "สันทัด",
+    skinColor: "ดำแดง",
+    behavior: "ปกติ",
+    money: 100,
+    moneyText: "หนึ่งร้อยบาทถ้วน",
   });
 
-  const fetchPersons = async () => {
-    const res = await api.get("/person");
-    setPersons(res.data.data);
-  };
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
 
-  useEffect(() => {
-    fetchPersons();
-  }, []);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const resetForm = () => {
-    setForm({});
-    setEditingId(null);
-  };
-
-  const handleSubmit = async () => {
-    try {
-      let personId = editingId;
-
-      if (editingId) {
-        await api.put(`/person/${editingId}`, {
-          ...form,
-          weight: form.weight ? Number(form.weight) : null,
-          height: form.height ? Number(form.height) : null,
-        });
-      } else {
-        const res = await api.post("/person", {
-          ...form,
-          fullName:
-            form.fullName ||
-            `${form.prefix}${form.firstName} ${form.lastName}`,
-        });
-        personId = res.data.data.personId;
-      }
-
-      // ถ้ามีกรอกคำร้อง → สร้างคำร้อง
-      if (form.purpose) {
-        await api.post(`/person/${personId}/request`, {
-          purpose: form.purpose,
-          requestingAgency: form.requestingAgency,
-          receiptBookNo: form.receiptBookNo,
-          receiptNo: form.receiptNo,
-          receiptDate: form.receiptDate || null,
-          submittedDate: form.submittedDate || null,
-          expireAt: new Date(
-            new Date().setFullYear(new Date().getFullYear() + 1)
-          ),
-          status: Number(form.status),
-        });
-      }
-
-      alert("บันทึกสำเร็จ");
-      resetForm();
-      fetchPersons();
-    } catch (err: any) {
-      alert(err.response?.data?.error || "เกิดข้อผิดพลาด");
+    if (name === "money") {
+      const num = Number(value);
+      setForm({
+        ...form,
+        money: num,
+        moneyText: convertMoneyToText(num),
+      });
+    } else {
+      setForm({ ...form, [name]: value });
     }
   };
 
-  const handleEdit = async (id: string) => {
-    const res = await api.get(`/person/${id}`);
-    setForm(res.data.data);
-    setEditingId(id);
-  };
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("ยืนยันการลบ?")) return;
-    await api.delete(`/person/${id}`);
-    fetchPersons();
+    try {
+      await api.post("/person", {
+        ...form,
+        fullName: `${form.prefix}${form.firstName} ${form.lastName}`,
+        birthDay: Number(form.birthDay),
+        birthMonth: Number(form.birthMonth),
+        birthYear: Number(form.birthYear),
+      });
+
+      await Swal.fire({
+        icon: "success",
+        title: "บันทึกสำเร็จ",
+        confirmButtonColor: "#3085d6",
+      });
+
+      navigate("/person");
+
+    } catch (err: any) {
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: err.response?.data?.error || "ไม่สามารถบันทึกข้อมูลได้",
+      });
+    }
   };
 
   return (
     <div className="container mt-4">
-      <h3 className="mb-3">จัดการประวัติบุคคล</h3>
+      <h3 className="mb-4">สร้างข้อมูลบุคคล</h3>
 
-      <div className="card p-4 shadow-sm mb-4">
-        <div className="row g-2">
+      <form onSubmit={handleSubmit}>
 
-          <div className="col-md-2">
-            <input name="prefix" placeholder="คำนำหน้า"
-              className="form-control"
-              value={form.prefix || ""}
-              onChange={handleChange}
-            />
+        {/* 👤 ข้อมูลส่วนตัว */}
+        <div className="card mb-4 shadow-sm">
+          <div className="card-header bg-primary text-white">ข้อมูลส่วนตัว</div>
+          <div className="card-body row g-3">
+
+            <div className="col-md-2">
+              <label>คำนำหน้า</label>
+              <select name="prefix" className="form-control" value={form.prefix} onChange={handleChange}>
+                <option>นาย</option>
+                <option>นางสาว</option>
+                <option>นาง</option>
+              </select>
+            </div>
+
+            <div className="col-md-5">
+              <label>ชื่อ</label>
+              <input name="firstName" className="form-control" onChange={handleChange} required />
+            </div>
+
+            <div className="col-md-5">
+              <label>นามสกุล</label>
+              <input name="lastName" className="form-control" onChange={handleChange} required />
+            </div>
+
+            <div className="col-md-4">
+              <label>เลขบัตรประชาชน</label>
+              <input name="citizenId" className="form-control" onChange={handleChange} required />
+            </div>
+
           </div>
-
-          <div className="col-md-3">
-            <input name="firstName" placeholder="ชื่อ"
-              className="form-control"
-              value={form.firstName || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-3">
-            <input name="lastName" placeholder="นามสกุล"
-              className="form-control"
-              value={form.lastName || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-4">
-            <input name="citizenId" placeholder="เลขบัตรประชาชน"
-              className="form-control"
-              value={form.citizenId || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-4">
-            <input type="date" name="birthDate"
-              className="form-control"
-              value={form.birthDate || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-2">
-            <input name="weight" placeholder="น้ำหนัก"
-              className="form-control"
-              value={form.weight || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-2">
-            <input name="height" placeholder="ส่วนสูง"
-              className="form-control"
-              value={form.height || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-6">
-            <input name="address" placeholder="ที่อยู่"
-              className="form-control"
-              value={form.address || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-6">
-            <input name="occupation" placeholder="อาชีพ"
-              className="form-control"
-              value={form.occupation || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <hr className="mt-4" />
-
-          <h5 className="mt-2">ข้อมูลคำร้อง</h5>
-
-          <div className="col-md-6">
-            <input name="purpose" placeholder="วัตถุประสงค์"
-              className="form-control"
-              value={form.purpose || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-6">
-            <input name="requestingAgency" placeholder="หน่วยงานที่ขอ"
-              className="form-control"
-              value={form.requestingAgency || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-3">
-            <input name="receiptBookNo" placeholder="เล่มใบเสร็จ"
-              className="form-control"
-              value={form.receiptBookNo || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-3">
-            <input name="receiptNo" placeholder="เลขใบเสร็จ"
-              className="form-control"
-              value={form.receiptNo || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-3">
-            <input type="date" name="receiptDate"
-              className="form-control"
-              value={form.receiptDate || ""}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-3">
-            <input type="date" name="submittedDate"
-              className="form-control"
-              value={form.submittedDate || ""}
-              onChange={handleChange}
-            />
-          </div>
-
         </div>
 
-        <div className="mt-3">
-          <button className="btn btn-danger me-2" onClick={handleSubmit}>
-            {editingId ? "บันทึกการแก้ไข" : "เพิ่มข้อมูล"}
-          </button>
-          {editingId && (
-            <button className="btn btn-secondary" onClick={resetForm}>
-              ยกเลิก
-            </button>
-          )}
-        </div>
-      </div>
+        {/* 🎂 วันเกิด */}
+        <div className="card mb-4 shadow-sm">
+          <div className="card-header bg-info text-white">วันเกิด</div>
+          <div className="card-body row g-3">
 
-      <table className="table table-bordered">
-        <thead className="table-dark">
-          <tr>
-            <th>ชื่อ</th>
-            <th>เลขบัตร</th>
-            <th style={{ width: "200px" }}>จัดการ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {persons.map((p) => (
-            <tr key={p.personId}>
-              <td>{p.prefix} {p.firstName} {p.lastName}</td>
-              <td>{p.citizenId}</td>
-              <td>
-                <button
-                  className="btn btn-warning btn-sm me-2"
-                  onClick={() => handleEdit(p.personId)}
-                >
-                  แก้ไข
-                </button>
-                <button
-                  className="btn btn-danger btn-sm"
-                  onClick={() => handleDelete(p.personId)}
-                >
-                  ลบ
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            <div className="col-md-2">
+              <select name="birthDay" className="form-control" onChange={handleChange}>
+                <option value="">วัน</option>
+                {days.map(d => <option key={d}>{d}</option>)}
+              </select>
+            </div>
+
+            <div className="col-md-3">
+              <select name="birthMonth" className="form-control" onChange={handleChange}>
+                <option value="">เดือน</option>
+                {months.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
+              </select>
+            </div>
+
+            <div className="col-md-3">
+              <select name="birthYear" className="form-control" onChange={handleChange}>
+                <option value="">ปี</option>
+                {years.map(y => <option key={y}>{y}</option>)}
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        {/* 🧾 ใบเสร็จ */}
+        <div className="card mb-4 shadow-sm">
+          <div className="card-header bg-success text-white">ข้อมูลใบเสร็จ</div>
+          <div className="card-body row g-3">
+
+            <div className="col-md-3">
+              <label>จำนวนเงิน</label>
+              <input
+                name="money"
+                type="number"
+                className="form-control"
+                value={form.money}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="col-md-6">
+              <label>ตัวอักษร</label>
+              <input
+                name="moneyText"
+                className="form-control"
+                value={form.moneyText}
+                readOnly
+              />
+            </div>
+
+          </div>
+        </div>
+
+        <div className="text-end">
+          <button className="btn btn-primary px-4">บันทึกข้อมูล</button>
+        </div>
+
+      </form>
     </div>
   );
 }
