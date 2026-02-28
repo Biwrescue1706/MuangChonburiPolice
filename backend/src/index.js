@@ -45,7 +45,9 @@ app.use(
 // ROUTES
 import adminRoute from "./routes/admin.js";
 import authRoute from "./routes/auth.js";
+import personRoutes from "./routes/person.js";
 
+app.use("/api/person", personRoutes);
 app.use("/api/auth", authRoute);
 app.use("/api/admin", adminRoute);
 
