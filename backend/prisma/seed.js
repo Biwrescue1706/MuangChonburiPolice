@@ -15,18 +15,18 @@ async function main() {
         {
             username: "admin1",
             name: "นายภูวณัฐ พาหะละ",
-            position: "Administrator"
+            position: "แอดมินระบบ และ งานนโยบายและแผนงาน 3"
         },
-        {
+                {
             username: "admin2",
-            name: "ส.ต.ต.ธาดา เสาวโค",
-            position: "งานนโยบายและแผนงาน"
+            name: "จ.ส.ต.ชาญณรงค์เดช กันตพัชรโรจน์",
+            position: "งานนโยบายและแผนงาน 1"
         },
         {
             username: "admin3",
-            name: "จ.ส.ต.ชาญณรงค์เดช กันตพัชรโรจน์",
-            position: "งานนโยบายและแผนงาน"
-        }
+            name: "ส.ต.ต.ธาดา เสาวโค",
+            position: "งานนโยบายและแผนงาน 2"
+        },
     ];
 
     for (const admin of admins) {

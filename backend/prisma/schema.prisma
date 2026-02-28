@@ -9,7 +9,7 @@ datasource db {
 }
 
 model Admin {
-  id String @id @default(uuid()) // รหัสผู้ดูแลระบบ
+  adminId String @id @default(uuid()) // รหัสผู้ดูแลระบบ
   username String @unique // ชื่อเข้าสู่ระบบ
   password String // รหัสผ่านแบบเข้ารหัส
   name String // ชื่อผู้ดูแล
@@ -19,7 +19,7 @@ model Admin {
 }
 
 model Person {
-  id String @id @default(uuid()) // รหัสบุคคล
+  personId String @id @default(uuid()) // รหัสบุคคล
   createdAt DateTime @default(now()) // วันที่บันทึกข้อมูล
 
   prefix String // คำนำหน้าชื่อ
@@ -56,7 +56,7 @@ model Person {
 }
 
 model Organization {
-  id String @id @default(uuid()) // รหัสองค์กร
+  organizationId String @id @default(uuid()) // รหัสองค์กร
   key String @unique @default("MAIN") // key องค์กร
   organizationName String // ชื่อองค์กร
 
@@ -75,13 +75,13 @@ model Organization {
 }
 
 model VerificationRequest {
-  id String @id @default(uuid()) // รหัสคำร้อง
+  requestId String @id @default(uuid()) // รหัสคำร้อง
 
   personId String // อ้างอิงบุคคล
-  person Person @relation(fields: [personId], references: [id]) // บุคคลที่ถูกตรวจ
+  person Person @relation(fields: [personId], references: [personId]) // บุคคลที่ถูกตรวจ
 
   organizationId String? // อ้างอิงองค์กร
-  organization Organization? @relation(fields: [organizationId], references: [id]) // องค์กรผู้ร้อง
+  organization Organization? @relation(fields: [organizationId], references: [organizationId]) // องค์กรผู้ร้อง
 
   files VerificationFile[] // ไฟล์เอกสารคำร้อง
 
@@ -102,10 +102,10 @@ model VerificationRequest {
 }
 
 model VerificationFile {
-  id String @id @default(uuid()) // รหัสไฟล์
+  fileId String @id @default(uuid()) // รหัสไฟล์
 
   requestId String // อ้างอิงคำร้อง
-  request VerificationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade) // เจ้าของไฟล์
+  request VerificationRequest @relation(fields: [requestId], references: [requestId], onDelete: Cascade) // เจ้าของไฟล์
 
   filePath String // ที่อยู่ไฟล์
   fileName String // ชื่อไฟล์
