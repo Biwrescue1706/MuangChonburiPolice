@@ -1,7 +1,8 @@
+// src/pages/Login.tsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
+import { toast } from "../utils/toast";
 
 export default function Login() {
   const { login, admin } = useAuth();
@@ -20,10 +21,7 @@ export default function Login() {
     try {
       await login(username, password);
     } catch (err: any) {
-      Swal.fire({
-        icon: "error",
-        title: err.response?.data?.error || "Login failed",
-      });
+      toast("error", err.response?.data?.error || "เข้าสู่ระบบไม่สำเร็จ");
     }
   };
 

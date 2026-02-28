@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import api from "../api/axios";
+import api from "../../api/axios";
 import Swal from "sweetalert2";
 
 export default function ResetPassword() {

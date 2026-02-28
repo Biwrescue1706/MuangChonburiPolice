@@ -126,44 +126,70 @@ auth.post("/logout", (_req, res) => {
 });
 
 /* ================= CHANGE PASSWORD ================= */
-auth.put("/change-password",
+auth.put(
+  "/change-password",
   authMiddleware,
   async (req, res) => {
+    try {
 
-    const { oldPassword, newPassword } =
-      req.body;
+      const { oldPassword, newPassword } = req.body;
 
-    const user =
-      await prisma.admin.findUnique({
+      const user = await prisma.admin.findUnique({
         where: {
           adminId: req.admin.adminId,
         },
       });
 
-    const valid =
-      await bcrypt.compare(
+      // ✅ user ต้องมี
+      if (!user)
+        return res.status(404).json({
+          error: "ไม่พบผู้ใช้",
+        });
+
+      // ✅ backend validation
+      if (oldPassword === newPassword)
+        return res.status(400).json({
+          error: "รหัสใหม่ต้องไม่เหมือนรหัสเดิม",
+        });
+
+      if (newPassword.length <= 6)
+        return res.status(400).json({
+          error: "รหัสใหม่ต้องมากกว่า 6 ตัวอักษร",
+        });
+
+      // ✅ เช็ครหัสเดิม
+      const valid = await bcrypt.compare(
         oldPassword,
         user.password
       );
 
-    if (!valid)
-      return res.status(401).json({
-        error: "รหัสเดิมไม่ถูกต้อง",
+      if (!valid)
+        return res.status(401).json({
+          error: "รหัสเดิมไม่ถูกต้อง",
+        });
+
+      // ✅ hash ใหม่
+      const hash = await bcrypt.hash(newPassword, 10);
+
+      await prisma.admin.update({
+        where: {
+          adminId: user.adminId,
+        },
+        data: {
+          password: hash,
+        },
       });
 
-    const hash =
-      await bcrypt.hash(newPassword, 10);
+      res.json({
+        message: "เปลี่ยนรหัสผ่านสำเร็จ",
+      });
 
-    await prisma.admin.update({
-      where: {
-        adminId: user.adminId,
-      },
-      data: { password: hash },
-    });
-
-    res.json({
-      message: "เปลี่ยนรหัสผ่านสำเร็จ",
-    });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        error: "server error",
+      });
+    }
   }
 );
 

@@ -1,68 +1,333 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
+/*  src/index.css */
+/* ==================== Base Reset ==================== */
+* {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #2d006b, #4e2a8e, #200046);
+  color: #ffffff;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  scroll-behavior: smooth;
+  overflow-x: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-weight: bold;
+}
+
+/* ==================== Theme ==================== */
+.bg-teal {
+  background-color: #20c997 !important;
+}
+
+.table-teal {
+  background-color: #20c997 !important;
+  color: white !important;
+}
+
+.bg-teal-gradient {
+  background: linear-gradient(90deg, #20c997, #0dcaf0) !important;
+  color: white !important;
+}
+
+.btn:hover {
+  filter: brightness(1.05);
+}
+
+.btn:active {
+  filter: brightness(0.95);
+}
+
+/* ==================== Layout ==================== */
+.main-content {
+  background-color: #ffffff;
   min-height: 100vh;
+  margin-left: 210px;
+  margin-top: 65px;
+  padding: 15px;
+  color: #000000;
+  transition: margin-left 0.3s ease;
+  overflow-x: hidden; /* ป้องกันตารางล้นขอบ */
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.container-max {
+  max-width: 1280px;
+  margin: auto;
+  width: 100%;
 }
 
-button {
+/* ==================== Responsive Table ==================== */
+.responsive-table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+
+  overflow-y: hidden;
+  margin: 10px 20px 10px 10px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  padding: 10px;
+}
+
+/* ==================== Input ==================== */
+.responsive-input {
+  width: 350px !important;
+  display: block;
+  margin: 10px auto 10px auto;
+  text-align: center;
+  transition: width 0.3s ease;
+}
+
+/* เฉพาะหน้า Login */
+body.login-page {
+  background: linear-gradient(135deg, #2d006b, #4e2a8e, #200046);
+  color: #ffffff;
+}
+
+/* Scrollbar style */
+.responsive-table::-webkit-scrollbar {
+  height: 8px;
+}
+
+.responsive-table::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.responsive-table::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Table core */
+.responsive-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.responsive-table th,
+.responsive-table td {
+  border: 1px solid #000000;
+  padding: 0px !important;
+  font-size: 16px !important;
+  line-height: 1.25 !important;
+  overflow-wrap: anywhere !important;
+  text-overflow: ellipsis !important;
+  vertical-align: middle !important;
+  padding: 5px !important;
+  text-align: center;
+}
+
+/* Header */
+.responsive-table thead th {
+  background: #ff0000 !important;
+  color: #ffffff !important;
+  text-align: center;
+  white-space: wrap !important;
+  vertical-align: middle !important;
+  padding: 5px !important;
+  font-size: 20px !important;
+}
+
+.responsive-table tbody tr:hover {
+  background-color: rgba(32, 201, 151, 0.08);
+  transition: background-color 0.2s ease;
+}
+
+/* =========================================
+   Zebra Table เริ่มจากล่าง (ไม่รวมหัว)
+========================================= */
+
+/* แถวล่างสุด = เขียว */
+.responsive-table tbody tr:nth-last-child(even) {
+  background-color: #d1f5e0;
+}
+
+/* แถวถัดไป = ขาว */
+.responsive-table tbody tr:nth-last-child(odd) {
+  background-color: #ffffff;
+}
+
+/* Hover */
+.responsive-table tbody tr:hover {
+  background-color: #20c99755 !important;
+  transition: 0.2s;
+}
+
+/* Word-break safety */
+table th,
+table td {
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+  text-overflow: ellipsis !important;
+}
+
+/* ==================== Buttons ==================== */
+.btn-gradient {
+  background: linear-gradient(90deg, #00b09b, #96c93d);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(90deg, #96c93d, #00b09b);
+}
+
+/* ==================== Input ==================== */
+.responsive-input {
+  width: 350px !important;
+  display: block;
+  margin: 10px auto;
+  text-align: center;
+  transition: width 0.3s ease;
+}
+
+/* ==================== Dialog ==================== */
+.dialog-box {
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  animation: zoomIn 0.3s ease;
+}
+
+.dialog-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-align: center;
+  background: linear-gradient(90deg, #ff512f, #dd2476);
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1.5rem;
+}
+
+/* ==================== Scrollbar ==================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ==================== Utilities ==================== */
+.text-gradient {
+  background: linear-gradient(90deg, #0dcaf0, #20c997);
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.shadow-soft {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ==================== Message Marquee ==================== */
+.marquee-container {
+  position: relative;
+  width: 100%;
+  height: 1.5em;
+  overflow: hidden;
+}
+
+.marquee-text {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee-scroll 10.5s linear infinite;
+}
+
+body.login-page .form-control::placeholder {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 480px) {
+  .main-content {
+    background-color: #f8f9fa;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-top: 80px;
+    padding: 5px;
   }
-  a:hover {
-    color: #747bff;
+
+  .responsive-table table {
+    font-size: 15px !important;
+    min-width: 600px;
   }
-  button {
-    background-color: #f9f9f9;
+
+  .responsive-table th,
+  .responsive-table td {
+    padding: 4px 5px !important;
+  }
+
+  .responsive-input {
+    width: 300px !important;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .main-content {
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-top: 80px;
+  }
+
+  .responsive-table table {
+    font-size: 0.8rem !important;
+    min-width: 800px;
+  }
+
+  .responsive-table thead th {
+    font-size: 15px !important;
+    min-width: 800px;
+  }
+
+  .responsive-input {
+    width: 320px !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1279px) {
+  .main-content {
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-top: 80px;
+  }
+
+  .responsive-table table {
+    font-size: 15px !important;
+    min-width: 900px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .main-content {
+    margin-left: 220px;
+    margin-top: 80px;
+  }
+
+  .responsive-table table {
+    font-size: 20px !important;
   }
 }

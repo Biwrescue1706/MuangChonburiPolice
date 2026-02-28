@@ -2,14 +2,13 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 
-export default function ProtectedRoute({
+export default function GuestRoute({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const { admin, loading } = useAuth();
 
-  /* ================= TYPEWRITER ================= */
   const text = "กำลังรอการตอบกลับจาก Server ...";
 
   const [displayText, setDisplayText] = useState("");
@@ -42,30 +41,18 @@ export default function ProtectedRoute({
     return () => clearTimeout(timer);
   }, [index, isDeleting, loading]);
 
-  /* ================= LOADING ================= */
   if (loading) {
     return (
-      <div
-        className="vh-100 d-flex flex-column justify-content-center align-items-center"
-        style={{ fontWeight: "bold" }}
-      >
-        <div
-          className="spinner-border text-primary mb-3"
-          style={{ width: "3rem", height: "3rem" }}
-        />
-
-        <div style={{ whiteSpace: "pre" }}>
-          {displayText}
-        </div>
+      <div className="vh-100 d-flex justify-content-center align-items-center fw-bold">
+        {displayText}
       </div>
     );
   }
 
-  /* ================= NOT LOGIN ================= */
-  if (!admin) {
-    return <Navigate to="/" replace />;
+  // ✅ login แล้ว → ห้ามเข้า login page
+  if (admin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
-  /* ================= LOGIN OK ================= */
   return <>{children}</>;
 }

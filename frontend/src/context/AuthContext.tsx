@@ -1,10 +1,7 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+// src/context/AuthContext.tsx
+import { createContext, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
+import { toast } from "../utils/toast";
 
 type Admin = {
   adminId: string;
@@ -20,28 +17,27 @@ type AuthType = {
   logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthType>(
-  {} as AuthType
-);
+const AuthContext = createContext<AuthType>({} as AuthType);
 
-export const AuthProvider = ({
-  children,
-}: any) => {
-  const [admin, setAdmin] =
-    useState<Admin | null>(null);
+export const AuthProvider = ({ children }: any) => {
+  const [admin, setAdmin] = useState<Admin | null>(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
   const verify = async () => {
     try {
-      const res =
-        await api.get("/admin/verify");
+      const res = await api.get("/auth/verify");
 
       setAdmin(res.data.admin);
-    } catch {
+    } catch (err: any) {
+      // ✅ ถ้า 401 = ยังไม่ login (ปกติ)
+      if (err.response?.status !== 401) {
+        console.error(err);
+      }
+
       setAdmin(null);
     }
+
     setLoading(false);
   };
 
@@ -49,21 +45,35 @@ export const AuthProvider = ({
     verify();
   }, []);
 
-  const login = async (
-  username: string,
-  password: string
-) => {
+  const login = async (username: string, password: string) => {
+    const res = await api.post("/auth/login", {
+      username,
+      password,
+    });
 
-  await api.post("/admin/login", {
-    username,
-    password,
-  });
+    toast(
+      "success",
+      "เข้าสู่ระบบสำเร็จ",
+      `ยินดีต้อนรับ ${res.data.admin?.name || username}`,
+    );
 
-  await verify();
-};
+    await verify();
+  };
 
   const logout = async () => {
-    await api.post("/admin/logout");
+    try {
+      await api.post("/auth/logout");
+
+      toast("success", "ออกจากระบบสำเร็จ");
+    } catch {
+      toast("error", "ออกจากระบบไม่สำเร็จ");
+    }
+
+    console.clear();
+    if (import.meta.env.PROD) {
+      console.clear();
+    }
+
     setAdmin(null);
   };
 
@@ -81,5 +91,4 @@ export const AuthProvider = ({
   );
 };
 
-export const useAuth = () =>
-  useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext);

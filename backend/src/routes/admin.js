@@ -110,7 +110,6 @@ admin.put("/me",
   }
 );
 
-
 /* ================= ADMIN CRUD ================= */
 /* ⭐ dynamic route ต้องอยู่ล่างสุด */
 admin.get("/:adminId",
