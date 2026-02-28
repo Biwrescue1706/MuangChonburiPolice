@@ -44,9 +44,8 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/security" element={<Security />} />
             <Route path="/admin/create" element={<CreateAdmin />} />
-          </Route>
             <Route path="/person/create" element={<PersonPage />} />
-
+          </Route>
 
           <Route path="*" element={<NotFound />} />
         </Routes>
