@@ -153,7 +153,7 @@ export default function PersonPage() {
               <tr>
                 <th>ชื่อ-สกุล</th>
                 <th>เลขบัตรประชาชน</th>
-                <th width="200">จัดการ</th>
+                <th style={{ width: "200px" }}>จัดการ</th>
               </tr>
             </thead>
             <tbody>
