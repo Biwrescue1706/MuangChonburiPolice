@@ -18,56 +18,71 @@ export default function NotFound() {
 
   return (
     <div
-      className="d-flex flex-column justify-content-center align-items-center vh-100 text-center px-3 position-relative overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(135deg,#2b0000 0%,#5c0000 40%,#8b0000 70%,#3a0000 100%)",
-        color: "white",
-      }}
+      className="notfound-container d-flex flex-column justify-content-center align-items-center text-center px-3"
     >
-      {/* Background Glow */}
+      {/* 🔴 Background Glow */}
       <div className="bg-glow"></div>
 
-      {/* LOGO */}
-      <img
-        src="/muangchonburi.webp"
-        alt="logo"
-        width="130"
-        className="img-fluid logo-float"
-      />
+      {/* ===== CONTENT ===== */}
+      <div className="content-wrapper">
 
-      {/* ===== TITLE ===== */}
-      <div className="title-group">
-        <h1 className="title-main">
-          งานพิมพ์มือตรวจประวัติอาชญากรรม
-        </h1>
+        {/* LOGO */}
+        <img
+          src="/muangchonburi.webp"
+          alt="logo"
+          width="130"
+          className="img-fluid logo-float"
+        />
 
-        <h5 className="title-secondary">
-          งานนโยบายและแผน
-        </h5>
+        {/* TITLE */}
+        <div className="title-group">
+          <h1 className="title-main">
+            งานพิมพ์มือตรวจประวัติอาชญากรรม
+          </h1>
 
-        <h6 className="title-tertiary">
-          สภ.เมืองชลบุรี
-        </h6>
+          <h5 className="title-secondary">
+            งานนโยบายและแผน
+          </h5>
+
+          <h6 className="title-tertiary">
+            สภ.เมืองชลบุรี
+          </h6>
+        </div>
+
+        {/* 404 */}
+        <h1 className="error-code">404</h1>
+
+        {/* TEXT */}
+        <p className="description">
+          ไม่พบหน้าที่คุณกำลังค้นหา
+        </p>
+
+        {/* BUTTON */}
+        <Link to="/" className="home-btn">
+          กลับไปหน้าแรก
+        </Link>
+
       </div>
 
-      {/* 404 */}
-      <h1 className="error-code">404</h1>
-
-      {/* TEXT */}
-      <p className="description">
-        ไม่พบหน้าที่คุณกำลังค้นหา
-      </p>
-
-      {/* BUTTON */}
-      <Link to="/" className="home-btn">
-        กลับไปหน้าแรก
-      </Link>
-
-      {/* STYLE */}
+      {/* ===== STYLE ===== */}
       <style>
         {`
-        /* RED GLOW BACKGROUND */
+        .notfound-container{
+          height:100vh;
+          background:
+            linear-gradient(
+              135deg,
+              #2b0000 0%,
+              #5c0000 40%,
+              #8b0000 70%,
+              #3a0000 100%
+            );
+          color:white;
+          position:relative;
+          overflow:hidden;
+        }
+
+        /* ⭐ FIX ปุ่มกดไม่ได้ */
         .bg-glow{
           position:absolute;
           width:650px;
@@ -77,6 +92,7 @@ export default function NotFound() {
             transparent 70%);
           filter:blur(130px);
           animation:pulse 6s infinite alternate;
+          pointer-events:none;
         }
 
         @keyframes pulse{
@@ -84,9 +100,14 @@ export default function NotFound() {
           to{transform:scale(1.2);}
         }
 
-        /* FLOAT LOGO */
+        .content-wrapper{
+          position:relative;
+          z-index:2;
+        }
+
+        /* LOGO FLOAT */
         .logo-float{
-          margin-bottom:10px;
+          margin-bottom:12px;
           filter:drop-shadow(0 6px 14px rgba(0,0,0,.7));
           animation:float 3.5s ease-in-out infinite;
         }
@@ -96,7 +117,7 @@ export default function NotFound() {
           50%{transform:translateY(-10px);}
         }
 
-        /* TITLE GROUP */
+        /* TITLES */
         .title-group{
           animation:fadeDown .8s;
           margin-bottom:10px;
@@ -163,7 +184,7 @@ export default function NotFound() {
         }
 
         .description{
-          margin-top:10px;
+          margin-top:12px;
           font-size:1.2rem;
           color:#ffeaea;
           opacity:.9;
@@ -171,7 +192,7 @@ export default function NotFound() {
 
         /* BUTTON */
         .home-btn{
-          margin-top:22px;
+          margin-top:24px;
           background:${GOLD};
           color:#3a0000;
           font-weight:700;
@@ -180,6 +201,7 @@ export default function NotFound() {
           text-decoration:none;
           box-shadow:0 6px 18px rgba(0,0,0,.6);
           transition:.25s;
+          display:inline-block;
         }
 
         .home-btn:hover{
