@@ -6,18 +6,19 @@ import api from "../api/axios";
 export default function CreatePerson() {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
+  const currentYearTH = currentYear + 543;
 
-  const years = Array.from({ length: 70 }, (_, i) => currentYear - i);
+  const years = Array.from({ length: 70 }, (_, i) => currentYearTH - i);
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
+
   const months = [
     "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
     "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
   ];
 
   const convertMoneyToText = (amount: number) => {
-    const th = ["ศูนย์","หนึ่ง","สอง","สาม","สี่","ห้า","หก","เจ็ด","แปด","เก้า"];
+    if (!amount) return "";
     if (amount === 100) return "หนึ่งร้อยบาทถ้วน";
-    if (amount < 10) return th[amount] + "บาทถ้วน";
     return amount + "บาทถ้วน";
   };
 
@@ -28,6 +29,7 @@ export default function CreatePerson() {
     bodyType: "สันทัด",
     skinColor: "ดำแดง",
     behavior: "ปกติ",
+    spouse: "-",
     money: 100,
     moneyText: "หนึ่งร้อยบาทถ้วน",
   });
@@ -50,13 +52,24 @@ export default function CreatePerson() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
+    if (!form.firstName || !form.lastName) {
+      Swal.fire("กรอกชื่อ-นามสกุลให้ครบ");
+      return;
+    }
+
     try {
       await api.post("/person", {
         ...form,
         fullName: `${form.prefix}${form.firstName} ${form.lastName}`,
-        birthDay: Number(form.birthDay),
-        birthMonth: Number(form.birthMonth),
-        birthYear: Number(form.birthYear),
+        birthDay: form.birthDay ? Number(form.birthDay) : null,
+        birthMonth: form.birthMonth ? Number(form.birthMonth) : null,
+        birthYear: form.birthYear
+          ? Number(form.birthYear) - 543
+          : null,
+        birthDate: form.birthDate || null,
+        weight: form.weight ? Number(form.weight) : null,
+        height: form.height ? Number(form.height) : null,
+        money: form.money ? Number(form.money) : 100,
       });
 
       await Swal.fire({
@@ -81,7 +94,7 @@ export default function CreatePerson() {
 
       <form onSubmit={handleSubmit}>
 
-        {/* 👤 ข้อมูลพื้นฐาน */}
+        {/* ข้อมูลพื้นฐาน */}
         <div className="card mb-4 shadow-sm">
           <div className="card-header bg-primary text-white">ข้อมูลพื้นฐาน</div>
           <div className="card-body row g-3">
@@ -113,10 +126,15 @@ export default function CreatePerson() {
           </div>
         </div>
 
-        {/* 🎂 วันเกิด */}
+        {/* วันเกิด */}
         <div className="card mb-4 shadow-sm">
           <div className="card-header bg-info text-white">วันเกิด</div>
           <div className="card-body row g-3">
+
+            <div className="col-md-4">
+              <label>วันเกิดเต็ม</label>
+              <input type="date" name="birthDate" className="form-control" onChange={handleChange}/>
+            </div>
 
             <div className="col-md-2">
               <select name="birthDay" className="form-control" onChange={handleChange}>
@@ -134,7 +152,7 @@ export default function CreatePerson() {
 
             <div className="col-md-3">
               <select name="birthYear" className="form-control" onChange={handleChange}>
-                <option value="">ปี</option>
+                <option value="">ปี (พ.ศ.)</option>
                 {years.map(y => <option key={y}>{y}</option>)}
               </select>
             </div>
@@ -142,50 +160,68 @@ export default function CreatePerson() {
           </div>
         </div>
 
-        {/* 🌍 ลักษณะร่างกาย */}
+        {/* ครอบครัว */}
         <div className="card mb-4 shadow-sm">
-          <div className="card-header bg-secondary text-white">ลักษณะร่างกาย</div>
+          <div className="card-header bg-secondary text-white">ข้อมูลครอบครัว</div>
           <div className="card-body row g-3">
 
-            <div className="col-md-3">
-              <label>สัญชาติ</label>
-              <input name="nationality" className="form-control" value={form.nationality} onChange={handleChange}/>
+            <div className="col-md-4">
+              <label>ชื่อบิดา</label>
+              <input name="father" className="form-control" onChange={handleChange}/>
             </div>
 
-            <div className="col-md-3">
-              <label>เชื้อชาติ</label>
-              <input name="ethnicity" className="form-control" value={form.ethnicity} onChange={handleChange}/>
+            <div className="col-md-4">
+              <label>ชื่อมารดา</label>
+              <input name="mother" className="form-control" onChange={handleChange}/>
             </div>
 
-            <div className="col-md-2">
-              <label>น้ำหนัก</label>
-              <input name="weight" className="form-control" onChange={handleChange}/>
-            </div>
-
-            <div className="col-md-2">
-              <label>ส่วนสูง</label>
-              <input name="height" className="form-control" onChange={handleChange}/>
-            </div>
-
-            <div className="col-md-3">
-              <label>รูปร่าง</label>
-              <input name="bodyType" className="form-control" value={form.bodyType} onChange={handleChange}/>
-            </div>
-
-            <div className="col-md-3">
-              <label>สีผิว</label>
-              <input name="skinColor" className="form-control" value={form.skinColor} onChange={handleChange}/>
-            </div>
-
-            <div className="col-md-6">
-              <label>ตำหนิ</label>
-              <input name="distinguishingMarks" className="form-control" onChange={handleChange}/>
+            <div className="col-md-4">
+              <label>ชื่อคู่สมรส</label>
+              <input name="spouse" className="form-control" value={form.spouse} onChange={handleChange}/>
             </div>
 
           </div>
         </div>
 
-        {/* 🧾 ใบเสร็จ (ครบทุก field) */}
+        {/* อาชีพ / ที่อยู่ */}
+        <div className="card mb-4 shadow-sm">
+          <div className="card-header bg-dark text-white">ข้อมูลเพิ่มเติม</div>
+          <div className="card-body row g-3">
+
+            <div className="col-md-6">
+              <label>อาชีพ</label>
+              <input name="occupation" className="form-control" onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-6">
+              <label>สถานที่ทำงาน</label>
+              <input name="workplaceAddress" className="form-control" onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-12">
+              <label>ที่อยู่ปัจจุบัน</label>
+              <input name="address" className="form-control" onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-6">
+              <label>ตรวจสอบประวัติเพื่อ</label>
+              <input name="purpose" className="form-control" onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-6">
+              <label>ของส่วนราชการ/หน่วยงาน</label>
+              <input name="requestingAgency" className="form-control" onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-12">
+              <label>ลักษณะและนิสัยอันเป็นที่น่าสังเกต</label>
+              <input name="behavior" className="form-control" value={form.behavior} onChange={handleChange}/>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ใบเสร็จ */}
         <div className="card mb-4 shadow-sm">
           <div className="card-header bg-success text-white">ข้อมูลใบเสร็จ</div>
           <div className="card-body row g-3">
