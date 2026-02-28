@@ -6,9 +6,9 @@ import api from "../api/axios";
 export default function CreatePerson() {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
+
   const years = Array.from({ length: 70 }, (_, i) => currentYear - i);
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
-
   const months = [
     "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
     "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
@@ -23,12 +23,6 @@ export default function CreatePerson() {
 
   const [form, setForm] = useState<any>({
     prefix: "นาย",
-    firstName: "",
-    lastName: "",
-    citizenId: "",
-    birthDay: "",
-    birthMonth: "",
-    birthYear: "",
     nationality: "ไทย",
     ethnicity: "ไทย",
     bodyType: "สันทัด",
@@ -68,7 +62,6 @@ export default function CreatePerson() {
       await Swal.fire({
         icon: "success",
         title: "บันทึกสำเร็จ",
-        confirmButtonColor: "#3085d6",
       });
 
       navigate("/person");
@@ -76,8 +69,8 @@ export default function CreatePerson() {
     } catch (err: any) {
       Swal.fire({
         icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: err.response?.data?.error || "ไม่สามารถบันทึกข้อมูลได้",
+        title: "ผิดพลาด",
+        text: err.response?.data?.error || "ไม่สามารถบันทึกได้",
       });
     }
   };
@@ -88,9 +81,9 @@ export default function CreatePerson() {
 
       <form onSubmit={handleSubmit}>
 
-        {/* 👤 ข้อมูลส่วนตัว */}
+        {/* 👤 ข้อมูลพื้นฐาน */}
         <div className="card mb-4 shadow-sm">
-          <div className="card-header bg-primary text-white">ข้อมูลส่วนตัว</div>
+          <div className="card-header bg-primary text-white">ข้อมูลพื้นฐาน</div>
           <div className="card-body row g-3">
 
             <div className="col-md-2">
@@ -149,30 +142,77 @@ export default function CreatePerson() {
           </div>
         </div>
 
-        {/* 🧾 ใบเสร็จ */}
+        {/* 🌍 ลักษณะร่างกาย */}
+        <div className="card mb-4 shadow-sm">
+          <div className="card-header bg-secondary text-white">ลักษณะร่างกาย</div>
+          <div className="card-body row g-3">
+
+            <div className="col-md-3">
+              <label>สัญชาติ</label>
+              <input name="nationality" className="form-control" value={form.nationality} onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-3">
+              <label>เชื้อชาติ</label>
+              <input name="ethnicity" className="form-control" value={form.ethnicity} onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-2">
+              <label>น้ำหนัก</label>
+              <input name="weight" className="form-control" onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-2">
+              <label>ส่วนสูง</label>
+              <input name="height" className="form-control" onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-3">
+              <label>รูปร่าง</label>
+              <input name="bodyType" className="form-control" value={form.bodyType} onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-3">
+              <label>สีผิว</label>
+              <input name="skinColor" className="form-control" value={form.skinColor} onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-6">
+              <label>ตำหนิ</label>
+              <input name="distinguishingMarks" className="form-control" onChange={handleChange}/>
+            </div>
+
+          </div>
+        </div>
+
+        {/* 🧾 ใบเสร็จ (ครบทุก field) */}
         <div className="card mb-4 shadow-sm">
           <div className="card-header bg-success text-white">ข้อมูลใบเสร็จ</div>
           <div className="card-body row g-3">
 
             <div className="col-md-3">
+              <label>เล่มที่ใบเสร็จ</label>
+              <input name="receiptBookNo" className="form-control" onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-3">
+              <label>เลขที่ใบเสร็จ</label>
+              <input name="receiptNo" className="form-control" onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-3">
+              <label>ลงวันที่</label>
+              <input type="date" name="receiptDate" className="form-control" onChange={handleChange}/>
+            </div>
+
+            <div className="col-md-3">
               <label>จำนวนเงิน</label>
-              <input
-                name="money"
-                type="number"
-                className="form-control"
-                value={form.money}
-                onChange={handleChange}
-              />
+              <input type="number" name="money" className="form-control" value={form.money} onChange={handleChange}/>
             </div>
 
             <div className="col-md-6">
               <label>ตัวอักษร</label>
-              <input
-                name="moneyText"
-                className="form-control"
-                value={form.moneyText}
-                readOnly
-              />
+              <input name="moneyText" className="form-control" value={form.moneyText} readOnly/>
             </div>
 
           </div>
