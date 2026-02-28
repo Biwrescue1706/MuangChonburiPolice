@@ -1,99 +1,191 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function NotFound() {
-  const SCB_GOLD = "#FFC800";
+  const GOLD = "#FFC800";
+  const navigate = useNavigate();
+
+  // กด Enter กลับหน้าแรก
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter") navigate("/");
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [navigate]);
 
   return (
     <div
-      className="d-flex flex-column justify-content-center align-items-center vh-100 text-center"
+      className="d-flex flex-column justify-content-center align-items-center vh-100 text-center px-3 position-relative overflow-hidden"
       style={{
         background:
-          "linear-gradient(135deg, #2D006B 0%, #4B2E83 45%, #200046 100%)",
+          "linear-gradient(135deg,#2b0000 0%,#5c0000 40%,#8b0000 70%,#3a0000 100%)",
         color: "white",
       }}
     >
+      {/* Background Glow */}
+      <div className="bg-glow"></div>
+
+      {/* LOGO */}
       <img
         src="/muangchonburi.webp"
         alt="logo"
-        width="120"
-        height="120"
-        className="img-fluid"
-        style={{ filter: "drop-shadow(0 3px 6px rgba(0,0,0,.45))" }}
+        width="130"
+        className="img-fluid logo-float"
       />
-      {/* LOGO & BRAND */}
-      <div
-        className="d-flex align-items-center justify-content-center gap-3 mb-3 mt-3"
-        style={{ animation: "fadeInDown .7s" }}
-      >
-        <h1
-          className="fw-bold mb-0"
-          style={{
-            color: SCB_GOLD,
-            textShadow: "0 2px 4px rgba(0,0,0,.35)",
-          }}
-        >
-          SmartDorm
+
+      {/* ===== TITLE ===== */}
+      <div className="title-group">
+        <h1 className="title-main">
+          งานพิมพ์มือตรวจประวัติอาชญากรรม
         </h1>
+
+        <h5 className="title-secondary">
+          งานนโยบายและแผน
+        </h5>
+
+        <h6 className="title-tertiary">
+          สภ.เมืองชลบุรี
+        </h6>
       </div>
 
       {/* 404 */}
-      <h1
-        className="fw-bold"
-        style={{
-          fontSize: "7rem",
-          color: SCB_GOLD,
-          textShadow: "0 6px 14px rgba(0,0,0,.55)",
-          animation: "zoomIn .6s",
-        }}
-      >
-        404
-      </h1>
+      <h1 className="error-code">404</h1>
 
-      {/* Description */}
-      <p
-        className="fs-4 mt-3 fw-semibold"
-        style={{
-          color: "#F5E9FF",
-          opacity: 0.9,
-          animation: "fadeInUp .8s",
-        }}
-      >
+      {/* TEXT */}
+      <p className="description">
         ไม่พบหน้าที่คุณกำลังค้นหา
       </p>
 
-      {/* Back Button */}
-      <a
-        href="/"
-        className="btn mt-4 fw-semibold px-5 py-2"
-        style={{
-          background: SCB_GOLD,
-          color: "#2D1A47",
-          borderRadius: "12px",
-          fontSize: "1.15rem",
-          boxShadow: "0 4px 12px rgba(0,0,0,.45)",
-          transition: ".2s",
-        }}
-        onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.06)")}
-        onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
-      >
+      {/* BUTTON */}
+      <Link to="/" className="home-btn">
         กลับไปหน้าแรก
-      </a>
+      </Link>
 
-      {/* Keyframes */}
+      {/* STYLE */}
       <style>
         {`
-          @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* RED GLOW BACKGROUND */
+        .bg-glow{
+          position:absolute;
+          width:650px;
+          height:650px;
+          background:radial-gradient(circle,
+            rgba(255,0,0,.25),
+            transparent 70%);
+          filter:blur(130px);
+          animation:pulse 6s infinite alternate;
+        }
+
+        @keyframes pulse{
+          from{transform:scale(.9);}
+          to{transform:scale(1.2);}
+        }
+
+        /* FLOAT LOGO */
+        .logo-float{
+          margin-bottom:10px;
+          filter:drop-shadow(0 6px 14px rgba(0,0,0,.7));
+          animation:float 3.5s ease-in-out infinite;
+        }
+
+        @keyframes float{
+          0%,100%{transform:translateY(0);}
+          50%{transform:translateY(-10px);}
+        }
+
+        /* TITLE GROUP */
+        .title-group{
+          animation:fadeDown .8s;
+          margin-bottom:10px;
+        }
+
+        .title-main{
+          font-weight:800;
+          color:${GOLD};
+          text-shadow:
+            0 3px 6px rgba(0,0,0,.6),
+            0 0 12px rgba(255,200,0,.4);
+        }
+
+        .title-secondary{
+          font-weight:700;
+          color:${GOLD};
+          text-shadow:
+            0 2px 5px rgba(0,0,0,.6),
+            0 0 10px rgba(255,200,0,.3);
+          margin-bottom:2px;
+        }
+
+        .title-tertiary{
+          font-weight:600;
+          color:#FFD95A;
+          letter-spacing:1px;
+          text-shadow:
+            0 2px 5px rgba(0,0,0,.6),
+            0 0 8px rgba(255,200,0,.25);
+        }
+
+        @keyframes fadeDown{
+          from{
+            opacity:0;
+            transform:translateY(-25px);
           }
-          @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+          to{
+            opacity:1;
+            transform:translateY(0);
           }
-          @keyframes zoomIn {
-            from { transform: scale(0.6); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* 404 */
+        .error-code{
+          font-size:clamp(4.5rem,13vw,8rem);
+          font-weight:900;
+          color:${GOLD};
+          margin-top:10px;
+          text-shadow:
+            0 0 18px rgba(255,200,0,.7),
+            0 10px 25px rgba(0,0,0,.8);
+          animation:zoomIn .6s;
+        }
+
+        @keyframes zoomIn{
+          from{
+            transform:scale(.6);
+            opacity:0;
           }
+          to{
+            transform:scale(1);
+            opacity:1;
+          }
+        }
+
+        .description{
+          margin-top:10px;
+          font-size:1.2rem;
+          color:#ffeaea;
+          opacity:.9;
+        }
+
+        /* BUTTON */
+        .home-btn{
+          margin-top:22px;
+          background:${GOLD};
+          color:#3a0000;
+          font-weight:700;
+          padding:.7rem 2.6rem;
+          border-radius:14px;
+          text-decoration:none;
+          box-shadow:0 6px 18px rgba(0,0,0,.6);
+          transition:.25s;
+        }
+
+        .home-btn:hover{
+          transform:scale(1.07);
+          box-shadow:0 10px 28px rgba(0,0,0,.8);
+        }
         `}
       </style>
     </div>
