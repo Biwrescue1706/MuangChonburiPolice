@@ -1,39 +1,74 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE "Admin" (
+    "adminId" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "position" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
 
-  - You are about to drop the `VerificationFile` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `VerificationRequest` table. If the table is not empty, all the data it contains will be lost.
+    CONSTRAINT "Admin_pkey" PRIMARY KEY ("adminId")
+);
 
-*/
--- DropForeignKey
-ALTER TABLE "VerificationFile" DROP CONSTRAINT "VerificationFile_requestId_fkey";
+-- CreateTable
+CREATE TABLE "Organization" (
+    "organizationId" TEXT NOT NULL,
+    "key" TEXT NOT NULL DEFAULT 'MAIN',
+    "organizationName" TEXT NOT NULL,
+    "rank" TEXT,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "fullNameWithRank" TEXT NOT NULL,
+    "position" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
 
--- DropForeignKey
-ALTER TABLE "VerificationRequest" DROP CONSTRAINT "VerificationRequest_organizationId_fkey";
+    CONSTRAINT "Organization_pkey" PRIMARY KEY ("organizationId")
+);
 
--- DropForeignKey
-ALTER TABLE "VerificationRequest" DROP CONSTRAINT "VerificationRequest_personId_fkey";
+-- CreateTable
+CREATE TABLE "Person" (
+    "personId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
+    "prefix" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "citizenId" TEXT NOT NULL,
+    "birthDate" TIMESTAMP(3),
+    "birthDay" TEXT,
+    "birthMonth" TEXT,
+    "birthYear" TEXT,
+    "nationality" TEXT,
+    "ethnicity" TEXT,
+    "weight" INTEGER,
+    "height" INTEGER,
+    "bodyType" TEXT DEFAULT 'สันทัด',
+    "skinColor" TEXT DEFAULT 'ดำแดง',
+    "behavior" TEXT DEFAULT 'ปกติ',
+    "distinguishingMarks" TEXT,
+    "address" TEXT,
+    "occupation" TEXT,
+    "workplaceAddress" TEXT,
+    "father" TEXT,
+    "mother" TEXT,
+    "spouse" TEXT DEFAULT '-',
+    "fingerprintDate" TEXT,
+    "purpose" TEXT,
+    "requestingAgency" TEXT,
+    "receiptBookNo" TEXT,
+    "receiptNo" TEXT,
+    "receiptDate" TEXT,
+    "money" INTEGER NOT NULL DEFAULT 100,
+    "moneyText" TEXT,
+    "status" INTEGER NOT NULL DEFAULT 0,
+    "statusUpdatedAt" TIMESTAMP(3),
 
--- AlterTable
-ALTER TABLE "Person" ADD COLUMN     "behavior" TEXT DEFAULT 'ปกติ',
-ADD COLUMN     "bodyType" TEXT DEFAULT 'สันทัด',
-ADD COLUMN     "fingerprintDate" TIMESTAMP(3),
-ADD COLUMN     "money" INTEGER NOT NULL DEFAULT 100,
-ADD COLUMN     "moneyText" TEXT,
-ADD COLUMN     "purpose" TEXT,
-ADD COLUMN     "receiptBookNo" TEXT,
-ADD COLUMN     "receiptDate" TIMESTAMP(3),
-ADD COLUMN     "receiptNo" TEXT,
-ADD COLUMN     "requestingAgency" TEXT,
-ADD COLUMN     "skinColor" TEXT DEFAULT 'ดำแดง',
-ADD COLUMN     "status" INTEGER NOT NULL DEFAULT 0,
-ADD COLUMN     "statusUpdatedAt" TIMESTAMP(3);
-
--- DropTable
-DROP TABLE "VerificationFile";
-
--- DropTable
-DROP TABLE "VerificationRequest";
+    CONSTRAINT "Person_pkey" PRIMARY KEY ("personId")
+);
 
 -- CreateTable
 CREATE TABLE "PersonFile" (
@@ -98,6 +133,15 @@ CREATE TABLE "Receipt" (
 
     CONSTRAINT "Receipt_pkey" PRIMARY KEY ("receiptId")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Admin_username_key" ON "Admin"("username");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Organization_key_key" ON "Organization"("key");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Person_citizenId_key" ON "Person"("citizenId");
 
 -- AddForeignKey
 ALTER TABLE "PersonFile" ADD CONSTRAINT "PersonFile_personId_fkey" FOREIGN KEY ("personId") REFERENCES "Person"("personId") ON DELETE CASCADE ON UPDATE CASCADE;

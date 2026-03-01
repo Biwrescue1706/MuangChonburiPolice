@@ -10,11 +10,6 @@ export default function CreatePerson() {
   const currentYearTH = currentYear + 543;
 
   const [receiptNumbers, setReceiptNumbers] = useState<number[]>([]);
-  const [receiptBookNo, setReceiptBookNo] = useState<string>("");
-
-  const payload = res.data?.data ?? res.data ?? {};
-  const bookNo = payload.bookNo ?? "";
-  const usedNumbers = payload.usedNumbers ?? [];
 
   const years = Array.from({ length: 75 }, (_, i) => currentYearTH - i);
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -72,7 +67,7 @@ export default function CreatePerson() {
     distinguishingMarks: "-",
     fingerprintDate: new Date().toISOString().split("T")[0],
     status: 0,
-    receiptBookNo: bookNo,
+    receiptBookNo: "",
     receiptNo: "",
   });
 
@@ -89,12 +84,9 @@ export default function CreatePerson() {
       try {
         const res = await api.get("/receipt/latest");
 
-        // รองรับทั้ง {bookNo} และ {data:{bookNo}}
-        const payload = res.data?.data ?? res.data ?? {};
-
-        const bookNo = payload.bookNo ?? "";
-        const usedNumbers: number[] = Array.isArray(payload.usedNumbers)
-          ? payload.usedNumbers
+        const bookNo = res.data?.bookNo ?? "";
+        const usedNumbers: number[] = Array.isArray(res.data?.usedNumbers)
+          ? res.data.usedNumbers
           : [];
 
         if (!bookNo) {
@@ -102,11 +94,13 @@ export default function CreatePerson() {
           return;
         }
 
-        setReceiptBookNo(bookNo);
+        // อัปเดตเข้า form โดยตรง
+        setForm((prev: any) => ({
+          ...prev,
+          receiptBookNo: bookNo,
+        }));
 
-        const allNumbers = Array.from({ length: 50 }, (_, i) => i + 1);
-
-        const availableNumbers = allNumbers.filter(
+        const availableNumbers = allReceiptNumbers.filter(
           (num) => !usedNumbers.includes(num),
         );
 
@@ -120,8 +114,7 @@ export default function CreatePerson() {
   }, []);
 
   useEffect(() => {
-    if (!form.receiptBookNo) {
-      setReceiptNumbers([]);
+    if (!form.receiptBookNo || form.receiptBookNo.length < 3) {
       return;
     }
 
@@ -129,15 +122,16 @@ export default function CreatePerson() {
       try {
         const res = await api.get(`/receipt/used/${form.receiptBookNo}`);
 
-        const usedNumbers: number[] = res.data.usedNumbers || [];
+        const usedNumbers: number[] = Array.isArray(res.data?.usedNumbers)
+          ? res.data.usedNumbers
+          : [];
 
         const availableNumbers = allReceiptNumbers.filter(
           (num) => !usedNumbers.includes(num),
         );
 
         setReceiptNumbers(availableNumbers);
-      } catch (err) {
-        console.error(err);
+      } catch {
         setReceiptNumbers(allReceiptNumbers);
       }
     };
