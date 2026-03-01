@@ -8,10 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL") // ใช้ตอน migrate บน production
 }
 
-//////////////////////////////////////////////////////
 // ADMIN (ผู้ดูแลระบบ)
-//////////////////////////////////////////////////////
-
 model Admin {
   adminId   String    @id @default(uuid()) // รหัสผู้ดูแลระบบ (UUID)
   username  String    @unique // ชื่อเข้าสู่ระบบ ห้ามซ้ำ
@@ -22,10 +19,7 @@ model Admin {
   updatedAt DateTime? // วันที่แก้ไขล่าสุด
 }
 
-//////////////////////////////////////////////////////
 // ORGANIZATION (ข้อมูลหน่วยงานหลักของระบบ)
-//////////////////////////////////////////////////////
-
 model Organization {
   organizationId   String @id @default(uuid()) // รหัสองค์กร
   key              String @unique @default("MAIN") // key หลักขององค์กร
@@ -45,10 +39,7 @@ model Organization {
   receipts     Receipt[] // ใบเสร็จที่อ้างอิงองค์กรนี้
 }
 
-//////////////////////////////////////////////////////
 // PERSON (Master Data เก็บทุกอย่างก่อน)
-//////////////////////////////////////////////////////
-
 model Person {
   personId  String    @id @default(uuid()) // รหัสบุคคล
   createdAt DateTime  @default(now()) // วันที่บันทึกข้อมูล
@@ -60,7 +51,7 @@ model Person {
   fullName  String // ชื่อเต็ม
   citizenId String @unique // เลขบัตรประชาชน ห้ามซ้ำ
 
-  birthDate  DateTime? // วันเกิดเต็ม
+  birthDate  String? // วันเกิดเต็ม
   birthDay   String? // 06
   birthMonth String? // มีนาคม
   birthYear  String? // 2546
@@ -109,10 +100,7 @@ model Person {
   receipts            Receipt[] // Snapshot ใบเสร็จ
 }
 
-//////////////////////////////////////////////////////
 // PERSON FILE (เก็บไฟล์ PDF ของบุคคล)
-//////////////////////////////////////////////////////
-
 model PersonFile {
   fileId   String @id @default(uuid()) // รหัสไฟล์
   personId String // อ้างอิงบุคคล
@@ -127,10 +115,8 @@ model PersonFile {
   createdAt DateTime @default(now()) // วันที่อัปโหลด
 }
 
-//////////////////////////////////////////////////////
-// IDENTITY SNAPSHOT (ดึง nationality/ethnicity จาก Person)
-//////////////////////////////////////////////////////
 
+// IDENTITY SNAPSHOT (ดึง nationality/ethnicity จาก Person)
 model IdentitySnapshot {
   identityId String @id @default(uuid()) // รหัส snapshot
 
@@ -143,10 +129,7 @@ model IdentitySnapshot {
   createdAt DateTime @default(now()) // วันที่บันทึก snapshot
 }
 
-//////////////////////////////////////////////////////
 // APPEARANCE SNAPSHOT (ดึง bodyType/skinColor จาก Person)
-//////////////////////////////////////////////////////
-
 model AppearanceSnapshot {
   appearanceId String @id @default(uuid())
 
@@ -159,10 +142,7 @@ model AppearanceSnapshot {
   createdAt DateTime @default(now())
 }
 
-//////////////////////////////////////////////////////
 // REQUEST INFO (ดึง purpose/requestingAgency จาก Person)
-//////////////////////////////////////////////////////
-
 model RequestInfo {
   requestInfoId String @id @default(uuid())
 
@@ -180,10 +160,7 @@ model RequestInfo {
   createdAt DateTime @default(now())
 }
 
-//////////////////////////////////////////////////////
 // RECEIPT (ดึงข้อมูลใบเสร็จจาก Person)
-//////////////////////////////////////////////////////
-
 model Receipt {
   receiptId String @id @default(uuid())
 

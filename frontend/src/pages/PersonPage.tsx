@@ -169,10 +169,12 @@ export default function CreatePerson() {
         birthDay: form.birthDay ? Number(form.birthDay) : null,
         birthMonth: form.birthMonth ? Number(form.birthMonth) : null,
         birthYear: form.birthYear ? Number(form.birthYear) - 543 : null,
-        birthDate: form.birthDate || null,
+        birthDate: form.birthDate ? new Date(form.birthDate) : null,
         weight: form.weight ? Number(form.weight) : null,
         height: form.height ? Number(form.height) : null,
         money: form.money ? Number(form.money) : 100,
+        receiptDate: form.receiptDate ? new Date(form.receiptDate) : null,
+        fingerprintDate: form.fingerprintDate ? new Date(form.fingerprintDate) : null,
       });
 
       await Swal.fire({
@@ -620,3 +622,4 @@ export default function CreatePerson() {
     </div>
   );
 }
+PersonPage.tsx:166  POST https://hub-muangchonburi.smartdorm-biwboong.shop/api/person 500 (Internal Server Error)

@@ -20,18 +20,16 @@ router.post("/", async (req, res) => {
     const person = await prisma.person.create({
       data: {
         ...data,
-        birthDate: data.birthDate ? new Date(data.birthDate) : null,
-        receiptDate: data.receiptDate ? new Date(data.receiptDate) : null,
-        fingerprintDate: data.fingerprintDate
-          ? new Date(data.fingerprintDate)
-          : null,
+        birthDate: data.birthDate || null,
+        receiptDate: data.receiptDate || null,
+        fingerprintDate: data.fingerprintDate || null,
       },
     });
 
     res.json({ success: true, data: person });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "สร้างข้อมูลไม่สำเร็จ" });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -116,18 +114,17 @@ router.put("/:id", async (req, res) => {
       where: { personId: req.params.id },
       data: {
         ...data,
-        birthDate: data.birthDate ? new Date(data.birthDate) : null,
-        receiptDate: data.receiptDate ? new Date(data.receiptDate) : null,
-        fingerprintDate: data.fingerprintDate
-          ? new Date(data.fingerprintDate)
-          : null,
+        birthDate: data.birthDate || null,
+        receiptDate: data.receiptDate || null,
+        fingerprintDate: data.fingerprintDate || null,
         updatedAt: new Date(),
       },
     });
 
     res.json({ success: true, data: person });
   } catch (err) {
-    res.status(500).json({ error: "แก้ไขข้อมูลไม่สำเร็จ" });
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
