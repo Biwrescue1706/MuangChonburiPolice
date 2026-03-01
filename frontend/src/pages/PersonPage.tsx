@@ -23,6 +23,8 @@ export default function CreatePerson() {
   const heights = Array.from({ length: 121 }, (_, i) => i + 100);
   const weights = Array.from({ length: 151 }, (_, i) => i + 30);
 
+  const allReceiptNumbers = Array.from({ length: 50 }, (_, i) => i + 1);
+
   const months = [
     "มกราคม",
     "กุมภาพันธ์",
@@ -66,7 +68,17 @@ export default function CreatePerson() {
     distinguishingMarks: "-",
     fingerprintDate: new Date().toISOString().split("T")[0],
     status: 0,
+    receiptBookNo: "",
+    receiptNo: "",
   });
+
+    const filteredHeights = heights.filter((h) =>
+    form.height ? String(h).startsWith(form.height) : true,
+  );
+
+  const filteredWeights = weights.filter((w) =>
+    form.weight ? String(w).startsWith(form.weight) : true,
+  );
 
   useEffect(() => {
     const fetchReceipts = async () => {
@@ -90,6 +102,32 @@ export default function CreatePerson() {
 
     fetchReceipts();
   }, []);
+
+  useEffect(() => {
+    if (!form.receiptBookNo) {
+      setReceiptNumbers([]);
+      return;
+    }
+
+    const fetchUsedNumbers = async () => {
+      try {
+        const res = await api.get(`/receipt/used/${form.receiptBookNo}`);
+
+        const usedNumbers: number[] = res.data.usedNumbers || [];
+
+        const availableNumbers = allReceiptNumbers.filter(
+          (num) => !usedNumbers.includes(num),
+        );
+
+        setReceiptNumbers(availableNumbers);
+      } catch (err) {
+        console.error(err);
+        setReceiptNumbers(allReceiptNumbers);
+      }
+    };
+
+    fetchUsedNumbers();
+  }, [form.receiptBookNo]);
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -146,8 +184,8 @@ export default function CreatePerson() {
     <div
       className="p-4 "
       style={{
-        marginTop: 60,
-        marginLeft: window.innerWidth > 1280 ? 200 : 0,
+        marginTop: 65,
+        marginLeft: window.innerWidth > 1280 ? 220 : 0,
       }}
     >
       <h3 className="mb-4">สร้างข้อมูลบุคคล</h3>
@@ -332,29 +370,36 @@ export default function CreatePerson() {
 
             <div className="col-md-4">
               <label>ส่วนสูง</label>
-              <select
+              <input
+                type="number"
+                list="height-list"
                 name="height"
                 className="form-control"
+                value={form.height || ""}
                 onChange={handleChange}
-              >
-                <option value="">ส่วนสูง</option>
-                {heights.map((y) => (
-                  <option key={y}>{y}</option>
+              />
+              <datalist id="height-list">
+                {filteredHeights.map((h) => (
+                  <option key={h} value={h} />
                 ))}
-              </select>
+              </datalist>
             </div>
+
             <div className="col-md-4">
               <label>น้ำหนัก</label>
-              <select
+              <input
+                type="number"
+                list="weight-list"
                 name="weight"
                 className="form-control"
+                value={form.weight || ""}
                 onChange={handleChange}
-              >
-                <option value="">น้ำหนัก</option>
-                {weights.map((y) => (
-                  <option key={y}>{y}</option>
+              />
+              <datalist id="weight-list">
+                {filteredWeights.map((w) => (
+                  <option key={w} value={w} />
                 ))}
-              </select>
+              </datalist>
             </div>
 
             <div className="col-md-4">
@@ -479,9 +524,10 @@ export default function CreatePerson() {
               <input
                 name="receiptBookNo"
                 className="form-control"
+                value={form.receiptBookNo || ""}
                 onChange={handleChange}
+                required
               />
-              ต้องดึงข้อมูลใบเสร็จก่อนหน้ามาใส่
             </div>
 
             <div className="col-md-3">
@@ -494,14 +540,16 @@ export default function CreatePerson() {
                 required
               >
                 <option value="">เลือกเลขที่ใบเสร็จ</option>
-                {receiptNumbers.map((num) => (
-                  <option key={num} value={num}>
-                    {num}
-                  </option>
-                ))}
+                {receiptNumbers.map((num) => {
+                  const formatted = String(num).padStart(2, "0");
+
+                  return (
+                    <option key={formatted} value={formatted}>
+                      {formatted}
+                    </option>
+                  );
+                })}
               </select>
-              มีให้ เลือกเลขที่ใบเสร็จ 1-50 ต้องดึงข้อมูลใบเสร็จก่อนหน้ามาใส่
-              และถ้าเลขไหนมีแล้วจะไม่ขึ้นให้เห็น ของ เล่มที่ใบเสร็จ
             </div>
 
             <div className="col-md-3">

@@ -1,3 +1,4 @@
+// src/routes/person.js
 import express from "express";
 import prisma from "../prisma.js";
 

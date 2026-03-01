@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"      // ใช้ฐานข้อมูล PostgreSQL
-  url       = env("DATABASE_URL")  // ตัวแปรเชื่อมต่อฐานข้อมูลหลัก
-  directUrl = env("DIRECT_URL")    // ใช้ตอน migrate บน production
+  provider  = "postgresql" // ใช้ฐานข้อมูล PostgreSQL
+  url       = env("DATABASE_URL") // ตัวแปรเชื่อมต่อฐานข้อมูลหลัก
+  directUrl = env("DIRECT_URL") // ใช้ตอน migrate บน production
 }
 
 //////////////////////////////////////////////////////
@@ -13,13 +13,13 @@ datasource db {
 //////////////////////////////////////////////////////
 
 model Admin {
-  adminId   String   @id @default(uuid()) // รหัสผู้ดูแลระบบ (UUID)
-  username  String   @unique              // ชื่อเข้าสู่ระบบ ห้ามซ้ำ
-  password  String                        // รหัสผ่านแบบเข้ารหัส
-  name      String                        // ชื่อผู้ดูแล
-  position  String                        // ตำแหน่งงาน
-  createdAt DateTime @default(now())      // วันที่สร้างบัญชี
-  updatedAt DateTime?                     // วันที่แก้ไขล่าสุด
+  adminId   String    @id @default(uuid()) // รหัสผู้ดูแลระบบ (UUID)
+  username  String    @unique // ชื่อเข้าสู่ระบบ ห้ามซ้ำ
+  password  String // รหัสผ่านแบบเข้ารหัส
+  name      String // ชื่อผู้ดูแล
+  position  String // ตำแหน่งงาน
+  createdAt DateTime  @default(now()) // วันที่สร้างบัญชี
+  updatedAt DateTime? // วันที่แก้ไขล่าสุด
 }
 
 //////////////////////////////////////////////////////
@@ -27,22 +27,22 @@ model Admin {
 //////////////////////////////////////////////////////
 
 model Organization {
-  organizationId    String   @id @default(uuid()) // รหัสองค์กร
-  key               String   @unique @default("MAIN") // key หลักขององค์กร
-  organizationName  String   // ชื่อองค์กร
+  organizationId   String @id @default(uuid()) // รหัสองค์กร
+  key              String @unique @default("MAIN") // key หลักขององค์กร
+  organizationName String // ชื่อองค์กร
 
-  rank              String?  // ยศผู้ลงนาม
-  firstName         String   // ชื่อผู้ลงนาม
-  lastName          String   // นามสกุลผู้ลงนาม
-  fullName          String   // ชื่อเต็ม
-  fullNameWithRank  String   // ชื่อพร้อมยศ
-  position          String   // ตำแหน่ง
+  rank             String? // ยศผู้ลงนาม
+  firstName        String // ชื่อผู้ลงนาม
+  lastName         String // นามสกุลผู้ลงนาม
+  fullName         String // ชื่อเต็ม
+  fullNameWithRank String // ชื่อพร้อมยศ
+  position         String // ตำแหน่ง
 
-  createdAt         DateTime @default(now()) // วันที่สร้าง
-  updatedAt         DateTime?               // วันที่แก้ไข
+  createdAt DateTime  @default(now()) // วันที่สร้าง
+  updatedAt DateTime? // วันที่แก้ไข
 
-  requestInfos      RequestInfo[] // รายการคำร้องที่อ้างอิงองค์กรนี้
-  receipts          Receipt[]     // ใบเสร็จที่อ้างอิงองค์กรนี้
+  requestInfos RequestInfo[] // รายการคำร้องที่อ้างอิงองค์กรนี้
+  receipts     Receipt[] // ใบเสร็จที่อ้างอิงองค์กรนี้
 }
 
 //////////////////////////////////////////////////////
@@ -50,62 +50,63 @@ model Organization {
 //////////////////////////////////////////////////////
 
 model Person {
-  personId   String   @id @default(uuid()) // รหัสบุคคล
-  createdAt  DateTime @default(now())      // วันที่บันทึกข้อมูล
-  updatedAt  DateTime?                     // วันที่แก้ไขล่าสุด
+  personId  String    @id @default(uuid()) // รหัสบุคคล
+  createdAt DateTime  @default(now()) // วันที่บันทึกข้อมูล
+  updatedAt DateTime? // วันที่แก้ไขล่าสุด
 
-  prefix     String   // คำนำหน้าชื่อ
-  firstName  String   // ชื่อจริง
-  lastName   String   // นามสกุล
-  fullName   String   // ชื่อเต็ม
-  citizenId  String   @unique // เลขบัตรประชาชน ห้ามซ้ำ
+  prefix    String // คำนำหน้าชื่อ
+  firstName String // ชื่อจริง
+  lastName  String // นามสกุล
+  fullName  String // ชื่อเต็ม
+  citizenId String @unique // เลขบัตรประชาชน ห้ามซ้ำ
 
   birthDate  DateTime? // วันเกิดเต็ม
-  birthDay   Int?      // วันเกิด
-  birthMonth Int?      // เดือนเกิด
-  birthYear  Int?      // ปีเกิด
+  birthDay   String? // 06
+  birthMonth String? // มีนาคม
+  birthYear  String? // 2546
 
-  nationality String?  // สัญชาติ
-  ethnicity   String?  // เชื้อชาติ
+  nationality String? // สัญชาติ
+  ethnicity   String? // เชื้อชาติ
 
-  weight      Int?     // น้ำหนัก
-  height      Int?     // ส่วนสูง
-  bodyType    String?  @default("สันทัด") // รูปร่าง
-  skinColor   String?  @default("ดำแดง") // สีผิว
-  behavior    String?  @default("ปกติ")  // ลักษณะนิสัย
+  weight              Int? // น้ำหนัก
+  height              Int? // ส่วนสูง
+  bodyType            String? @default("สันทัด") // รูปร่าง
+  skinColor           String? @default("ดำแดง") // สีผิว
+  behavior            String? @default("ปกติ") // ลักษณะนิสัย
   distinguishingMarks String? // ตำหนิร่างกาย
 
-  address           String? // ที่อยู่ปัจจุบัน
-  occupation        String? // อาชีพ
-  workplaceAddress  String? // สถานที่ทำงาน
-  father            String? // ชื่อบิดา
-  mother            String? // ชื่อมารดา
-  spouse            String? @default("-") // คู่สมรส
+  address          String? // ที่อยู่ปัจจุบัน
+  occupation       String? // อาชีพ
+  workplaceAddress String? // สถานที่ทำงาน
+  father           String? // ชื่อบิดา
+  mother           String? // ชื่อมารดา
+  spouse           String? @default("-") // คู่สมรส
 
-  fingerprintDate   DateTime? // วันพิมพ์ลายนิ้วมือ
+  fingerprintDate String?
+  // เช่น 20 กุมภาพันธ์ 2569
 
-  purpose           String? // ตรวจสอบประวัติเพื่อ
-  requestingAgency  String? // ของส่วนราชการ/หน่วยงาน
+  purpose          String? // ตรวจสอบประวัติเพื่อ
+  requestingAgency String? // ของส่วนราชการ/หน่วยงาน
 
-  receiptBookNo     String?   // เล่มใบเสร็จ
-  receiptNo         String?   // เลขใบเสร็จ
-  receiptDate       DateTime? // วันที่ใบเสร็จ
-  money             Int       @default(100) // จำนวนเงิน
-  moneyText         String?   // ตัวอักษรจำนวนเงิน
+  receiptBookNo String? // เล่มใบเสร็จ
+  receiptNo     String? // เลขใบเสร็จ
+  receiptDate String? // วันที่ใบเสร็จ
+  money         Int       @default(100) // จำนวนเงิน
+  moneyText     String? // ตัวอักษรจำนวนเงิน
 
-  status            Int       @default(0) 
+  status Int @default(0)
   // 0=รอส่ง ศพฐ
   // 1=ส่ง ศพฐ แล้ว
   // 2=รับจาก ศพฐ แล้ว
   // 3=ส่งคืน
 
-  statusUpdatedAt   DateTime? // วันที่เปลี่ยนสถานะ
+  statusUpdatedAt DateTime? // วันที่เปลี่ยนสถานะ
 
-  files                PersonFile[]         // ไฟล์ PDF ของบุคคล
-  identitySnapshots    IdentitySnapshot[]   // Snapshot เชื้อชาติ/สัญชาติ
-  appearanceSnapshots  AppearanceSnapshot[] // Snapshot รูปร่าง/สีผิว
-  requestInfos         RequestInfo[]        // Snapshot วัตถุประสงค์
-  receipts             Receipt[]            // Snapshot ใบเสร็จ
+  files               PersonFile[] // ไฟล์ PDF ของบุคคล
+  identitySnapshots   IdentitySnapshot[] // Snapshot เชื้อชาติ/สัญชาติ
+  appearanceSnapshots AppearanceSnapshot[] // Snapshot รูปร่าง/สีผิว
+  requestInfos        RequestInfo[] // Snapshot วัตถุประสงค์
+  receipts            Receipt[] // Snapshot ใบเสร็จ
 }
 
 //////////////////////////////////////////////////////
@@ -113,17 +114,17 @@ model Person {
 //////////////////////////////////////////////////////
 
 model PersonFile {
-  fileId     String   @id @default(uuid()) // รหัสไฟล์
-  personId   String   // อ้างอิงบุคคล
-  person     Person   @relation(fields: [personId], references: [personId], onDelete: Cascade)
+  fileId   String @id @default(uuid()) // รหัสไฟล์
+  personId String // อ้างอิงบุคคล
+  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
   // ถ้าลบ Person จะลบไฟล์อัตโนมัติ
 
-  fileName   String   // ชื่อไฟล์
-  filePath   String   // path หรือ URL ไฟล์
-  fileSize   Int?     // ขนาดไฟล์
-  mimeType   String   @default("application/pdf") // ประเภทไฟล์
+  fileName String // ชื่อไฟล์
+  filePath String // path หรือ URL ไฟล์
+  fileSize Int? // ขนาดไฟล์
+  mimeType String @default("application/pdf") // ประเภทไฟล์
 
-  createdAt  DateTime @default(now()) // วันที่อัปโหลด
+  createdAt DateTime @default(now()) // วันที่อัปโหลด
 }
 
 //////////////////////////////////////////////////////
@@ -131,10 +132,10 @@ model PersonFile {
 //////////////////////////////////////////////////////
 
 model IdentitySnapshot {
-  identityId String   @id @default(uuid()) // รหัส snapshot
+  identityId String @id @default(uuid()) // รหัส snapshot
 
-  personId   String
-  person     Person   @relation(fields: [personId], references: [personId], onDelete: Cascade)
+  personId String
+  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
 
   nationality String? // สัญชาติ ณ วันยื่น
   ethnicity   String? // เชื้อชาติ ณ วันยื่น
@@ -194,11 +195,11 @@ model Receipt {
 
   organizationName String? // snapshot ชื่อองค์กร
 
-  receiptBookNo String?   // เล่มใบเสร็จ ณ วันยื่น
-  receiptNo     String?   // เลขใบเสร็จ ณ วันยื่น
+  receiptBookNo String? // เล่มใบเสร็จ ณ วันยื่น
+  receiptNo     String? // เลขใบเสร็จ ณ วันยื่น
   receiptDate   DateTime? // วันที่ใบเสร็จ ณ วันยื่น
-  money         Int       // จำนวนเงิน ณ วันยื่น
-  moneyText     String?   // ตัวอักษร ณ วันยื่น
+  money         Int // จำนวนเงิน ณ วันยื่น
+  moneyText     String? // ตัวอักษร ณ วันยื่น
 
   createdAt DateTime @default(now())
 }
