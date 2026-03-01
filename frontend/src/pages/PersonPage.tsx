@@ -10,7 +10,11 @@ export default function CreatePerson() {
   const currentYearTH = currentYear + 543;
 
   const [receiptNumbers, setReceiptNumbers] = useState<number[]>([]);
-  const [, setReceiptBookNo] = useState<string>("");
+  const [receiptBookNo, setReceiptBookNo] = useState<string>("");
+
+  const payload = res.data?.data ?? res.data ?? {};
+  const bookNo = payload.bookNo ?? "";
+  const usedNumbers = payload.usedNumbers ?? [];
 
   const years = Array.from({ length: 75 }, (_, i) => currentYearTH - i);
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -68,11 +72,11 @@ export default function CreatePerson() {
     distinguishingMarks: "-",
     fingerprintDate: new Date().toISOString().split("T")[0],
     status: 0,
-    receiptBookNo: "",
+    receiptBookNo: bookNo,
     receiptNo: "",
   });
 
-    const filteredHeights = heights.filter((h) =>
+  const filteredHeights = heights.filter((h) =>
     form.height ? String(h).startsWith(form.height) : true,
   );
 
@@ -84,7 +88,19 @@ export default function CreatePerson() {
     const fetchReceipts = async () => {
       try {
         const res = await api.get("/receipt/latest");
-        const { bookNo, usedNumbers } = res.data;
+
+        // รองรับทั้ง {bookNo} และ {data:{bookNo}}
+        const payload = res.data?.data ?? res.data ?? {};
+
+        const bookNo = payload.bookNo ?? "";
+        const usedNumbers: number[] = Array.isArray(payload.usedNumbers)
+          ? payload.usedNumbers
+          : [];
+
+        if (!bookNo) {
+          setReceiptNumbers([]);
+          return;
+        }
 
         setReceiptBookNo(bookNo);
 
@@ -95,8 +111,8 @@ export default function CreatePerson() {
         );
 
         setReceiptNumbers(availableNumbers);
-      } catch (err) {
-        console.error(err);
+      } catch {
+        setReceiptNumbers([]);
       }
     };
 

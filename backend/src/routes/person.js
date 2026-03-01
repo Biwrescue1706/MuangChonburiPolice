@@ -4,10 +4,7 @@ import prisma from "../prisma.js";
 
 const router = express.Router();
 
-//////////////////////////////////////////////////////
 // CREATE PERSON
-//////////////////////////////////////////////////////
-
 router.post("/", async (req, res) => {
   try {
     const data = req.body;
@@ -38,10 +35,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-//////////////////////////////////////////////////////
 // GET ALL + SEARCH + FILTER
-//////////////////////////////////////////////////////
-
 router.get("/", async (req, res) => {
   try {
     const { search, status, page = 1, limit = 20 } = req.query;
@@ -89,10 +83,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-//////////////////////////////////////////////////////
 // GET PERSON BY ID
-//////////////////////////////////////////////////////
-
 router.get("/:id", async (req, res) => {
   try {
     const person = await prisma.person.findUnique({
@@ -116,10 +107,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-//////////////////////////////////////////////////////
 // UPDATE PERSON
-//////////////////////////////////////////////////////
-
 router.put("/:id", async (req, res) => {
   try {
     const data = req.body;
@@ -143,10 +131,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-//////////////////////////////////////////////////////
 // DELETE PERSON
-//////////////////////////////////////////////////////
-
 router.delete("/:id", async (req, res) => {
   try {
     await prisma.person.delete({
@@ -159,10 +144,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-//////////////////////////////////////////////////////
 // UPDATE STATUS (Single) + Snapshot Auto
-//////////////////////////////////////////////////////
-
 router.patch("/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
@@ -233,10 +215,7 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
-//////////////////////////////////////////////////////
 // UPDATE STATUS (Bulk)
-//////////////////////////////////////////////////////
-
 router.patch("/bulk/status", async (req, res) => {
   try {
     const { personIds, status } = req.body;
