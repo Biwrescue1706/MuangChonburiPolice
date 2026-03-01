@@ -73,7 +73,7 @@ export default function Nav() {
             </div>
 
             <small className="text-white">
-              ( {shortText(adminPosition, 10)} )
+              ( {shortText(adminPosition, 8)} )
             </small>
           </div>
 
