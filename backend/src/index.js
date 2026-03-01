@@ -11,7 +11,7 @@ const app = express();
 // MIDDLEWARE
 app.use(express.json());
 app.use(cookieParser());
-app.set("trust proxy", 1);
+app.set("trust proxy", true);
 
 // cors allow
 const allowedOrigins = [
