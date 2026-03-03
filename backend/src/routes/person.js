@@ -9,6 +9,11 @@ function toStringOrNull(value) {
   if (value === undefined || value === null || value === "") return null;
   return String(value);
 }
+function toDateOrNull(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+}
 
 function formatBirthFields(data) {
   return {
@@ -335,7 +340,7 @@ router.patch("/:id/status", async (req, res) => {
           personId: person.personId,
           receiptBookNo: person.receiptBookNo,
           receiptNo: person.receiptNo,
-          receiptDate: person.receiptDate,
+          receiptDate: toDateOrNull(person.receiptDate),
           money: person.money,
           moneyText: person.moneyText,
         },
