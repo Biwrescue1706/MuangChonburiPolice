@@ -622,4 +622,3 @@ export default function CreatePerson() {
     </div>
   );
 }
-PersonPage.tsx:166  POST https://hub-muangchonburi.smartdorm-biwboong.shop/api/person 500 (Internal Server Error)

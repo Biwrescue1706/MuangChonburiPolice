@@ -51,7 +51,7 @@ model Person {
   fullName  String // ชื่อเต็ม
   citizenId String @unique // เลขบัตรประชาชน ห้ามซ้ำ
 
-  birthDate  String? // วันเกิดเต็ม
+  birthDate  String? // วันเกิดเต็ม 06 มี.ค. 2546
   birthDay   String? // 06
   birthMonth String? // มีนาคม
   birthYear  String? // 2546
@@ -115,7 +115,6 @@ model PersonFile {
   createdAt DateTime @default(now()) // วันที่อัปโหลด
 }
 
-
 // IDENTITY SNAPSHOT (ดึง nationality/ethnicity จาก Person)
 model IdentitySnapshot {
   identityId String @id @default(uuid()) // รหัส snapshot
@@ -171,6 +170,10 @@ model Receipt {
   organization   Organization? @relation(fields: [organizationId], references: [organizationId])
 
   organizationName String? // snapshot ชื่อองค์กร
+  fullName         String? // ชื่อเต็ม จาก organization
+  rank             String? // ยศผู้ลงนาม จาก organization
+  position         String? // ตำแหน่ง จาก organization
+
 
   receiptBookNo String? // เล่มใบเสร็จ ณ วันยื่น
   receiptNo     String? // เลขใบเสร็จ ณ วันยื่น

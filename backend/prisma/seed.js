@@ -8,24 +8,30 @@ async function main() {
     console.log("🌱 Start Seed");
 
     // ADMIN
-    const passwordHash =
-        await bcrypt.hash("123456", 10);
+const defaultPassword = "123456";
+const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
     const admins = [
         {
-            username: "admin1",
+            username: "Admin",
             name: "นายภูวณัฐ พาหะละ",
-            position: "แอดมินระบบ และ งานนโยบายและแผนงาน 3"
+            position: "งาน นผ.3"
+        },
+        {
+            username : "admin1",
+            name : "บิวบอง",
+            position : "งาน นผ.3",
+
         },
                 {
             username: "admin2",
             name: "จ.ส.ต.ชาญณรงค์เดช กันตพัชรโรจน์",
-            position: "งานนโยบายและแผนงาน 1"
+            position: "งาน นผ. 1"
         },
         {
             username: "admin3",
             name: "ส.ต.ต.ธาดา เสาวโค",
-            position: "งานนโยบายและแผนงาน 2"
+            position: "งาน นผ. 2"
         },
     ];
 
@@ -44,14 +50,17 @@ async function main() {
 
     }
 
-    console.log("✅ สร้าง Admin Users สำเร็จ : ", admins.map(a => `${a.username} - ${a.name}`));
-
+console.log(
+  "✅ สร้าง Admin Users สำเร็จ : \n",
+  admins.map(a =>
+    ` - userName :${a.username}\n - ชื่อ :  ${a.name}\n - ตำแหน่ง :  ${a.position}\n`
+  ).join("\n")
+);
     // ORGANIZATION PROFILE
-
     const firstName = "ธาดา";
     const lastName = "เสาวโค";
     const rank = "ส.ต.ต.";
-    const position = "ผบ.หมู่ (ผช.พงส.) ฯ";
+    const position = "ผบ.หมู่ (ผช.พงส.) สภ.เมืองชลบุรี";
     const organizationName = "สถานีตำรวจภูธรเมืองชลบุรี";
 
     const fullName =
@@ -85,7 +94,12 @@ async function main() {
         }
     });
 
-    console.log("✅ Organization Profile Seeded");
+console.log(
+  "✅ สร้างโปรไฟล์องค์กรสำเร็จ :\n",
+  "\nองค์กร:", organizationName,
+  "\nชื่อ:", fullNameWithRank,
+  "\nตำแหน่ง:", position
+);
 
 }
 
