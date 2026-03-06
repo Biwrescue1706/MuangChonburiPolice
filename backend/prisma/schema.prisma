@@ -93,6 +93,14 @@ model Person {
 
   statusUpdatedAt DateTime? // วันที่เปลี่ยนสถานะ
 
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+
+  organizationName String? // snapshot ชื่อองค์กร
+  fullName         String? // ชื่อเต็ม จาก organization
+  rank             String? // ยศผู้ลงนาม จาก organization
+  position         String? // ตำแหน่ง จาก organization
+
   files               PersonFile[] // ไฟล์ PDF ของบุคคล
   identitySnapshots   IdentitySnapshot[] // Snapshot เชื้อชาติ/สัญชาติ
   appearanceSnapshots AppearanceSnapshot[] // Snapshot รูปร่าง/สีผิว

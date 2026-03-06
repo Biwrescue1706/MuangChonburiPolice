@@ -5,6 +5,26 @@ import prisma from "../prisma.js";
 const router = express.Router();
 
 // helper แปลงวันเกิดให้ปลอดภัย
+
+function formatThaiFullDate(value) {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return null;
+
+  const months = [
+    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน",
+    "พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม",
+    "กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
+  ];
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = months[date.getMonth()];
+  const year = date.getFullYear() + 543;
+
+  return `${day} ${month} ${year}`;
+}
+
 function toStringOrNull(value) {
   if (value === undefined || value === null || value === "") return null;
   return String(value);
@@ -51,10 +71,11 @@ router.post("/", async (req, res) => {
 
           receiptBookNo: toStringOrNull(data.receiptBookNo),
           receiptNo: toStringOrNull(data.receiptNo),
-          receiptDate: toStringOrNull(data.receiptDate),
-          fingerprintDate: toStringOrNull(data.fingerprintDate),
+receiptDate: formatThaiFullDate(data.receiptDate),
+fingerprintDate: formatThaiFullDate(data.fingerprintDate),
 
-          updatedAt: new Date(),
+          status: 0,
+    statusUpdatedAt: new Date(),
         },
       });
 
@@ -204,8 +225,10 @@ router.put("/:id", async (req, res) => {
 
           receiptBookNo: toStringOrNull(data.receiptBookNo),
           receiptNo: toStringOrNull(data.receiptNo),
-          receiptDate: toStringOrNull(data.receiptDate),
-          fingerprintDate: toStringOrNull(data.fingerprintDate),
+receiptDate: formatThaiFullDate(data.receiptDate),
+fingerprintDate: formatThaiFullDate(data.fingerprintDate),
+
+statusUpdatedAt: new Date(),
 
           updatedAt: new Date(),
         },
