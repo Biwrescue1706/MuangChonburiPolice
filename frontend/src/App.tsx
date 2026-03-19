@@ -15,14 +15,16 @@ import NotFound from "./pages/NotFound";
 import PersonPage from "./pages/PersonPage";
 import PersonStatus0Page from "./pages/PersonStatus0Page";
 import PersonStatus1Page from "./pages/PersonStatus1Page";
+import PersonStatus2Page from "./pages/PersonStatus2Page";
+import PersonStatus3Page from "./pages/PersonStatus3Page";
 import PersonDetailPage from "./pages/PersonDetailPage";
 
 function App() {
   return (
-          <AuthProvider>
-        <Routes>
-          {/* PUBLIC */}
-                  <Route
+    <AuthProvider>
+      <Routes>
+        {/* PUBLIC */}
+        <Route
           element={
             <GuestRoute>
               <Login />
@@ -34,28 +36,33 @@ function App() {
         <Route path="/forgot" element={<ForgotCheck />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* ✅ PROTECTED + NAV */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <Nav />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/security" element={<Security />} />
-            <Route path="/admin/create" element={<CreateAdmin />} />
-            <Route path="/person/create" element={<PersonPage />} />
-            <Route path="/person/status0" element={<PersonStatus0Page />} />
-            <Route path="/person/status1" element={<PersonStatus1Page />} />
-            <Route path="/person/:id" element={<PersonDetailPage />} />
+        {/* ✅ PROTECTED + NAV */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <Nav />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/security" element={<Security />} />
+          <Route path="/admin/create" element={<CreateAdmin />} />
+          <Route path="/person/create" element={<PersonPage />} />
 
-          </Route>
+          {/* ⭐ STATUS FLOW */}
+          <Route path="/person/status0" element={<PersonStatus0Page />} />
+          <Route path="/person/status1" element={<PersonStatus1Page />} />
+          <Route path="/person/status2" element={<PersonStatus2Page />} />
+          <Route path="/person/status3" element={<PersonStatus3Page />} />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </AuthProvider>
+          {/* DETAIL */}
+          <Route path="/person/:id" element={<PersonDetailPage />} />
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AuthProvider>
   );
 }
 
