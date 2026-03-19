@@ -44,6 +44,33 @@ const years = Array.from(
     "ธันวาคม",
   ];
 
+const isLeapYear = (yearBE: string) => {
+  const yearAD = Number(yearBE) - 543;
+
+  if (yearAD % 400 === 0) return true;
+  if (yearAD % 100 === 0) return false;
+  if (yearAD % 4 === 0) return true;
+
+  return false;
+};
+
+const getDaysInMonth = (month: string, year?: string) => {
+  if (!month) return 31;
+
+  if (month === "กุมภาพันธ์") {
+    if (year && isLeapYear(year)) return 29;
+    return 28;
+  }
+
+  if (
+    ["เมษายน", "มิถุนายน", "กันยายน", "พฤศจิกายน"].includes(month)
+  ) {
+    return 30;
+  }
+
+  return 31;
+};
+
   const convertMoneyToText = (amount: number) => {
     if (!amount) return "";
     if (amount === 100) return "หนึ่งร้อยบาทถ้วน";
@@ -83,6 +110,10 @@ const years = Array.from(
   const filteredWeights = weights.filter((w) =>
     form.weight ? String(w).startsWith(form.weight) : true,
   );
+
+const maxDay = getDaysInMonth(form.birthMonth, form.birthYear);
+
+const filteredDays = Array.from({ length: maxDay }, (_, i) => i + 1);
 
   useEffect(() => {
     const fetchReceipts = async () => {
@@ -166,6 +197,25 @@ const handleChange = (e: any) => {
     }));
     return;
   }
+
+if (name === "birthMonth" || name === "birthYear") {
+  const newForm = {
+    ...form,
+    [name]: value,
+  };
+
+  const maxDay = getDaysInMonth(
+    newForm.birthMonth,
+    newForm.birthYear
+  );
+
+  if (Number(newForm.birthDay) > maxDay) {
+    newForm.birthDay = "";
+  }
+
+  setForm(newForm);
+  return;
+}
 
   // 🔥 birthYear: เก็บเป็น พ.ศ. (+543) ตลอด
   if (name === "birthYear") {
@@ -431,7 +481,7 @@ const handleChange = (e: any) => {
 />
 
 <datalist id="day-list">
-  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+  {filteredDays.map((d) => (
     <option key={d} value={d} />
   ))}
 </datalist>
