@@ -1,33 +1,58 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import api from "../api/axios";
 
 export default function PersonStatus0Page() {
-  const [data, setData] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const navigate = useNavigate();
+  const [persons, setPersons] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const fetchData = async () => {
+  // ================= FETCH =================
+  const fetchPersons = async () => {
     try {
-      const res = await api.get("/person/getall", {
-        params: {
-          status: 0,
-          search,
-          page,
-          limit: 10,
-        },
-      });
-
-      setData(res.data.data);
-      setTotalPages(res.data.totalPages);
+      setLoading(true);
+      const res = await api.get("/person/getall?status=0");
+      setPersons(res.data.data || []);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, [page, search]);
+    fetchPersons();
+  }, []);
+
+  // ================= UPDATE STATUS =================
+  const handleUpdateStatus = async (id: string) => {
+    const confirm = await Swal.fire({
+      title: "ยืนยันการส่ง?",
+      text: "ต้องการส่งไป ศพฐ ใช่หรือไม่",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "ใช่",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      await api.patch(`/person/${id}/status`, { status: 1 });
+
+      await Swal.fire({
+        icon: "success",
+        title: "ส่งเรียบร้อย",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+
+      fetchPersons(); // reload
+    } catch (err) {
+      Swal.fire("ผิดพลาด", "ไม่สามารถอัปเดตสถานะได้", "error");
+    }
+  };
 
   return (
     <div
@@ -37,93 +62,88 @@ export default function PersonStatus0Page() {
         marginLeft: window.innerWidth > 1280 ? 220 : 0,
       }}
     >
-      <h3 className="mb-4">รายการรอส่ง ศพฐ (Status 0)</h3>
+      <h4 className="mb-3">📌 รายการรอส่ง ศพฐ</h4>
 
-      {/* 🔍 search */}
-      <div className="mb-3">
-        <input
-          className="form-control"
-          placeholder="ค้นหา ชื่อ / เลขบัตร"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-        />
-      </div>
-
-      {/* 📋 table */}
-      <div className="table-responsive">
-        <table className="table table-bordered table-hover">
-          <thead className="table-dark">
-            <tr>
-              <th>#</th>
-              <th>ชื่อ</th>
-              <th>เลขบัตร</th>
-              <th>วันเกิด</th>
-              <th>สถานะ</th>
-              <th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.length === 0 && (
+      {/* ================= TABLE ================= */}
+      <div className="card shadow-sm">
+        <div className="card-body p-0">
+          <table className="table table-bordered table-hover m-0">
+            <thead className="table-dark">
               <tr>
-                <td colSpan={6} className="text-center">
-                  ไม่พบข้อมูล
-                </td>
+                <th>#</th>
+                <th>ชื่อ-นามสกุล</th>
+                <th>เล่มใบเสร็จ</th>
+                <th>เลขที่ใบเสร็จ</th>
+                <th>วันที่รับคำขอ</th>
+                <th>สถานะ</th>
+                <th>จัดการ</th>
               </tr>
-            )}
+            </thead>
 
-            {data.map((p, i) => (
-              <tr key={p.personId}>
-                <td>{(page - 1) * 10 + i + 1}</td>
-                <td>{p.fullName}</td>
-                <td>{p.citizenId}</td>
-                <td>
-                  {p.birthDay} {p.birthMonth} {p.birthYear}
-                </td>
-                <td>
-                  <span className="badge bg-warning text-dark">
-                    รอส่ง ศพฐ
-                  </span>
-                </td>
-                <td>
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={() => {
-                      window.location.href = `/person/${p.personId}`;
-                    }}
-                  >
-                    ดู
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            <tbody>
+              {loading && (
+                <tr>
+                  <td colSpan={7} className="text-center">
+                    กำลังโหลด...
+                  </td>
+                </tr>
+              )}
 
-      {/* 📄 pagination */}
-      <div className="d-flex justify-content-between mt-3">
-        <button
-          className="btn btn-secondary"
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
-        >
-          ก่อนหน้า
-        </button>
+              {!loading && persons.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="text-center">
+                    ไม่พบข้อมูล
+                  </td>
+                </tr>
+              )}
 
-        <span>
-          หน้า {page} / {totalPages}
-        </span>
+              {!loading &&
+                persons.map((p, index) => (
+                  <tr key={p.personId}>
+                    <td>{index + 1}</td>
 
-        <button
-          className="btn btn-secondary"
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-        >
-          ถัดไป
-        </button>
+                    <td>{p.fullName}</td>
+
+                    <td>{p.receiptBookNo || "-"}</td>
+
+                    <td>{p.receiptNo || "-"}</td>
+
+                    <td>{p.receiptDate || "-"}</td>
+
+                    {/* STATUS */}
+                    <td>
+                      <span className="badge bg-warning text-dark">
+                        รอส่ง ศพฐ
+                      </span>
+                    </td>
+
+                    {/* ACTION */}
+                    <td>
+                      <div className="d-flex gap-2">
+                        <button
+                          className="btn btn-sm btn-info"
+                          onClick={() =>
+                            navigate(`/person/${p.personId}`)
+                          }
+                        >
+                          ดู
+                        </button>
+
+                        <button
+                          className="btn btn-sm btn-success"
+                          onClick={() =>
+                            handleUpdateStatus(p.personId)
+                          }
+                        >
+                          ส่ง ศพฐ
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
