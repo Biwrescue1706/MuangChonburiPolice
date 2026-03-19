@@ -11,8 +11,7 @@ export default function CreatePerson() {
 
   const [receiptNumbers, setReceiptNumbers] = useState<number[]>([]);
 
-  const years = Array.from({ length: 75 }, (_, i) => currentYearTH - i);
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const years = Array.from({ length: 80 }, (_, i) => currentYearTH - i);
 
   const nationalities = ["ไทย", "ลาว", "กัมพูชา", "พม่า", "จีน", "อื่นๆ"];
   const ethnicities = ["ไทย", "จีน", "ลาว", "มอญ", "กะเหรี่ยง", "อื่นๆ"];
