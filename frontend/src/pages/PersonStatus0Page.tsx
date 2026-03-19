@@ -3,6 +3,26 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../api/axios";
 
+// 🔥 แปลงวันที่เป็นไทย
+const formatThaiDate = (value: any) => {
+  if (!value) return "-";
+
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value; // ถ้า backend ส่งมาเป็นไทยอยู่แล้ว
+
+  const months = [
+    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน",
+    "พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม",
+    "กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
+  ];
+
+  const day = d.getDate();
+  const month = months[d.getMonth()];
+  const year = d.getFullYear() + 543;
+
+  return `${day} ${month} ${year}`;
+};
+
 export default function PersonStatus0Page() {
   const navigate = useNavigate();
   const [persons, setPersons] = useState<any[]>([]);
@@ -64,7 +84,6 @@ export default function PersonStatus0Page() {
     >
       <h4 className="mb-3">📌 รายการรอส่ง ศพฐ</h4>
 
-      {/* ================= TABLE ================= */}
       <div className="card shadow-sm">
         <div className="card-body p-0">
           <table className="table table-bordered table-hover m-0">
@@ -108,16 +127,15 @@ export default function PersonStatus0Page() {
 
                     <td>{p.receiptNo || "-"}</td>
 
-                    <td>{p.receiptDate || "-"}</td>
+                    {/* ⭐ แปลงวันที่ตรงนี้ */}
+                    <td>{formatThaiDate(p.receiptDate)}</td>
 
-                    {/* STATUS */}
                     <td>
                       <span className="badge bg-warning text-dark">
                         รอส่ง ศพฐ
                       </span>
                     </td>
 
-                    {/* ACTION */}
                     <td>
                       <div className="d-flex gap-2">
                         <button
