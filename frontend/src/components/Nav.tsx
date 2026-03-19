@@ -159,6 +159,33 @@ export default function Nav() {
   📌 รอส่ง ศพฐ
 </button>
 
+<button
+  className={`btn text-start ${
+    isActive("/person/status1") ? "btn-warning fw-bold" : "btn-warning"
+  }`}
+  onClick={() => navigate("/person/status1")}
+>
+  📦 ส่งแล้ว
+</button>
+
+<button
+  className={`btn text-start ${
+    isActive("/person/status2") ? "btn-warning fw-bold" : "btn-warning"
+  }`}
+  onClick={() => navigate("/person/status2")}
+>
+  ✅ รับแล้ว
+</button>
+
+<button
+  className={`btn text-start ${
+    isActive("/person/status3") ? "btn-warning fw-bold" : "btn-warning"
+  }`}
+  onClick={() => navigate("/person/status3")}
+>
+  ❌ ส่งคืน
+</button>
+
           <button
             className="btn btn-warning text-start"
             onClick={() => navigate("/person/history")}
@@ -225,6 +252,36 @@ export default function Nav() {
   }}
 >
   📌 รอส่ง ศพฐ
+</button>
+
+<button
+  className="btn btn-warning text-start"
+  onClick={() => {
+    navigate("/person/status1");
+    setMenuOpen(false);
+  }}
+>
+  📦 ส่งแล้ว
+</button>
+
+<button
+  className="btn btn-warning text-start"
+  onClick={() => {
+    navigate("/person/status2");
+    setMenuOpen(false);
+  }}
+>
+  ✅ รับแล้ว
+</button>
+
+<button
+  className="btn btn-warning text-start"
+  onClick={() => {
+    navigate("/person/status3");
+    setMenuOpen(false);
+  }}
+>
+  ❌ ส่งคืน
 </button>
 
             <button
