@@ -150,6 +150,15 @@ export default function Nav() {
             ➕ เพิ่มบุคคลตรวจประวัติ
           </button>
 
+<button
+  className={`btn text-start ${
+    isActive("/person/status0") ? "btn-warning fw-bold" : "btn-warning"
+  }`}
+  onClick={() => navigate("/person/status0")}
+>
+  📌 รอส่ง ศพฐ
+</button>
+
           <button
             className="btn btn-warning text-start"
             onClick={() => navigate("/person/history")}
@@ -207,6 +216,16 @@ export default function Nav() {
             >
               ➕ เพิ่มบุคคลตรวจประวัติ
             </button>
+
+<button
+  className="btn btn-warning text-start"
+  onClick={() => {
+    navigate("/person/status0");
+    setMenuOpen(false);
+  }}
+>
+  📌 รอส่ง ศพฐ
+</button>
 
             <button
               className="btn btn-warning text-start"
