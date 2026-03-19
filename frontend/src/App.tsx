@@ -13,7 +13,7 @@ import ResetPassword from "./pages/Password/ResetPassword";
 import CreateAdmin from "./pages/CreateAdmin";
 import NotFound from "./pages/NotFound";
 import PersonPage from "./pages/PersonPage";
-
+import PersonStatus0Page from "./pages/PersonStatus0Page";
 
 function App() {
   return (
@@ -45,6 +45,8 @@ function App() {
             <Route path="/security" element={<Security />} />
             <Route path="/admin/create" element={<CreateAdmin />} />
             <Route path="/person/create" element={<PersonPage />} />
+            <Route path="/person/status0" element={<PersonStatus0Page />} />
+
           </Route>
 
           <Route path="*" element={<NotFound />} />
