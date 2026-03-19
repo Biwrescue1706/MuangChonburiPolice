@@ -139,58 +139,170 @@ export default function CreatePerson() {
     fetchUsedNumbers();
   }, [form.receiptBookNo]);
 
-  const handleChange = (e: any) => {
-    const { name, value } = e.target;
+const handleChange = (e: any) => {
+  const { name, value } = e.target;
 
-    if (name === "money") {
-      const num = Number(value);
-      setForm({
-        ...form,
-        money: num,
-        moneyText: convertMoneyToText(num),
-      });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
-  };
+  // 🔥 citizenId: ตัวเลขล้วน + ไม่เกิน 13
+  if (name === "citizenId") {
+    const onlyNumber = value.replace(/\D/g, "").slice(0, 13);
+    setForm((prev: any) => ({
+      ...prev,
+      citizenId: onlyNumber,
+    }));
+    return;
+  }
+
+  // 🔥 birthDay: ตัวเลขล้วน (1–31)
+  if (name === "birthDay") {
+    const onlyNumber = value.replace(/\D/g, "");
+    setForm((prev: any) => ({
+      ...prev,
+      birthDay: onlyNumber,
+    }));
+    return;
+  }
+
+  // 🔥 birthYear: เก็บเป็น พ.ศ. (+543) ตลอด
+  if (name === "birthYear") {
+    const onlyNumber = value.replace(/\D/g, "");
+    const year = Number(onlyNumber);
+
+    setForm((prev: any) => ({
+      ...prev,
+      birthYear: year ? String(year) : "",
+    }));
+    return;
+  }
+
+  // 🔥 sync birthDate → day/month/year (+543)
+  if (name === "birthDate" && value) {
+    const d = new Date(value);
+
+    setForm((prev: any) => ({
+      ...prev,
+      birthDate: value,
+      birthDay: String(d.getDate()),
+      birthMonth: months[d.getMonth()],
+      birthYear: String(d.getFullYear() + 543), // ⭐ +543 ตรงนี้
+    }));
+    return;
+  }
+
+  // 🔥 money → text
+  if (name === "money") {
+    const num = Number(value);
+
+    setForm((prev: any) => ({
+      ...prev,
+      money: num,
+      moneyText: convertMoneyToText(num),
+    }));
+    return;
+  }
+
+  setForm((prev: any) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
 
   const handleSubmit = async (e: any) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!form.firstName || !form.lastName) {
-      Swal.fire("กรอกชื่อ-นามสกุลให้ครบ");
-      return;
-    }
+  const firstName = form.firstName?.trim();
+  const lastName = form.lastName?.trim();
 
-    try {
-      await api.post("/person", {
-        ...form,
-        fullName: `${form.prefix}${form.firstName} ${form.lastName}`,
-        birthDay: form.birthDay ? Number(form.birthDay) : null,
-        birthMonth: form.birthMonth ? Number(form.birthMonth) : null,
-        birthYear: form.birthYear ? Number(form.birthYear) - 543 : null,
-        birthDate: form.birthDate ? new Date(form.birthDate) : null,
-        weight: form.weight ? Number(form.weight) : null,
-        height: form.height ? Number(form.height) : null,
-        money: form.money ? Number(form.money) : 100,
-        receiptDate: form.receiptDate ? new Date(form.receiptDate) : null,
-        fingerprintDate: form.fingerprintDate ? new Date(form.fingerprintDate) : null,
-      });
+  if (!firstName || !lastName) {
+    Swal.fire("กรอกชื่อ-นามสกุลให้ครบ");
+    return;
+  }
 
-      await Swal.fire({
-        icon: "success",
-        title: "บันทึกสำเร็จ",
-      });
+  if (form.citizenId && form.citizenId.length !== 13) {
+    Swal.fire("เลขบัตรประชาชนต้อง 13 หลัก");
+    return;
+  }
 
-      navigate("/person");
-    } catch (err: any) {
-      Swal.fire({
-        icon: "error",
-        title: "ผิดพลาด",
-        text: err.response?.data?.error || "ไม่สามารถบันทึกได้",
-      });
-    }
-  };
+  // 🔥 validate วัน
+  if (
+    form.birthDay &&
+    (Number(form.birthDay) < 1 || Number(form.birthDay) > 31)
+  ) {
+    Swal.fire("วันเกิดไม่ถูกต้อง");
+    return;
+  }
+
+  // 🔥 validate เดือน
+  if (form.birthMonth && !months.includes(form.birthMonth)) {
+    Swal.fire("เดือนเกิดไม่ถูกต้อง");
+    return;
+  }
+
+  const monthIndex = months.indexOf(form.birthMonth);
+
+  if (form.birthMonth && monthIndex === -1) {
+    Swal.fire("เดือนเกิดไม่ถูกต้อง");
+    return;
+  }
+
+  // 🔥 ใช้ปี พ.ศ. แล้วค่อย -543 ตอนสร้าง Date
+  const birthDate =
+    form.birthYear && form.birthMonth && form.birthDay
+      ? new Date(
+          Number(form.birthYear) - 543, // ⭐ แปลงกลับตอนใช้
+          monthIndex,
+          Number(form.birthDay)
+        )
+      : form.birthDate
+      ? new Date(form.birthDate)
+      : null;
+
+  // 🔥 กัน date พัง
+  if (birthDate && isNaN(birthDate.getTime())) {
+    Swal.fire("วันเกิดไม่ถูกต้อง");
+    return;
+  }
+
+  try {
+    await api.post("/person", {
+      ...form,
+
+      fullName: `${form.prefix}${firstName} ${lastName}`, // ⭐ trim แล้ว
+
+      birthDay: form.birthDay || null,
+      birthMonth: form.birthMonth || null,
+
+      // ⭐ เก็บเป็น พ.ศ. จริง ๆ
+      birthYear: form.birthYear ? String(form.birthYear) : null,
+
+      birthDate,
+
+      weight: form.weight ? Number(form.weight) : null,
+      height: form.height ? Number(form.height) : null,
+      money: form.money ? Number(form.money) : 100,
+
+      receiptDate: form.receiptDate
+        ? new Date(form.receiptDate)
+        : null,
+
+      fingerprintDate: form.fingerprintDate
+        ? new Date(form.fingerprintDate)
+        : null,
+    });
+
+    await Swal.fire({
+      icon: "success",
+      title: "บันทึกสำเร็จ",
+    });
+
+    navigate("/person");
+  } catch (err: any) {
+    Swal.fire({
+      icon: "error",
+      title: "ผิดพลาด",
+      text: err.response?.data?.error || "ไม่สามารถบันทึกได้",
+    });
+  }
+};
 
   return (
     <div
@@ -293,43 +405,44 @@ export default function CreatePerson() {
             <div className="col-md-4">
               <label>เลขบัตรประชาชน</label>
               <input
-                name="citizenId"
-                className="form-control"
-                onChange={handleChange}
-                required
-              />
+  name="citizenId"
+  className="form-control"
+  maxLength={13}
+  inputMode="numeric"
+  pattern="[0-9]*"
+  onChange={handleChange}
+  required
+/>
             </div>
 
             <div className="col-md-4">
               <label>วันเกิด</label>
               <input
-                list="day-list"
-                name="birthDay"
-                className="form-control"
-                value={form.birthDay || ""}
-                onChange={handleChange}
-              />
-              <datalist id="day-list">
-                {days.map((d) => (
-                  <option key={d} value={d} />
-                ))}
-              </datalist>
+  type="text"
+  min={1}
+  max={31}
+  name="birthDay"
+  className="form-control"
+  value={form.birthDay || ""}
+  onChange={handleChange}
+/>
             </div>
 
             <div className="col-md-4">
               <label>เดือนเกิด</label>
-              <input
-                list="month-list"
-                name="birthMonth"
-                className="form-control"
-                value={form.birthMonth || ""}
-                onChange={handleChange}
-              />
-              <datalist id="month-list">
-                {months.map((m) => (
-                  <option key={m} value={m} />
-                ))}
-              </datalist>
+              <select
+  name="birthMonth"
+  className="form-control"
+  value={form.birthMonth || ""}
+  onChange={handleChange}
+>
+  <option value="">เลือกเดือน</option>
+  {months.map((m) => (
+    <option key={m} value={m}>
+      {m}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-4">
@@ -598,13 +711,16 @@ export default function CreatePerson() {
             <div className="col-md-4">
               <label>สถานะ</label>
               <select
-                name="status"
-                className="form-control"
-                value={form.status}
-                onChange={(e) =>
-                  setForm({ ...form, status: Number(e.target.value) })
-                }
-              >
+  name="status"
+  className="form-control"
+  value={form.status}
+  onChange={(e) =>
+    setForm((prev: any) => ({
+      ...prev,
+      status: Number(e.target.value),
+    }))
+  }
+>
                 {statusOptions.map((s) => (
                   <option key={s.value} value={s.value}>
                     {s.label}
