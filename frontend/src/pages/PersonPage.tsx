@@ -11,7 +11,13 @@ export default function CreatePerson() {
 
   const [receiptNumbers, setReceiptNumbers] = useState<number[]>([]);
 
-  const years = Array.from({ length: 80 }, (_, i) => currentYearTH - i);
+  const maxYear = currentYearTH - 18; // ⭐ อายุขั้นต่ำ 18
+const minYear = currentYearTH - 100; // กันแก่เกินไป (ปรับได้)
+
+const years = Array.from(
+  { length: maxYear - minYear + 1 },
+  (_, i) => maxYear - i
+);
 
   const nationalities = ["ไทย", "ลาว", "กัมพูชา", "พม่า", "จีน", "อื่นๆ"];
   const ethnicities = ["ไทย", "จีน", "ลาว", "มอญ", "กะเหรี่ยง", "อื่นๆ"];
@@ -416,32 +422,37 @@ const handleChange = (e: any) => {
 
             <div className="col-md-4">
               <label>วันเกิด</label>
-              <input
-  type="text"
-  min={1}
-  max={31}
+             <input
+  list="day-list"
   name="birthDay"
   className="form-control"
   value={form.birthDay || ""}
   onChange={handleChange}
 />
+
+<datalist id="day-list">
+  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+    <option key={d} value={d} />
+  ))}
+</datalist>
             </div>
 
             <div className="col-md-4">
               <label>เดือนเกิด</label>
-              <select
+             <input
+  list="month-list"
   name="birthMonth"
   className="form-control"
   value={form.birthMonth || ""}
   onChange={handleChange}
->
-  <option value="">เลือกเดือน</option>
+  placeholder="เลือกหรือพิมพ์เดือน"
+/>
+
+<datalist id="month-list">
   {months.map((m) => (
-    <option key={m} value={m}>
-      {m}
-    </option>
+    <option key={m} value={m} />
   ))}
-</select>
+</datalist>
             </div>
 
             <div className="col-md-4">
