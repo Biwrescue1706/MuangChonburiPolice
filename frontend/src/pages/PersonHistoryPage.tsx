@@ -22,13 +22,13 @@ const formatThaiDate = (value: any) => {
 const renderStatus = (status: number) => {
   switch (status) {
     case 0:
-      return <span className="badge bg-warning text-dark">รอส่ง</span>;
+      return <span className="badge bg-warning text-dark">รอส่ง ศพฐ.</span>;
     case 1:
-      return <span className="badge bg-primary">ส่งแล้ว</span>;
+      return <span className="badge bg-primary">ส่ง ศพฐ. แล้ว</span>;
     case 2:
-      return <span className="badge bg-success">รับแล้ว</span>;
+      return <span className="badge bg-success">รับแล้วจาก ศพฐ. แล้ว </span>;
     case 3:
-      return <span className="badge bg-danger">ส่งคืน</span>;
+      return <span className="badge bg-danger">ส่งคืน หน่วยงาน</span>;
     default:
       return "-";
   }
