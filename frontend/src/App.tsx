@@ -14,6 +14,7 @@ import CreateAdmin from "./pages/CreateAdmin";
 import NotFound from "./pages/NotFound";
 import PersonPage from "./pages/PersonPage";
 import PersonStatus0Page from "./pages/PersonStatus0Page";
+import PersonDetailPage from "./pages/PersonDetailPage";
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
             <Route path="/admin/create" element={<CreateAdmin />} />
             <Route path="/person/create" element={<PersonPage />} />
             <Route path="/person/status0" element={<PersonStatus0Page />} />
+            <Route path="/person/:id" element={<PersonDetailPage />} />
 
           </Route>
 
