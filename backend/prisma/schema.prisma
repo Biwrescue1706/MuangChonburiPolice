@@ -34,8 +34,6 @@ model Organization {
 
   createdAt DateTime  @default(now()) // วันที่สร้าง
   updatedAt DateTime? // วันที่แก้ไข
-
-  requestInfos RequestInfo[] // รายการคำร้องที่อ้างอิงองค์กรนี้
   receipts     Receipt[] // ใบเสร็จที่อ้างอิงองค์กรนี้
 }
 
@@ -160,11 +158,6 @@ model RequestInfo {
 
   purpose          String? // วัตถุประสงค์ ณ วันยื่น
   requestingAgency String? // หน่วยงาน ณ วันยื่น
-
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
-
-  organizationName String? // snapshot ชื่อองค์กร
 
   createdAt DateTime @default(now())
 }
