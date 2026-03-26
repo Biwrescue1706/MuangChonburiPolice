@@ -8,9 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// =======================
 // ADMIN
-// =======================
 model Admin {
   adminId   String   @id @default(uuid())
   username  String   @unique
@@ -21,9 +19,7 @@ model Admin {
   updatedAt DateTime?
 }
 
-// =======================
 // ORGANIZATION
-// =======================
 model Organization {
   organizationId   String @id @default(uuid())
   key              String @unique @default("MAIN")
@@ -40,11 +36,10 @@ model Organization {
   updatedAt DateTime?
 
   receipts Receipt[]
+persons Person[]
 }
 
-// =======================
 // PERSON
-// =======================
 model Person {
   personId  String   @id @default(uuid())
   createdAt DateTime @default(now())
@@ -129,7 +124,7 @@ model NationalitySnapshot {
   nationalityId String @id @default(uuid())
 
   personId String
-  person   Person @relation(fields: [personId], references: [personId]) // ❌ ไม่มี cascade
+  person   Person @relation(fields: [personId], references: [personId])
 
   nationality String?
   createdAt   DateTime @default(now())
