@@ -520,18 +520,14 @@ router.patch("/bulk/status", async (req, res) => {
 });
 
 // ================= AUTO DELETE =================
-setInterval(async () => {
-  try {
-    await prisma.person.deleteMany({
-      where: {
-        deleteAt: {
-          lte: new Date(),
-        },
-      },
-    });
-  } catch (err) {
-    console.error("AUTO DELETE ERROR:", err);
-  }
-}, 60000);
+// setInterval(async () => {
+//   await prisma.person.deleteMany({
+//     where: {
+//       deleteAt: {
+//         lte: new Date(),
+//       },
+//     },
+//   });
+// }, 60000);
 
 export default router;
