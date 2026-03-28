@@ -208,6 +208,62 @@ router.post("/", async (req, res) => {
   }
 });
 
+// GET ALL + SEARCH + FILTER
+router.get("/getall", async (req, res) => {
+  try {
+    const { search, status, page = 1, limit = 20 } = req.query;
+
+    const where = {
+      deleteAt: null,
+      AND: [],
+    };
+
+    if (search) {
+      where.AND.push({
+        OR: [
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName: { contains: search, mode: "insensitive" } },
+          { fullName: { contains: search, mode: "insensitive" } },
+          { citizenId: { contains: search } },
+        ],
+      });
+    }
+
+    if (status !== undefined) {
+      where.AND.push({ status: Number(status) });
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const finalWhere = where.AND.length
+      ? where
+      : { deleteAt: null };
+
+    const [persons, total] = await Promise.all([
+      prisma.person.findMany({
+        where: finalWhere,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.person.count({
+        where: finalWhere,
+      }),
+    ]);
+
+    res.json({
+      success: true,
+      data: persons,
+      total,
+      page: Number(page),
+      totalPages: Math.ceil(total / Number(limit)),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
+  }
+});
+
 // UPDATE PERSON
 router.put("/:id", async (req, res) => {
   try {
@@ -323,92 +379,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.get("/getall", async (req, res) => {
-  try {
-    const { search, status, page = 1, limit = 10 } = req.query;
 
-    const where = {
-      deleteAt: null,
-      AND: [],
-    };
-
-    if (search) {
-      where.AND.push({
-        OR: [
-          { firstName: { contains: search, mode: "insensitive" } },
-          { lastName: { contains: search, mode: "insensitive" } },
-          { fullName: { contains: search, mode: "insensitive" } },
-          { citizenId: { contains: search } },
-        ],
-      });
-    }
-
-    if (status !== undefined) {
-      where.AND.push({ status: Number(status) });
-    }
-
-    const skip = (Number(page) - 1) * Number(limit);
-
-    const finalWhere = where.AND.length
-      ? where
-      : { deleteAt: null };
-
-    const [persons, total] = await Promise.all([
-      prisma.person.findMany({
-        where: finalWhere,
-        skip,
-        take: Number(limit),
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.person.count({
-        where: finalWhere,
-      }),
-    ]);
-
-    res.json({
-      success: true,
-      data: persons,
-      total,
-      page: Number(page),
-      totalPages: Math.ceil(total / Number(limit)),
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
-  }
-});
-
-// UPDATE STATUS (Bulk)
-router.patch("/bulk/status", async (req, res) => {
-  try {
-    const { personIds, status } = req.body;
-
-    if (![0, 1, 2, 3].includes(status)) {
-      return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
-    }
-
-    if (!Array.isArray(personIds) || personIds.length === 0) {
-      return res.status(400).json({ error: "ไม่มีรายการบุคคล" });
-    }
-
-    const result = await prisma.person.updateMany({
-      where: {
-        personId: { in: personIds },
-        deleteAt: null,
-      },
-      data: {
-        status,
-        statusUpdatedAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
-
-    res.json({ success: true, updated: result.count });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "อัปเดตหลายรายการไม่สำเร็จ" });
-  }
-});
 
 /* ================= GET BY ID ================= */
 router.get("/:id", async (req, res) => {
@@ -500,7 +471,7 @@ router.patch("/:id/status", async (req, res) => {
           // 🔥 เพิ่มตรงนี้
           deleteAt:
             status === 3
-              ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+              ? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
               : null,
 
           updatedAt: new Date(),
@@ -538,7 +509,7 @@ router.patch("/:id/status", async (req, res) => {
 
           receiptBookNo: updatedPerson.receiptBookNo,
           receiptNo: updatedPerson.receiptNo,
-          receiptDate: updatedPerson.receiptDate,
+          receiptDate: toDateOrNull(updatedPerson.receiptDate),
 
           money: updatedPerson.money,
           moneyText: updatedPerson.moneyText,
@@ -553,6 +524,38 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
+// UPDATE STATUS (Bulk)
+router.patch("/bulk/status", async (req, res) => {
+  try {
+    const { personIds, status } = req.body;
+
+    if (![0, 1, 2, 3].includes(status)) {
+      return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
+    }
+
+    if (!Array.isArray(personIds) || personIds.length === 0) {
+      return res.status(400).json({ error: "ไม่มีรายการบุคคล" });
+    }
+
+    const result = await prisma.person.updateMany({
+      where: {
+        personId: { in: personIds },
+        deleteAt: null,
+      },
+      data: {
+        status,
+        statusUpdatedAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+    
+
+    res.json({ success: true, updated: result.count });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "อัปเดตหลายรายการไม่สำเร็จ" });
+  }
+});
 
 
 /* ================= AUTO DELETE ================= */
