@@ -6,6 +6,7 @@ export default function BasicInfo({
   months,
   years,
 }: any) {
+const [dateValue, setDateValue] = useState("");
   return (
     <div className="card mb-4 shadow-sm">
       <div className="card-header bg-primary text-white h4 text-center">
@@ -98,11 +99,15 @@ export default function BasicInfo({
         <div className="col-md-4">
           <label className="form-label">วัน เดือน ปี ที่พิมพ์ลายนิ้วมือ</label>
           <input
-            type="date"
-            name="fingerprintDate"
-            className="form-control"
-            onChange={handleChange}
-          />
+  type="date"
+  name="fingerprintDate"
+  className="form-control"
+  value={dateValue}
+  onChange={(e) => {
+    setDateValue(e.target.value);
+    handleChange(e);
+  }}
+/>
         </div>
       </div>
     </div>
