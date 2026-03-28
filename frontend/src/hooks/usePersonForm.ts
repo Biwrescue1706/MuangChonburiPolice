@@ -49,8 +49,8 @@ export default function usePersonForm(navigate: any) {
     height: null,
     workplaceAddress: "",
     occupation: "",
-    fingerprintDate: "",
-    receiptDate: "",
+    fingerprintDate: "", // 🔥 แก้: ไม่ใช้ ISO แล้ว
+    receiptDate: "",     // 🔥 แก้: ไม่ใช้ ISO แล้ว
     status: 0,
     receiptBookNo: "",
     receiptNo: "",
@@ -68,10 +68,10 @@ export default function usePersonForm(navigate: any) {
           ? res.data.usedNumbers
           : [];
 
-        setForm((prev: any) => ({
-          ...prev,
-          receiptBookNo: bookNo,
-        }));
+        setForm((prev: any) => {
+          if (prev.receiptBookNo === bookNo) return prev;
+          return { ...prev, receiptBookNo: bookNo };
+        });
 
         const available = allReceiptNumbers.filter(
           (n) => !usedNumbers.includes(n),
@@ -112,6 +112,24 @@ export default function usePersonForm(navigate: any) {
 
   // ================= UTIL =================
 
+  const isLeapYear = (yearBE: string) => {
+    const yearAD = Number(yearBE) - 543;
+    if (yearAD % 400 === 0) return true;
+    if (yearAD % 100 === 0) return false;
+    return yearAD % 4 === 0;
+  };
+
+  const getDaysInMonth = (month: string, year?: string) => {
+    if (!month) return 31;
+    if (month === "กุมภาพันธ์") {
+      return year && isLeapYear(year) ? 29 : 28;
+    }
+    if (["เมษายน", "มิถุนายน", "กันยายน", "พฤศจิกายน"].includes(month)) {
+      return 30;
+    }
+    return 31;
+  };
+
   const convertMoneyToText = (amount: number) => {
     if (!amount) return "";
     if (amount === 100) return "หนึ่งร้อยบาทถ้วน";
@@ -137,19 +155,20 @@ export default function usePersonForm(navigate: any) {
     form.weight ? String(w).startsWith(form.weight) : true,
   );
 
+  const maxDay = getDaysInMonth(form.birthMonth, form.birthYear);
+  const filteredDays = Array.from({ length: maxDay }, (_, i) => i + 1);
+
   // ================= HANDLE CHANGE =================
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
 
-    // citizenId
     if (name === "citizenId") {
       const onlyNumber = value.replace(/\D/g, "").slice(0, 13);
       setForm((prev: any) => ({ ...prev, citizenId: onlyNumber }));
       return;
     }
 
-    // money
     if (name === "money") {
       const num = Number(value);
       setForm((prev: any) => ({
@@ -160,8 +179,8 @@ export default function usePersonForm(navigate: any) {
       return;
     }
 
-    // number fields
-    if (["weight", "height"].includes(name)) {
+    const numberFields = ["weight", "height"];
+    if (numberFields.includes(name)) {
       setForm((prev: any) => ({
         ...prev,
         [name]: value === "" ? null : Number(value),
@@ -169,8 +188,9 @@ export default function usePersonForm(navigate: any) {
       return;
     }
 
-    // 🔥 date → ไทย
+    // 🔥 แก้เฉพาะตรงนี้ (กันพัง + แปลงไทย)
     if (name === "receiptDate" || name === "fingerprintDate") {
+
       if (!value) {
         setForm((prev: any) => ({
           ...prev,
@@ -180,7 +200,10 @@ export default function usePersonForm(navigate: any) {
       }
 
       const date = new Date(value);
-      if (isNaN(date.getTime())) return;
+
+      if (isNaN(date.getTime())) {
+        return;
+      }
 
       const thaiDate = `${date.getDate()} ${
         months[date.getMonth()]
@@ -193,7 +216,6 @@ export default function usePersonForm(navigate: any) {
       return;
     }
 
-    // default
     setForm((prev: any) => ({ ...prev, [name]: value }));
   };
 
@@ -202,7 +224,7 @@ export default function usePersonForm(navigate: any) {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    console.log("FINAL DATE:", form.receiptDate);
+    console.log("DEBUG receiptDate:", form.receiptDate);
 
     const fullName = [form.prefix, form.firstName, form.lastName]
       .filter(Boolean)
@@ -211,32 +233,61 @@ export default function usePersonForm(navigate: any) {
     const finalForm = { ...form, fullName };
 
     const requiredFields = [
-      "receiptBookNo","prefix","firstName","lastName","citizenId",
-      "birthDay","birthMonth","birthYear","nationality","ethnicity",
-      "weight","height","bodyType","skinColor","behavior",
-      "distinguishingMarks","address","occupation","workplaceAddress",
-      "father","mother","spouse","fingerprintDate","purpose",
-      "requestingAgency","receiptNo","receiptDate",
+      "receiptBookNo",
+      "prefix",
+      "firstName",
+      "lastName",
+      "citizenId",
+      "birthDay",
+      "birthMonth",
+      "birthYear",
+      "nationality",
+      "ethnicity",
+      "weight",
+      "height",
+      "bodyType",
+      "skinColor",
+      "behavior",
+      "distinguishingMarks",
+      "address",
+      "occupation",
+      "workplaceAddress",
+      "father",
+      "mother",
+      "spouse",
+      "fingerprintDate",
+      "purpose",
+      "requestingAgency",
+      "receiptNo",
+      "receiptDate",
     ];
 
     const missingFields = requiredFields.filter((f) => isEmpty(finalForm[f]));
 
     if (missingFields.length > 0) {
-      toast("warning","กรอกข้อมูลไม่ครบ",`ยังขาด ${missingFields.length} ช่อง`);
+      toast(
+        "warning",
+        "กรอกข้อมูลไม่ครบ",
+        `ยังขาด ${missingFields.length} ช่อง`,
+      );
       return;
     }
 
     if (!finalForm.citizenId || finalForm.citizenId.length !== 13) {
-      toast("warning","เลขบัตรประชาชนต้องเป็น 13 หลัก");
+      toast("warning", "เลขบัตรประชาชนต้องเป็น 13 หลัก");
       return;
     }
 
     try {
       await api.post("/person", finalForm);
-      toast("success","บันทึกสำเร็จ");
+      toast("success", "บันทึกสำเร็จ");
       navigate("/person/status0");
     } catch (err: any) {
-      toast("error","ผิดพลาด",err.response?.data?.error || "ไม่สามารถบันทึกได้");
+      toast(
+        "error",
+        "ผิดพลาด",
+        err.response?.data?.error || "ไม่สามารถบันทึกได้",
+      );
     }
   };
 
@@ -254,5 +305,6 @@ export default function usePersonForm(navigate: any) {
     skinColors,
     filteredHeights,
     filteredWeights,
+    filteredDays,
   };
 }
