@@ -101,7 +101,6 @@ export default function BasicInfo({
             type="date"
             name="fingerprintDate"
             className="form-control"
-            value={form.fingerprintDate}
             onChange={handleChange}
           />
         </div>
