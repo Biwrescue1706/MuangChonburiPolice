@@ -10,12 +10,12 @@ datasource db {
 
 // ADMIN
 model Admin {
-  adminId   String   @id @default(uuid())
-  username  String   @unique
+  adminId   String    @id @default(uuid())
+  username  String    @unique
   password  String
   name      String
   position  String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   updatedAt DateTime?
 }
 
@@ -32,24 +32,24 @@ model Organization {
   fullNameWithRank String
   position         String
 
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   updatedAt DateTime?
 
   receipts Receipt[]
-persons Person[]
+  persons  Person[]
 }
 
 // PERSON
 model Person {
-  personId  String   @id @default(uuid())
-  createdAt DateTime @default(now())
+  personId  String    @id @default(uuid())
+  createdAt DateTime  @default(now())
   updatedAt DateTime?
 
   prefix    String
   firstName String
   lastName  String
   fullName  String
-  citizenId String @unique
+  citizenId String
 
   birthDate  String?
   birthDay   String?
@@ -84,7 +84,7 @@ model Person {
   money         Int     @default(100)
   moneyText     String?
 
-  status Int @default(0)
+  status          Int       @default(0)
   statusUpdatedAt DateTime?
 
   deleteAt DateTime?
@@ -98,13 +98,13 @@ model Person {
   position         String?
   fullNameWithRank String?
 
-  files                PersonFile[]
-  nationalitySnapshot  NationalitySnapshot[]
-  ethnicitySnapshot    EthnicitySnapshot[]
-  skinColorSnapshot    SkinColorSnapshot[]
-  bodyTypeSnapshot     BodyTypeSnapshot[]
-  requestInfos         RequestInfo[]
-  receipts             Receipt[]
+  files               PersonFile[]
+  nationalitySnapshot NationalitySnapshot[]
+  ethnicitySnapshot   EthnicitySnapshot[]
+  skinColorSnapshot   SkinColorSnapshot[]
+  bodyTypeSnapshot    BodyTypeSnapshot[]
+  requestInfos        RequestInfo[]
+  receipts            Receipt[]
 }
 
 model PersonFile {
@@ -172,9 +172,7 @@ model RequestInfo {
   createdAt DateTime @default(now())
 }
 
-// =======================
 // RECEIPT (สำคัญ)
-// =======================
 model Receipt {
   receiptId String @id @default(uuid())
 

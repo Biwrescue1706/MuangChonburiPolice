@@ -11,9 +11,18 @@ const formatThaiDate = (value: any) => {
   if (isNaN(d.getTime())) return value;
 
   const months = [
-    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน",
-    "พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม",
-    "กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
+    "มกราคม",
+    "กุมภาพันธ์",
+    "มีนาคม",
+    "เมษายน",
+    "พฤษภาคม",
+    "มิถุนายน",
+    "กรกฎาคม",
+    "สิงหาคม",
+    "กันยายน",
+    "ตุลาคม",
+    "พฤศจิกายน",
+    "ธันวาคม",
   ];
 
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
@@ -84,14 +93,8 @@ export default function PersonStatus0Page() {
   };
 
   return (
-    <div
-      className="p-4"
-      style={{
-        marginTop: 65,
-        marginLeft: window.innerWidth > 1280 ? 220 : 0,
-      }}
-    >
-      <h4 className="mb-3">📌 รายการรอส่ง ศพฐ</h4>
+    <div className="p-4">
+      <h4 className="mb-3 text-center">📌 รายการรอส่ง ศพฐ</h4>
 
       {/* ================= DESKTOP ================= */}
       {isDesktop ? (
@@ -103,18 +106,21 @@ export default function PersonStatus0Page() {
                 style={{ minWidth: "900px" }}
               >
                 <thead className="table-dark">
-                  <tr>
+                  <tr className="text-center">
                     <th>#</th>
                     <th>ชื่อ-นามสกุล</th>
                     <th>เล่มใบเสร็จ</th>
                     <th>เลขที่ใบเสร็จ</th>
                     <th>วันที่รับคำขอ</th>
                     <th>สถานะ</th>
-                    <th>จัดการ</th>
+                    <th>ดูประวัติ</th>
+                    <th>แก้ไข</th>
+                    <th>ลบ</th>
+                    <th>ส่ง</th>
                   </tr>
                 </thead>
 
-                <tbody>
+                <tbody className="text-center">
                   {loading && (
                     <tr>
                       <td colSpan={7} className="text-center">
@@ -137,7 +143,7 @@ export default function PersonStatus0Page() {
                         <td>{index + 1}</td>
                         <td>{p.fullName}</td>
                         <td>{p.receiptBookNo || "-"}</td>
-                        <td>{p.receiptNo || "-"}</td>
+                        <td> {p.receiptNo || "-"}</td>
                         <td>{formatThaiDate(p.receiptDate)}</td>
 
                         <td>
@@ -147,23 +153,26 @@ export default function PersonStatus0Page() {
                         </td>
 
                         <td>
-                          <div className="d-flex gap-2">
                             <button
                               className="btn btn-sm btn-info"
-                              onClick={() =>
-                                navigate(`/person/${p.personId}`)
-                              }
+                              onClick={() => navigate(`/person/${p.personId}`)}
                             >
                               ดู
                             </button>
+                        </td>
+                        <td>
 
-                            <button
-                              className="btn btn-sm btn-success"
-                              onClick={() => handleUpdateStatus(p)}
-                            >
-                              ส่ง ศพฐ
-                            </button>
-                          </div>
+                        </td>
+                        <td>
+
+                        </td>
+                        <td>
+                          <button
+                            className="btn btn-sm btn-success"
+                            onClick={() => handleUpdateStatus(p)}
+                          >
+                            ส่ง ศพฐ
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -184,12 +193,9 @@ export default function PersonStatus0Page() {
           {!loading &&
             persons.map((p) => (
               <div key={p.personId} className="card shadow-sm p-3">
-
                 <div className="d-flex justify-content-between">
                   <strong>{p.fullName}</strong>
-                  <span className="badge bg-warning text-dark">
-                    รอส่ง ศพฐ
-                  </span>
+                  <span className="badge bg-warning text-dark">รอส่ง ศพฐ</span>
                 </div>
 
                 <div className="mt-2 small">
@@ -201,9 +207,7 @@ export default function PersonStatus0Page() {
                 <div className="d-flex gap-2 mt-3">
                   <button
                     className="btn btn-sm btn-info w-100"
-                    onClick={() =>
-                      navigate(`/person/${p.personId}`)
-                    }
+                    onClick={() => navigate(`/person/${p.personId}`)}
                   >
                     ดู
                   </button>
@@ -215,7 +219,6 @@ export default function PersonStatus0Page() {
                     ส่ง ศพฐ
                   </button>
                 </div>
-
               </div>
             ))}
         </div>

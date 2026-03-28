@@ -8,8 +8,8 @@ async function main() {
     console.log("🌱 Start Seed");
 
     // ADMIN
-const defaultPassword = "123456";
-const passwordHash = await bcrypt.hash(defaultPassword, 10);
+    const defaultPassword = "123456";
+    const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
     const admins = [
         {
@@ -18,12 +18,18 @@ const passwordHash = await bcrypt.hash(defaultPassword, 10);
             position: "งาน นผ.3"
         },
         {
-            username : "admin1",
-            name : "บิวบอง",
-            position : "งาน นผ.3",
+            username: "admin1",
+            name: "บิวบอง",
+            position: "งาน นผ.3",
 
         },
-                {
+        {
+            username: "BiwBoong",
+            name: "บิวบอง",
+            position: "งาน นผ.3",
+
+        },
+        {
             username: "admin2",
             name: "จ.ส.ต.ชาญณรงค์เดช กันตพัชรโรจน์",
             position: "งาน นผ. 1"
@@ -50,12 +56,12 @@ const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
     }
 
-console.log(
-  "✅ สร้าง Admin Users สำเร็จ : \n",
-  admins.map(a =>
-    ` - userName :${a.username}\n - ชื่อ :  ${a.name}\n - ตำแหน่ง :  ${a.position}\n`
-  ).join("\n")
-);
+    console.log(
+        "✅ สร้าง Admin Users สำเร็จ : \n",
+        admins.map(a =>
+            ` - userName :${a.username}\n - ชื่อ :  ${a.name}\n - ตำแหน่ง :  ${a.position}\n`
+        ).join("\n")
+    );
     // ORGANIZATION PROFILE
     const firstName = "ธาดา";
     const lastName = "เสาวโค";
@@ -94,12 +100,12 @@ console.log(
         }
     });
 
-console.log(
-  "✅ สร้างโปรไฟล์องค์กรสำเร็จ :\n",
-  "\nองค์กร:", organizationName,
-  "\nชื่อ:", fullNameWithRank,
-  "\nตำแหน่ง:", position
-);
+    console.log(
+        "✅ สร้างโปรไฟล์องค์กรสำเร็จ :\n",
+        "\nองค์กร:", organizationName,
+        "\nชื่อ:", fullNameWithRank,
+        "\nตำแหน่ง:", position
+    );
 
 }
 

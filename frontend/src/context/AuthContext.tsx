@@ -15,30 +15,27 @@ type AuthType = {
   loading: boolean;
   login: (u: string, p: string) => Promise<void>;
   logout: () => Promise<void>;
+  verify: () => Promise<void>; // 🔥 เพิ่มไว้เรียกใช้เองได้
 };
 
 const AuthContext = createContext<AuthType>({} as AuthType);
 
 export const AuthProvider = ({ children }: any) => {
   const [admin, setAdmin] = useState<Admin | null>(null);
-
   const [loading, setLoading] = useState(true);
 
   const verify = async () => {
     try {
       const res = await api.get("/auth/verify");
-
       setAdmin(res.data.admin);
     } catch (err: any) {
-      // ✅ ถ้า 401 = ยังไม่ login (ปกติ)
       if (err.response?.status !== 401) {
-        console.error(err);
+        console.error("Verify error:", err);
       }
-
       setAdmin(null);
+    } finally {
+      setLoading(false); // 🔥 กัน loading ค้าง
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -46,35 +43,38 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   const login = async (username: string, password: string) => {
-    const res = await api.post("/auth/login", {
-      username,
-      password,
-    });
+    try {
+      const res = await api.post("/auth/login", {
+        username,
+        password,
+      });
 
-    toast(
-      "success",
-      "เข้าสู่ระบบสำเร็จ",
-      `ยินดีต้อนรับ ${res.data.admin?.name || username}`,
-    );
+      toast(
+        "success",
+        "เข้าสู่ระบบสำเร็จ",
+        `ยินดีต้อนรับ ${res.data.admin?.name || username}`,
+      );
 
-    await verify();
+      await verify(); // 🔥 sync state หลัง login
+    } catch (err: any) {
+      toast(
+        "error",
+        "เข้าสู่ระบบไม่สำเร็จ",
+        err.response?.data?.error || "เกิดข้อผิดพลาด",
+      );
+      throw err;
+    }
   };
 
   const logout = async () => {
     try {
       await api.post("/auth/logout");
-
       toast("success", "ออกจากระบบสำเร็จ");
     } catch {
       toast("error", "ออกจากระบบไม่สำเร็จ");
+    } finally {
+      setAdmin(null); // 🔥 เคลียร์ state แน่นอน
     }
-
-    console.clear();
-    if (import.meta.env.PROD) {
-      console.clear();
-    }
-
-    setAdmin(null);
   };
 
   return (
@@ -84,6 +84,7 @@ export const AuthProvider = ({ children }: any) => {
         loading,
         login,
         logout,
+        verify, // 🔥 export ออกไปใช้ได้
       }}
     >
       {children}

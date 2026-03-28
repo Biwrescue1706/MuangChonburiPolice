@@ -55,10 +55,10 @@ export default function Nav() {
           />
 
           <div className="text-start">
-            <h6 className="fw-bold text-warning m-0 small">
+            <h5 className="fw-bold text-warning m-0">
               🏠งานพิมพ์มือตรวจประวัติ
-            </h6>
-            <h6 className="text-white m-0 small">งานนโยบายและแผน</h6>
+            </h5>
+            <h5 className="text-white m-0">งานนโยบายและแผน</h5>
           </div>
         </div>
 
@@ -150,41 +150,49 @@ export default function Nav() {
             ➕ เพิ่มบุคคลตรวจประวัติ
           </button>
 
-<button
-  className={`btn text-start ${
-    isActive("/person/status0") ? "btn-warning fw-bold" : "btn-warning"
-  }`}
-  onClick={() => navigate("/person/status0")}
->
-  📌 รอส่ง ศพฐ
-</button>
+          <button
+            className={`btn text-start ${
+              isActive("/person/status0")
+                ? "btn-warning fw-bold"
+                : "btn-warning"
+            }`}
+            onClick={() => navigate("/person/status0")}
+          >
+            📌 รอส่ง ศพฐ
+          </button>
 
-<button
-  className={`btn text-start ${
-    isActive("/person/status1") ? "btn-warning fw-bold" : "btn-warning"
-  }`}
-  onClick={() => navigate("/person/status1")}
->
-  📦 ส่งแล้ว
-</button>
+          <button
+            className={`btn text-start ${
+              isActive("/person/status1")
+                ? "btn-warning fw-bold"
+                : "btn-warning"
+            }`}
+            onClick={() => navigate("/person/status1")}
+          >
+            📦 ส่งแล้ว
+          </button>
 
-<button
-  className={`btn text-start ${
-    isActive("/person/status2") ? "btn-warning fw-bold" : "btn-warning"
-  }`}
-  onClick={() => navigate("/person/status2")}
->
-  ✅ รับแล้ว
-</button>
+          <button
+            className={`btn text-start ${
+              isActive("/person/status2")
+                ? "btn-warning fw-bold"
+                : "btn-warning"
+            }`}
+            onClick={() => navigate("/person/status2")}
+          >
+            ✅ รับแล้ว
+          </button>
 
-<button
-  className={`btn text-start ${
-    isActive("/person/status3") ? "btn-warning fw-bold" : "btn-warning"
-  }`}
-  onClick={() => navigate("/person/status3")}
->
-  ❌ ส่งคืน
-</button>
+          <button
+            className={`btn text-start ${
+              isActive("/person/status3")
+                ? "btn-warning fw-bold"
+                : "btn-warning"
+            }`}
+            onClick={() => navigate("/person/status3")}
+          >
+            ❌ ส่งคืน
+          </button>
 
           <button
             className="btn btn-warning text-start"
@@ -244,45 +252,45 @@ export default function Nav() {
               ➕ เพิ่มบุคคลตรวจประวัติ
             </button>
 
-<button
-  className="btn btn-warning text-start"
-  onClick={() => {
-    navigate("/person/status0");
-    setMenuOpen(false);
-  }}
->
-  📌 รอส่ง ศพฐ
-</button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => {
+                navigate("/person/status0");
+                setMenuOpen(false);
+              }}
+            >
+              📌 รอส่ง ศพฐ
+            </button>
 
-<button
-  className="btn btn-warning text-start"
-  onClick={() => {
-    navigate("/person/status1");
-    setMenuOpen(false);
-  }}
->
-  📦 ส่งแล้ว
-</button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => {
+                navigate("/person/status1");
+                setMenuOpen(false);
+              }}
+            >
+              📦 ส่งแล้ว
+            </button>
 
-<button
-  className="btn btn-warning text-start"
-  onClick={() => {
-    navigate("/person/status2");
-    setMenuOpen(false);
-  }}
->
-  ✅ รับแล้ว
-</button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => {
+                navigate("/person/status2");
+                setMenuOpen(false);
+              }}
+            >
+              ✅ รับแล้ว
+            </button>
 
-<button
-  className="btn btn-warning text-start"
-  onClick={() => {
-    navigate("/person/status3");
-    setMenuOpen(false);
-  }}
->
-  ❌ ส่งคืน
-</button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => {
+                navigate("/person/status3");
+                setMenuOpen(false);
+              }}
+            >
+              ❌ ส่งคืน
+            </button>
 
             <button
               className="btn btn-warning text-start"
@@ -322,10 +330,8 @@ export default function Nav() {
       )}
 
       <div
-        className="mt-3"
+        className="main-content"
         style={{
-          marginTop: 0,
-          paddingLeft: 0,
           minHeight: "100vh",
         }}
       >

@@ -1,16 +1,19 @@
-// src/routes/person.js
+//src/routes/person.js
 import express from "express";
 import prisma from "../prisma.js";
 
 const router = express.Router();
 
-async function getOrganization(tx, organizationId) {
-  if (!organizationId) return null;
+/* ================= ORGANIZATION ================= */
 
-  return await tx.organization.findUnique({
-    where: { organizationId },
+// 🔥 ดึง MAIN จาก DB เท่านั้น
+async function getOrganization(tx) {
+  return await tx.organization.findFirst({
+    where: { key: "MAIN" },
   });
 }
+
+/* ================= UTIL ================= */
 
 function formatThaiFullDate(value) {
   if (!value) return null;
@@ -31,41 +34,68 @@ function formatThaiFullDate(value) {
   return `${day} ${month} ${year}`;
 }
 
-function toDateOrNull(value) {
-  if (!value) return null;
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? null : d;
-}
-
 async function createSnapshotIfChanged(tx, model, field, personId, value) {
   const last = await tx[model].findFirst({
     where: { personId },
     orderBy: { createdAt: "desc" },
   });
 
-  if (!last || last[field] !== value) {
+  if (!last || String(last[field] ?? "") !== String(value ?? "")) {
     await tx[model].create({
       data: { personId, [field]: value },
     });
   }
 }
 
+/* ================= BIRTH ================= */
+
 function formatBirthFields(data) {
+  let birthDate = null;
+
+  if (data.birthDay && data.birthMonth && data.birthYear) {
+    const monthsFull = [
+      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน",
+      "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม",
+      "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+    ];
+
+    const monthsShort = [
+      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.",
+      "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.",
+      "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+    ];
+
+    const day = String(data.birthDay).padStart(2, "0");
+    const monthIndex = monthsFull.indexOf(data.birthMonth);
+    const month = monthsShort[monthIndex] || null;
+    const year = Number(data.birthYear);
+
+    if (month !== null) {
+      birthDate = `${day} ${month} ${year}`;
+    }
+  }
+
   return {
-    birthDate: data.birthDate,
-    birthDay:
-      data.birthDay !== undefined && data.birthDay !== null
-        ? String(data.birthDay).padStart(2, "0")
-        : null,
+    birthDate,
+    birthDay: data.birthDay ? String(data.birthDay).padStart(2, "0") : null,
     birthMonth: data.birthMonth,
     birthYear: data.birthYear,
   };
 }
 
-// CREATE PERSON
+/* ================= CREATE ================= */
+
 router.post("/", async (req, res) => {
   try {
     const data = req.body;
+
+    if (!data.firstName || !data.lastName) {
+      return res.status(400).json({ error: "กรอกชื่อ-นามสกุล" });
+    }
+
+    if (data.citizenId && data.citizenId.length !== 13) {
+      return res.status(400).json({ error: "เลขบัตรไม่ถูกต้อง" });
+    }
 
     const existing = await prisma.person.findUnique({
       where: { citizenId: data.citizenId },
@@ -76,7 +106,8 @@ router.post("/", async (req, res) => {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const org = await getOrganization(tx, data.organizationId);
+      const org = await getOrganization(tx);
+      if (!org) throw new Error("ไม่พบ organization MAIN");
 
       const person = await tx.person.create({
         data: {
@@ -86,8 +117,8 @@ router.post("/", async (req, res) => {
           fullName:
             data.fullName ||
             [data.prefix, data.firstName, data.lastName].filter(Boolean).join(" "),
-          citizenId: data.citizenId,
 
+          citizenId: data.citizenId,
           ...formatBirthFields(data),
 
           nationality: data.nationality,
@@ -98,7 +129,7 @@ router.post("/", async (req, res) => {
           bodyType: data.bodyType ?? "สันทัด",
           skinColor: data.skinColor ?? "ดำแดง",
           behavior: data.behavior ?? "ปกติ",
-          distinguishingMarks: (data.distinguishingMarks),
+          distinguishingMarks: data.distinguishingMarks,
 
           address: data.address,
           occupation: data.occupation,
@@ -115,18 +146,19 @@ router.post("/", async (req, res) => {
           receiptBookNo: data.receiptBookNo,
           receiptNo: data.receiptNo,
           receiptDate: formatThaiFullDate(data.receiptDate),
+
           money: data.money ?? 100,
           moneyText: data.moneyText,
 
           status: 0,
           statusUpdatedAt: new Date(),
 
-          organizationId: data.organizationId || null,
-          organizationName: org?.organizationName || null,
-          fullNameOrg: org?.fullName || null,
-          rank: org?.rank || null,
-          position: org?.position || null,
-          fullNameWithRank: org?.fullNameWithRank || null,
+          organizationId: org.organizationId,
+          organizationName: org.organizationName,
+          fullNameOrg: org.fullName,
+          rank: org.rank,
+          position: org.position,
+          fullNameWithRank: org.fullNameWithRank,
         },
       });
 
@@ -146,7 +178,6 @@ router.post("/", async (req, res) => {
       await tx.receipt.create({
         data: {
           personId: person.personId,
-
           prefix: person.prefix,
           firstName: person.firstName,
           lastName: person.lastName,
@@ -161,7 +192,7 @@ router.post("/", async (req, res) => {
 
           receiptBookNo: person.receiptBookNo,
           receiptNo: person.receiptNo,
-          receiptDate: data.receiptDate,
+          receiptDate: person.receiptDate,
 
           money: person.money,
           moneyText: person.moneyText,
@@ -175,89 +206,6 @@ router.post("/", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
-  }
-});
-
-// GET ALL + SEARCH + FILTER
-router.get("/getall", async (req, res) => {
-  try {
-    const { search, status, page = 1, limit = 20 } = req.query;
-
-    const where = {
-      deleteAt: null,
-      AND: [],
-    };
-
-    if (search) {
-      where.AND.push({
-        OR: [
-          { firstName: { contains: search, mode: "insensitive" } },
-          { lastName: { contains: search, mode: "insensitive" } },
-          { fullName: { contains: search, mode: "insensitive" } },
-          { citizenId: { contains: search } },
-        ],
-      });
-    }
-
-    if (status !== undefined) {
-      where.AND.push({ status: Number(status) });
-    }
-
-    const skip = (Number(page) - 1) * Number(limit);
-
-    const finalWhere = where.AND.length
-      ? where
-      : { deleteAt: null };
-
-    const [persons, total] = await Promise.all([
-      prisma.person.findMany({
-        where: finalWhere,
-        skip,
-        take: Number(limit),
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.person.count({
-        where: finalWhere,
-      }),
-    ]);
-
-    res.json({
-      success: true,
-      data: persons,
-      total,
-      page: Number(page),
-      totalPages: Math.ceil(total / Number(limit)),
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
-  }
-});
-
-// GET PERSON BY ID
-router.get("/:id", async (req, res) => {
-  try {
-    const person = await prisma.person.findUnique({
-      where: { personId: req.params.id },
-      include: {
-        files: true,
-        nationalitySnapshot: true,
-        ethnicitySnapshot: true,
-        bodyTypeSnapshot: true,
-        skinColorSnapshot: true,
-        requestInfos: true,
-        receipts: true,
-      },
-    });
-
-    if (!person || person.deleteAt) {
-      return res.status(404).json({ error: "ไม่พบข้อมูล" });
-    }
-
-    res.json({ success: true, data: person });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
   }
 });
 
@@ -275,7 +223,7 @@ router.put("/:id", async (req, res) => {
         throw new Error("ไม่พบข้อมูล");
       }
 
-      const org = await getOrganization(tx, data.organizationId);
+      const org = await getOrganization(tx);
 
       const person = await tx.person.update({
         where: { personId: req.params.id },
@@ -317,7 +265,7 @@ router.put("/:id", async (req, res) => {
           money: data.money ?? oldPerson.money,
           moneyText: data.moneyText,
 
-          organizationId: data.organizationId || null,
+          organizationId: org?.organizationId || null,
           organizationName: org?.organizationName || null,
           fullNameOrg: org?.fullName || null,
           rank: org?.rank || null,
@@ -345,25 +293,21 @@ router.put("/:id", async (req, res) => {
       await tx.receipt.create({
         data: {
           personId: person.personId,
-
           prefix: person.prefix,
           firstName: person.firstName,
           lastName: person.lastName,
           fullName: person.fullName,
-
+          receiptBookNo: person.receiptBookNo,
+          receiptNo: person.receiptNo,
+          receiptDate: formatThaiFullDate(data.receiptDate),
+          money: person.money,
+          moneyText: person.moneyText,          
           organizationId: person.organizationId,
           organizationName: person.organizationName,
           fullNameOrg: person.fullNameOrg,
           rank: person.rank,
           position: person.position,
           fullNameWithRank: person.fullNameWithRank,
-
-          receiptBookNo: person.receiptBookNo,
-          receiptNo: person.receiptNo,
-          receiptDate: toDateOrNull(data.receiptDate),
-
-          money: person.money,
-          moneyText: person.moneyText,
         },
       });
 
@@ -377,32 +321,6 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ error: err.message });
     }
     res.status(500).json({ error: err.message });
-  }
-});
-
-// DELETE -> soft delete
-router.delete("/:id", async (req, res) => {
-  try {
-    const person = await prisma.person.findUnique({
-      where: { personId: req.params.id },
-    });
-
-    if (!person || person.deleteAt) {
-      return res.status(404).json({ error: "ไม่พบข้อมูล" });
-    }
-
-    await prisma.person.update({
-      where: { personId: req.params.id },
-      data: {
-        deleteAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "ลบไม่สำเร็จ" });
   }
 });
 
@@ -433,7 +351,7 @@ router.patch("/:id/status", async (req, res) => {
           // 🔥 เพิ่มตรงนี้
           deleteAt:
             status === 3
-              ? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+              ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
               : null,
 
           updatedAt: new Date(),
@@ -471,7 +389,7 @@ router.patch("/:id/status", async (req, res) => {
 
           receiptBookNo: updatedPerson.receiptBookNo,
           receiptNo: updatedPerson.receiptNo,
-          receiptDate: toDateOrNull(updatedPerson.receiptDate),
+          receiptDate: updatedPerson.receiptDate,
 
           money: updatedPerson.money,
           moneyText: updatedPerson.moneyText,
@@ -510,7 +428,6 @@ router.patch("/bulk/status", async (req, res) => {
         updatedAt: new Date(),
       },
     });
-    
 
     res.json({ success: true, updated: result.count });
   } catch (err) {
@@ -519,7 +436,71 @@ router.patch("/bulk/status", async (req, res) => {
   }
 });
 
-// ================= AUTO DELETE =================
+/* ================= GET BY ID ================= */
+router.get("/:id", async (req, res) => {
+  try {
+    const person = await prisma.person.findUnique({
+      where: { personId: req.params.id },
+      include: {
+        files: true,
+        nationalitySnapshot: true,
+        ethnicitySnapshot: true,
+        bodyTypeSnapshot: true,
+        skinColorSnapshot: true,
+        requestInfos: true,
+        receipts: true,
+      },
+    });
+
+    if (!person || person.deleteAt) {
+      return res.status(404).json({ error: "ไม่พบข้อมูล" });
+    }
+
+    res.json({ success: true, data: person });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
+  }
+});
+
+/* ================= DELETE ================= */
+router.delete("/:id", async (req, res) => {
+  try {
+    const personId = req.params.id;
+
+    await prisma.$transaction([
+      prisma.receipt.deleteMany({
+        where: { personId },
+      }),
+      prisma.requestInfo.deleteMany({
+        where: { personId },
+      }),
+      prisma.nationalitySnapshot.deleteMany({
+        where: { personId },
+      }),
+      prisma.ethnicitySnapshot.deleteMany({
+        where: { personId },
+      }),
+      prisma.bodyTypeSnapshot.deleteMany({
+        where: { personId },
+      }),
+      prisma.skinColorSnapshot.deleteMany({
+        where: { personId },
+      }),
+      prisma.person.delete({
+        where: { personId },
+      }),
+    ]);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "ลบไม่สำเร็จ" });
+  }
+});
+
+/* ================= AUTO DELETE ================= */
+
 // setInterval(async () => {
 //   await prisma.person.deleteMany({
 //     where: {

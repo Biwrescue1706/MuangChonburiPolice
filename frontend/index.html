@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
+
     <link rel="icon" type="image/webp" href="/muangchonburi.webp" />
 
     <title>งาน นผ. สภ.เมืองชลบุรี</title>
@@ -14,6 +14,28 @@
   </head>
   <body>
     <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- Footer -->
+    <footer
+      class="smart-footer text-center fw-bold text-dark py-2 w-100"
+      style="
+        margin-top: 50px;
+        font-size: 14px;
+        background: rgb(255, 255, 255);
+        backdrop-filter: blur(8px);
+        border-top: 1px solid rgb(0, 0, 0);
+      "
+    >
+      © <span id="smartYear"></span> งาน นโยบายและแผน. สภ.เมืองชลบุรี. <br />
+      พัฒนาโดย นายภูวณัฐ พาหะละ. <br />สงวนลิขสิทธิ์ทุกประการ
+    </footer>
+
+    <script>
+      document.getElementById("smartYear").textContent =
+        `2026 - ${new Date().getFullYear()}`;
+    </script>
+
+    <!-- App Script -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
