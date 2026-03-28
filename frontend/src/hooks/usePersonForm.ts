@@ -1,7 +1,7 @@
 //src/hooks/usePersonForm.ts
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
 import api from "../api/axios";
+import { toast } from "../utils/toast";
 
 export default function usePersonForm(navigate: any) {
   const currentYear = new Date().getFullYear();
@@ -48,12 +48,16 @@ export default function usePersonForm(navigate: any) {
     bodyType: "สันทัด",
     skinColor: "ดำแดง",
     behavior: "ปกติ",
+    distinguishingMarks: "-",
+    father: "",
+    mother: "",
     spouse: "-",
     money: 100,
     moneyText: "หนึ่งร้อยบาทถ้วน",
-    weight: 0,
-    height: 0,
-    distinguishingMarks: "-",
+    weight: null,
+    height: null,
+    workplaceAddress: "",
+    occupation: "",
     fingerprintDate: new Date().toISOString().split("T")[0],
     status: 0,
     receiptBookNo: "",
@@ -61,51 +65,22 @@ export default function usePersonForm(navigate: any) {
     receiptDate: new Date().toISOString().split("T")[0],
   });
 
-  const isLeapYear = (yearBE: string) => {
-    const yearAD = Number(yearBE) - 543;
-    if (yearAD % 400 === 0) return true;
-    if (yearAD % 100 === 0) return false;
-    if (yearAD % 4 === 0) return true;
-    return false;
-  };
-
-  const getDaysInMonth = (month: string, year?: string) => {
-    if (!month) return 31;
-    if (month === "กุมภาพันธ์") {
-      if (year && isLeapYear(year)) return 29;
-      return 28;
-    }
-    if (["เมษายน", "มิถุนายน", "กันยายน", "พฤศจิกายน"].includes(month)) {
-      return 30;
-    }
-    return 31;
-  };
-
-  const convertMoneyToText = (amount: number) => {
-    if (!amount) return "";
-    if (amount === 100) return "หนึ่งร้อยบาทถ้วน";
-    return amount + "บาทถ้วน";
-  };
-
-  const filteredHeights = heights.filter((h) =>
-    form.height ? String(h).startsWith(form.height) : true,
-  );
-
-  const filteredWeights = weights.filter((w) =>
-    form.weight ? String(w).startsWith(form.weight) : true,
-  );
-
-  const maxDay = getDaysInMonth(form.birthMonth, form.birthYear);
-  const filteredDays = Array.from({ length: maxDay }, (_, i) => i + 1);
+  // ================= RECEIPT =================
 
   useEffect(() => {
     const fetchReceipts = async () => {
       try {
         const res = await api.get("/receipt/latest");
-        const bookNo = res.data?.bookNo ?? "";
-        const usedNumbers = res.data?.usedNumbers ?? [];
 
-        setForm((prev: any) => ({ ...prev, receiptBookNo: bookNo }));
+        const bookNo = res.data?.bookNo ?? "";
+        const usedNumbers = Array.isArray(res.data?.usedNumbers)
+          ? res.data.usedNumbers
+          : [];
+
+        setForm((prev: any) => {
+          if (prev.receiptBookNo === bookNo) return prev;
+          return { ...prev, receiptBookNo: bookNo };
+        });
 
         const available = allReceiptNumbers.filter(
           (n) => !usedNumbers.includes(n),
@@ -121,12 +96,15 @@ export default function usePersonForm(navigate: any) {
   }, []);
 
   useEffect(() => {
-    if (!form.receiptBookNo || form.receiptBookNo.length < 3) return;
+    if (!form.receiptBookNo) return;
 
     const fetchUsedNumbers = async () => {
       try {
         const res = await api.get(`/receipt/used/${form.receiptBookNo}`);
-        const usedNumbers = res.data?.usedNumbers ?? [];
+
+        const usedNumbers = Array.isArray(res.data?.usedNumbers)
+          ? res.data.usedNumbers
+          : [];
 
         const available = allReceiptNumbers.filter(
           (n) => !usedNumbers.includes(n),
@@ -140,6 +118,56 @@ export default function usePersonForm(navigate: any) {
 
     fetchUsedNumbers();
   }, [form.receiptBookNo]);
+
+  // ================= UTIL =================
+
+  const isLeapYear = (yearBE: string) => {
+    const yearAD = Number(yearBE) - 543;
+    if (yearAD % 400 === 0) return true;
+    if (yearAD % 100 === 0) return false;
+    return yearAD % 4 === 0;
+  };
+
+  const getDaysInMonth = (month: string, year?: string) => {
+    if (!month) return 31;
+    if (month === "กุมภาพันธ์") {
+      return year && isLeapYear(year) ? 29 : 28;
+    }
+    if (["เมษายน", "มิถุนายน", "กันยายน", "พฤศจิกายน"].includes(month)) {
+      return 30;
+    }
+    return 31;
+  };
+
+  const convertMoneyToText = (amount: number) => {
+    if (!amount) return "";
+    if (amount === 100) return "หนึ่งร้อยบาทถ้วน";
+    return amount + "บาทถ้วน";
+  };
+
+  const isEmpty = (value: any) => {
+    return (
+      value === undefined ||
+      value === null ||
+      value === "" ||
+      (typeof value === "number" && isNaN(value))
+    );
+  };
+
+  // ================= FILTER =================
+
+  const filteredHeights = heights.filter((h) =>
+    form.height ? String(h).startsWith(form.height) : true,
+  );
+
+  const filteredWeights = weights.filter((w) =>
+    form.weight ? String(w).startsWith(form.weight) : true,
+  );
+
+  const maxDay = getDaysInMonth(form.birthMonth, form.birthYear);
+  const filteredDays = Array.from({ length: maxDay }, (_, i) => i + 1);
+
+  // ================= HANDLE CHANGE =================
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -160,32 +188,85 @@ export default function usePersonForm(navigate: any) {
       return;
     }
 
+    const numberFields = ["weight", "height"];
+    if (numberFields.includes(name)) {
+      setForm((prev: any) => ({
+        ...prev,
+        [name]: value === "" ? null : Number(value),
+      }));
+      return;
+    }
+
     setForm((prev: any) => ({ ...prev, [name]: value }));
   };
+
+  // ================= SUBMIT =================
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    const firstName = form.firstName?.trim();
-    const lastName = form.lastName?.trim();
+    const fullName = [form.prefix, form.firstName, form.lastName]
+      .filter(Boolean)
+      .join(" ");
 
-    if (!firstName || !lastName) {
-      Swal.fire("กรอกชื่อ-นามสกุลให้ครบ");
+    const finalForm = { ...form, fullName };
+
+    const requiredFields = [
+      "receiptBookNo",
+      "prefix",
+      "firstName",
+      "lastName",
+      "citizenId",
+      "birthDay",
+      "birthMonth",
+      "birthYear",
+      "nationality",
+      "ethnicity",
+      "weight",
+      "height",
+      "bodyType",
+      "skinColor",
+      "behavior",
+      "distinguishingMarks",
+      "address",
+      "occupation",
+      "workplaceAddress",
+      "father",
+      "mother",
+      "spouse",
+      "fingerprintDate",
+      "purpose",
+      "requestingAgency",
+      "receiptNo",
+      "receiptDate",
+    ];
+
+    const missingFields = requiredFields.filter((f) => isEmpty(finalForm[f]));
+
+    if (missingFields.length > 0) {
+      toast(
+        "warning",
+        "กรอกข้อมูลไม่ครบ",
+        `ยังขาด ${missingFields.length} ช่อง`,
+      );
+      return;
+    }
+
+    if (!finalForm.citizenId || finalForm.citizenId.length !== 13) {
+      toast("warning", "เลขบัตรประชาชนต้องเป็น 13 หลัก");
       return;
     }
 
     try {
-      await api.post("/person", form);
-
-      await Swal.fire({ icon: "success", title: "บันทึกสำเร็จ" });
-
+      await api.post("/person", finalForm);
+      toast("success", "บันทึกสำเร็จ");
       navigate("/person/status0");
     } catch (err: any) {
-      Swal.fire({
-        icon: "error",
-        title: "ผิดพลาด",
-        text: err.response?.data?.error || "ไม่สามารถบันทึกได้",
-      });
+      toast(
+        "error",
+        "ผิดพลาด",
+        err.response?.data?.error || "ไม่สามารถบันทึกได้",
+      );
     }
   };
 

@@ -1,4 +1,11 @@
-export default function BasicInfo({ form, handleChange }: any) {
+//src/components/person/BasicInfo.tsx
+export default function BasicInfo({
+  form,
+  handleChange,
+  filteredDays,
+  months,
+  years,
+}: any) {
   return (
     <div className="card mb-4 shadow-sm">
       <div className="card-header bg-primary text-white h4 text-center">
@@ -41,7 +48,55 @@ export default function BasicInfo({ form, handleChange }: any) {
         </div>
 
         <div className="col-md-4">
-          <label className="form-label">วันที่พิมพ์มือ</label>
+          <label>วันเกิด</label>
+          <input
+            list="day-list"
+            name="birthDay"
+            className="form-control"
+            value={form.birthDay || ""}
+            onChange={handleChange}
+          />
+          <datalist id="day-list">
+            {filteredDays.map((d: any) => (
+              <option key={d} value={d} />
+            ))}
+          </datalist>
+        </div>
+
+        <div className="col-md-4">
+          <label>เดือนเกิด</label>
+          <input
+            list="month-list"
+            name="birthMonth"
+            className="form-control"
+            value={form.birthMonth || ""}
+            onChange={handleChange}
+          />
+          <datalist id="month-list">
+            {months.map((m: any) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
+        </div>
+
+        <div className="col-md-4">
+          <label>ปีเกิด</label>
+          <input
+            list="year-list"
+            name="birthYear"
+            className="form-control"
+            value={form.birthYear || ""}
+            onChange={handleChange}
+          />
+          <datalist id="year-list">
+            {years.map((y: any) => (
+              <option key={y} value={y} />
+            ))}
+          </datalist>
+        </div>
+
+        <div className="col-md-4">
+          <label className="form-label">วัน เดือน ปี ที่พิมพ์ลายนิ้วมือ</label>
           <input
             type="date"
             name="fingerprintDate"

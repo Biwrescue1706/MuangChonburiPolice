@@ -13,10 +13,10 @@ import ResetPassword from "./pages/Password/ResetPassword";
 import CreateAdmin from "./pages/CreateAdmin";
 import NotFound from "./pages/NotFound";
 import PersonPage from "./pages/PersonPage";
-import PersonStatus0Page from "./pages/PersonStatus0Page";
-import PersonStatus1Page from "./pages/PersonStatus1Page";
-import PersonStatus2Page from "./pages/PersonStatus2Page";
-import PersonStatus3Page from "./pages/PersonStatus3Page";
+import PersonStatus0Page from "./pages/statusPerson/PersonStatus0Page";
+import PersonStatus1Page from "./pages/statusPerson/PersonStatus1Page";
+import PersonStatus2Page from "./pages/statusPerson/PersonStatus2Page";
+import PersonStatus3Page from "./pages/statusPerson/PersonStatus3Page";
 import PersonDetailPage from "./pages/PersonDetailPage";
 import PersonHistoryPage from "./pages/PersonHistoryPage"; // ⭐ เพิ่ม
 

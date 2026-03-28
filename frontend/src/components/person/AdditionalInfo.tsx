@@ -1,15 +1,13 @@
+//src/components/person/AdditionalInfo.tsx
 export default function AdditionalInfo({
   form,
   handleChange,
-  months,
-  years,
   nationalities,
   ethnicities,
   bodyTypes,
   skinColors,
   filteredHeights,
   filteredWeights,
-  filteredDays,
 }: any) {
   return (
     <>
@@ -48,57 +46,12 @@ export default function AdditionalInfo({
             <input
               name="citizenId"
               className="form-control"
+              value={form.citizenId || ""}
               onChange={handleChange}
-              required
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={13}
             />
-          </div>
-
-          <div className="col-md-4">
-            <label>วันเกิด</label>
-            <input
-              list="day-list"
-              name="birthDay"
-              className="form-control"
-              value={form.birthDay || ""}
-              onChange={handleChange}
-            />
-            <datalist id="day-list">
-              {filteredDays.map((d: any) => (
-                <option key={d} value={d} />
-              ))}
-            </datalist>
-          </div>
-
-          <div className="col-md-4">
-            <label>เดือนเกิด</label>
-            <input
-              list="month-list"
-              name="birthMonth"
-              className="form-control"
-              value={form.birthMonth || ""}
-              onChange={handleChange}
-            />
-            <datalist id="month-list">
-              {months.map((m: any) => (
-                <option key={m} value={m} />
-              ))}
-            </datalist>
-          </div>
-
-          <div className="col-md-4">
-            <label>ปีเกิด</label>
-            <input
-              list="year-list"
-              name="birthYear"
-              className="form-control"
-              value={form.birthYear || ""}
-              onChange={handleChange}
-            />
-            <datalist id="year-list">
-              {years.map((y: any) => (
-                <option key={y} value={y} />
-              ))}
-            </datalist>
           </div>
 
           <div className="col-md-4">
@@ -140,7 +93,7 @@ export default function AdditionalInfo({
               list="height-list"
               name="height"
               className="form-control"
-              value={form.height || 0}
+              value={form.height || ""}
               onChange={handleChange}
             />
             <datalist id="height-list">
@@ -157,7 +110,8 @@ export default function AdditionalInfo({
               list="weight-list"
               name="weight"
               className="form-control"
-              value={form.weight || 0}
+              value={form.weight || ""}
+              pattern="[0-9]*"
               onChange={handleChange}
             />
             <datalist id="weight-list">
@@ -200,7 +154,17 @@ export default function AdditionalInfo({
           </div>
 
           <div className="col-md-4">
-            <label>ลักษณะนิสัย</label>
+            <label>ตำหนิ/พิการ/ลายสัก</label>
+            <input
+              name="distinguishingMarks"
+              className="form-control"
+              value={form.distinguishingMarks}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="col-md-4">
+            <label>ลักษณะนิสัยและนิสัยอันเป็นที่น่าสังเกต</label>
             <input
               name="behavior"
               className="form-control"
@@ -210,10 +174,53 @@ export default function AdditionalInfo({
           </div>
 
           <div className="col-md-4">
-            <label>ที่อยู่</label>
+            <label>ที่อยู่ปัจจุบัน</label>
             <input
               name="address"
               className="form-control"
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="col-md-4">
+            <label>อาชีพ</label>
+            <input
+              name="occupation"
+              className="form-control"
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="col-md-4">
+            <label>สถานที่ทำงาน</label>
+            <input
+              name="workplaceAddress"
+              className="form-control"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="col-md-4">
+            <label>ชื่อตัว ชื่อสกุล บิดา</label>
+            <input
+              name="father"
+              className="form-control"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="col-md-4">
+            <label>ชื่อตัว ชื่อสกุล มารดา</label>
+            <input
+              name="mother"
+              className="form-control"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="col-md-4">
+            <label>ชื่อตัว ชื่อสกุล ภรรยา/สามี</label>
+            <input
+              name="spouse"
+              className="form-control"
+              value={form.spouse}
               onChange={handleChange}
             />
           </div>

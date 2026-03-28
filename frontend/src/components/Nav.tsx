@@ -55,10 +55,10 @@ export default function Nav() {
           />
 
           <div className="text-start">
-            <h5 className="fw-bold text-warning m-0">
+            <h6 className="fw-bold text-warning m-0 small">
               🏠งานพิมพ์มือตรวจประวัติ
-            </h5>
-            <h5 className="text-white m-0">งานนโยบายและแผน</h5>
+            </h6>
+            <h6 className="text-white m-0 small">งานนโยบายและแผน</h6>
           </div>
         </div>
 

@@ -1,3 +1,4 @@
+//src/components/person/ReceiptInfo.tsx
 export default function ReceiptInfo({
   form,
   handleChange,
@@ -61,7 +62,6 @@ export default function ReceiptInfo({
           <label>ลงวันที่</label>
           <input
             type="date"
-            placeholder="วว/ดด/ปปป"
             name="receiptDate"
             className="form-control"
             onChange={handleChange}

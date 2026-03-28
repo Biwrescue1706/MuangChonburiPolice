@@ -92,11 +92,7 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "กรอกชื่อ-นามสกุล" });
     }
 
-    if (data.citizenId && data.citizenId.length !== 13) {
-      return res.status(400).json({ error: "เลขบัตรไม่ถูกต้อง" });
-    }
-
-    const existing = await prisma.person.findUnique({
+    const existing = await prisma.person.findFirst({
       where: { citizenId: data.citizenId },
     });
 
@@ -123,12 +119,12 @@ router.post("/", async (req, res) => {
           nationality: data.nationality,
           ethnicity: data.ethnicity,
 
-          weight: data.weight ?? null,
-          height: data.height ?? null,
+          weight: data.weight ? Number(data.weight) : null,
+          height: data.height ? Number(data.height) : null,
           bodyType: data.bodyType ?? "สันทัด",
           skinColor: data.skinColor ?? "ดำแดง",
           behavior: data.behavior ?? "ปกติ",
-          distinguishingMarks: data.distinguishingMarks,
+          distinguishingMarks: data.distinguishingMarks ?? "-",
 
           address: data.address,
           occupation: data.occupation,
@@ -136,7 +132,6 @@ router.post("/", async (req, res) => {
           father: data.father,
           mother: data.mother,
           spouse: data.spouse ?? "-",
-
           fingerprintDate: formatThaiFullDate(data.fingerprintDate),
 
           purpose: data.purpose,
@@ -145,12 +140,8 @@ router.post("/", async (req, res) => {
           receiptBookNo: data.receiptBookNo,
           receiptNo: data.receiptNo,
           receiptDate: formatThaiFullDate(data.receiptDate),
-
           money: data.money ?? 100,
           moneyText: data.moneyText,
-
-          status: 0,
-          statusUpdatedAt: new Date(),
 
           organizationId: org.organizationId,
           organizationName: org.organizationName,
@@ -158,6 +149,9 @@ router.post("/", async (req, res) => {
           rank: org.rank,
           position: org.position,
           fullNameWithRank: org.fullNameWithRank,
+
+          status: 0,
+          statusUpdatedAt: new Date(),
         },
       });
 
@@ -208,6 +202,11 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/debug", async (req, res) => {
+  const data = await prisma.person.findMany();
+  res.json(data);
+});
+
 // GET ALL + SEARCH + FILTER
 router.get("/getall", async (req, res) => {
   try {
@@ -229,8 +228,12 @@ router.get("/getall", async (req, res) => {
       });
     }
 
-    if (status !== undefined) {
-      where.AND.push({ status: Number(status) });
+    if (status !== undefined && status !== "") {
+      const statusNum = Number(status);
+
+      if (!isNaN(statusNum)) {
+        where.AND.push({ status: statusNum });
+      }
     }
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -258,6 +261,33 @@ router.get("/getall", async (req, res) => {
       page: Number(page),
       totalPages: Math.ceil(total / Number(limit)),
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
+  }
+});
+
+/* ================= GET BY ID ================= */
+router.get("/:id", async (req, res) => {
+  try {
+    const person = await prisma.person.findUnique({
+      where: { personId: req.params.id },
+      include: {
+        files: true,
+        nationalitySnapshot: true,
+        ethnicitySnapshot: true,
+        bodyTypeSnapshot: true,
+        skinColorSnapshot: true,
+        requestInfos: true,
+        receipts: true,
+      },
+    });
+
+    if (!person || person.deleteAt) {
+      return res.status(404).json({ error: "ไม่พบข้อมูล" });
+    }
+
+    res.json({ success: true, data: person });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
@@ -295,8 +325,8 @@ router.put("/:id", async (req, res) => {
           nationality: data.nationality,
           ethnicity: data.ethnicity,
 
-          weight: data.weight ?? null,
-          height: data.height ?? null,
+          weight: data.weight ? Number(data.weight) : null,
+          height: data.height ? Number(data.height) : null,
           bodyType: data.bodyType,
           skinColor: data.skinColor,
           behavior: data.behavior,
@@ -379,35 +409,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-
-
-/* ================= GET BY ID ================= */
-router.get("/:id", async (req, res) => {
-  try {
-    const person = await prisma.person.findUnique({
-      where: { personId: req.params.id },
-      include: {
-        files: true,
-        nationalitySnapshot: true,
-        ethnicitySnapshot: true,
-        bodyTypeSnapshot: true,
-        skinColorSnapshot: true,
-        requestInfos: true,
-        receipts: true,
-      },
-    });
-
-    if (!person || person.deleteAt) {
-      return res.status(404).json({ error: "ไม่พบข้อมูล" });
-    }
-
-    res.json({ success: true, data: person });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
-  }
-});
-
 /* ================= DELETE ================= */
 router.delete("/:id", async (req, res) => {
   try {
@@ -471,7 +472,7 @@ router.patch("/:id/status", async (req, res) => {
           // 🔥 เพิ่มตรงนี้
           deleteAt:
             status === 3
-              ? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+              ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
               : null,
 
           updatedAt: new Date(),
@@ -483,7 +484,7 @@ router.patch("/:id/status", async (req, res) => {
       await createSnapshotIfChanged(tx, "bodyTypeSnapshot", "bodyType", updatedPerson.personId, updatedPerson.bodyType);
       await createSnapshotIfChanged(tx, "skinColorSnapshot", "skinColor", updatedPerson.personId, updatedPerson.skinColor);
 
-      await tx.requestInfo.create({
+      await tx.requestInfo.upsert({
         data: {
           personId: updatedPerson.personId,
           purpose: updatedPerson.purpose,
@@ -491,7 +492,7 @@ router.patch("/:id/status", async (req, res) => {
         },
       });
 
-      await tx.receipt.create({
+      await tx.receipt.upsert({
         data: {
           personId: updatedPerson.personId,
 
@@ -509,7 +510,7 @@ router.patch("/:id/status", async (req, res) => {
 
           receiptBookNo: updatedPerson.receiptBookNo,
           receiptNo: updatedPerson.receiptNo,
-          receiptDate: toDateOrNull(updatedPerson.receiptDate),
+          receiptDate: updatedPerson.receiptDate,
 
           money: updatedPerson.money,
           moneyText: updatedPerson.moneyText,
@@ -537,7 +538,7 @@ router.patch("/bulk/status", async (req, res) => {
       return res.status(400).json({ error: "ไม่มีรายการบุคคล" });
     }
 
-    const result = await prisma.person.updateMany({
+    await prisma.person.updateMany({
       where: {
         personId: { in: personIds },
         deleteAt: null,
@@ -546,9 +547,13 @@ router.patch("/bulk/status", async (req, res) => {
         status,
         statusUpdatedAt: new Date(),
         updatedAt: new Date(),
+        deleteAt:
+          status === 3
+            ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+            : null,
       },
     });
-    
+
 
     res.json({ success: true, updated: result.count });
   } catch (err) {

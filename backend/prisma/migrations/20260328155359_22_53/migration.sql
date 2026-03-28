@@ -38,7 +38,7 @@ CREATE TABLE "Person" (
     "lastName" TEXT NOT NULL,
     "fullName" TEXT NOT NULL,
     "citizenId" TEXT NOT NULL,
-    "birthDate" TIMESTAMP(3),
+    "birthDate" TEXT,
     "birthDay" TEXT,
     "birthMonth" TEXT,
     "birthYear" TEXT,
@@ -49,7 +49,7 @@ CREATE TABLE "Person" (
     "bodyType" TEXT DEFAULT 'สันทัด',
     "skinColor" TEXT DEFAULT 'ดำแดง',
     "behavior" TEXT DEFAULT 'ปกติ',
-    "distinguishingMarks" TEXT,
+    "distinguishingMarks" TEXT DEFAULT '-',
     "address" TEXT,
     "occupation" TEXT,
     "workplaceAddress" TEXT,
@@ -66,6 +66,13 @@ CREATE TABLE "Person" (
     "moneyText" TEXT,
     "status" INTEGER NOT NULL DEFAULT 0,
     "statusUpdatedAt" TIMESTAMP(3),
+    "deleteAt" TIMESTAMP(3),
+    "organizationId" TEXT,
+    "organizationName" TEXT,
+    "fullNameOrg" TEXT,
+    "rank" TEXT,
+    "position" TEXT,
+    "fullNameWithRank" TEXT,
 
     CONSTRAINT "Person_pkey" PRIMARY KEY ("personId")
 );
@@ -84,25 +91,43 @@ CREATE TABLE "PersonFile" (
 );
 
 -- CreateTable
-CREATE TABLE "IdentitySnapshot" (
-    "identityId" TEXT NOT NULL,
+CREATE TABLE "NationalitySnapshot" (
+    "nationalityId" TEXT NOT NULL,
     "personId" TEXT NOT NULL,
     "nationality" TEXT,
-    "ethnicity" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "IdentitySnapshot_pkey" PRIMARY KEY ("identityId")
+    CONSTRAINT "NationalitySnapshot_pkey" PRIMARY KEY ("nationalityId")
 );
 
 -- CreateTable
-CREATE TABLE "AppearanceSnapshot" (
-    "appearanceId" TEXT NOT NULL,
+CREATE TABLE "EthnicitySnapshot" (
+    "ethnicityId" TEXT NOT NULL,
+    "personId" TEXT NOT NULL,
+    "ethnicity" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "EthnicitySnapshot_pkey" PRIMARY KEY ("ethnicityId")
+);
+
+-- CreateTable
+CREATE TABLE "BodyTypeSnapshot" (
+    "bodyTypeId" TEXT NOT NULL,
     "personId" TEXT NOT NULL,
     "bodyType" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "BodyTypeSnapshot_pkey" PRIMARY KEY ("bodyTypeId")
+);
+
+-- CreateTable
+CREATE TABLE "SkinColorSnapshot" (
+    "skinColorId" TEXT NOT NULL,
+    "personId" TEXT NOT NULL,
     "skinColor" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "AppearanceSnapshot_pkey" PRIMARY KEY ("appearanceId")
+    CONSTRAINT "SkinColorSnapshot_pkey" PRIMARY KEY ("skinColorId")
 );
 
 -- CreateTable
@@ -111,8 +136,6 @@ CREATE TABLE "RequestInfo" (
     "personId" TEXT NOT NULL,
     "purpose" TEXT,
     "requestingAgency" TEXT,
-    "organizationId" TEXT,
-    "organizationName" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "RequestInfo_pkey" PRIMARY KEY ("requestInfoId")
@@ -122,11 +145,19 @@ CREATE TABLE "RequestInfo" (
 CREATE TABLE "Receipt" (
     "receiptId" TEXT NOT NULL,
     "personId" TEXT NOT NULL,
+    "prefix" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
     "organizationId" TEXT,
     "organizationName" TEXT,
+    "fullNameOrg" TEXT,
+    "rank" TEXT,
+    "position" TEXT,
+    "fullNameWithRank" TEXT,
     "receiptBookNo" TEXT,
     "receiptNo" TEXT,
-    "receiptDate" TIMESTAMP(3),
+    "receiptDate" TEXT,
     "money" INTEGER NOT NULL,
     "moneyText" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -140,23 +171,26 @@ CREATE UNIQUE INDEX "Admin_username_key" ON "Admin"("username");
 -- CreateIndex
 CREATE UNIQUE INDEX "Organization_key_key" ON "Organization"("key");
 
--- CreateIndex
-CREATE UNIQUE INDEX "Person_citizenId_key" ON "Person"("citizenId");
+-- AddForeignKey
+ALTER TABLE "Person" ADD CONSTRAINT "Person_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PersonFile" ADD CONSTRAINT "PersonFile_personId_fkey" FOREIGN KEY ("personId") REFERENCES "Person"("personId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "IdentitySnapshot" ADD CONSTRAINT "IdentitySnapshot_personId_fkey" FOREIGN KEY ("personId") REFERENCES "Person"("personId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "NationalitySnapshot" ADD CONSTRAINT "NationalitySnapshot_personId_fkey" FOREIGN KEY ("personId") REFERENCES "Person"("personId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AppearanceSnapshot" ADD CONSTRAINT "AppearanceSnapshot_personId_fkey" FOREIGN KEY ("personId") REFERENCES "Person"("personId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "EthnicitySnapshot" ADD CONSTRAINT "EthnicitySnapshot_personId_fkey" FOREIGN KEY ("personId") REFERENCES "Person"("personId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "BodyTypeSnapshot" ADD CONSTRAINT "BodyTypeSnapshot_personId_fkey" FOREIGN KEY ("personId") REFERENCES "Person"("personId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SkinColorSnapshot" ADD CONSTRAINT "SkinColorSnapshot_personId_fkey" FOREIGN KEY ("personId") REFERENCES "Person"("personId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "RequestInfo" ADD CONSTRAINT "RequestInfo_personId_fkey" FOREIGN KEY ("personId") REFERENCES "Person"("personId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "RequestInfo" ADD CONSTRAINT "RequestInfo_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("organizationId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Receipt" ADD CONSTRAINT "Receipt_personId_fkey" FOREIGN KEY ("personId") REFERENCES "Person"("personId") ON DELETE CASCADE ON UPDATE CASCADE;

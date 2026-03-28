@@ -64,11 +64,11 @@ model Person {
   bodyType            String? @default("สันทัด")
   skinColor           String? @default("ดำแดง")
   behavior            String? @default("ปกติ")
-  distinguishingMarks String?
+  distinguishingMarks String? @default("-")//ตำหนิ
 
-  address          String?
-  occupation       String?
-  workplaceAddress String?
+  address          String? //ที่อยู่ปัจจุบัน
+  occupation       String?//อาชีพ
+  workplaceAddress String? //สถานที่ทำงาน
   father           String?
   mother           String?
   spouse           String? @default("-")
@@ -177,8 +177,6 @@ model Receipt {
 
   personId String
   person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
-
-  // ✅ snapshot PERSON
   prefix    String
   firstName String
   lastName  String
@@ -196,7 +194,7 @@ model Receipt {
 
   receiptBookNo String?
   receiptNo     String?
-  receiptDate   DateTime?
+  receiptDate   String?
   money         Int
   moneyText     String?
 

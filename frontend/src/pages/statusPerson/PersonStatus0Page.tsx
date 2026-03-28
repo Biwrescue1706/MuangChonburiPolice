@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import api from "../api/axios";
+import api from "../../api/axios";
 
 // ================= FORMAT DATE =================
 const formatThaiDate = (value: any) => {

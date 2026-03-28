@@ -275,9 +275,9 @@ body.login-page .form-control::placeholder {
 @media (max-width: 480px) {
   .main-content {
     background-color: #f8f9fa;
-    margin-left: 15px;
-    margin-right: 15px;
-    margin-top: 80px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 65px;
     padding: 5px;
   }
 
@@ -298,8 +298,8 @@ body.login-page .form-control::placeholder {
 
 @media (min-width: 481px) and (max-width: 768px) {
   .main-content {
-    margin-left: 15px;
-    margin-right: 15px;
+    margin-left: 0px;
+    margin-right: 0px;
     margin-top: 65px;
   }
 
