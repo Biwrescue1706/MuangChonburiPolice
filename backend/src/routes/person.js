@@ -84,7 +84,6 @@ function formatBirthFields(data) {
 }
 
 /* ================= CREATE ================= */
-
 router.post("/", async (req, res) => {
   try {
     const data = req.body;
@@ -301,7 +300,7 @@ router.put("/:id", async (req, res) => {
           receiptNo: person.receiptNo,
           receiptDate: formatThaiFullDate(data.receiptDate),
           money: person.money,
-          moneyText: person.moneyText,          
+          moneyText: person.moneyText,
           organizationId: person.organizationId,
           organizationName: person.organizationName,
           fullNameOrg: person.fullNameOrg,
@@ -324,83 +323,58 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// UPDATE STATUS (Single)
-router.patch("/:id/status", async (req, res) => {
+router.get("/getall", async (req, res) => {
   try {
-    const { status } = req.body;
+    const { search, status, page = 1, limit = 10 } = req.query;
 
-    if (![0, 1, 2, 3].includes(status)) {
-      return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
+    const where = {
+      deleteAt: null,
+      AND: [],
+    };
+
+    if (search) {
+      where.AND.push({
+        OR: [
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName: { contains: search, mode: "insensitive" } },
+          { fullName: { contains: search, mode: "insensitive" } },
+          { citizenId: { contains: search } },
+        ],
+      });
     }
 
-    const person = await prisma.person.findUnique({
-      where: { personId: req.params.id },
-    });
-
-    if (!person || person.deleteAt) {
-      return res.status(404).json({ error: "ไม่พบข้อมูล" });
+    if (status !== undefined) {
+      where.AND.push({ status: Number(status) });
     }
 
-    await prisma.$transaction(async (tx) => {
-      const updatedPerson = await tx.person.update({
-        where: { personId: req.params.id },
-        data: {
-          status,
-          statusUpdatedAt: status === 3 ? new Date() : person.statusUpdatedAt,
+    const skip = (Number(page) - 1) * Number(limit);
 
-          // 🔥 เพิ่มตรงนี้
-          deleteAt:
-            status === 3
-              ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
-              : null,
+    const finalWhere = where.AND.length
+      ? where
+      : { deleteAt: null };
 
-          updatedAt: new Date(),
-        }
-      });
+    const [persons, total] = await Promise.all([
+      prisma.person.findMany({
+        where: finalWhere,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.person.count({
+        where: finalWhere,
+      }),
+    ]);
 
-      await createSnapshotIfChanged(tx, "nationalitySnapshot", "nationality", updatedPerson.personId, updatedPerson.nationality);
-      await createSnapshotIfChanged(tx, "ethnicitySnapshot", "ethnicity", updatedPerson.personId, updatedPerson.ethnicity);
-      await createSnapshotIfChanged(tx, "bodyTypeSnapshot", "bodyType", updatedPerson.personId, updatedPerson.bodyType);
-      await createSnapshotIfChanged(tx, "skinColorSnapshot", "skinColor", updatedPerson.personId, updatedPerson.skinColor);
-
-      await tx.requestInfo.create({
-        data: {
-          personId: updatedPerson.personId,
-          purpose: updatedPerson.purpose,
-          requestingAgency: updatedPerson.requestingAgency,
-        },
-      });
-
-      await tx.receipt.create({
-        data: {
-          personId: updatedPerson.personId,
-
-          prefix: updatedPerson.prefix,
-          firstName: updatedPerson.firstName,
-          lastName: updatedPerson.lastName,
-          fullName: updatedPerson.fullName,
-
-          organizationId: updatedPerson.organizationId,
-          organizationName: updatedPerson.organizationName,
-          fullNameOrg: updatedPerson.fullNameOrg,
-          rank: updatedPerson.rank,
-          position: updatedPerson.position,
-          fullNameWithRank: updatedPerson.fullNameWithRank,
-
-          receiptBookNo: updatedPerson.receiptBookNo,
-          receiptNo: updatedPerson.receiptNo,
-          receiptDate: updatedPerson.receiptDate,
-
-          money: updatedPerson.money,
-          moneyText: updatedPerson.moneyText,
-        },
-      });
+    res.json({
+      success: true,
+      data: persons,
+      total,
+      page: Number(page),
+      totalPages: Math.ceil(total / Number(limit)),
     });
-
-    res.json({ success: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "เปลี่ยนสถานะไม่สำเร็จ" });
+    res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
   }
 });
 
@@ -498,6 +472,88 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: "ลบไม่สำเร็จ" });
   }
 });
+
+// UPDATE STATUS (Single)
+router.patch("/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    if (![0, 1, 2, 3].includes(status)) {
+      return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
+    }
+
+    const person = await prisma.person.findUnique({
+      where: { personId: req.params.id },
+    });
+
+    if (!person || person.deleteAt) {
+      return res.status(404).json({ error: "ไม่พบข้อมูล" });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const updatedPerson = await tx.person.update({
+        where: { personId: req.params.id },
+        data: {
+          status,
+          statusUpdatedAt: status === 3 ? new Date() : person.statusUpdatedAt,
+
+          // 🔥 เพิ่มตรงนี้
+          deleteAt:
+            status === 3
+              ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+              : null,
+
+          updatedAt: new Date(),
+        }
+      });
+
+      await createSnapshotIfChanged(tx, "nationalitySnapshot", "nationality", updatedPerson.personId, updatedPerson.nationality);
+      await createSnapshotIfChanged(tx, "ethnicitySnapshot", "ethnicity", updatedPerson.personId, updatedPerson.ethnicity);
+      await createSnapshotIfChanged(tx, "bodyTypeSnapshot", "bodyType", updatedPerson.personId, updatedPerson.bodyType);
+      await createSnapshotIfChanged(tx, "skinColorSnapshot", "skinColor", updatedPerson.personId, updatedPerson.skinColor);
+
+      await tx.requestInfo.create({
+        data: {
+          personId: updatedPerson.personId,
+          purpose: updatedPerson.purpose,
+          requestingAgency: updatedPerson.requestingAgency,
+        },
+      });
+
+      await tx.receipt.create({
+        data: {
+          personId: updatedPerson.personId,
+
+          prefix: updatedPerson.prefix,
+          firstName: updatedPerson.firstName,
+          lastName: updatedPerson.lastName,
+          fullName: updatedPerson.fullName,
+
+          organizationId: updatedPerson.organizationId,
+          organizationName: updatedPerson.organizationName,
+          fullNameOrg: updatedPerson.fullNameOrg,
+          rank: updatedPerson.rank,
+          position: updatedPerson.position,
+          fullNameWithRank: updatedPerson.fullNameWithRank,
+
+          receiptBookNo: updatedPerson.receiptBookNo,
+          receiptNo: updatedPerson.receiptNo,
+          receiptDate: updatedPerson.receiptDate,
+
+          money: updatedPerson.money,
+          moneyText: updatedPerson.moneyText,
+        },
+      });
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "เปลี่ยนสถานะไม่สำเร็จ" });
+  }
+});
+
+
 
 /* ================= AUTO DELETE ================= */
 

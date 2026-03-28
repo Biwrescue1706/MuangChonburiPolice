@@ -124,7 +124,7 @@ model NationalitySnapshot {
   nationalityId String @id @default(uuid())
 
   personId String
-  person   Person @relation(fields: [personId], references: [personId])
+  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
 
   nationality String?
   createdAt   DateTime @default(now())
@@ -134,7 +134,7 @@ model EthnicitySnapshot {
   ethnicityId String @id @default(uuid())
 
   personId String
-  person   Person @relation(fields: [personId], references: [personId])
+  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
 
   ethnicity String?
   createdAt DateTime @default(now())
@@ -144,7 +144,7 @@ model BodyTypeSnapshot {
   bodyTypeId String @id @default(uuid())
 
   personId String
-  person   Person @relation(fields: [personId], references: [personId])
+  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
 
   bodyType  String?
   createdAt DateTime @default(now())
@@ -154,7 +154,7 @@ model SkinColorSnapshot {
   skinColorId String @id @default(uuid())
 
   personId String
-  person   Person @relation(fields: [personId], references: [personId])
+  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
 
   skinColor String?
   createdAt DateTime @default(now())
@@ -163,9 +163,8 @@ model SkinColorSnapshot {
 model RequestInfo {
   requestInfoId String @id @default(uuid())
 
-  personId String
-  person   Person @relation(fields: [personId], references: [personId])
-
+  personId         String
+  person           Person  @relation(fields: [personId], references: [personId], onDelete: Cascade)
   purpose          String?
   requestingAgency String?
 
@@ -177,7 +176,7 @@ model Receipt {
   receiptId String @id @default(uuid())
 
   personId String
-  person   Person @relation(fields: [personId], references: [personId])
+  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
 
   // ✅ snapshot PERSON
   prefix    String
