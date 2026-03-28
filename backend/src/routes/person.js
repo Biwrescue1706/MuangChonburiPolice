@@ -132,14 +132,14 @@ router.post("/", async (req, res) => {
           father: data.father,
           mother: data.mother,
           spouse: data.spouse ?? "-",
-          fingerprintDate: formatThaiFullDate(data.fingerprintDate),
+          fingerprintDate:data.fingerprintDate,
 
           purpose: data.purpose,
           requestingAgency: data.requestingAgency,
 
           receiptBookNo: data.receiptBookNo,
           receiptNo: data.receiptNo,
-          receiptDate: formatThaiFullDate(data.receiptDate),
+          receiptDate:data.receiptDate,
           money: data.money ?? 100,
           moneyText: data.moneyText,
 
@@ -195,16 +195,11 @@ router.post("/", async (req, res) => {
       return person;
     });
 
-    res.json({ success: true, data: result });
+    res.status(200).json({ success: true, data: result });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
-});
-
-router.get("/debug", async (req, res) => {
-  const data = await prisma.person.findMany();
-  res.json(data);
 });
 
 // GET ALL + SEARCH + FILTER
@@ -339,14 +334,14 @@ router.put("/:id", async (req, res) => {
           mother: data.mother,
           spouse: data.spouse,
 
-          fingerprintDate: formatThaiFullDate(data.fingerprintDate),
+          fingerprintDate: data.fingerprintDate,
 
           purpose: data.purpose,
           requestingAgency: data.requestingAgency,
 
           receiptBookNo: data.receiptBookNo,
           receiptNo: data.receiptNo,
-          receiptDate: formatThaiFullDate(data.receiptDate),
+          receiptDate:data.receiptDate,
           money: data.money ?? oldPerson.money,
           moneyText: data.moneyText,
 
@@ -384,7 +379,7 @@ router.put("/:id", async (req, res) => {
           fullName: person.fullName,
           receiptBookNo: person.receiptBookNo,
           receiptNo: person.receiptNo,
-          receiptDate: formatThaiFullDate(data.receiptDate),
+          receiptDate: data.receiptDate,
           money: person.money,
           moneyText: person.moneyText,
           organizationId: person.organizationId,
