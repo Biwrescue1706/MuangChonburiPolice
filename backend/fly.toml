@@ -1,0 +1,27 @@
+# fly.toml app configuration file generated for hub2-muangchonburi-2 on 2026-03-29T18:52:28Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'hub2-muangchonburi-2'
+primary_region = 'sin'
+
+[build]
+
+[deploy]
+  release_command = 'npx prisma migrate deploy'
+  seed_command = 'node prisma/seed.js'
+
+[http_service]
+  internal_port = 10000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 256
