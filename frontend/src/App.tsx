@@ -19,7 +19,7 @@ import PersonStatus2Page from "./pages/statusPerson/PersonStatus2Page";
 import PersonStatus3Page from "./pages/statusPerson/PersonStatus3Page";
 import PersonDetailPage from "./pages/PersonDetailPage";
 import PersonHistoryPage from "./pages/PersonHistoryPage";
-import PersonEditPage from "./pages/person/PersonEditPage";
+import PersonEditPage from "./pages/statusPerson/PersonEditPage";
 
 function App() {
   return (
