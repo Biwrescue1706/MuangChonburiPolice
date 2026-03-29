@@ -8,12 +8,12 @@ dotenv.config();
 
 const app = express();
 
-// MIDDLEWARE
+/* ================= MIDDLEWARE ================= */
 app.use(express.json());
 app.use(cookieParser());
 app.set("trust proxy", true);
 
-// cors allow
+/* ================= CORS ================= */
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -22,7 +22,6 @@ const allowedOrigins = [
   "https://hub-muangchonburi.smartdorm-biwboong.shop",
 ];
 
-// cors config
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -39,7 +38,7 @@ app.use(
   })
 );
 
-// ROUTES
+/* ================= ROUTES ================= */
 import adminRoute from "./routes/admin.js";
 import authRoute from "./routes/auth.js";
 import personRoutes from "./routes/person.js";
@@ -50,47 +49,40 @@ app.use("/api/auth", authRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/receipt", receiptRoutes);
 
-/* ================= HEALTH CHECK ================= */
+/* ================= HEALTH (สำคัญมาก) ================= */
 
-// 🔥 สำคัญมาก (Render ใช้ตัวนี้)
-app.get("/", (_req, res) => {
-  res.status(200).send("OK");
-});
+// Render ใช้ตรวจ
+app.get("/", (_, res) => res.send("OK"));
 
-// สำหรับ UptimeRobot
-app.get("/ping", (_req, res) => {
-  res.json({ status: "ok" });
-});
+// UptimeRobot ใช้ยิง
+app.get("/ping", (_, res) => res.send("OK"));
 
-// เช็ค DB
-app.get("/health", async (_req, res) => {
-  let db = "ok";
-
+// debug health
+app.get("/health", async (_, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: "ok", db: "ok" });
   } catch {
-    db = "error";
+    res.json({ status: "ok", db: "error" });
   }
-
-  res.json({
-    status: "ok",
-    database: db,
-  });
 });
 
-/* ================= ERROR ================= */
+/* ================= DEBUG ALIVE ================= */
+setInterval(() => {
+  console.log("🟢 alive:", new Date().toISOString());
+}, 30000);
 
+/* ================= ERROR ================= */
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
 app.use((err, _req, res, _next) => {
-  console.error(err);
+  console.error("❌ ERROR:", err);
   res.status(500).json({ error: "Internal Server Error" });
 });
 
 /* ================= SERVER ================= */
-
 const PORT = process.env.PORT || 10000;
 
 const server = app.listen(PORT, "0.0.0.0", () => {
@@ -98,7 +90,6 @@ const server = app.listen(PORT, "0.0.0.0", () => {
 });
 
 /* ================= SHUTDOWN ================= */
-
 async function shutdown() {
   console.log("🛑 Shutting down...");
   await prisma.$disconnect();
