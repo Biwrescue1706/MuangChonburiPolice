@@ -439,86 +439,6 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: "ลบไม่สำเร็จ" });
   }
 });
-
-// UPDATE STATUS (Single)
-router.patch("/:id/status", async (req, res) => {
-  try {
-    const { status } = req.body;
-
-    if (![0, 1, 2, 3].includes(status)) {
-      return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
-    }
-
-    const person = await prisma.person.findUnique({
-      where: { personId: req.params.id },
-    });
-
-    if (!person || person.deleteAt) {
-      return res.status(404).json({ error: "ไม่พบข้อมูล" });
-    }
-
-    await prisma.$transaction(async (tx) => {
-      const updatedPerson = await tx.person.update({
-        where: { personId: req.params.id },
-        data: {
-          status,
-          statusUpdatedAt: status === 3 ? new Date() : person.statusUpdatedAt,
-
-          // 🔥 เพิ่มตรงนี้
-          deleteAt:
-            status === 3
-              ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
-              : null,
-
-          updatedAt: new Date(),
-        }
-      });
-
-      await createSnapshotIfChanged(tx, "nationalitySnapshot", "nationality", updatedPerson.personId, updatedPerson.nationality);
-      await createSnapshotIfChanged(tx, "ethnicitySnapshot", "ethnicity", updatedPerson.personId, updatedPerson.ethnicity);
-      await createSnapshotIfChanged(tx, "bodyTypeSnapshot", "bodyType", updatedPerson.personId, updatedPerson.bodyType);
-      await createSnapshotIfChanged(tx, "skinColorSnapshot", "skinColor", updatedPerson.personId, updatedPerson.skinColor);
-
-      await tx.requestInfo.update({
-  where: { personId: updatedPerson.personId },
-  data: {
-    purpose: updatedPerson.purpose,
-    requestingAgency: updatedPerson.requestingAgency,
-  },
-});
-
-      await tx.receipt.update({
-  where: { personId: updatedPerson.personId },
-  data: {
-    prefix: updatedPerson.prefix,
-          firstName: updatedPerson.firstName,
-          lastName: updatedPerson.lastName,
-          fullName: updatedPerson.fullName,
-
-          organizationId: updatedPerson.organizationId,
-          organizationName: updatedPerson.organizationName,
-          fullNameOrg: updatedPerson.fullNameOrg,
-          rank: updatedPerson.rank,
-          position: updatedPerson.position,
-          fullNameWithRank: updatedPerson.fullNameWithRank,
-
-          receiptBookNo: updatedPerson.receiptBookNo,
-          receiptNo: updatedPerson.receiptNo,
-          receiptDate: updatedPerson.receiptDate,
-
-          money: updatedPerson.money,
-          moneyText: updatedPerson.moneyText,
-        },
-      });
-    });
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "เปลี่ยนสถานะไม่สำเร็จ" });
-  }
-});
-
 // UPDATE STATUS (Bulk)
 router.patch("/bulk/status", async (req, res) => {
   try {
@@ -548,13 +468,56 @@ router.patch("/bulk/status", async (req, res) => {
   },
 });
 
-res.json({ success: true, updated: result.count });
+// ✅ เพิ่มตรงนี้
+if (result.count === 0) {
+  return res.status(400).json({ error: "ไม่มีข้อมูลที่อัปเดตได้" });
+}
+
+    res.json({ success: true, updated: result.count });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "อัปเดตหลายรายการไม่สำเร็จ" });
   }
 });
 
+// UPDATE STATUS (SINGLE)
+router.patch("/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    if (![0, 1, 2, 3].includes(status)) {
+      return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
+    }
+
+    const person = await prisma.person.findUnique({
+      where: { personId: req.params.id },
+    });
+
+    if (!person || person.deleteAt) {
+      return res.status(404).json({ error: "ไม่พบข้อมูล" });
+    }
+
+    await prisma.person.update({
+      where: { personId: req.params.id },
+      data: {
+        status,
+        statusUpdatedAt: new Date(),
+
+        deleteAt:
+          status === 3
+            ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+            : null,
+
+        updatedAt: new Date(),
+      },
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "เปลี่ยนสถานะไม่สำเร็จ" });
+  }
+});
 
 /* ================= AUTO DELETE ================= */
 
