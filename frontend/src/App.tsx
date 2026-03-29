@@ -18,7 +18,8 @@ import PersonStatus1Page from "./pages/statusPerson/PersonStatus1Page";
 import PersonStatus2Page from "./pages/statusPerson/PersonStatus2Page";
 import PersonStatus3Page from "./pages/statusPerson/PersonStatus3Page";
 import PersonDetailPage from "./pages/PersonDetailPage";
-import PersonHistoryPage from "./pages/PersonHistoryPage"; // ⭐ เพิ่ม
+import PersonHistoryPage from "./pages/PersonHistoryPage";
+import PersonEditPage from "./pages/person/PersonEditPage";
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
           <Route path="/person/status1" element={<PersonStatus1Page />} />
           <Route path="/person/status2" element={<PersonStatus2Page />} />
           <Route path="/person/status3" element={<PersonStatus3Page />} />
+          <Route path="/person/edit/:id" element={<PersonEditPage />} />
 
           {/* ⭐ HISTORY */}
           <Route path="/person/history" element={<PersonHistoryPage />} />
