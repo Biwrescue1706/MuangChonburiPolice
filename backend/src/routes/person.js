@@ -533,24 +533,23 @@ router.patch("/bulk/status", async (req, res) => {
       return res.status(400).json({ error: "ไม่มีรายการบุคคล" });
     }
 
-    await prisma.person.updateMany({
-      where: {
-        personId: { in: personIds },
-        deleteAt: null,
-      },
-      data: {
-        status,
-        statusUpdatedAt: new Date(),
-        updatedAt: new Date(),
-        deleteAt:
-          status === 3
-            ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
-            : null,
-      },
-    });
+    const result = await prisma.person.updateMany({
+  where: {
+    personId: { in: personIds },
+    deleteAt: null,
+  },
+  data: {
+    status,
+    statusUpdatedAt: new Date(),
+    updatedAt: new Date(),
+    deleteAt:
+      status === 3
+        ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+        : null,
+  },
+});
 
-
-    res.json({ success: true, updated: result.count });
+res.json({ success: true, updated: result.count });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "อัปเดตหลายรายการไม่สำเร็จ" });
