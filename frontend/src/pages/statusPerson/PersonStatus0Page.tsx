@@ -12,18 +12,8 @@ const formatThaiDate = (value: any) => {
   if (isNaN(d.getTime())) return value;
 
   const months = [
-    "มกราคม",
-    "กุมภาพันธ์",
-    "มีนาคม",
-    "เมษายน",
-    "พฤษภาคม",
-    "มิถุนายน",
-    "กรกฎาคม",
-    "สิงหาคม",
-    "กันยายน",
-    "ตุลาคม",
-    "พฤศจิกายน",
-    "ธันวาคม",
+    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
+    "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม",
   ];
 
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
@@ -162,9 +152,7 @@ export default function PersonStatus0Page() {
 
     try {
       await api.delete(`/person/${p.personId}`);
-
       await Swal.fire("สำเร็จ", "ลบเรียบร้อย", "success");
-
       fetchPersons();
     } catch (err: any) {
       Swal.fire(
@@ -216,124 +204,144 @@ export default function PersonStatus0Page() {
               </thead>
 
               <tbody>
-                {persons.map((p, i) => (
-                  <tr key={p.personId}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(p.personId)}
-                        onChange={() => toggleSelect(p.personId)}
-                      />
-                    </td>
-
-                    <td>{i + 1}</td>
-                    <td>{p.fullName}</td>
-                    <td>{p.receiptBookNo}</td>
-                    <td>{p.receiptNo}</td>
-                    <td>{formatThaiDate(p.receiptDate)}</td>
-
-                    <td>
-                      <span className="badge bg-warning">
-                        รอส่ง
-                      </span>
-                    </td>
-
-                    <td>
-                      <button
-                        className="btn btn-info btn-sm"
-                        onClick={() =>
-                          navigate(`/person/${p.personId}`)
-                        }
-                      >
-                        ดู
-                      </button>
-                    </td>
-
-                    <td>
-                      <button
-                        className="btn btn-warning btn-sm"
-                        onClick={() =>
-                          navigate(`/person/edit/${p.personId}`)
-                        }
-                      >
-                        แก้ไข
-                      </button>
-                    </td>
-
-                    <td>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleDelete(p)}
-                      >
-                        ลบ
-                      </button>
-                    </td>
-
-                    <td>
-                      <button
-                        className="btn btn-success btn-sm"
-                        onClick={() => handleUpdateStatus(p)}
-                      >
-                        ส่ง
-                      </button>
-                    </td>
+                {loading && (
+                  <tr>
+                    <td colSpan={11}>กำลังโหลด...</td>
                   </tr>
-                ))}
+                )}
+
+                {!loading && persons.length === 0 && (
+                  <tr>
+                    <td colSpan={11}>ไม่พบข้อมูล</td>
+                  </tr>
+                )}
+
+                {!loading &&
+                  persons.map((p, i) => (
+                    <tr key={p.personId}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(p.personId)}
+                          onChange={() => toggleSelect(p.personId)}
+                        />
+                      </td>
+
+                      <td>{i + 1}</td>
+                      <td>{p.fullName}</td>
+                      <td>{p.receiptBookNo || "-"}</td>
+                      <td>{p.receiptNo || "-"}</td>
+                      <td>{formatThaiDate(p.receiptDate)}</td>
+
+                      <td>
+                        <span className="badge bg-warning text-dark">
+                          รอส่ง
+                        </span>
+                      </td>
+
+                      <td>
+                        <button
+                          className="btn btn-info btn-sm"
+                          onClick={() =>
+                            navigate(`/person/${p.personId}`)
+                          }
+                        >
+                          ดู
+                        </button>
+                      </td>
+
+                      <td>
+                        <button
+                          className="btn btn-warning btn-sm"
+                          onClick={() =>
+                            navigate(`/person/edit/${p.personId}`)
+                          }
+                        >
+                          แก้ไข
+                        </button>
+                      </td>
+
+                      <td>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDelete(p)}
+                        >
+                          ลบ
+                        </button>
+                      </td>
+
+                      <td>
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => handleUpdateStatus(p)}
+                        >
+                          ส่ง
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
         </div>
       ) : (
         <div className="d-flex flex-column gap-3">
-          {persons.map((p) => (
-            <div key={p.personId} className="card p-3">
-              <input
-                type="checkbox"
-                checked={selectedIds.includes(p.personId)}
-                onChange={() => toggleSelect(p.personId)}
-              />
+          {loading && <div>กำลังโหลด...</div>}
 
-              <strong>{p.fullName}</strong>
+          {!loading && persons.length === 0 && (
+            <div>ไม่พบข้อมูล</div>
+          )}
 
-              <div>📘 {p.receiptBookNo}</div>
-              <div>🧾 {p.receiptNo}</div>
-              <div>📅 {formatThaiDate(p.receiptDate)}</div>
+          {!loading &&
+            persons.map((p) => (
+              <div key={p.personId} className="card p-3">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(p.personId)}
+                  onChange={() => toggleSelect(p.personId)}
+                />
 
-              <div className="d-flex gap-2 mt-2">
+                <strong>{p.fullName}</strong>
+
+                <div>📘 {p.receiptBookNo || "-"}</div>
+                <div>🧾 {p.receiptNo || "-"}</div>
+                <div>📅 {formatThaiDate(p.receiptDate)}</div>
+
+                <div className="d-flex gap-2 mt-2">
+                  <button
+                    className="btn btn-info w-100"
+                    onClick={() =>
+                      navigate(`/person/${p.personId}`)
+                    }
+                  >
+                    ดู
+                  </button>
+
+                  <button
+                    className="btn btn-warning w-100"
+                    onClick={() =>
+                      navigate(`/person/edit/${p.personId}`)
+                    }
+                  >
+                    แก้ไข
+                  </button>
+
+                  <button
+                    className="btn btn-danger w-100"
+                    onClick={() => handleDelete(p)}
+                  >
+                    ลบ
+                  </button>
+                </div>
+
                 <button
-                  className="btn btn-info w-100"
-                  onClick={() =>
-                    navigate(`/person/${p.personId}`)
-                  }
+                  className="btn btn-success mt-2"
+                  onClick={() => handleUpdateStatus(p)}
                 >
-                  ดู
-                </button>
-
-                <button
-                  className="btn btn-warning w-100"
-                  onClick={() =>
-                    navigate(`/person/edit/${p.personId}`)
-                  }
-                >
-                  แก้ไข
-                </button>
-
-                <button
-                  className="btn btn-danger w-100"
-                  onClick={() => handleDelete(p)}
-                >
-                  ลบ
+                  ส่ง ศพฐ
                 </button>
               </div>
-
-              <button
-                className="btn btn-success mt-2"
-                onClick={() => handleUpdateStatus(p)}
-              >
-                ส่ง ศพฐ
-              </button>
-            </div>
-          ))}
+            ))}
         </div>
       )}
     </div>
