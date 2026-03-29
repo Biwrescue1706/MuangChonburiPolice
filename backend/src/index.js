@@ -77,6 +77,11 @@ function thaiNow() {
 
 // HEALTH CHECK
 app.get("/", (_req, res) => {
+  res.status(200).send(" สถานะ  OK <br/>
+        รัน API สภ.เมืองชลบุรี 🚀<br/>");
+});
+
+app.get("/info", (_req, res) => {
     const mode = process.env.NODE_ENV || "development";
     const port = process.env.PORT;
     const { date, time } = thaiNow();
