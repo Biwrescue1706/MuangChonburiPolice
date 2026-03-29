@@ -164,12 +164,14 @@ export default function PersonStatus0Page() {
     <div className="p-4">
       <h4 className="mb-3 text-center">📌 รายการรอส่ง ศพฐ</h4>
 
+      {/* BULK BUTTON */}
       <div className="d-flex justify-content-end mb-2">
         <button className="btn btn-success" onClick={handleBulkSend}>
           ส่งที่เลือก ({selectedIds.length})
         </button>
       </div>
 
+      {/* ================= DESKTOP ================= */}
       {isDesktop ? (
         <div className="card shadow-sm">
           <div className="card-body p-0">
@@ -189,11 +191,13 @@ export default function PersonStatus0Page() {
                     </th>
                     <th>#</th>
                     <th>ชื่อ-นามสกุล</th>
-                    <th>เล่ม</th>
-                    <th>เลขที่</th>
-                    <th>วันที่</th>
+                    <th>เล่มใบเสร็จ</th>
+                    <th>เลขที่ใบเสร็จ</th>
+                    <th>วันที่รับคำขอ</th>
                     <th>สถานะ</th>
-                    <th>ดู</th>
+                    <th>ดูประวัติ</th>
+                    <th>แก้ไข</th>
+                    <th>ลบ</th>
                     <th>ส่ง</th>
                   </tr>
                 </thead>
@@ -201,13 +205,13 @@ export default function PersonStatus0Page() {
                 <tbody className="text-center">
                   {loading && (
                     <tr>
-                      <td colSpan={9}>กำลังโหลด...</td>
+                      <td colSpan={11}>กำลังโหลด...</td>
                     </tr>
                   )}
 
                   {!loading && persons.length === 0 && (
                     <tr>
-                      <td colSpan={9}>ไม่พบข้อมูล</td>
+                      <td colSpan={11}>ไม่พบข้อมูล</td>
                     </tr>
                   )}
 
@@ -221,16 +225,19 @@ export default function PersonStatus0Page() {
                             onChange={() => toggleSelect(p.personId)}
                           />
                         </td>
+
                         <td>{index + 1}</td>
                         <td>{p.fullName}</td>
                         <td>{p.receiptBookNo || "-"}</td>
                         <td>{p.receiptNo || "-"}</td>
                         <td>{formatThaiDate(p.receiptDate)}</td>
+
                         <td>
                           <span className="badge bg-warning text-dark">
-                            รอส่ง
+                            รอส่ง ศพฐ
                           </span>
                         </td>
+
                         <td>
                           <button
                             className="btn btn-sm btn-info"
@@ -241,12 +248,25 @@ export default function PersonStatus0Page() {
                             ดู
                           </button>
                         </td>
+
+                        <td>
+                          <button className="btn btn-sm btn-warning">
+                            แก้ไข
+                          </button>
+                        </td>
+
+                        <td>
+                          <button className="btn btn-sm btn-danger">
+                            ลบ
+                          </button>
+                        </td>
+
                         <td>
                           <button
                             className="btn btn-sm btn-success"
                             onClick={() => handleUpdateStatus(p)}
                           >
-                            ส่ง
+                            ส่ง ศพฐ
                           </button>
                         </td>
                       </tr>
@@ -257,27 +277,46 @@ export default function PersonStatus0Page() {
           </div>
         </div>
       ) : (
+        /* ================= MOBILE ================= */
         <div className="d-flex flex-column gap-3">
           {persons.map((p) => (
-            <div key={p.personId} className="card p-3">
-              <input
-                type="checkbox"
-                checked={selectedIds.includes(p.personId)}
-                onChange={() => toggleSelect(p.personId)}
-              />
+            <div key={p.personId} className="card shadow-sm p-3">
+              <div className="d-flex justify-content-between">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(p.personId)}
+                  onChange={() => toggleSelect(p.personId)}
+                />
 
-              <strong>{p.fullName}</strong>
+                <strong>{p.fullName}</strong>
+                <span className="badge bg-warning text-dark">
+                  รอส่ง ศพฐ
+                </span>
+              </div>
 
-              <div>📘 {p.receiptBookNo || "-"}</div>
-              <div>🧾 {p.receiptNo || "-"}</div>
-              <div>📅 {formatThaiDate(p.receiptDate)}</div>
+              <div className="mt-2 small">
+                <div>📘 {p.receiptBookNo || "-"}</div>
+                <div>🧾 {p.receiptNo || "-"}</div>
+                <div>📅 {formatThaiDate(p.receiptDate)}</div>
+              </div>
 
-              <button
-                className="btn btn-success mt-2"
-                onClick={() => handleUpdateStatus(p)}
-              >
-                ส่ง ศพฐ
-              </button>
+              <div className="d-flex gap-2 mt-3">
+                <button
+                  className="btn btn-sm btn-info w-100"
+                  onClick={() =>
+                    navigate(`/person/${p.personId}`)
+                  }
+                >
+                  ดู
+                </button>
+
+                <button
+                  className="btn btn-sm btn-success w-100"
+                  onClick={() => handleUpdateStatus(p)}
+                >
+                  ส่ง ศพฐ
+                </button>
+              </div>
             </div>
           ))}
         </div>
