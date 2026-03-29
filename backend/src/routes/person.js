@@ -455,7 +455,6 @@ router.patch("/bulk/status", async (req, res) => {
     const result = await prisma.person.updateMany({
   where: {
     personId: { in: personIds },
-    deleteAt: null,
   },
   data: {
     status,
@@ -483,6 +482,9 @@ if (result.count === 0) {
 // UPDATE STATUS (SINGLE)
 router.patch("/:id/status", async (req, res) => {
   try {
+    console.log("ID:", req.params.id);
+    console.log("BODY:", req.body);
+
     const { status } = req.body;
 
     if (![0, 1, 2, 3].includes(status)) {
@@ -493,9 +495,9 @@ router.patch("/:id/status", async (req, res) => {
       where: { personId: req.params.id },
     });
 
-    if (!person || person.deleteAt) {
-      return res.status(404).json({ error: "ไม่พบข้อมูล" });
-    }
+    if (!person) {
+  return res.status(404).json({ error: "ไม่พบข้อมูล" });
+}
 
     await prisma.person.update({
       where: { personId: req.params.id },
