@@ -362,17 +362,17 @@ router.put("/:id", async (req, res) => {
       await createSnapshotIfChanged(tx, "bodyTypeSnapshot", "bodyType", person.personId, person.bodyType);
       await createSnapshotIfChanged(tx, "skinColorSnapshot", "skinColor", person.personId, person.skinColor);
 
-      await tx.requestInfo.update({
+      await tx.requestInfo.updateMany({
   where: { personId: person.personId },
-        data: {
-          purpose: person.purpose,
-          requestingAgency: person.requestingAgency,
-        },
-      });
+  data: {
+    purpose: person.purpose,
+    requestingAgency: person.requestingAgency,
+  },
+});
 
-      await tx.receipt.update({
+      await tx.receipt.updateMany({
   where: { personId: person.personId },
-        data: {
+  data: {
           prefix: person.prefix,
           firstName: person.firstName,
           lastName: person.lastName,
