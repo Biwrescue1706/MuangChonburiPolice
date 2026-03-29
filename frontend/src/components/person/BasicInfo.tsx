@@ -1,4 +1,5 @@
 //src/components/person/BasicInfo.tsx
+import { useState } from "react";
 export default function BasicInfo({
   form,
   handleChange,
