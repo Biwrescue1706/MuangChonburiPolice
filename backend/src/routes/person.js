@@ -278,9 +278,9 @@ router.get("/:id", async (req, res) => {
       },
     });
 
-    if (!person || person.deleteAt) {
-      return res.status(404).json({ error: "ไม่พบข้อมูล" });
-    }
+    if (!person) {
+  return res.status(404).json({ error: "ไม่พบข้อมูล" });
+}
 
     res.json({ success: true, data: person });
   } catch (err) {
