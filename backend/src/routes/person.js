@@ -299,9 +299,9 @@ router.put("/:id", async (req, res) => {
         where: { personId: req.params.id },
       });
 
-      if (!oldPerson || oldPerson.deleteAt) {
-        throw new Error("ไม่พบข้อมูล");
-      }
+      if (!oldPerson) {
+  throw new Error("ไม่พบข้อมูล");
+}
 
       const org = await getOrganization(tx);
 
