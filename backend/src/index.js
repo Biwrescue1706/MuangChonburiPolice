@@ -37,7 +37,7 @@ app.use(
             }
         },
         credentials: true,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
     })
 );
@@ -89,6 +89,10 @@ app.get("/", (_req, res) => {
         📅 วัน${date} <br/>
         🕒 เวลา: ${time} 
     `);
+});
+
+app.get("/ping", (req, res) => {
+  res.json({ status: "ok" });
 });
 
 app.get("/health", async (_req, res) => {
