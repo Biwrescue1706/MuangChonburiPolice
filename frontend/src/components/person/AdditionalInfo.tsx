@@ -31,6 +31,7 @@ export default function AdditionalInfo({
             <input
               name="requestingAgency"
               className="form-control"
+              value={form.requestingAgency || ""}
               onChange={handleChange}
             />
           </div>
@@ -178,6 +179,7 @@ export default function AdditionalInfo({
             <input
               name="address"
               className="form-control"
+              value={form.address || ""}
               onChange={handleChange}
             />
           </div>
@@ -194,8 +196,9 @@ export default function AdditionalInfo({
           <div className="col-md-4">
             <label>สถานที่ทำงาน</label>
             <input
-              name="workplaceAddress"
+              name="requestingAgency"
               className="form-control"
+              value={form.requestingAgency || ""}
               onChange={handleChange}
             />
           </div>

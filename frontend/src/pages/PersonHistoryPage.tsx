@@ -58,10 +58,6 @@ export default function PersonHistoryPage() {
   return (
     <div
       className="p-4"
-      style={{
-        marginTop: 65,
-        marginLeft: window.innerWidth > 1280 ? 220 : 0,
-      }}
     >
       <h4 className="mb-3">📄 ประวัติทั้งหมด</h4>
 

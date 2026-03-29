@@ -149,7 +149,7 @@ export default function CreateAdmin() {
   return (
     <div className="main-content">
       {/* ===== HEADER ===== */}
-      <div className="text-center mb-3 mt-4">
+      <div className="text-center mb-3">
         <h1 className="fw-bold mb-2">👥 สมาชิกผู้ดูแลระบบ</h1>
 
         <h4 className="fw-semibold mb-4">{thaiTime} น.</h4>

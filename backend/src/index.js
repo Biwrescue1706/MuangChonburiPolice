@@ -43,11 +43,13 @@ import adminRoute from "./routes/admin.js";
 import authRoute from "./routes/auth.js";
 import personRoutes from "./routes/person.js";
 import receiptRoutes from "./routes/receipt.js";
+import organizationRoutes from "./routes/organization.js";
 
 app.use("/api/person", personRoutes);
 app.use("/api/auth", authRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/receipt", receiptRoutes);
+app.use("/api/organization", organizationRoutes);
 
 /* ================= HEALTH (สำคัญมาก) ================= */
 

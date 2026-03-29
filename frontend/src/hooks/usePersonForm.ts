@@ -27,9 +27,18 @@ export default function usePersonForm(navigate: any) {
   const allReceiptNumbers = Array.from({ length: 50 }, (_, i) => i + 1);
 
   const months = [
-    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน",
-    "พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม",
-    "กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม",
+    "มกราคม",
+    "กุมภาพันธ์",
+    "มีนาคม",
+    "เมษายน",
+    "พฤษภาคม",
+    "มิถุนายน",
+    "กรกฎาคม",
+    "สิงหาคม",
+    "กันยายน",
+    "ตุลาคม",
+    "พฤศจิกายน",
+    "ธันวาคม",
   ];
 
   const [form, setForm] = useState<any>({
@@ -50,7 +59,7 @@ export default function usePersonForm(navigate: any) {
     workplaceAddress: "",
     occupation: "",
     fingerprintDate: "", // 🔥 แก้: ไม่ใช้ ISO แล้ว
-    receiptDate: "",     // 🔥 แก้: ไม่ใช้ ISO แล้ว
+    receiptDate: "", // 🔥 แก้: ไม่ใช้ ISO แล้ว
     status: 0,
     receiptBookNo: "",
     receiptNo: "",
@@ -188,9 +197,8 @@ export default function usePersonForm(navigate: any) {
       return;
     }
 
-    // 🔥 แก้เฉพาะตรงนี้ (กันพัง + แปลงไทย)
+    // ✅ วันที่ (แยกให้จบก่อน)
     if (name === "receiptDate" || name === "fingerprintDate") {
-
       if (!value) {
         setForm((prev: any) => ({
           ...prev,
@@ -200,10 +208,7 @@ export default function usePersonForm(navigate: any) {
       }
 
       const date = new Date(value);
-
-      if (isNaN(date.getTime())) {
-        return;
-      }
+      if (isNaN(date.getTime())) return;
 
       const thaiDate = `${date.getDate()} ${
         months[date.getMonth()]
@@ -216,6 +221,39 @@ export default function usePersonForm(navigate: any) {
       return;
     }
 
+    // ✅ logic หลัก + อาชีพ
+    setForm((prev: any) => {
+      let updated = {
+        ...prev,
+        [name]: value,
+      };
+
+      // 🔥 เลือกอาชีพ
+      if (name === "occupation") {
+        if (value === "ธุรกิจส่วนตัว") {
+          updated.workplaceAddress = updated.address || "";
+        }
+
+        if (value === "รับจ้าง" || value === "รับราชการ") {
+          updated.workplaceAddress = updated.requestingAgency || "";
+        }
+      }
+
+      // 🔥 เปลี่ยน address → sync
+      if (name === "address" && prev.occupation === "ธุรกิจส่วนตัว") {
+        updated.workplaceAddress = value;
+      }
+
+      // 🔥 เปลี่ยนหน่วยงาน → sync
+      if (
+        name === "requestingAgency" &&
+        (prev.occupation === "รับจ้าง" || prev.occupation === "รับราชการ")
+      ) {
+        updated.workplaceAddress = value;
+      }
+
+      return updated;
+    });
     setForm((prev: any) => ({ ...prev, [name]: value }));
   };
 

@@ -53,7 +53,7 @@ export default function Profile() {
 
   return (
     <div className="main-content">
-      <div className="container py-3">
+      <div className="container ">
         {/* ===== TITLE ===== */}
         <div className="mb-4">
           <h3 className="fw-bold">👤 โปรไฟล์ผู้ใช้งาน</h3>

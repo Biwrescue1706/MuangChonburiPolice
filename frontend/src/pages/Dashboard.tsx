@@ -1,26 +1,38 @@
-// src/pages/Dashboard.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 export default function Dashboard() {
   const { admin } = useAuth();
-
   const [thaiTime, setThaiTime] = useState("");
 
   useEffect(() => {
     const update = () => {
       const now = new Date();
-      setThaiTime(
-        now.toLocaleString("th-TH", {
+
+      const dayName = now.toLocaleDateString("th-TH", {
+        weekday: "long",
+        timeZone: "Asia/Bangkok",
+      });
+
+      const date = now.toLocaleDateString("th-TH", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "Asia/Bangkok",
+      });
+
+      const time = now
+        .toLocaleTimeString("th-TH", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
           timeZone: "Asia/Bangkok",
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-          second: "numeric",
-        }),
-      );
+        })
+        .replace(/:/g, ".");
+
+      setThaiTime(`${dayName} ที่ ${date} เวลา ${time} น.`);
     };
 
     update();
@@ -29,22 +41,35 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div
-      className="p-4 "
-      style={{
-        marginLeft: window.innerWidth > 1280 ? 200 : 0,
-      }}
-    >
-      <div className="card shadow-sm border-0 p-4 mt-5">
-        <h3 className="fw-bold mb-3">หน้าหลัก (Dashboard)</h3>
+    <div className="p-4">
+      {/* CARD */}
+      <div className="card shadow-sm border-0 p-3">
+        <h3 className="fw-bold">หน้าหลัก (Dashboard)</h3>
 
-        <h4 className="fw-semibold mb-4">{thaiTime} น.</h4>
+        <h5 className="fw-semibold text-muted">{thaiTime}</h5>
 
-        <p>ยินดีต้อนรับ</p>
+        <div className="mt-3">
+          <p className="mb-1">ยินดีต้อนรับ</p>
+          <p className="fw-semibold mb-1">{admin?.name || "-"}</p>
+          <p className="text-black mb-0">
+            ตำแหน่ง : {admin?.position || "-"}
+          </p>
+        </div>
+      </div>
 
-        <h5 className="text-primary">{admin?.name}</h5>
+      {/* MENU */}
+      <div className="mt-4">
+        <h4 className="fw-bold mb-3">เมนู</h4>
 
-        <small className="text-muted">ตำแหน่ง : {admin?.position}</small>
+        <div className="d-flex gap-2">
+          <Link to="/person/create" className="btn btn-primary">
+            เพิ่มข้อมูลบุคคล
+          </Link>
+
+          <Link to="/person/status0" className="btn btn-success">
+            ดูข้อมูลบุคคล
+          </Link>
+        </div>
       </div>
     </div>
   );

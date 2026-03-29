@@ -83,6 +83,32 @@ function formatBirthFields(data) {
   };
 }
 
+async function syncOrganization(tx, person, org) {
+  await tx.person.update({
+    where: { personId: person.personId },
+    data: {
+      organizationId: org.organizationId,
+      organizationName: org.organizationName,
+      fullNameOrg: org.fullName,
+      rank: org.rank,
+      position: org.position,
+      fullNameWithRank: org.fullNameWithRank,
+    },
+  });
+
+  await tx.receipt.updateMany({
+    where: { personId: person.personId },
+    data: {
+      organizationId: org.organizationId,
+      organizationName: org.organizationName,
+      fullNameOrg: org.fullName,
+      rank: org.rank,
+      position: org.position,
+      fullNameWithRank: org.fullNameWithRank,
+    },
+  });
+}
+
 /* ================= CREATE ================= */
 router.post("/", async (req, res) => {
   try {
@@ -111,7 +137,7 @@ router.post("/", async (req, res) => {
           lastName: data.lastName,
           fullName:
             data.fullName ||
-            [data.prefix, data.firstName, data.lastName].filter(Boolean).join(" "),
+            `${data.prefix || ""}${data.firstName} ${data.lastName}`,
 
           citizenId: data.citizenId,
           ...formatBirthFields(data),
@@ -132,14 +158,14 @@ router.post("/", async (req, res) => {
           father: data.father,
           mother: data.mother,
           spouse: data.spouse ?? "-",
-          fingerprintDate:data.fingerprintDate,
+          fingerprintDate: data.fingerprintDate,
 
           purpose: data.purpose,
           requestingAgency: data.requestingAgency,
 
           receiptBookNo: data.receiptBookNo,
           receiptNo: data.receiptNo,
-          receiptDate:data.receiptDate,
+          receiptDate: data.receiptDate,
           money: data.money ?? 100,
           moneyText: data.moneyText,
 
@@ -149,6 +175,7 @@ router.post("/", async (req, res) => {
           rank: org.rank,
           position: org.position,
           fullNameWithRank: org.fullNameWithRank,
+
 
           status: 0,
           statusUpdatedAt: new Date(),
@@ -268,7 +295,6 @@ router.get("/:id", async (req, res) => {
     const person = await prisma.person.findUnique({
       where: { personId: req.params.id },
       include: {
-        files: true,
         nationalitySnapshot: true,
         ethnicitySnapshot: true,
         bodyTypeSnapshot: true,
@@ -279,17 +305,77 @@ router.get("/:id", async (req, res) => {
     });
 
     if (!person) {
-  return res.status(404).json({ error: "ไม่พบข้อมูล" });
-}
+      return res.status(404).json({ error: "ไม่พบข้อมูล" });
+    }
 
-    res.json({ success: true, data: person });
+    // 🔥 map ข้อมูลให้อยู่ในรูปที่ต้องการ
+    const data = {
+      prefix: person.prefix,
+      firstName: person.firstName,
+      lastName: person.lastName,
+      fullName: person.fullName,
+      citizenId: person.citizenId,
+
+      birthDate: person.birthDate,
+      birthDay: person.birthDay,
+      birthMonth: person.birthMonth,
+      birthYear: person.birthYear,
+
+      nationality:
+        person.nationalitySnapshot?.name || person.nationality,
+      ethnicity:
+        person.ethnicitySnapshot?.name || person.ethnicity,
+
+      weight: person.weight,
+      height: person.height,
+      bodyType:
+        person.bodyTypeSnapshot?.name || person.bodyType,
+      skinColor:
+        person.skinColorSnapshot?.name || person.skinColor,
+      behavior: person.behavior,
+      distinguishingMarks: person.distinguishingMarks,
+
+      address: person.address,
+      occupation: person.occupation,
+      workplaceAddress: person.workplaceAddress,
+      father: person.father,
+      mother: person.mother,
+      spouse: person.spouse,
+
+      fingerprintDate: person.fingerprintDate,
+
+      // 🔥 request info
+      purpose: person.requestInfos?.[0]?.purpose || null,
+      requestingAgency: person.requestInfos?.[0]?.requestingAgency || null,
+
+      // 🔥 receipt
+      receiptBookNo: person.receipts?.[0]?.receiptBookNo || null,
+      receiptNo: person.receipts?.[0]?.receiptNo || null,
+      receiptDate: person.receipts?.[0]?.receiptDate || null,
+      money: person.receipts?.[0]?.money || 100,
+      moneyText: person.receipts?.[0]?.moneyText || null,
+
+      status: person.status,
+      statusUpdatedAt: person.statusUpdatedAt,
+      deleteAt: person.deleteAt,
+
+      organizationId: person.organizationId,
+      organizationName: person.organizationName,
+      fullNameOrg: person.fullNameOrg,
+      rank: person.rank,
+      position: person.position,
+      fullNameWithRank: person.fullNameWithRank,
+
+    };
+
+    res.json({ success: true, data });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
   }
 });
 
-// UPDATE PERSON
+/* ================= UPDATE PERSON ================= */
 router.put("/:id", async (req, res) => {
   try {
     const data = req.body;
@@ -300,94 +386,101 @@ router.put("/:id", async (req, res) => {
       });
 
       if (!oldPerson) {
-  throw new Error("ไม่พบข้อมูล");
-}
+        throw new Error("ไม่พบข้อมูล");
+      }
 
       const org = await getOrganization(tx);
 
+      // 🔥 update person (ไม่ต้องใส่ org ตรงนี้)
       const person = await tx.person.update({
         where: { personId: req.params.id },
         data: {
-          prefix: data.prefix,
-          firstName: data.firstName,
-          lastName: data.lastName,
+          prefix: data.prefix ?? oldPerson.prefix,
+          firstName: data.firstName ?? oldPerson.firstName,
+          lastName: data.lastName ?? oldPerson.lastName,
+
           fullName:
             data.fullName ||
-            [data.prefix, data.firstName, data.lastName].filter(Boolean).join(" "),
+            [data.prefix ?? oldPerson.prefix,
+            data.firstName ?? oldPerson.firstName,
+            data.lastName ?? oldPerson.lastName]
+              .filter(Boolean)
+              .join(" "),
 
-          ...formatBirthFields(data),
+          ...formatBirthFields({
+            birthDay: data.birthDay ?? oldPerson.birthDay,
+            birthMonth: data.birthMonth ?? oldPerson.birthMonth,
+            birthYear: data.birthYear ?? oldPerson.birthYear,
+          }),
 
-          nationality: data.nationality,
-          ethnicity: data.ethnicity,
+          nationality: data.nationality ?? oldPerson.nationality,
+          ethnicity: data.ethnicity ?? oldPerson.ethnicity,
 
-          weight: data.weight ? Number(data.weight) : null,
-          height: data.height ? Number(data.height) : null,
-          bodyType: data.bodyType,
-          skinColor: data.skinColor,
-          behavior: data.behavior,
-          distinguishingMarks: data.distinguishingMarks,
+          weight: data.weight !== undefined ? Number(data.weight) : oldPerson.weight,
+          height: data.height !== undefined ? Number(data.height) : oldPerson.height,
 
-          address: data.address,
-          occupation: data.occupation,
-          workplaceAddress: data.workplaceAddress,
-          father: data.father,
-          mother: data.mother,
-          spouse: data.spouse,
+          bodyType: data.bodyType ?? oldPerson.bodyType,
+          skinColor: data.skinColor ?? oldPerson.skinColor,
+          behavior: data.behavior ?? oldPerson.behavior,
+          distinguishingMarks: data.distinguishingMarks ?? oldPerson.distinguishingMarks,
 
-          fingerprintDate: data.fingerprintDate,
+          address: data.address ?? oldPerson.address,
+          occupation: data.occupation ?? oldPerson.occupation,
+          workplaceAddress: data.workplaceAddress ?? oldPerson.workplaceAddress,
+          father: data.father ?? oldPerson.father,
+          mother: data.mother ?? oldPerson.mother,
+          spouse: data.spouse ?? oldPerson.spouse,
 
-          purpose: data.purpose,
-          requestingAgency: data.requestingAgency,
+          fingerprintDate: data.fingerprintDate ?? oldPerson.fingerprintDate,
 
-          receiptBookNo: data.receiptBookNo,
-          receiptNo: data.receiptNo,
-          receiptDate:data.receiptDate,
-          money: data.money ?? oldPerson.money,
-          moneyText: data.moneyText,
+          purpose: data.purpose ?? oldPerson.purpose,
+          requestingAgency: data.requestingAgency ?? oldPerson.requestingAgency,
 
-          organizationId: org?.organizationId || null,
-          organizationName: org?.organizationName || null,
-          fullNameOrg: org?.fullName || null,
-          rank: org?.rank || null,
-          position: org?.position || null,
-          fullNameWithRank: org?.fullNameWithRank || null,
+          receiptBookNo: data.receiptBookNo ?? oldPerson.receiptBookNo,
+          receiptNo: data.receiptNo ?? oldPerson.receiptNo,
+          receiptDate: data.receiptDate ?? oldPerson.receiptDate,
+
+          money: data.money !== undefined ? data.money : oldPerson.money,
+          moneyText: data.moneyText ?? oldPerson.moneyText,
 
           statusUpdatedAt: new Date(),
           updatedAt: new Date(),
         },
       });
 
+      // 🔥 sync organization (ตัวสำคัญสุด)
+      if (org) {
+        await syncOrganization(tx, person, org);
+      }
+
+      // 🔥 snapshot
       await createSnapshotIfChanged(tx, "nationalitySnapshot", "nationality", person.personId, person.nationality);
       await createSnapshotIfChanged(tx, "ethnicitySnapshot", "ethnicity", person.personId, person.ethnicity);
       await createSnapshotIfChanged(tx, "bodyTypeSnapshot", "bodyType", person.personId, person.bodyType);
       await createSnapshotIfChanged(tx, "skinColorSnapshot", "skinColor", person.personId, person.skinColor);
 
+      // 🔥 request info
       await tx.requestInfo.updateMany({
-  where: { personId: person.personId },
-  data: {
-    purpose: person.purpose,
-    requestingAgency: person.requestingAgency,
-  },
-});
+        where: { personId: person.personId },
+        data: {
+          purpose: person.purpose,
+          requestingAgency: person.requestingAgency,
+        },
+      });
 
+      // 🔥 receipt
       await tx.receipt.updateMany({
-  where: { personId: person.personId },
-  data: {
+        where: { personId: person.personId },
+        data: {
           prefix: person.prefix,
           firstName: person.firstName,
           lastName: person.lastName,
           fullName: person.fullName,
           receiptBookNo: person.receiptBookNo,
           receiptNo: person.receiptNo,
-          receiptDate: data.receiptDate,
+          receiptDate: person.receiptDate,
           money: person.money,
           moneyText: person.moneyText,
-          organizationId: person.organizationId,
-          organizationName: person.organizationName,
-          fullNameOrg: person.fullNameOrg,
-          rank: person.rank,
-          position: person.position,
-          fullNameWithRank: person.fullNameWithRank,
         },
       });
 
@@ -395,11 +488,14 @@ router.put("/:id", async (req, res) => {
     });
 
     res.json({ success: true, data: result });
+
   } catch (err) {
     console.error(err);
+
     if (err.message === "ไม่พบข้อมูล") {
       return res.status(404).json({ error: err.message });
     }
+
     res.status(500).json({ error: err.message });
   }
 });
@@ -453,24 +549,24 @@ router.patch("/bulk/status", async (req, res) => {
     }
 
     const result = await prisma.person.updateMany({
-  where: {
-    personId: { in: personIds },
-  },
-  data: {
-    status,
-    statusUpdatedAt: new Date(),
-    updatedAt: new Date(),
-    deleteAt:
-      status === 3
-        ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
-        : null,
-  },
-});
+      where: {
+        personId: { in: personIds },
+      },
+      data: {
+        status,
+        statusUpdatedAt: new Date(),
+        updatedAt: new Date(),
+        deleteAt:
+          status === 3
+            ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+            : null,
+      },
+    });
 
-// ✅ เพิ่มตรงนี้
-if (result.count === 0) {
-  return res.status(400).json({ error: "ไม่มีข้อมูลที่อัปเดตได้" });
-}
+    // ✅ เพิ่มตรงนี้
+    if (result.count === 0) {
+      return res.status(400).json({ error: "ไม่มีข้อมูลที่อัปเดตได้" });
+    }
 
     res.json({ success: true, updated: result.count });
   } catch (err) {
@@ -496,8 +592,8 @@ router.patch("/:id/status", async (req, res) => {
     });
 
     if (!person) {
-  return res.status(404).json({ error: "ไม่พบข้อมูล" });
-}
+      return res.status(404).json({ error: "ไม่พบข้อมูล" });
+    }
 
     await prisma.person.update({
       where: { personId: req.params.id },

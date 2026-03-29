@@ -207,6 +207,15 @@ export default function Nav() {
           >
             ➕ เพิ่ม Admin
           </button>
+
+          <button
+            className={`btn text-start ${
+              isActive("/organization") ? "btn-warning fw-bold" : "btn-warning"
+            }`}
+            onClick={() => navigate("/organization")}
+          >
+            🏢 หน่วยงาน
+          </button>
         </div>
       </div>
 
@@ -310,6 +319,16 @@ export default function Nav() {
               }}
             >
               ➕ เพิ่ม Admin
+            </button>
+
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => {
+                navigate("/organization");
+                setMenuOpen(false);
+              }}
+            >
+              🏢 หน่วยงาน
             </button>
           </div>
         </div>

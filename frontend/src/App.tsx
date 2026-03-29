@@ -20,6 +20,7 @@ import PersonStatus3Page from "./pages/statusPerson/PersonStatus3Page";
 import PersonDetailPage from "./pages/PersonDetailPage";
 import PersonHistoryPage from "./pages/PersonHistoryPage";
 import PersonEditPage from "./pages/statusPerson/PersonEditPage";
+import OrganizationPage from "./pages/OrganizationPage";
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
           <Route path="/security" element={<Security />} />
           <Route path="/admin/create" element={<CreateAdmin />} />
           <Route path="/person/create" element={<PersonPage />} />
+          <Route path="/organization" element={<OrganizationPage />} />
 
           {/* ⭐ STATUS FLOW */}
           <Route path="/person/status0" element={<PersonStatus0Page />} />
