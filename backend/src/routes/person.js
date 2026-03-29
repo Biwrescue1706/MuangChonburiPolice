@@ -362,17 +362,17 @@ router.put("/:id", async (req, res) => {
       await createSnapshotIfChanged(tx, "bodyTypeSnapshot", "bodyType", person.personId, person.bodyType);
       await createSnapshotIfChanged(tx, "skinColorSnapshot", "skinColor", person.personId, person.skinColor);
 
-      await tx.requestInfo.create({
+      await tx.requestInfo.update({
+  where: { personId: person.personId },
         data: {
-          personId: person.personId,
           purpose: person.purpose,
           requestingAgency: person.requestingAgency,
         },
       });
 
-      await tx.receipt.create({
+      await tx.receipt.update({
+  where: { personId: person.personId },
         data: {
-          personId: person.personId,
           prefix: person.prefix,
           firstName: person.firstName,
           lastName: person.lastName,
@@ -479,19 +479,18 @@ router.patch("/:id/status", async (req, res) => {
       await createSnapshotIfChanged(tx, "bodyTypeSnapshot", "bodyType", updatedPerson.personId, updatedPerson.bodyType);
       await createSnapshotIfChanged(tx, "skinColorSnapshot", "skinColor", updatedPerson.personId, updatedPerson.skinColor);
 
-      await tx.requestInfo.upsert({
-        data: {
-          personId: updatedPerson.personId,
-          purpose: updatedPerson.purpose,
-          requestingAgency: updatedPerson.requestingAgency,
-        },
-      });
+      await tx.requestInfo.update({
+  where: { personId: updatedPerson.personId },
+  data: {
+    purpose: updatedPerson.purpose,
+    requestingAgency: updatedPerson.requestingAgency,
+  },
+});
 
-      await tx.receipt.upsert({
-        data: {
-          personId: updatedPerson.personId,
-
-          prefix: updatedPerson.prefix,
+      await tx.receipt.update({
+  where: { personId: updatedPerson.personId },
+  data: {
+    prefix: updatedPerson.prefix,
           firstName: updatedPerson.firstName,
           lastName: updatedPerson.lastName,
           fullName: updatedPerson.fullName,
