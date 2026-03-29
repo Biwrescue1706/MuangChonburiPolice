@@ -163,7 +163,7 @@ model SkinColorSnapshot {
 model RequestInfo {
   requestInfoId String @id @default(uuid())
 
-  personId         String @unique
+  personId         String 
   person           Person  @relation(fields: [personId], references: [personId], onDelete: Cascade)
   purpose          String?
   requestingAgency String?
@@ -175,7 +175,7 @@ model RequestInfo {
 model Receipt {
   receiptId String @id @default(uuid())
 
-  personId String @unique
+  personId String
   person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
   prefix    String
   firstName String
