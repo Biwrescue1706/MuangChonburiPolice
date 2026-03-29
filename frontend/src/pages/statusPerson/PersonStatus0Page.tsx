@@ -1,3 +1,4 @@
+//src/page/statusPerson/PersonStatus0page.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -35,6 +36,9 @@ export default function PersonStatus0Page() {
   const [loading, setLoading] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1280);
 
+  // ✅ เพิ่ม
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
   useEffect(() => {
     const handleResize = () => {
       setIsDesktop(window.innerWidth >= 1280);
@@ -60,7 +64,24 @@ export default function PersonStatus0Page() {
     fetchPersons();
   }, []);
 
-  // ================= UPDATE STATUS (PUT) =================
+  // ================= SELECT =================
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === persons.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(persons.map((p) => p.personId));
+    }
+  };
+
+  // ================= UPDATE STATUS (Single) =================
   const handleUpdateStatus = async (p: any) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการส่ง?",
@@ -74,10 +95,13 @@ export default function PersonStatus0Page() {
     if (!confirm.isConfirmed) return;
 
     try {
-      await api.put(`/person/${p.personId}`, {
-        ...p,
-        status: 1, // ⭐ เปลี่ยนสถานะ
+      // ✅ เปลี่ยนเป็น PATCH
+      await api.patch(`/person/${p.personId}/status`, {
+        status: 1,
       });
+
+      // ✅ เอาออกจาก selected
+      setSelectedIds((prev) => prev.filter(id => id !== p.personId));
 
       await Swal.fire({
         icon: "success",
@@ -92,9 +116,52 @@ export default function PersonStatus0Page() {
     }
   };
 
+  // ================= BULK =================
+  const handleBulkSend = async () => {
+    if (selectedIds.length === 0) {
+      return Swal.fire("เลือกข้อมูลก่อน", "", "warning");
+    }
+
+    const confirm = await Swal.fire({
+      title: "ยืนยันการส่ง?",
+      text: `จำนวน ${selectedIds.length} รายการ`,
+      icon: "question",
+      showCancelButton: true,
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      await api.patch("/person/bulk/status", {
+        personIds: selectedIds,
+        status: 1,
+      });
+
+      setSelectedIds([]);
+
+      await Swal.fire({
+        icon: "success",
+        title: "ส่งเรียบร้อย",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+
+      fetchPersons();
+    } catch (err) {
+      Swal.fire("ผิดพลาด", "ส่งหลายรายการไม่สำเร็จ", "error");
+    }
+  };
+
   return (
     <div className="p-4">
       <h4 className="mb-3 text-center">📌 รายการรอส่ง ศพฐ</h4>
+
+      {/* ✅ ปุ่ม BULK */}
+      <div className="d-flex justify-content-end mb-2">
+        <button className="btn btn-success" onClick={handleBulkSend}>
+          ส่งที่เลือก ({selectedIds.length})
+        </button>
+      </div>
 
       {/* ================= DESKTOP ================= */}
       {isDesktop ? (
@@ -107,6 +174,18 @@ export default function PersonStatus0Page() {
               >
                 <thead className="table-dark">
                   <tr className="text-center">
+                    {/* ✅ เพิ่ม checkbox */}
+                    <th>
+                      <input
+                        type="checkbox"
+                        checked={
+                          selectedIds.length === persons.length &&
+                          persons.length > 0
+                        }
+                        onChange={toggleSelectAll}
+                      />
+                    </th>
+
                     <th>#</th>
                     <th>ชื่อ-นามสกุล</th>
                     <th>เล่มใบเสร็จ</th>
@@ -123,7 +202,7 @@ export default function PersonStatus0Page() {
                 <tbody className="text-center">
                   {loading && (
                     <tr>
-                      <td colSpan={7} className="text-center">
+                      <td colSpan={10} className="text-center">
                         กำลังโหลด...
                       </td>
                     </tr>
@@ -131,7 +210,7 @@ export default function PersonStatus0Page() {
 
                   {!loading && persons.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="text-center">
+                      <td colSpan={10} className="text-center">
                         ไม่พบข้อมูล
                       </td>
                     </tr>
@@ -140,10 +219,19 @@ export default function PersonStatus0Page() {
                   {!loading &&
                     persons.map((p, index) => (
                       <tr key={p.personId}>
+                        {/* ✅ checkbox ต่อแถว */}
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(p.personId)}
+                            onChange={() => toggleSelect(p.personId)}
+                          />
+                        </td>
+
                         <td>{index + 1}</td>
                         <td>{p.fullName}</td>
                         <td>{p.receiptBookNo || "-"}</td>
-                        <td> {p.receiptNo || "-"}</td>
+                        <td>{p.receiptNo || "-"}</td>
                         <td>{formatThaiDate(p.receiptDate)}</td>
 
                         <td>
@@ -153,19 +241,16 @@ export default function PersonStatus0Page() {
                         </td>
 
                         <td>
-                            <button
-                              className="btn btn-sm btn-info"
-                              onClick={() => navigate(`/person/${p.personId}`)}
-                            >
-                              ดู
-                            </button>
+                          <button
+                            className="btn btn-sm btn-info"
+                            onClick={() => navigate(`/person/${p.personId}`)}
+                          >
+                            ดู
+                          </button>
                         </td>
-                        <td>
+                        <td></td>
+                        <td></td>
 
-                        </td>
-                        <td>
-
-                        </td>
                         <td>
                           <button
                             className="btn btn-sm btn-success"
@@ -194,8 +279,17 @@ export default function PersonStatus0Page() {
             persons.map((p) => (
               <div key={p.personId} className="card shadow-sm p-3">
                 <div className="d-flex justify-content-between">
+                  {/* ✅ checkbox mobile */}
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(p.personId)}
+                    onChange={() => toggleSelect(p.personId)}
+                  />
+
                   <strong>{p.fullName}</strong>
-                  <span className="badge bg-warning text-dark">รอส่ง ศพฐ</span>
+                  <span className="badge bg-warning text-dark">
+                    รอส่ง ศพฐ
+                  </span>
                 </div>
 
                 <div className="mt-2 small">
