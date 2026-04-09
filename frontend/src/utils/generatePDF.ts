@@ -1,9 +1,20 @@
 import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
+import * as pdfjsLib from "pdfjs-dist";
+
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 export const generatePDF = async (p: any) => {
   try {
-    const existingPdfBytes = await fetch("/template (1).pdf").then(res =>
+    const templateUrl = "/template (1).pdf";
+
+    // ===== โหลดด้วย pdfjs (อ่านตำแหน่ง text) =====
+    const loadingTask = pdfjsLib.getDocument(templateUrl);
+    const pdf = await loadingTask.promise;
+
+    // ===== โหลดด้วย pdf-lib (เอาไว้เขียน) =====
+    const existingPdfBytes = await fetch(templateUrl).then(res =>
       res.arrayBuffer()
     );
 
@@ -16,10 +27,7 @@ export const generatePDF = async (p: any) => {
 
     const font = await pdfDoc.embedFont(fontBytes);
 
-    const pages = pdfDoc.getPages();
-    const page1 = pages[0];
-    const page2 = pages[1];
-
+    // ===== helper =====
     const safe = (v: any) =>
       v === null || v === undefined || v === "" ? "-" : String(v);
 
@@ -27,89 +35,80 @@ export const generatePDF = async (p: any) => {
       p.fullName ||
       `${safe(p.prefix)}${safe(p.firstName)} ${safe(p.lastName)}`;
 
-    // 🔥 ลบ + เขียนใหม่
-    const replace = (
-      page: any,
-      value: any,
-      x: number,
-      y: number,
-      width = 250,
-      height = 18
-    ) => {
-      // ลบคำเดิม
-      page.drawRectangle({
-        x,
-        y: y - 2,
-        width,
-        height,
-        color: rgb(1, 1, 1),
-      });
+    // ===== map placeholder → value =====
+    const map: Record<string, any> = {
+      fingerprintDate: p.fingerprintDate,
+      organizationName: p.organizationName,
+      birthDate: p.birthDate,
+      fullName: fullName,
+      fullNameWithRank: p.fullNameWithRank,
+      rank: p.rank,
 
-      // ใส่ค่าใหม่
-      page.drawText(safe(value), {
-        x,
-        y,
-        size: 14,
-        font,
-        color: rgb(0, 0, 0),
-      });
+      purpose: p.purpose,
+      requestingAgency: p.requestingAgency,
+      citizenId: p.citizenId,
+
+      birthDay: p.birthDay,
+      birthMonth: p.birthMonth,
+      birthYear: p.birthYear,
+
+      nationality: p.nationality,
+      ethnicity: p.ethnicity,
+      height: p.height,
+      weight: p.weight,
+      bodyType: p.bodyType,
+      skinColor: p.skinColor,
+      behavior: p.behavior,
+      distinguishingMarks: p.distinguishingMarks,
+      address: p.address,
+      occupation: p.occupation,
+      workplaceAddress: p.workplaceAddress,
+      father: p.father,
+      mother: p.mother,
+      spouse: p.spouse,
+
+      receiptBookNo: p.receiptBookNo,
+      receiptNo: p.receiptNo,
+      receiptDate: p.receiptDate,
+      money: p.money,
+      moneyText: p.moneyText,
+
+      fullNameOrg: p.fullNameOrg,
+      position: p.position,
     };
 
-    // ================= PAGE 1 =================
-    replace(page1, p.fingerprintDate, 200, 780);
-    replace(page1, p.organizationName, 400, 780);
+    // ===== loop ทุกหน้า =====
+    for (let i = 0; i < pdf.numPages; i++) {
+      const page = await pdf.getPage(i + 1);
+      const textContent = await page.getTextContent();
+      const pdfPage = pdfDoc.getPages()[i];
 
-    replace(page1, fullName, 200, 740);
-    replace(page1, p.birthDate, 400, 740);
+      textContent.items.forEach((item: any) => {
+        const text = item.str?.trim();
 
-    replace(page1, p.fullNameWithRank || fullName, 200, 700);
-    replace(page1, p.rank, 200, 670);
+        if (map[text]) {
+          const [, , , , x, y] = item.transform;
 
-    // ================= PAGE 2 =================
-    replace(page2, p.purpose, 150, 780);
-    replace(page2, p.requestingAgency, 150, 750);
+          // 🔥 ลบคำเดิม
+          pdfPage.drawRectangle({
+            x,
+            y: y - 2,
+            width: 220,
+            height: 18,
+            color: rgb(1, 1, 1),
+          });
 
-    replace(page2, p.citizenId, 150, 720);
-    replace(page2, fullName, 150, 690);
-
-    replace(
-      page2,
-      `${safe(p.birthDay)}/${safe(p.birthMonth)}/${safe(p.birthYear)}`,
-      150,
-      660
-    );
-
-    replace(page2, p.nationality, 150, 630);
-    replace(page2, p.ethnicity, 300, 630);
-
-    replace(page2, p.height, 150, 600);
-    replace(page2, p.weight, 300, 600);
-
-    replace(page2, p.bodyType, 150, 570);
-    replace(page2, p.skinColor, 300, 570);
-
-    replace(page2, p.behavior, 150, 540);
-    replace(page2, p.distinguishingMarks, 150, 510);
-
-    replace(page2, p.address, 150, 480);
-    replace(page2, p.occupation, 150, 450);
-    replace(page2, p.workplaceAddress, 150, 420);
-
-    replace(page2, p.father, 150, 390);
-    replace(page2, p.mother, 150, 360);
-    replace(page2, p.spouse, 150, 330);
-
-    replace(page2, p.receiptBookNo, 150, 280);
-    replace(page2, p.receiptNo, 300, 280);
-    replace(page2, p.receiptDate, 150, 250);
-
-    replace(page2, p.money, 150, 220);
-    replace(page2, p.moneyText, 150, 190);
-
-    replace(page2, p.organizationName, 150, 140);
-    replace(page2, p.rank, 150, 110);
-    replace(page2, p.position, 150, 80);
-    replace(page2, p.fullNameOrg, 150, 50);
+          // 🔥 เขียนค่าจริง
+          pdfPage.drawText(safe(map[text]), {
+            x,
+            y,
+            size: 14,
+            font,
+            color: rgb(0, 0, 0),
+          });
+        }
+      });
+    }
 
     // ===== SAVE =====
     const pdfBytes = await pdfDoc.save();
