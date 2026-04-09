@@ -29,6 +29,7 @@ export default function PersonStatus0Page() {
     handleUpdateStatus,
     handleBulkSend,
     handleDelete,
+handleExportPDF,
   } = usePersonStatus0();
 
   return (
@@ -65,6 +66,7 @@ export default function PersonStatus0Page() {
           toggleSelectAll={toggleSelectAll}
           handleUpdateStatus={handleUpdateStatus}
           handleDelete={handleDelete}
+handleExportPDF={handleExportPDF}
         />
       ) : (
         <PersonCard
@@ -73,8 +75,9 @@ export default function PersonStatus0Page() {
           selectedIds={selectedIds}
           selectMode={selectMode}
           toggleSelect={toggleSelect}
-          handleUpdateStatus={handleUpdateStatus}
+ handleUpdateStatus={handleUpdateStatus}
           handleDelete={handleDelete}
+         handleExportPDF={handleExportPDF}
         />
       )}
     </div>
