@@ -26,7 +26,7 @@ export const generatePDF = async (p: any) => {
     page.drawText(safe(text), {
       x,
       y: fixY(y),
-      size: 14,
+      size: 32,
       font,
     });
   };
@@ -34,14 +34,14 @@ export const generatePDF = async (p: any) => {
   // ================= PAGE 1 =================
   // 👉 เขียนลงเส้นจริง
 
-  draw(page1, p.fingerprintDate, 160, -1000);
-  draw(page1, p.organizationName, 680, -1000);
+  draw(page1, p.fingerprintDate, 200, -800);
+  draw(page1, p.organizationName, 700, -800);
 
-  draw(page1, p.fullName, 180, -800);
-  draw(page1, p.birthDate, 680, -800);
+  draw(page1, p.fullName, 300, -750);
+  draw(page1, p.birthDate, 800, -750);
 
-  draw(page1, p.fullNameWithRank, 180, -600);
-  draw(page1, p.rank, 180, -550);
+  draw(page1, p.fullNameWithRank, 180, -400);
+  draw(page1, p.rank, 180, -380);
 
   // ================= PAGE 2 =================
 
