@@ -1,114 +1,102 @@
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-import * as pdfjsLib from "pdfjs-dist";
-
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 export const generatePDF = async (p: any) => {
   try {
-    const templateUrl = "/template (1).pdf";
-
-    // ===== โหลดด้วย pdfjs (อ่านตำแหน่ง text) =====
-    const loadingTask = pdfjsLib.getDocument(templateUrl);
-    const pdf = await loadingTask.promise;
-
-    // ===== โหลดด้วย pdf-lib (เอาไว้เขียน) =====
-    const existingPdfBytes = await fetch(templateUrl).then(res =>
+    // ===== โหลด template =====
+    const templateBytes = await fetch("/template.pdf").then((res) =>
       res.arrayBuffer()
     );
 
-    const pdfDoc = await PDFDocument.load(existingPdfBytes);
+    const pdfDoc = await PDFDocument.load(templateBytes);
     pdfDoc.registerFontkit(fontkit);
 
-    const fontBytes = await fetch("/fonts/THSarabunNew.ttf").then(res =>
+    // ===== โหลด font ไทย =====
+    const fontBytes = await fetch("/fonts/THSarabunNew.ttf").then((res) =>
       res.arrayBuffer()
     );
 
     const font = await pdfDoc.embedFont(fontBytes);
 
-    // ===== helper =====
+    const pages = pdfDoc.getPages();
+    const page1 = pages[0];
+    const page2 = pages[1];
+
+    // ===== SAFE =====
     const safe = (v: any) =>
       v === null || v === undefined || v === "" ? "-" : String(v);
 
-    const fullName =
-      p.fullName ||
-      `${safe(p.prefix)}${safe(p.firstName)} ${safe(p.lastName)}`;
+    // ===== FIX COORDINATE (สำคัญมาก) =====
+    const fixY = (y: number) => 842 - y;
 
-    // ===== map placeholder → value =====
-    const map: Record<string, any> = {
-      fingerprintDate: p.fingerprintDate,
-      organizationName: p.organizationName,
-      birthDate: p.birthDate,
-      fullName: fullName,
-      fullNameWithRank: p.fullNameWithRank,
-      rank: p.rank,
-
-      purpose: p.purpose,
-      requestingAgency: p.requestingAgency,
-      citizenId: p.citizenId,
-
-      birthDay: p.birthDay,
-      birthMonth: p.birthMonth,
-      birthYear: p.birthYear,
-
-      nationality: p.nationality,
-      ethnicity: p.ethnicity,
-      height: p.height,
-      weight: p.weight,
-      bodyType: p.bodyType,
-      skinColor: p.skinColor,
-      behavior: p.behavior,
-      distinguishingMarks: p.distinguishingMarks,
-      address: p.address,
-      occupation: p.occupation,
-      workplaceAddress: p.workplaceAddress,
-      father: p.father,
-      mother: p.mother,
-      spouse: p.spouse,
-
-      receiptBookNo: p.receiptBookNo,
-      receiptNo: p.receiptNo,
-      receiptDate: p.receiptDate,
-      money: p.money,
-      moneyText: p.moneyText,
-
-      fullNameOrg: p.fullNameOrg,
-      position: p.position,
+    const draw = (
+      page: any,
+      text: any,
+      x: number,
+      y: number,
+      size = 14
+    ) => {
+      page.drawText(safe(text), {
+        x,
+        y: fixY(y),
+        size,
+        font,
+      });
     };
 
-    // ===== loop ทุกหน้า =====
-    for (let i = 0; i < pdf.numPages; i++) {
-      const page = await pdf.getPage(i + 1);
-      const textContent = await page.getTextContent();
-      const pdfPage = pdfDoc.getPages()[i];
+    // ================= PAGE 1 =================
+    draw(page1, p.fingerprintDate, 200, 120);
+    draw(page1, p.organizationName, 420, 120);
 
-      textContent.items.forEach((item: any) => {
-        const text = item.str?.trim();
+    draw(page1, p.fullName, 200, 170);
+    draw(page1, p.birthDate, 420, 170);
 
-        if (map[text]) {
-          const [, , , , x, y] = item.transform;
+    draw(page1, p.fullNameWithRank || p.fullName, 200, 230);
+    draw(page1, p.rank, 200, 260);
 
-          // 🔥 ลบคำเดิม
-          pdfPage.drawRectangle({
-            x,
-            y: y - 2,
-            width: 220,
-            height: 18,
-            color: rgb(1, 1, 1),
-          });
+    // ================= PAGE 2 =================
+    draw(page2, p.citizenId, 200, 120);
 
-          // 🔥 เขียนค่าจริง
-          pdfPage.drawText(safe(map[text]), {
-            x,
-            y,
-            size: 14,
-            font,
-            color: rgb(0, 0, 0),
-          });
-        }
-      });
-    }
+    draw(page2, p.fullName, 200, 170);
+
+    draw(page2, p.birthDay, 200, 210);
+    draw(page2, p.birthMonth, 260, 210);
+    draw(page2, p.birthYear, 330, 210);
+
+    draw(page2, p.nationality, 200, 250);
+    draw(page2, p.ethnicity, 350, 250);
+
+    draw(page2, p.height, 200, 290);
+    draw(page2, p.weight, 350, 290);
+
+    draw(page2, p.bodyType, 200, 330);
+    draw(page2, p.skinColor, 350, 330);
+
+    draw(page2, p.distinguishingMarks, 200, 370);
+    draw(page2, p.behavior, 200, 410);
+
+    draw(page2, p.address, 200, 450);
+
+    draw(page2, p.occupation, 200, 500);
+    draw(page2, p.workplaceAddress, 200, 540);
+
+    draw(page2, p.father, 200, 580);
+    draw(page2, p.mother, 200, 620);
+    draw(page2, p.spouse, 200, 660);
+
+    // ===== ใบเสร็จ =====
+    draw(page2, p.receiptBookNo, 200, 720);
+    draw(page2, p.receiptNo, 350, 720);
+    draw(page2, p.receiptDate, 200, 760);
+
+    draw(page2, p.money, 200, 800);
+    draw(page2, p.moneyText, 200, 830);
+
+    // ===== เจ้าหน้าที่ =====
+    draw(page2, p.organizationName, 200, 880);
+    draw(page2, p.rank, 200, 910);
+    draw(page2, p.position, 200, 940);
+    draw(page2, p.fullNameOrg, 200, 970);
 
     // ===== SAVE =====
     const pdfBytes = await pdfDoc.save();
@@ -119,22 +107,13 @@ export const generatePDF = async (p: any) => {
 
     const url = URL.createObjectURL(blob);
 
-    const clean = (v: any) =>
-      safe(v).replace(/[\\/:*?"<>|]/g, "");
-
-    const fileName =
-      [
-        clean(p.receiptBookNo),
-        clean(p.receiptNo),
-        clean(fullName),
-      ]
-        .filter(Boolean)
-        .join("-") + ".pdf";
-
+    // ===== โหลด (มือถือก็ใช้ได้) =====
     const link = document.createElement("a");
     link.href = url;
-    link.download = fileName;
+    link.download = `${safe(p.fullName)}.pdf`;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
 
   } catch (err) {
     console.error("PDF ERROR:", err);
