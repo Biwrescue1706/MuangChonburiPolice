@@ -1,3 +1,4 @@
+import { generatePDF } from "../utils/generatePDF";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import api from "../api/axios";
@@ -20,6 +21,9 @@ export const usePersonStatus0 = () => {
       setLoading(false);
     }
   };
+const handleExportPDF = (person: any) => {
+  generatePDF(person);
+};
 
   useEffect(() => {
     fetchPersons();
@@ -115,5 +119,6 @@ export const usePersonStatus0 = () => {
     handleUpdateStatus,
     handleBulkSend,
     handleDelete,
+handleExportPDF,
   };
 };
