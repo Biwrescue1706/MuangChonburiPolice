@@ -32,52 +32,52 @@ export const generatePDF = async (p: any) => {
     page.drawText(safe(text), {
       x,
       y: fixY(y),
-      size: 32,
+      size: 48,
       font,
     });
   };
 
   // ================= PAGE 1 =================
-  draw(page1, p.fingerprintDate, 260, -795);
-  draw(page1, p.organizationName, 815, -795);
+  draw(page1, p.fingerprintDate, 260, -790);
+  draw(page1, p.organizationName, 815, -790);
 
-  draw(page1, p.fullName, 340, -740);
+  draw(page1, p.fullName, 340, -720);
   draw(page1, p.birthDate, 765, -760);
 
-  draw(page1, p.fullNameWithRank, 200, -520);
-  draw(page1, p.rank, 175, -500);
+  draw(page1, p.fullNameWithRank, 200, -500);
+  draw(page1, p.rank, 175, -480);
 
   // ================= PAGE 2 =================
 
   // จุดประสงค์
-  draw(page2, p.purpose, 120, -870);
-  draw(page2, p.requestingAgency, 120, -830);
+  draw(page2, p.purpose, 160, -870);
+  draw(page2, p.requestingAgency, 220, -830);
 
   // บัตรประชาชน
-  draw(page2, p.citizenId, 180, -720);
+  draw(page2, p.citizenId, 180, -710);
 
   // ชื่อ
-  draw(page2, p.fullName, 180, -650);
+  draw(page2, p.fullName, 200, -600);
 
   // วันเกิด
-  draw(page2, p.birthDay, 150, -620);
-  draw(page2, p.birthMonth, 240, -620);
-  draw(page2, p.birthYear, 330, -620);
+  draw(page2, p.birthDay, 150, -550);
+  draw(page2, p.birthMonth, 240, -550);
+  draw(page2, p.birthYear, 330, -550);
 
   // สัญชาติ
-  draw(page2, p.nationality, 180, 290);
-  draw(page2, p.ethnicity, 340, 290);
+  draw(page2, p.nationality, 180, -470);
+  draw(page2, p.ethnicity, 340, -470);
 
   // ส่วนสูง/น้ำหนัก
-  draw(page2, p.height, 180, 320);
-  draw(page2, p.weight, 340, 320);
+  draw(page2, p.height, 180, -400);
+  draw(page2, p.weight, 340, -400);
 
   // รูปร่าง
-  draw(page2, p.bodyType, 180, 350);
-  draw(page2, p.skinColor, 340, 350);
+  draw(page2, p.bodyType, 180, -350);
+  draw(page2, p.skinColor, 340, -350);
 
   // ตำหนิ
-  draw(page2, p.distinguishingMarks, 180, 380);
+  draw(page2, p.distinguishingMarks, 180, -250);
 
   // พฤติกรรม
   draw(page2, p.behavior, 180, 410);
