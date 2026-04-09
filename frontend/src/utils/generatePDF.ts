@@ -1,28 +1,16 @@
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
 export const generatePDF = async (p: any) => {
   try {
-    // ===== โหลด template =====
-    const existingPdfBytes = await fetch("/template.pdf").then((res) => {
-      if (!res.ok) throw new Error("โหลด template ไม่สำเร็จ");
-      return res.arrayBuffer();
-    });
-
-    const pdfDoc = await PDFDocument.load(existingPdfBytes);
+    const pdfDoc = await PDFDocument.create();
     pdfDoc.registerFontkit(fontkit);
 
-    // ===== โหลดฟอนต์ไทย =====
-    const fontBytes = await fetch("/fonts/THSarabunNew.ttf").then((res) => {
-      if (!res.ok) throw new Error("โหลดฟอนต์ไม่สำเร็จ");
-      return res.arrayBuffer();
-    });
+    const fontBytes = await fetch("/fonts/THSarabunNew.ttf").then(res =>
+      res.arrayBuffer()
+    );
 
     const font = await pdfDoc.embedFont(fontBytes);
-
-    const pages = pdfDoc.getPages();
-    const page1 = pages[0];
-    const page2 = pages[1];
 
     // ===== helper =====
     const safe = (v: any) =>
@@ -35,67 +23,120 @@ export const generatePDF = async (p: any) => {
       p.fullName ||
       `${safe(p.prefix)}${safe(p.firstName)} ${safe(p.lastName)}`;
 
-    const draw = (page: any, text: any, x: number, y: number) => {
-      page.drawText(safe(text), {
-        x,
-        y,
-        size: 14,
-        font,
+    const drawText = (
+      page: any,
+      text: any,
+      x: number,
+      y: number,
+      size = 14
+    ) => {
+      page.drawText(safe(text), { x, y, size, font });
+    };
+
+    const drawLine = (page: any, x1: number, y1: number, x2: number, y2: number) => {
+      page.drawLine({
+        start: { x: x1, y: y1 },
+        end: { x: x2, y: y2 },
+        thickness: 1,
+        color: rgb(0, 0, 0),
       });
     };
 
     // ================= PAGE 1 =================
-    draw(page1, p.fingerprintDate, 220, 735);
-    draw(page1, p.organizationName, 420, 735);
+    const page1 = pdfDoc.addPage([595, 842]);
 
-    draw(page1, fullName, 200, 690);
-    draw(page1, p.birthDate, 420, 690);
+    drawText(page1, "FINGERPRINT FORM", 200, 800, 18);
 
-    draw(page1, p.fullNameWithRank || fullName, 200, 640);
-    draw(page1, p.rank, 200, 610);
+    drawText(page1, "Fingerprint Date:", 50, 750);
+    drawText(page1, p.fingerprintDate, 200, 750);
+
+    drawText(page1, "Organization:", 50, 720);
+    drawText(page1, p.organizationName, 200, 720);
+
+    drawText(page1, "Full Name:", 50, 690);
+    drawText(page1, fullName, 200, 690);
+
+    drawText(page1, "Birth Date:", 50, 660);
+    drawText(page1, p.birthDate, 200, 660);
+
+    drawText(page1, "Rank:", 50, 630);
+    drawText(page1, p.rank, 200, 630);
+
+    drawText(page1, "Officer Name:", 50, 600);
+    drawText(page1, p.fullNameOrg, 200, 600);
+
+    // ===== fingerprint grid =====
+    let startX = 50;
+    let startY = 500;
+    let boxSize = 80;
+
+    for (let i = 0; i < 5; i++) {
+      drawLine(page1, startX + i * boxSize, startY, startX + i * boxSize, startY - boxSize);
+      drawLine(page1, startX + i * boxSize, startY - boxSize, startX + (i + 1) * boxSize, startY - boxSize);
+      drawLine(page1, startX + (i + 1) * boxSize, startY, startX + (i + 1) * boxSize, startY - boxSize);
+      drawLine(page1, startX + i * boxSize, startY, startX + (i + 1) * boxSize, startY);
+    }
 
     // ================= PAGE 2 =================
-    draw(page2, p.citizenId, 200, 740);
+    const page2 = pdfDoc.addPage([595, 842]);
 
-    draw(page2, fullName, 200, 700);
+    drawText(page2, "PERSONAL INFORMATION", 180, 800, 18);
 
-    draw(page2, p.birthDay, 200, 670);
-    draw(page2, p.birthMonth, 260, 670);
-    draw(page2, p.birthYear, 330, 670);
+    let y = 750;
 
-    draw(page2, p.nationality, 200, 640);
-    draw(page2, p.ethnicity, 350, 640);
+    const field = (label: string, value: any) => {
+      drawText(page2, label, 50, y);
+      drawText(page2, value, 250, y);
+      y -= 28;
+    };
 
-    draw(page2, p.height, 200, 610);
-    draw(page2, p.weight, 350, 610);
+    // 🔥 ลำดับถูกต้องตามฟอร์ม
+    field("Purpose:", p.purpose);
+    field("Requesting Agency:", p.requestingAgency);
 
-    draw(page2, p.bodyType, 200, 580);
-    draw(page2, p.skinColor, 350, 580);
+    field("Citizen ID:", p.citizenId);
+    field("Full Name:", fullName);
 
-    draw(page2, p.distinguishingMarks, 200, 550);
-    draw(page2, p.behavior, 200, 520);
+    field(
+      "Birth Date:",
+      `${safe(p.birthDay)} / ${safe(p.birthMonth)} / ${safe(p.birthYear)}`
+    );
 
-    draw(page2, p.address, 200, 490);
+    field("Nationality:", p.nationality);
+    field("Ethnicity:", p.ethnicity);
+    field("Height:", p.height);
+    field("Weight:", p.weight);
+    field("Body Type:", p.bodyType);
+    field("Skin Color:", p.skinColor);
+    field("Behavior:", p.behavior);
+    field("Distinguishing Marks:", p.distinguishingMarks);
+    field("Address:", p.address);
+    field("Occupation:", p.occupation);
+    field("Workplace:", p.workplaceAddress);
+    field("Father:", p.father);
+    field("Mother:", p.mother);
+    field("Spouse:", p.spouse);
 
-    draw(page2, p.occupation, 200, 460);
-    draw(page2, p.workplaceAddress, 200, 430);
+    // ===== RECEIPT =====
+    y -= 10;
+    drawText(page2, "RECEIPT", 240, y, 16);
+    y -= 25;
 
-    draw(page2, p.father, 200, 400);
-    draw(page2, p.mother, 200, 370);
-    draw(page2, p.spouse, 200, 340);
+    field("Book No:", p.receiptBookNo);
+    field("Receipt No:", p.receiptNo);
+    field("Date:", p.receiptDate);
+    field("Amount:", p.money);
+    field("Amount (Text):", p.moneyText);
 
-    // ===== ใบเสร็จ =====
-    draw(page2, p.receiptBookNo, 200, 250);
-    draw(page2, p.receiptNo, 350, 250);
-    draw(page2, p.receiptDate, 200, 220);
+    // ===== OFFICER =====
+    y -= 10;
+    drawText(page2, "OFFICER", 240, y, 16);
+    y -= 25;
 
-    draw(page2, p.money, 200, 190);
-    draw(page2, p.moneyText, 200, 160);
-
-    draw(page2, p.organizationName, 200, 120);
-    draw(page2, p.rank, 200, 90);
-    draw(page2, p.position, 200, 60);
-    draw(page2, p.fullNameOrg, 200, 30);
+    field("Organization:", p.organizationName);
+    field("Rank:", p.rank);
+    field("Position:", p.position);
+    field("Name:", p.fullNameOrg);
 
     // ===== SAVE =====
     const pdfBytes = await pdfDoc.save();
@@ -106,7 +147,6 @@ export const generatePDF = async (p: any) => {
 
     const url = URL.createObjectURL(blob);
 
-    // ===== ตั้งชื่อไฟล์ =====
     const fileName =
       [
         clean(p.receiptBookNo),
@@ -116,13 +156,10 @@ export const generatePDF = async (p: any) => {
         .filter(Boolean)
         .join("-") + ".pdf";
 
-    // ===== DOWNLOAD =====
     const link = document.createElement("a");
     link.href = url;
     link.download = fileName;
-    document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
 
   } catch (err) {
     console.error("PDF ERROR:", err);
