@@ -1,24 +1,41 @@
-import { PDFDocument, StandardFonts } from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
 
 export const generatePDF = async (p: any) => {
-  console.log("PERSON >>>", p); // 👈 ดูข้อมูลจริง
-
   try {
+    // ====== CREATE ======
     const pdfDoc = await PDFDocument.create();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    pdfDoc.registerFontkit(fontkit);
 
-    // ===== SAFE =====
-    const safe = (v: any) => {
-      if (v === null || v === undefined || v === "") return "-";
-      return String(v);
-    };
+    // ====== LOAD THAI FONT ======
+    const fontBytes = await fetch("/fonts/THSarabunNew.ttf").then((res) => {
+      if (!res.ok) throw new Error("โหลดฟอนต์ไม่สำเร็จ");
+      return res.arrayBuffer();
+    });
 
-    const draw = (page: any, text: any, x: number, y: number) => {
+    const font = await pdfDoc.embedFont(fontBytes);
+
+    // ====== SAFE ======
+    const safe = (v: any) =>
+      v === null || v === undefined || v === "" ? "-" : String(v);
+
+    const fullName =
+      p.fullName ||
+      `${safe(p.prefix)}${safe(p.firstName)} ${safe(p.lastName)}`;
+
+    // ====== DRAW FUNCTION ======
+    const draw = (
+      page: any,
+      text: any,
+      x: number,
+      y: number,
+      size = 14
+    ) => {
       try {
         page.drawText(safe(text), {
           x,
           y,
-          size: 12,
+          size,
           font,
         });
       } catch (err) {
@@ -26,22 +43,22 @@ export const generatePDF = async (p: any) => {
       }
     };
 
-    // ===== PAGE 1 =====
+    // ================= PAGE 1 =================
     const page1 = pdfDoc.addPage([595, 842]);
 
     draw(page1, p.organizationName, 200, 780);
     draw(page1, p.fingerprintDate, 400, 780);
 
-    draw(page1, p.fullNameWithRank || p.fullName, 200, 730);
+    draw(page1, p.fullNameWithRank || fullName, 200, 730);
     draw(page1, p.rank, 100, 730);
 
     draw(page1, p.birthDate, 200, 700);
 
-    // ===== PAGE 2 =====
+    // ================= PAGE 2 =================
     const page2 = pdfDoc.addPage([595, 842]);
 
     draw(page2, p.citizenId, 150, 780);
-    draw(page2, p.fullName, 150, 750);
+    draw(page2, fullName, 150, 750);
 
     draw(page2, p.birthDay, 150, 720);
     draw(page2, p.birthMonth, 250, 720);
@@ -80,10 +97,8 @@ export const generatePDF = async (p: any) => {
     draw(page2, p.position, 150, 140);
     draw(page2, p.fullNameOrg, 150, 110);
 
-    // ===== SAVE =====
+    // ====== SAVE ======
     const pdfBytes = await pdfDoc.save();
-
-    console.log("PDF BYTES OK");
 
     const blob = new Blob([pdfBytes as any], {
       type: "application/pdf",
@@ -91,18 +106,16 @@ export const generatePDF = async (p: any) => {
 
     const url = URL.createObjectURL(blob);
 
-    console.log("PDF URL:", url);
-
-    // ✅ มือถือก็โหลดได้
+    // ====== DOWNLOAD (รองรับมือถือ) ======
     const link = document.createElement("a");
     link.href = url;
-    link.download = "person.pdf";
+    link.download = `${safe(fullName)}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
   } catch (err) {
-    console.error("PDF ERROR FULL:", err);
+    console.error("PDF ERROR:", err);
     throw err;
   }
 };
