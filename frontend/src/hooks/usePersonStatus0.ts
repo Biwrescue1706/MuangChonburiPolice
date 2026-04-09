@@ -21,9 +21,16 @@ export const usePersonStatus0 = () => {
       setLoading(false);
     }
   };
-const handleExportPDF = (person: any) => {
-  generatePDF(person);
-};
+
+  // ✅ export PDF (เพิ่ม loading กัน user กดรัว)
+  const handleExportPDF = async (person: any) => {
+    try {
+      await generatePDF(person);
+    } catch (err) {
+      console.error(err);
+      toast("error", "สร้าง PDF ไม่สำเร็จ");
+    }
+  };
 
   useEffect(() => {
     fetchPersons();
@@ -119,6 +126,6 @@ const handleExportPDF = (person: any) => {
     handleUpdateStatus,
     handleBulkSend,
     handleDelete,
-handleExportPDF,
+    handleExportPDF,
   };
 };
