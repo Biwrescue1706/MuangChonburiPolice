@@ -34,14 +34,14 @@ export const generatePDF = async (p: any) => {
   // ================= PAGE 1 =================
   // 👉 เขียนลงเส้นจริง
 
-  draw(page1, p.fingerprintDate, 160, -120);
-  draw(page1, p.organizationName, 680, -120);
+  draw(page1, p.fingerprintDate, 160, -1000);
+  draw(page1, p.organizationName, 680, -1000);
 
-  draw(page1, p.fullName, 180, -200);
-  draw(page1, p.birthDate, 680, -200);
+  draw(page1, p.fullName, 180, -800);
+  draw(page1, p.birthDate, 680, -800);
 
-  draw(page1, p.fullNameWithRank, 180, -300);
-  draw(page1, p.rank, 180, -350);
+  draw(page1, p.fullNameWithRank, 180, -600);
+  draw(page1, p.rank, 180, -550);
 
   // ================= PAGE 2 =================
 
