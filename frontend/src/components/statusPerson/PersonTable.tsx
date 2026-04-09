@@ -62,6 +62,7 @@ export default function PersonTable({
               <th>วันที่</th>
               <th>สถานะ</th>
               <th>ดู</th>
+              <th>PDF</th>
               <th>แก้ไข</th>
               <th>ลบ</th>
               <th>ส่ง</th>
@@ -112,6 +113,15 @@ export default function PersonTable({
                       ดู
                     </button>
                   </td>
+
+<td>
+  <button
+    className="btn btn-primary btn-sm"
+    onClick={() => handleExportPDF(p)}
+  >
+    PDF
+  </button>
+</td>
 
                   <td>
                     <button
