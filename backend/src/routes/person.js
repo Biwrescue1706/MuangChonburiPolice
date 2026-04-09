@@ -83,6 +83,16 @@ function formatBirthFields(data) {
   };
 }
 
+function formatCitizenId(id) {
+  if (!id) return null;
+
+  const clean = String(id).replace(/\D/g, "");
+
+  if (clean.length !== 13) return id;
+
+  return `${clean[0]}-${clean.slice(1, 5)}-${clean.slice(5, 10)}-${clean.slice(10, 12)}-${clean.slice(12)}`;
+}
+
 async function syncOrganization(tx, person, org) {
   await tx.person.update({
     where: { personId: person.personId },
@@ -136,11 +146,10 @@ router.post("/", async (req, res) => {
           firstName: data.firstName,
           lastName: data.lastName,
           fullName:
-            data.fullName ||
-            `${data.prefix || ""}${data.firstName} ${data.lastName}`,
+  data.fullName ||
+  `${data.prefix ? data.prefix + " " : ""}${data.firstName} ${data.lastName}`,
 
-          citizenId: data.citizenId,
-          ...formatBirthFields(data),
+          citizenId: formatCitizenId(data.citizenId),
 
           nationality: data.nationality,
           ethnicity: data.ethnicity,
@@ -400,12 +409,12 @@ router.put("/:id", async (req, res) => {
           lastName: data.lastName ?? oldPerson.lastName,
 
           fullName:
-            data.fullName ||
-            [data.prefix ?? oldPerson.prefix,
-            data.firstName ?? oldPerson.firstName,
-            data.lastName ?? oldPerson.lastName]
-              .filter(Boolean)
-              .join(" "),
+  data.fullName ||
+  `${data.prefix ?? oldPerson.prefix ? (data.prefix ?? oldPerson.prefix) + " " : ""}${data.firstName ?? oldPerson.firstName} ${data.lastName ?? oldPerson.lastName}`,
+
+citizenId: data.citizenId
+  ? formatCitizenId(data.citizenId)
+  : oldPerson.citizenId,
 
           ...formatBirthFields({
             birthDay: data.birthDay ?? oldPerson.birthDay,
