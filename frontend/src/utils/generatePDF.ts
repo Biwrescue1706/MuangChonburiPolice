@@ -32,63 +32,77 @@ export const generatePDF = async (p: any) => {
   };
 
   // ================= PAGE 1 =================
-  // 🔥 ทับคำอังกฤษเลย (จูนจากภาพจริง)
+  // 👉 เขียนลงเส้นจริง
 
-  draw(page1, p.fingerprintDate, 190, 135);
-  draw(page1, p.organizationName, 410, 135);
+  draw(page1, p.fingerprintDate, 140, 120);
+  draw(page1, p.organizationName, 420, 120);
 
-  draw(page1, p.fullName, 200, 180);
-  draw(page1, p.birthDate, 420, 180);
+  draw(page1, p.fullName, 140, 165);
+  draw(page1, p.birthDate, 420, 165);
 
-  draw(page1, p.fullNameWithRank || p.fullName, 200, 240);
-  draw(page1, p.rank, 200, 270);
+  draw(page1, p.fullNameWithRank, 140, 215);
+  draw(page1, p.rank, 140, 245);
 
   // ================= PAGE 2 =================
 
-  draw(page2, p.purpose, 200, 120);
-  draw(page2, p.requestingAgency, 200, 150);
+  // จุดประสงค์
+  draw(page2, p.purpose, 120, 110);
+  draw(page2, p.requestingAgency, 120, 140);
 
-  draw(page2, p.citizenId, 200, 200);
+  // บัตรประชาชน
+  draw(page2, p.citizenId, 180, 190);
 
-  draw(page2, p.fullName, 200, 240);
+  // ชื่อ
+  draw(page2, p.fullName, 180, 230);
 
-  draw(page2, p.birthDay, 180, 270);
-  draw(page2, p.birthMonth, 250, 270);
-  draw(page2, p.birthYear, 330, 270);
+  // วันเกิด
+  draw(page2, p.birthDay, 150, 260);
+  draw(page2, p.birthMonth, 240, 260);
+  draw(page2, p.birthYear, 330, 260);
 
-  draw(page2, p.nationality, 200, 300);
-  draw(page2, p.ethnicity, 350, 300);
+  // สัญชาติ
+  draw(page2, p.nationality, 180, 290);
+  draw(page2, p.ethnicity, 340, 290);
 
-  draw(page2, p.height, 200, 330);
-  draw(page2, p.weight, 350, 330);
+  // ส่วนสูง/น้ำหนัก
+  draw(page2, p.height, 180, 320);
+  draw(page2, p.weight, 340, 320);
 
-  draw(page2, p.bodyType, 200, 360);
-  draw(page2, p.skinColor, 350, 360);
+  // รูปร่าง
+  draw(page2, p.bodyType, 180, 350);
+  draw(page2, p.skinColor, 340, 350);
 
-  draw(page2, p.distinguishingMarks, 200, 390);
-  draw(page2, p.behavior, 200, 420);
+  // ตำหนิ
+  draw(page2, p.distinguishingMarks, 180, 380);
 
-  draw(page2, p.address, 200, 450);
+  // พฤติกรรม
+  draw(page2, p.behavior, 180, 410);
 
-  draw(page2, p.occupation, 200, 490);
-  draw(page2, p.workplaceAddress, 200, 520);
+  // ที่อยู่ (เส้นยาว)
+  draw(page2, p.address, 180, 440);
 
-  draw(page2, p.father, 200, 550);
-  draw(page2, p.mother, 200, 580);
-  draw(page2, p.spouse, 200, 610);
+  // อาชีพ
+  draw(page2, p.occupation, 180, 480);
+  draw(page2, p.workplaceAddress, 180, 510);
+
+  // ครอบครัว
+  draw(page2, p.father, 180, 540);
+  draw(page2, p.mother, 180, 570);
+  draw(page2, p.spouse, 180, 600);
 
   // ===== ใบเสร็จ =====
-  draw(page2, p.receiptBookNo, 200, 660);
-  draw(page2, p.receiptNo, 350, 660);
-  draw(page2, p.receiptDate, 200, 690);
+  draw(page2, p.receiptBookNo, 140, 660);
+  draw(page2, p.receiptNo, 360, 660);
 
-  draw(page2, p.money, 200, 720);
-  draw(page2, p.moneyText, 350, 720);
+  draw(page2, p.receiptDate, 140, 690);
+
+  draw(page2, p.money, 140, 720);
+  draw(page2, p.moneyText, 300, 720);
 
   // ===== เจ้าหน้าที่ =====
-  draw(page2, p.organizationName, 200, 760);
-  draw(page2, p.rank, 200, 790);
-  draw(page2, p.fullNameOrg, 350, 790);
+  draw(page2, p.organizationName, 140, 770);
+  draw(page2, p.rank, 140, 800);
+  draw(page2, p.fullNameOrg, 300, 800);
 
   const pdfBytes = await pdfDoc.save();
 
