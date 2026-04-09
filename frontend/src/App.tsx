@@ -21,6 +21,8 @@ import PersonDetailPage from "./pages/PersonDetailPage";
 import PersonHistoryPage from "./pages/PersonHistoryPage";
 import PersonEditPage from "./pages/statusPerson/PersonEditPage";
 import OrganizationPage from "./pages/OrganizationPage";
+import ReceiptListPage from "./pages/ReceiptListPage";
+import ReceiptDetailPage from "./pages/ReceiptDetailPage";
 
 function App() {
   return (
@@ -53,6 +55,9 @@ function App() {
           <Route path="/admin/create" element={<CreateAdmin />} />
           <Route path="/person/create" element={<PersonPage />} />
           <Route path="/organization" element={<OrganizationPage />} />
+
+<Route path="/receipt" element={<ReceiptListPage />} />
+<Route path="/receipt/:id" element={<ReceiptDetailPage />} />
 
           {/* ⭐ STATUS FLOW */}
           <Route path="/person/status0" element={<PersonStatus0Page />} />
