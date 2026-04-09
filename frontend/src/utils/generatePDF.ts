@@ -2,121 +2,104 @@ import { PDFDocument } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
 export const generatePDF = async (p: any) => {
-  try {
-    // ===== โหลด template =====
-    const templateBytes = await fetch("/template.pdf").then((res) =>
-      res.arrayBuffer()
-    );
+  const templateBytes = await fetch("/template.pdf").then((r) =>
+    r.arrayBuffer()
+  );
 
-    const pdfDoc = await PDFDocument.load(templateBytes);
-    pdfDoc.registerFontkit(fontkit);
+  const pdfDoc = await PDFDocument.load(templateBytes);
+  pdfDoc.registerFontkit(fontkit);
 
-    // ===== โหลด font ไทย =====
-    const fontBytes = await fetch("/fonts/THSarabunNew.ttf").then((res) =>
-      res.arrayBuffer()
-    );
+  const fontBytes = await fetch("/fonts/THSarabunNew.ttf").then((r) =>
+    r.arrayBuffer()
+  );
 
-    const font = await pdfDoc.embedFont(fontBytes);
+  const font = await pdfDoc.embedFont(fontBytes);
 
-    const pages = pdfDoc.getPages();
-    const page1 = pages[0];
-    const page2 = pages[1];
+  const [page1, page2] = pdfDoc.getPages();
 
-    // ===== SAFE =====
-    const safe = (v: any) =>
-      v === null || v === undefined || v === "" ? "-" : String(v);
+  const safe = (v: any) =>
+    v === null || v === undefined || v === "" ? "-" : String(v);
 
-    // ===== FIX COORDINATE (สำคัญมาก) =====
-    const fixY = (y: number) => 842 - y;
+  const fixY = (y: number) => 842 - y;
 
-    const draw = (
-      page: any,
-      text: any,
-      x: number,
-      y: number,
-      size = 14
-    ) => {
-      page.drawText(safe(text), {
-        x,
-        y: fixY(y),
-        size,
-        font,
-      });
-    };
-
-    // ================= PAGE 1 =================
-    draw(page1, p.fingerprintDate, 200, 120);
-    draw(page1, p.organizationName, 420, 120);
-
-    draw(page1, p.fullName, 200, 170);
-    draw(page1, p.birthDate, 420, 170);
-
-    draw(page1, p.fullNameWithRank || p.fullName, 200, 230);
-    draw(page1, p.rank, 200, 260);
-
-    // ================= PAGE 2 =================
-    draw(page2, p.citizenId, 200, 120);
-
-    draw(page2, p.fullName, 200, 170);
-
-    draw(page2, p.birthDay, 200, 210);
-    draw(page2, p.birthMonth, 260, 210);
-    draw(page2, p.birthYear, 330, 210);
-
-    draw(page2, p.nationality, 200, 250);
-    draw(page2, p.ethnicity, 350, 250);
-
-    draw(page2, p.height, 200, 290);
-    draw(page2, p.weight, 350, 290);
-
-    draw(page2, p.bodyType, 200, 330);
-    draw(page2, p.skinColor, 350, 330);
-
-    draw(page2, p.distinguishingMarks, 200, 370);
-    draw(page2, p.behavior, 200, 410);
-
-    draw(page2, p.address, 200, 450);
-
-    draw(page2, p.occupation, 200, 500);
-    draw(page2, p.workplaceAddress, 200, 540);
-
-    draw(page2, p.father, 200, 580);
-    draw(page2, p.mother, 200, 620);
-    draw(page2, p.spouse, 200, 660);
-
-    // ===== ใบเสร็จ =====
-    draw(page2, p.receiptBookNo, 200, 720);
-    draw(page2, p.receiptNo, 350, 720);
-    draw(page2, p.receiptDate, 200, 760);
-
-    draw(page2, p.money, 200, 800);
-    draw(page2, p.moneyText, 200, 830);
-
-    // ===== เจ้าหน้าที่ =====
-    draw(page2, p.organizationName, 200, 880);
-    draw(page2, p.rank, 200, 910);
-    draw(page2, p.position, 200, 940);
-    draw(page2, p.fullNameOrg, 200, 970);
-
-    // ===== SAVE =====
-    const pdfBytes = await pdfDoc.save();
-
-    const blob = new Blob([pdfBytes as any], {
-      type: "application/pdf",
+  const draw = (page: any, text: any, x: number, y: number) => {
+    page.drawText(safe(text), {
+      x,
+      y: fixY(y),
+      size: 14,
+      font,
     });
+  };
 
-    const url = URL.createObjectURL(blob);
+  // ================= PAGE 1 =================
+  // 🔥 ทับคำอังกฤษเลย (จูนจากภาพจริง)
 
-    // ===== โหลด (มือถือก็ใช้ได้) =====
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${safe(p.fullName)}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  draw(page1, p.fingerprintDate, 190, 135);
+  draw(page1, p.organizationName, 410, 135);
 
-  } catch (err) {
-    console.error("PDF ERROR:", err);
-    throw err;
-  }
+  draw(page1, p.fullName, 200, 180);
+  draw(page1, p.birthDate, 420, 180);
+
+  draw(page1, p.fullNameWithRank || p.fullName, 200, 240);
+  draw(page1, p.rank, 200, 270);
+
+  // ================= PAGE 2 =================
+
+  draw(page2, p.purpose, 200, 120);
+  draw(page2, p.requestingAgency, 200, 150);
+
+  draw(page2, p.citizenId, 200, 200);
+
+  draw(page2, p.fullName, 200, 240);
+
+  draw(page2, p.birthDay, 180, 270);
+  draw(page2, p.birthMonth, 250, 270);
+  draw(page2, p.birthYear, 330, 270);
+
+  draw(page2, p.nationality, 200, 300);
+  draw(page2, p.ethnicity, 350, 300);
+
+  draw(page2, p.height, 200, 330);
+  draw(page2, p.weight, 350, 330);
+
+  draw(page2, p.bodyType, 200, 360);
+  draw(page2, p.skinColor, 350, 360);
+
+  draw(page2, p.distinguishingMarks, 200, 390);
+  draw(page2, p.behavior, 200, 420);
+
+  draw(page2, p.address, 200, 450);
+
+  draw(page2, p.occupation, 200, 490);
+  draw(page2, p.workplaceAddress, 200, 520);
+
+  draw(page2, p.father, 200, 550);
+  draw(page2, p.mother, 200, 580);
+  draw(page2, p.spouse, 200, 610);
+
+  // ===== ใบเสร็จ =====
+  draw(page2, p.receiptBookNo, 200, 660);
+  draw(page2, p.receiptNo, 350, 660);
+  draw(page2, p.receiptDate, 200, 690);
+
+  draw(page2, p.money, 200, 720);
+  draw(page2, p.moneyText, 350, 720);
+
+  // ===== เจ้าหน้าที่ =====
+  draw(page2, p.organizationName, 200, 760);
+  draw(page2, p.rank, 200, 790);
+  draw(page2, p.fullNameOrg, 350, 790);
+
+  const pdfBytes = await pdfDoc.save();
+
+  const blob = new Blob([pdfBytes as any], {
+    type: "application/pdf",
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "document.pdf";
+  link.click();
 };
