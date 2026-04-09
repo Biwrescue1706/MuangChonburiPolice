@@ -1,20 +1,26 @@
 // src/pages/ReceiptDetailPage.tsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { toast } from "../utils/toast";
 
 export default function ReceiptDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
     try {
+      setLoading(true);
       const res = await api.get(`/receipt/${id}`);
       setData(res.data.data);
     } catch (err) {
       console.error(err);
       toast("error", "โหลดข้อมูลไม่สำเร็จ");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -22,44 +28,73 @@ export default function ReceiptDetailPage() {
     fetchData();
   }, [id]);
 
-  if (!data) return <p className="text-center mt-4">⏳ กำลังโหลด...</p>;
+  if (loading) {
+    return <p className="text-center mt-5">⏳ กำลังโหลด...</p>;
+  }
+
+  if (!data) {
+    return (
+      <div className="text-center mt-5">
+        <p>ไม่พบข้อมูล</p>
+        <button
+          className="btn btn-secondary"
+          onClick={() => navigate("/receipt")}
+        >
+          ← กลับ
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-4">
       <div className="card shadow-sm border-0">
-        <div className="card-header bg-primary text-white fw-bold">
-          🧾 รายละเอียดใบเสร็จ
+        <div className="card-header bg-primary text-white fw-bold d-flex justify-content-between">
+          <span>🧾 รายละเอียดใบเสร็จ</span>
+          <span>#{data.receiptNo}</span>
         </div>
 
         <div className="card-body">
           <div className="row g-3">
+
             <div className="col-md-6">
-              <p><b>เลขเล่ม:</b> {data.receiptBookNo}</p>
+              <label className="text-muted">เลขเล่ม</label>
+              <div className="fw-semibold">{data.receiptBookNo}</div>
             </div>
 
             <div className="col-md-6">
-              <p><b>เลขที่:</b> {data.receiptNo}</p>
+              <label className="text-muted">เลขที่</label>
+              <div className="fw-semibold">{data.receiptNo}</div>
             </div>
 
-            <div className="col-md-12">
-              <p><b>ชื่อ:</b> {data.fullName}</p>
-            </div>
-
-            <div className="col-md-6">
-              <p><b>จำนวนเงิน:</b> {data.money} บาท</p>
+            <div className="col-12">
+              <label className="text-muted">ชื่อ-นามสกุล</label>
+              <div className="fw-semibold">{data.fullName}</div>
             </div>
 
             <div className="col-md-6">
-              <p><b>ตัวหนังสือ:</b> {data.moneyText}</p>
+              <label className="text-muted">จำนวนเงิน</label>
+              <div className="fw-semibold text-success">
+                {data.money} บาท
+              </div>
             </div>
+
+            <div className="col-md-6">
+              <label className="text-muted">จำนวนเงิน (ตัวหนังสือ)</label>
+              <div className="fw-semibold">
+                {data.moneyText || "-"}
+              </div>
+            </div>
+
           </div>
 
-          <div className="mt-3 d-flex gap-2">
+          {/* ACTION */}
+          <div className="mt-4">
             <button
               className="btn btn-secondary"
-              onClick={() => window.history.back()}
+              onClick={() => navigate("/receipt")}
             >
-              ← ย้อนกลับ
+              ← กลับ
             </button>
           </div>
         </div>
