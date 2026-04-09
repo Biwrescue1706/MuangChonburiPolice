@@ -67,6 +67,13 @@ export default function PersonCard({
                 ดู
               </button>
 
+<button
+  className="btn btn-primary mt-2 w-100"
+  onClick={() => handleExportPDF(p)}
+>
+  ออก PDF
+</button>
+
               <button
                 className="btn btn-warning w-100"
                 onClick={() => navigate(`/person/edit/${p.personId}`)}
