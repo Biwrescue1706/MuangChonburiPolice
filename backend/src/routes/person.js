@@ -90,7 +90,7 @@ function formatCitizenId(id) {
 
   if (clean.length !== 13) return id;
 
-  return `${clean[0]}-${clean.slice(1, 5)}-${clean.slice(5, 10)}-${clean.slice(10, 12)}-${clean.slice(12)}`;
+  return `${clean[0]} - ${clean.slice(1, 5)} - ${clean.slice(5, 10)} - ${clean.slice(10, 12)} - ${clean.slice(12)}`;
 }
 
 async function syncOrganization(tx, person, org) {
@@ -147,9 +147,10 @@ router.post("/", async (req, res) => {
           lastName: data.lastName,
           fullName:
   data.fullName ||
-  `${data.prefix ? data.prefix + " " : ""}${data.firstName} ${data.lastName}`,
+  `${data.prefix ? data.prefix : ""}${data.firstName} ${data.lastName}`,
 
           citizenId: formatCitizenId(data.citizenId),
+...formatBirthFields(data),
 
           nationality: data.nationality,
           ethnicity: data.ethnicity,
