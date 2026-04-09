@@ -38,31 +38,31 @@ export const generatePDF = async (p: any) => {
   };
 
   // ================= PAGE 1 =================
-  draw(page1, p.fingerprintDate, 250, -800);
-  draw(page1, p.organizationName, 800, -800);
+  draw(page1, p.fingerprintDate, 260, -795);
+  draw(page1, p.organizationName, 815, -795);
 
-  draw(page1, p.fullName, 300, -750);
-  draw(page1, p.birthDate, 750, -760);
+  draw(page1, p.fullName, 340, -740);
+  draw(page1, p.birthDate, 765, -760);
 
-  draw(page1, p.fullNameWithRank, 230, -530);
-  draw(page1, p.rank, 180, -490);
+  draw(page1, p.fullNameWithRank, 200, -520);
+  draw(page1, p.rank, 175, -500);
 
   // ================= PAGE 2 =================
 
   // จุดประสงค์
-  draw(page2, p.purpose, 120, -900);
-  draw(page2, p.requestingAgency, 120, -880);
+  draw(page2, p.purpose, 120, -870);
+  draw(page2, p.requestingAgency, 120, -830);
 
   // บัตรประชาชน
-  draw(page2, p.citizenId, 180, 190);
+  draw(page2, p.citizenId, 180, -720);
 
   // ชื่อ
-  draw(page2, p.fullName, 180, 230);
+  draw(page2, p.fullName, 180, -650);
 
   // วันเกิด
-  draw(page2, p.birthDay, 150, 260);
-  draw(page2, p.birthMonth, 240, 260);
-  draw(page2, p.birthYear, 330, 260);
+  draw(page2, p.birthDay, 150, -620);
+  draw(page2, p.birthMonth, 240, -620);
+  draw(page2, p.birthYear, 330, -620);
 
   // สัญชาติ
   draw(page2, p.nationality, 180, 290);
