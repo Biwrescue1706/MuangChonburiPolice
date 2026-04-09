@@ -20,6 +20,12 @@ export const generatePDF = async (p: any) => {
   const safe = (v: any) =>
     v === null || v === undefined || v === "" ? "-" : String(v);
 
+  const clean = (v: any) =>
+    safe(v)
+      .replace(/[\\/:*?"<>|]/g, "") // กันอักขระต้องห้าม
+      .trim()
+      .replace(/\s+/g, "_"); // เว้นวรรค → _
+
   const fixY = (y: number) => 842 - y;
 
   const draw = (page: any, text: any, x: number, y: number) => {
@@ -32,22 +38,20 @@ export const generatePDF = async (p: any) => {
   };
 
   // ================= PAGE 1 =================
-  // 👉 เขียนลงเส้นจริง
-
-  draw(page1, p.fingerprintDate, 200, -800);
-  draw(page1, p.organizationName, 700, -800);
+  draw(page1, p.fingerprintDate, 250, -800);
+  draw(page1, p.organizationName, 800, -800);
 
   draw(page1, p.fullName, 300, -750);
-  draw(page1, p.birthDate, 800, -750);
+  draw(page1, p.birthDate, 750, -760);
 
-  draw(page1, p.fullNameWithRank, 180, -400);
-  draw(page1, p.rank, 180, -380);
+  draw(page1, p.fullNameWithRank, 230, -530);
+  draw(page1, p.rank, 180, -490);
 
   // ================= PAGE 2 =================
 
   // จุดประสงค์
-  draw(page2, p.purpose, 120, 110);
-  draw(page2, p.requestingAgency, 120, 140);
+  draw(page2, p.purpose, 120, -900);
+  draw(page2, p.requestingAgency, 120, -880);
 
   // บัตรประชาชน
   draw(page2, p.citizenId, 180, 190);
@@ -78,7 +82,7 @@ export const generatePDF = async (p: any) => {
   // พฤติกรรม
   draw(page2, p.behavior, 180, 410);
 
-  // ที่อยู่ (เส้นยาว)
+  // ที่อยู่
   draw(page2, p.address, 180, 440);
 
   // อาชีพ
@@ -112,8 +116,13 @@ export const generatePDF = async (p: any) => {
 
   const url = URL.createObjectURL(blob);
 
+  // ✅ ตั้งชื่อไฟล์ตามที่ต้องการ
+  const fileName = `${clean(p.receiptBookNo)}-${clean(
+    p.receiptNo
+  )}-${clean(p.fullName)}.pdf`;
+
   const link = document.createElement("a");
   link.href = url;
-  link.download = "document.pdf";
+  link.download = fileName;
   link.click();
 };
