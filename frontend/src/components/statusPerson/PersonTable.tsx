@@ -34,6 +34,7 @@ export default function PersonTable({
   toggleSelectAll,
   handleUpdateStatus,
   handleDelete,
+handleExportPDF,
 }: any) {
   const navigate = useNavigate();
 
