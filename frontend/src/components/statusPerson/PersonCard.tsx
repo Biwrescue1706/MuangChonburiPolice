@@ -33,6 +33,7 @@ export default function PersonCard({
   toggleSelect,
   handleUpdateStatus,
   handleDelete,
+handleExportPDF,
 }: any) {
   const navigate = useNavigate();
 
