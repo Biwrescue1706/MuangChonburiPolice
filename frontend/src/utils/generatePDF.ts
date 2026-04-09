@@ -2,74 +2,81 @@ import { PDFDocument, StandardFonts } from "pdf-lib";
 
 export const generatePDF = async (p: any) => {
   const pdfDoc = await PDFDocument.create();
-
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  // ===== PAGE 1 =====
-  const page1 = pdfDoc.addPage([595, 842]); // A4
+  // ================= PAGE 1 =================
+  const page1 = pdfDoc.addPage([595, 842]);
 
-  let y = 800;
-
-  const draw = (page: any, label: string, value: any) => {
-    page.drawText(`${label}: ${value || "-"}`, {
-      x: 50,
-      y,
-      size: 12,
-      font,
-    });
-    y -= 20;
+  const draw = (text: any, x: number, y: number, size = 12) => {
+    page1.drawText(String(text || "-"), { x, y, size, font });
   };
 
-  draw(page1, "ชื่อ", p.fullName);
-  draw(page1, "ยศ", p.rank);
-  draw(page1, "ชื่อเต็มพร้อมยศ", p.fullNameWithRank);
-  draw(page1, "วันเกิด", p.birthDate);
-  draw(page1, "หน่วยงาน", p.organizationName);
+  // 🔥 ปรับตำแหน่งตามฟอร์มจริง
+  draw(p.organizationName, 200, 780);
+  draw(p.fingerprintDate, 400, 780);
 
-  // ===== PAGE 2 =====
+  draw(p.fullNameWithRank, 200, 730);
+  draw(p.rank, 100, 730);
+
+  draw(p.birthDate, 200, 700);
+
+  // ================= PAGE 2 =================
   const page2 = pdfDoc.addPage([595, 842]);
 
-  y = 800;
-
-  const draw2 = (label: string, value: any) => {
-    page2.drawText(`${label}: ${value || "-"}`, {
-      x: 50,
-      y,
-      size: 12,
-      font,
-    });
-    y -= 20;
+  const draw2 = (text: any, x: number, y: number, size = 12) => {
+    page2.drawText(String(text || "-"), { x, y, size, font });
   };
 
-  draw2("เลขบัตรประชาชน", p.citizenId);
-  draw2("สัญชาติ", p.nationality);
-  draw2("เชื้อชาติ", p.ethnicity);
-  draw2("ส่วนสูง", p.height);
-  draw2("น้ำหนัก", p.weight);
-  draw2("รูปร่าง", p.bodyType);
-  draw2("สีผิว", p.skinColor);
-  draw2("ลักษณะเด่น", p.distinguishingMarks);
-  draw2("ที่อยู่", p.address);
-  draw2("อาชีพ", p.occupation);
+  // 🔥 ข้อมูลส่วนตัว
+  draw2(p.citizenId, 150, 780);
+  draw2(p.fullName, 150, 750);
 
-  draw2("บิดา", p.father);
-  draw2("มารดา", p.mother);
-  draw2("คู่สมรส", p.spouse);
+  draw2(p.birthDay, 150, 720);
+  draw2(p.birthMonth, 250, 720);
+  draw2(p.birthYear, 350, 720);
 
-  draw2("เล่มที่", p.receiptBookNo);
-  draw2("เลขที่", p.receiptNo);
-  draw2("วันที่", p.receiptDate);
+  draw2(p.nationality, 150, 690);
+  draw2(p.ethnicity, 300, 690);
 
-  draw2("จำนวนเงิน", p.money);
-  draw2("ตัวอักษร", p.moneyText);
+  draw2(p.height, 150, 660);
+  draw2(p.weight, 300, 660);
 
-  draw2("ตำแหน่ง", p.position);
-  draw2("ชื่อหน่วยงาน", p.fullNameOrg);
+  draw2(p.bodyType, 150, 630);
+  draw2(p.skinColor, 300, 630);
 
+  draw2(p.behavior, 150, 600);
+  draw2(p.distinguishingMarks, 150, 570);
+
+  draw2(p.address, 150, 540);
+
+  draw2(p.occupation, 150, 510);
+  draw2(p.workplaceAddress, 150, 480);
+
+  draw2(p.father, 150, 450);
+  draw2(p.mother, 150, 420);
+  draw2(p.spouse, 150, 390);
+
+  // 🔥 ใบเสร็จ
+  draw2(p.receiptBookNo, 150, 350);
+  draw2(p.receiptNo, 300, 350);
+  draw2(p.receiptDate, 150, 320);
+
+  draw2(p.money, 150, 290);
+  draw2(p.moneyText, 150, 260);
+
+  // 🔥 เจ้าหน้าที่
+  draw2(p.organizationName, 150, 200);
+  draw2(p.rank, 150, 170);
+  draw2(p.position, 150, 140);
+  draw2(p.fullNameOrg, 150, 110);
+
+  // ================= SAVE =================
   const pdfBytes = await pdfDoc.save();
 
-  const blob = new Blob([pdfBytes], { type: "application/pdf" });
-  const url = URL.createObjectURL(blob);
+  const blob = new Blob([new Uint8Array(pdfBytes)], {
+    type: "application/pdf",
+  });
 
-  window.open(url);
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank");
 };
