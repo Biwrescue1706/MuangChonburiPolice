@@ -198,7 +198,7 @@ export default function AdditionalInfo({
             <input
               name="requestingAgency"
               className="form-control"
-              value={form.requestingAgency || ""}
+              value={form.workplaceAddress || ""}
               onChange={handleChange}
             />
           </div>

@@ -56,8 +56,8 @@ function App() {
           <Route path="/person/create" element={<PersonPage />} />
           <Route path="/organization" element={<OrganizationPage />} />
 
-<Route path="/receipt" element={<ReceiptListPage />} />
-<Route path="/receipt/:id" element={<ReceiptDetailPage />} />
+          <Route path="/receipt" element={<ReceiptListPage />} />
+          <Route path="/receipt/:id" element={<ReceiptDetailPage />} />
 
           {/* ⭐ STATUS FLOW */}
           <Route path="/person/status0" element={<PersonStatus0Page />} />

@@ -1,5 +1,3 @@
-//src/components/person/BasicInfo.tsx
-import { useState } from "react";
 export default function BasicInfo({
   form,
   handleChange,
@@ -7,7 +5,6 @@ export default function BasicInfo({
   months,
   years,
 }: any) {
-  const [dateValue, setDateValue] = useState("");
   return (
     <div className="card mb-4 shadow-sm">
       <div className="card-header bg-primary text-white h4 text-center">
@@ -15,6 +12,7 @@ export default function BasicInfo({
       </div>
 
       <div className="card-body row g-3">
+        {/* คำนำหน้า */}
         <div className="col-md-2">
           <label className="form-label">คำนำหน้า</label>
           <select
@@ -29,26 +27,31 @@ export default function BasicInfo({
           </select>
         </div>
 
+        {/* ชื่อ */}
         <div className="col-md-5">
           <label className="form-label">ชื่อ</label>
           <input
             name="firstName"
             className="form-control"
+            value={form.firstName || ""}
             onChange={handleChange}
             required
           />
         </div>
 
+        {/* นามสกุล */}
         <div className="col-md-5">
           <label className="form-label">นามสกุล</label>
           <input
             name="lastName"
             className="form-control"
+            value={form.lastName || ""}
             onChange={handleChange}
             required
           />
         </div>
 
+        {/* วันเกิด */}
         <div className="col-md-4">
           <label>วันเกิด</label>
           <input
@@ -65,6 +68,7 @@ export default function BasicInfo({
           </datalist>
         </div>
 
+        {/* เดือนเกิด */}
         <div className="col-md-4">
           <label>เดือนเกิด</label>
           <input
@@ -81,6 +85,7 @@ export default function BasicInfo({
           </datalist>
         </div>
 
+        {/* ปีเกิด */}
         <div className="col-md-4">
           <label>ปีเกิด</label>
           <input
@@ -97,18 +102,57 @@ export default function BasicInfo({
           </datalist>
         </div>
 
+        {/* ================= fingerprint ================= */}
+
+        {/* วันพิมพ์ลายนิ้วมือ */}
         <div className="col-md-4">
-          <label className="form-label">วัน เดือน ปี ที่พิมพ์ลายนิ้วมือ</label>
+          <label>วันพิมพ์ลายนิ้วมือ</label>
           <input
-            type="date"
-            name="fingerprintDate"
+            list="fp-day-list"
+            name="fingerprintDay"
             className="form-control"
-            value={dateValue}
-            onChange={(e) => {
-              setDateValue(e.target.value);
-              handleChange(e);
-            }}
+            value={form.fingerprintDay || ""}
+            onChange={handleChange}
           />
+          <datalist id="fp-day-list">
+            {filteredDays.map((d: any) => (
+              <option key={d} value={d} />
+            ))}
+          </datalist>
+        </div>
+
+        {/* เดือนพิมพ์ลายนิ้วมือ */}
+        <div className="col-md-4">
+          <label>เดือนพิมพ์ลายนิ้วมือ</label>
+          <input
+            list="fp-month-list"
+            name="fingerprintMonth"
+            className="form-control"
+            value={form.fingerprintMonth || ""}
+            onChange={handleChange}
+          />
+          <datalist id="fp-month-list">
+            {months.map((m: any) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
+        </div>
+
+        {/* ปีพิมพ์ลายนิ้วมือ */}
+        <div className="col-md-4">
+          <label>ปีพิมพ์ลายนิ้วมือ</label>
+          <input
+            list="fp-year-list"
+            name="fingerprintYear"
+            className="form-control"
+            value={form.fingerprintYear || ""}
+            onChange={handleChange}
+          />
+          <datalist id="fp-year-list">
+            {years.map((y: any) => (
+              <option key={y} value={y} />
+            ))}
+          </datalist>
         </div>
       </div>
     </div>

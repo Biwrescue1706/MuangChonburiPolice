@@ -30,12 +30,12 @@ async function main() {
 
         },
         {
-            username: "admin2",
+            username: "Bank",
             name: "จ.ส.ต.ชาญณรงค์เดช กันตพัชรโรจน์",
             position: "งาน นผ. 1"
         },
         {
-            username: "admin3",
+            username: "Max",
             name: "ส.ต.ต.ธาดา เสาวโค",
             position: "งาน นผ. 2"
         },

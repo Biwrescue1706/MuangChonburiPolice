@@ -76,49 +76,6 @@ export default function Nav() {
               ( {shortText(adminPosition, 8)} )
             </small>
           </div>
-
-          {profileOpen && (
-            <div
-              className="position-absolute end-0 mt-2 bg-white shadow p-3 rounded"
-              style={{ minWidth: 220, zIndex: 3000 }}
-            >
-              <div className="border-bottom pb-1 mb-2 text-black small">
-                <strong>{adminName}</strong>
-                <br />
-                <small className="text-black">( {adminPosition} )</small>
-                <br />
-              </div>
-
-              <button
-                className="btn btn-light w-100 text-start mb-2"
-                onClick={() => {
-                  setProfileOpen(false);
-                  setMenuOpen(false);
-                  navigate("/profile");
-                }}
-              >
-                ⚙️ โปรไฟล์
-              </button>
-
-              <button
-                className="btn btn-light w-100 text-start mb-2"
-                onClick={() => {
-                  setProfileOpen(false);
-                  setMenuOpen(false);
-                  navigate("/security");
-                }}
-              >
-                🔒 ความปลอดภัยบัญชี
-              </button>
-
-              <button
-                className="btn btn-light w-100 text-start"
-                onClick={handleLogout}
-              >
-                🚪 ออกจากระบบ
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -135,9 +92,8 @@ export default function Nav() {
       >
         <div className="px-2 d-flex flex-column gap-2">
           <button
-            className={`btn text-start ${
-              isActive("/dashboard") ? "btn-warning fw-bold" : "btn-warning"
-            }`}
+            className={`btn text-start ${isActive("/dashboard") ? "btn-warning fw-bold" : "btn-warning"
+              }`}
             onClick={() => navigate("/dashboard")}
           >
             🏠 หน้าแรก
@@ -151,44 +107,40 @@ export default function Nav() {
           </button>
 
           <button
-            className={`btn text-start ${
-              isActive("/person/status0")
-                ? "btn-warning fw-bold"
-                : "btn-warning"
-            }`}
+            className={`btn text-start ${isActive("/person/status0")
+              ? "btn-warning fw-bold"
+              : "btn-warning"
+              }`}
             onClick={() => navigate("/person/status0")}
           >
             📌 รอส่ง ศพฐ
           </button>
 
           <button
-            className={`btn text-start ${
-              isActive("/person/status1")
-                ? "btn-warning fw-bold"
-                : "btn-warning"
-            }`}
+            className={`btn text-start ${isActive("/person/status1")
+              ? "btn-warning fw-bold"
+              : "btn-warning"
+              }`}
             onClick={() => navigate("/person/status1")}
           >
             📦 ส่งแล้ว
           </button>
 
           <button
-            className={`btn text-start ${
-              isActive("/person/status2")
-                ? "btn-warning fw-bold"
-                : "btn-warning"
-            }`}
+            className={`btn text-start ${isActive("/person/status2")
+              ? "btn-warning fw-bold"
+              : "btn-warning"
+              }`}
             onClick={() => navigate("/person/status2")}
           >
             ✅ รับแล้ว
           </button>
 
           <button
-            className={`btn text-start ${
-              isActive("/person/status3")
-                ? "btn-warning fw-bold"
-                : "btn-warning"
-            }`}
+            className={`btn text-start ${isActive("/person/status3")
+              ? "btn-warning fw-bold"
+              : "btn-warning"
+              }`}
             onClick={() => navigate("/person/status3")}
           >
             ❌ ส่งคืน
@@ -202,6 +154,14 @@ export default function Nav() {
           </button>
 
           <button
+            className={`btn text-start ${isActive("/receipt") ? "btn-warning fw-bold" : "btn-warning"
+              }`}
+            onClick={() => navigate("/receipt")}
+          >
+            🧾 ใบเสร็จ
+          </button>
+
+          <button
             className="btn btn-warning text-start"
             onClick={() => navigate("/admin/create")}
           >
@@ -209,12 +169,40 @@ export default function Nav() {
           </button>
 
           <button
-            className={`btn text-start ${
-              isActive("/organization") ? "btn-warning fw-bold" : "btn-warning"
-            }`}
+            className={`btn text-start ${isActive("/organization") ? "btn-warning fw-bold" : "btn-warning"
+              }`}
             onClick={() => navigate("/organization")}
           >
             🏢 หน่วยงาน
+          </button>
+
+          <button
+            className="btn btn-light w-100 text-start mb-2"
+            onClick={() => {
+              setProfileOpen(false);
+              setMenuOpen(false);
+              navigate("/profile");
+            }}
+          >
+            ⚙️ โปรไฟล์
+          </button>
+
+          <button
+            className="btn btn-light w-100 text-start mb-2"
+            onClick={() => {
+              setProfileOpen(false);
+              setMenuOpen(false);
+              navigate("/security");
+            }}
+          >
+            🔒 ความปลอดภัยบัญชี
+          </button>
+
+          <button
+            className="btn btn-light w-100 text-start"
+            onClick={handleLogout}
+          >
+            🚪 ออกจากระบบ
           </button>
         </div>
       </div>
@@ -314,6 +302,16 @@ export default function Nav() {
             <button
               className="btn btn-warning text-start"
               onClick={() => {
+                navigate("/receipt");
+                setMenuOpen(false);
+              }}
+            >
+              🧾 ใบเสร็จ
+            </button>
+
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => {
                 navigate("/admin/create");
                 setMenuOpen(false);
               }}
@@ -330,6 +328,36 @@ export default function Nav() {
             >
               🏢 หน่วยงาน
             </button>
+
+            <button
+              className="btn btn-light w-100 text-start mb-2"
+              onClick={() => {
+                setProfileOpen(false);
+                setMenuOpen(false);
+                navigate("/profile");
+              }}
+            >
+              ⚙️ โปรไฟล์
+            </button>
+
+            <button
+              className="btn btn-light w-100 text-start mb-2"
+              onClick={() => {
+                setProfileOpen(false);
+                setMenuOpen(false);
+                navigate("/security");
+              }}
+            >
+              🔒 ความปลอดภัยบัญชี
+            </button>
+
+            <button
+              className="btn btn-light w-100 text-start"
+              onClick={handleLogout}
+            >
+              🚪 ออกจากระบบ
+            </button>
+
           </div>
         </div>
       )}

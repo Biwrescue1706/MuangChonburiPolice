@@ -1,4 +1,3 @@
-//src/hooks/usePersonForm.ts
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { toast } from "../utils/toast";
@@ -27,18 +26,8 @@ export default function usePersonForm(navigate: any) {
   const allReceiptNumbers = Array.from({ length: 50 }, (_, i) => i + 1);
 
   const months = [
-    "มกราคม",
-    "กุมภาพันธ์",
-    "มีนาคม",
-    "เมษายน",
-    "พฤษภาคม",
-    "มิถุนายน",
-    "กรกฎาคม",
-    "สิงหาคม",
-    "กันยายน",
-    "ตุลาคม",
-    "พฤศจิกายน",
-    "ธันวาคม",
+    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
   ];
 
   const [form, setForm] = useState<any>({
@@ -58,8 +47,29 @@ export default function usePersonForm(navigate: any) {
     height: null,
     workplaceAddress: "",
     occupation: "",
-    fingerprintDate: "", // 🔥 แก้: ไม่ใช้ ISO แล้ว
-    receiptDate: "", // 🔥 แก้: ไม่ใช้ ISO แล้ว
+
+    // 🔥 birth
+    birthDay: "",
+    birthMonth: "",
+    birthYear: "",
+
+    // 🔥 fingerprint (แยก)
+    fingerprintDay: "",
+    fingerprintMonth: "",
+    fingerprintYear: "",
+
+    // 🔥 receipt (แยก)
+    receiptDay: "",
+    receiptMonth: "",
+    receiptYear: "",
+
+    // 🔥 final string
+    fingerprintDate: "",
+    receiptDate: "",
+
+    // 🔥 priority (1=ด่วน, 0=ไม่ด่วน)
+    priority: 0,
+
     status: 0,
     receiptBookNo: "",
     receiptNo: "",
@@ -188,8 +198,7 @@ export default function usePersonForm(navigate: any) {
       return;
     }
 
-    const numberFields = ["weight", "height"];
-    if (numberFields.includes(name)) {
+    if (["weight", "height"].includes(name)) {
       setForm((prev: any) => ({
         ...prev,
         [name]: value === "" ? null : Number(value),
@@ -197,64 +206,10 @@ export default function usePersonForm(navigate: any) {
       return;
     }
 
-    // ✅ วันที่ (แยกให้จบก่อน)
-    if (name === "receiptDate" || name === "fingerprintDate") {
-      if (!value) {
-        setForm((prev: any) => ({
-          ...prev,
-          [name]: "",
-        }));
-        return;
-      }
-
-      const date = new Date(value);
-      if (isNaN(date.getTime())) return;
-
-      const thaiDate = `${date.getDate()} ${
-        months[date.getMonth()]
-      } ${date.getFullYear() + 543}`;
-
-      setForm((prev: any) => ({
-        ...prev,
-        [name]: thaiDate,
-      }));
-      return;
-    }
-
-    // ✅ logic หลัก + อาชีพ
-    setForm((prev: any) => {
-      let updated = {
-        ...prev,
-        [name]: value,
-      };
-
-      // 🔥 เลือกอาชีพ
-      if (name === "occupation") {
-        if (value === "ธุรกิจส่วนตัว") {
-          updated.workplaceAddress = updated.address || "";
-        }
-
-        if (value === "รับจ้าง" || value === "รับราชการ") {
-          updated.workplaceAddress = updated.requestingAgency || "";
-        }
-      }
-
-      // 🔥 เปลี่ยน address → sync
-      if (name === "address" && prev.occupation === "ธุรกิจส่วนตัว") {
-        updated.workplaceAddress = value;
-      }
-
-      // 🔥 เปลี่ยนหน่วยงาน → sync
-      if (
-        name === "requestingAgency" &&
-        (prev.occupation === "รับจ้าง" || prev.occupation === "รับราชการ")
-      ) {
-        updated.workplaceAddress = value;
-      }
-
-      return updated;
-    });
-    setForm((prev: any) => ({ ...prev, [name]: value }));
+    setForm((prev: any) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   // ================= SUBMIT =================
@@ -262,13 +217,26 @@ export default function usePersonForm(navigate: any) {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
-    console.log("DEBUG receiptDate:", form.receiptDate);
+    const fingerprintDate =
+      form.fingerprintDay && form.fingerprintMonth && form.fingerprintYear
+        ? `${form.fingerprintDay} ${form.fingerprintMonth} ${form.fingerprintYear}`
+        : "";
+
+    const receiptDate =
+      form.receiptDay && form.receiptMonth && form.receiptYear
+        ? `${form.receiptDay} ${form.receiptMonth} ${form.receiptYear}`
+        : "";
 
     const fullName = [form.prefix, form.firstName, form.lastName]
       .filter(Boolean)
       .join(" ");
 
-    const finalForm = { ...form, fullName };
+    const finalForm = {
+      ...form,
+      fullName,
+      fingerprintDate,
+      receiptDate,
+    };
 
     const requiredFields = [
       "receiptBookNo",
@@ -293,21 +261,21 @@ export default function usePersonForm(navigate: any) {
       "father",
       "mother",
       "spouse",
-      "fingerprintDate",
+      "fingerprintDay",
+      "fingerprintMonth",
+      "fingerprintYear",
       "purpose",
       "requestingAgency",
       "receiptNo",
-      "receiptDate",
+      "receiptDay",
+      "receiptMonth",
+      "receiptYear",
     ];
 
     const missingFields = requiredFields.filter((f) => isEmpty(finalForm[f]));
 
     if (missingFields.length > 0) {
-      toast(
-        "warning",
-        "กรอกข้อมูลไม่ครบ",
-        `ยังขาด ${missingFields.length} ช่อง`,
-      );
+      toast("warning", "กรอกข้อมูลไม่ครบ", `ยังขาด ${missingFields.length} ช่อง`);
       return;
     }
 

@@ -51,6 +51,9 @@ model Person {
   fullName  String
   citizenId String
 
+  // ⭐ ความเร่งด่วน
+  priority Int @default(0) // 0 = ไม่ด่วน, 1 = ด่วน
+
   birthDate  String?
   birthDay   String?
   birthMonth String?
@@ -64,11 +67,11 @@ model Person {
   bodyType            String? @default("สันทัด")
   skinColor           String? @default("ดำแดง")
   behavior            String? @default("ปกติ")
-  distinguishingMarks String? @default("-")//ตำหนิ
+  distinguishingMarks String? @default("-")
 
-  address          String? //ที่อยู่ปัจจุบัน
-  occupation       String?//อาชีพ
-  workplaceAddress String? //สถานที่ทำงาน
+  address          String?
+  occupation       String?
+  workplaceAddress String?
   father           String?
   mother           String?
   spouse           String? @default("-")
@@ -89,6 +92,7 @@ model Person {
 
   deleteAt DateTime?
 
+  // relation organization
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [organizationId])
 
@@ -98,91 +102,40 @@ model Person {
   position         String?
   fullNameWithRank String?
 
-  files               PersonFile[]
-  nationalitySnapshot NationalitySnapshot[]
-  ethnicitySnapshot   EthnicitySnapshot[]
-  skinColorSnapshot   SkinColorSnapshot[]
-  bodyTypeSnapshot    BodyTypeSnapshot[]
-  requestInfos        RequestInfo[]
-  receipts            Receipt[]
+  // relation อื่น
+  requestInfos RequestInfo[]
+  receipts     Receipt[]
 }
 
-model PersonFile {
-  fileId   String @id @default(uuid())
-  personId String
-  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
-
-  fileName String
-  filePath String
-  fileSize Int?
-  mimeType String @default("application/pdf")
-
-  createdAt DateTime @default(now())
-}
-
-model NationalitySnapshot {
-  nationalityId String @id @default(uuid())
-
-  personId String
-  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
-
-  nationality String?
-  createdAt   DateTime @default(now())
-}
-
-model EthnicitySnapshot {
-  ethnicityId String @id @default(uuid())
-
-  personId String
-  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
-
-  ethnicity String?
-  createdAt DateTime @default(now())
-}
-
-model BodyTypeSnapshot {
-  bodyTypeId String @id @default(uuid())
-
-  personId String
-  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
-
-  bodyType  String?
-  createdAt DateTime @default(now())
-}
-
-model SkinColorSnapshot {
-  skinColorId String @id @default(uuid())
-
-  personId String
-  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
-
-  skinColor String?
-  createdAt DateTime @default(now())
-}
-
+// REQUEST INFO
 model RequestInfo {
   requestInfoId String @id @default(uuid())
 
-  personId         String 
-  person           Person  @relation(fields: [personId], references: [personId], onDelete: Cascade)
+  personId String
+  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
+
   purpose          String?
   requestingAgency String?
 
   createdAt DateTime @default(now())
 }
 
-// RECEIPT (สำคัญ)
+// RECEIPT
 model Receipt {
   receiptId String @id @default(uuid())
 
   personId String
   person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
+
   prefix    String
   firstName String
   lastName  String
   fullName  String
 
-  // ✅ snapshot ORGANIZATION
+  // ⭐ snapshot priority
+  priority Int @default(0) // 0 = ไม่ด่วน, 1 = ด่วน
+
+  // snapshot org
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [organizationId])
 
