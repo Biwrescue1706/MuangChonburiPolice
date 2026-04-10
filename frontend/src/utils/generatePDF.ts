@@ -118,8 +118,8 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.position, 240, 210);
 
   // ===== ใบเสร็จ =====
-  draw(page2, p.receiptBookNo, 720, -60);
-  draw(page2, p.receiptNo, 970, -60);
+  draw(page2, p.receiptBookNo, 720, -58);
+  draw(page2, p.receiptNo, 1050, -58);
   draw(page2, p.receiptDate, 730, -20);
 
   draw(page2, p.money, 730, 15);
