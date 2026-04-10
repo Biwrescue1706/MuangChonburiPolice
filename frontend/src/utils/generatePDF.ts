@@ -51,8 +51,8 @@ export const generatePDF = async (p: any) => {
   // ================= PAGE 2 =================
 
   // จุดประสงค์
-  draw(page2, p.purpose, 180, -870);
-  draw(page2, p.requestingAgency, 230, -830);
+  draw(page2, p.purpose, 200, -870);
+  draw(page2, p.requestingAgency, 250, -830);
 
   // บัตรประชาชน
   draw(page2, p.citizenId, 180, -710);
@@ -62,8 +62,8 @@ export const generatePDF = async (p: any) => {
 
   // วันเกิด
   draw(page2, p.birthDay, 110, -400);
-  draw(page2, p.birthMonth, 265, -400);
-  draw(page2, p.birthYear, 480, -400);
+  draw(page2, p.birthMonth, 275, -400);
+  draw(page2, p.birthYear, 490, -400);
 
   // สัญชาติ
   draw(page2, p.nationality, 110, -375);
@@ -78,7 +78,7 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.skinColor, 400, -300);
 
   // ตำหนิ
-  draw(page2, p.distinguishingMarks, 220, -280);
+  draw(page2, p.distinguishingMarks, 220, -275);
 
 // ชื่อ
   draw(page2, p.fullName, 900, -240);
@@ -103,14 +103,14 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.position , 230 , 200 );
 
   // ===== ใบเสร็จ =====
-  draw(page2, p.receiptBookNo, 700, -60);
-  draw(page2, p.receiptNo, 950, -60);
+  draw(page2, p.receiptBookNo, 700, -65);
+  draw(page2, p.receiptNo, 950, -65);
   draw(page2, p.receiptDate, 700, -20);
 
-  draw(page2, p.money, 700, 18);
-  draw(page2, p.moneyText, 900, 18);
+  draw(page2, p.money, 700, 15);
+  draw(page2, p.moneyText, 900, 15);
 
-  draw(page2, p.organizationName, 700, 70);
+  draw(page2, p.organizationName, 700, 75);
   draw(page2, p.rank, 875, 145);
   draw(page2, p.fullNameOrg, 950, 175);
 
