@@ -128,14 +128,6 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "กรอกชื่อ-นามสกุล" });
     }
 
-    const existing = await prisma.person.findFirst({
-      where: { citizenId: data.citizenId },
-    });
-
-    if (existing) {
-      return res.status(400).json({ error: "เลขบัตรประชาชนซ้ำ" });
-    }
-
     const result = await prisma.$transaction(async (tx) => {
       const org = await getOrganization(tx);
       if (!org) throw new Error("ไม่พบ organization MAIN");
