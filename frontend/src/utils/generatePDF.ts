@@ -57,24 +57,24 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.citizenId, 180, -710);
 
   // ชื่อ
-  draw(page2, p.fullName, 200, -430);
+  draw(page2, p.fullName, 225, -440);
 
   // วันเกิด
-  draw(page2, p.birthDay, 110, -410);
-  draw(page2, p.birthMonth, 265, -410);
-  draw(page2, p.birthYear, 480, -410);
+  draw(page2, p.birthDay, 110, -400);
+  draw(page2, p.birthMonth, 265, -400);
+  draw(page2, p.birthYear, 480, -400);
 
   // สัญชาติ
-  draw(page2, p.nationality, 180, -340);
-  draw(page2, p.ethnicity, 340, -340);
+  draw(page2, p.nationality, 110, -390);
+  draw(page2, p.ethnicity, 370, -390);
 
   // ส่วนสูง/น้ำหนัก
-  draw(page2, p.height, 180, -250);
-  draw(page2, p.weight, 340, -250);
+  draw(page2, p.height, 100, -340);
+  draw(page2, p.weight, 370, -340);
 
   // รูปร่าง
-  draw(page2, p.bodyType, 180, -200);
-  draw(page2, p.skinColor, 340, -200);
+  draw(page2, p.bodyType, 180, -300);
+  draw(page2, p.skinColor, 340, -300);
 
   // ตำหนิ
   draw(page2, p.distinguishingMarks, 180, -150);
