@@ -24,7 +24,7 @@ export const generatePDF = async (p: any) => {
     safe(v)
       .replace(/[\\/:*?"<>|]/g, "") // กันอักขระต้องห้าม
       .trim()
-      .replace(/\s+/g, "_"); // เว้นวรรค → _
+      .replace(/\s+/g, "-"); // เว้นวรรค → _
 
   const fixY = (y: number) => 842 - y;
 
@@ -95,19 +95,19 @@ export const generatePDF = async (p: any) => {
   // ครอบครัว
   draw(page2, p.father, 180, -5);
   draw(page2, p.mother, 180, 30);
-  draw(page2, p.spouse, 180, 50);
+  draw(page2, p.spouse, 230, 60);
 
   // ===== ใบเสร็จ =====
-  draw(page2, p.receiptBookNo, 800, 60);
-  draw(page2, p.receiptNo, 850, 60);
+  draw(page2, p.receiptBookNo, 700, 40);
+  draw(page2, p.receiptNo, 900, 40);
 
-  draw(page2, p.receiptDate, 900, 50);
+  draw(page2, p.receiptDate, 700, 45);
 
-  draw(page2, p.money, 140, 720);
-  draw(page2, p.moneyText, 300, 720);
+  draw(page2, p.money, 600, 50);
+  draw(page2, p.moneyText, 900, 50);
 
   // ===== เจ้าหน้าที่ =====
-  draw(page2, p.organizationName, 140, 770);
+  draw(page2, p.organizationName, 900, 50);
   draw(page2, p.rank, 140, 800);
   draw(page2, p.fullNameOrg, 300, 800);
 
