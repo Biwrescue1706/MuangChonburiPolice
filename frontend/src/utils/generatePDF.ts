@@ -77,28 +77,31 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.skinColor, 370, -300);
 
   // ตำหนิ
-  draw(page2, p.distinguishingMarks, 200, -295);
+  draw(page2, p.distinguishingMarks, 200, -250);
+
+// ชื่อ
+  draw(page2, p.fullName, 800, -260);
 
   // พฤติกรรม
   draw(page2, p.behavior, 300, -200);
 
   // ที่อยู่
-  draw(page2, p.address, 150, -130);
+  draw(page2, p.address, 110, -140);
 
   // อาชีพ
-  draw(page2, p.occupation, 150, -90);
+  draw(page2, p.occupation, 120, -80);
   draw(page2, p.workplaceAddress, 150, -40);
 
   // ครอบครัว
   draw(page2, p.father, 180, -5);
-  draw(page2, p.mother, 180, -5);
-  draw(page2, p.spouse, 180, 20);
+  draw(page2, p.mother, 180, 30);
+  draw(page2, p.spouse, 180, 50);
 
   // ===== ใบเสร็จ =====
-  draw(page2, p.receiptBookNo, 140, 660);
-  draw(page2, p.receiptNo, 360, 660);
+  draw(page2, p.receiptBookNo, 800, 70);
+  draw(page2, p.receiptNo, 850, 70);
 
-  draw(page2, p.receiptDate, 140, 690);
+  draw(page2, p.receiptDate, 900, 70);
 
   draw(page2, p.money, 140, 720);
   draw(page2, p.moneyText, 300, 720);
