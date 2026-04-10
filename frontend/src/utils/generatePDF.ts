@@ -51,23 +51,23 @@ export const generatePDF = async (p: any) => {
   };
 
   // ================= PAGE 1 =================
-  draw(page1, p.fingerprintDate, 260, -790);
-  draw(page1, p.organizationName, 815, -790);
+  draw(page1, p.fingerprintDate, 270, -800);
+  draw(page1, p.organizationName, 825, -800);
 
-  draw(page1, p.fullName, 340, -720);
-  draw(page1, p.birthDate, 765, -760);
+  draw(page1, p.fullName, 340, -730);
+  draw(page1, p.birthDate, 780, -760);
 
-  draw(page1, p.fullNameWithRank, 200, -505);
-  draw(page1, p.rank, 175, -470);
+  draw(page1, p.fullNameWithRank, 200, -510);
+  draw(page1, p.rank, 175, -480);
 
   // ================= PAGE 2 =================
 
   // จุดประสงค์
-  draw(page2, p.purpose, 200, -870);
-  draw(page2, p.requestingAgency, 250, -830);
+  draw(page2, p.purpose, 210, -860);
+  draw(page2, p.requestingAgency, 270, -850);
 
   // 🔥 บัตรประชาชน (ใหญ่ + หนา)
-  draw(page2, p.citizenId, 180, -710, {
+  draw(page2, p.citizenId, 180, -720, {
     size: 40,
     font: fontBold,
   });
@@ -76,27 +76,27 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.fullName, 225, -440);
 
   // วันเกิด
-  draw(page2, p.birthDay, 110, -400);
-  draw(page2, p.birthMonth, 275, -400);
-  draw(page2, p.birthYear, 490, -400);
+  draw(page2, p.birthDay, 120, -405);
+  draw(page2, p.birthMonth, 300, -405);
+  draw(page2, p.birthYear, 500, -405);
 
   // สัญชาติ
-  draw(page2, p.nationality, 110, -375);
-  draw(page2, p.ethnicity, 390, -375);
+  draw(page2, p.nationality, 120, -375);
+  draw(page2, p.ethnicity, 410, -375);
 
   // ส่วนสูง/น้ำหนัก
   draw(page2, p.height, 100, -335);
-  draw(page2, p.weight, 420, -335);
+  draw(page2, p.weight, 430, -335);
 
   // รูปร่าง
-  draw(page2, p.bodyType, 100, -300);
+  draw(page2, p.bodyType, 110, -300);
   draw(page2, p.skinColor, 400, -300);
 
   // ตำหนิ
   draw(page2, p.distinguishingMarks, 220, -275);
 
   // ชื่อ (ขวา)
-  draw(page2, p.fullName, 900, -240);
+  draw(page2, p.fullName, 950, -240);
 
   // พฤติกรรม
   draw(page2, p.behavior, 300, -200);
@@ -109,25 +109,25 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.workplaceAddress, 150, -40);
 
   // ครอบครัว
-  draw(page2, p.father, 180, -5);
-  draw(page2, p.mother, 190, 30);
-  draw(page2, p.spouse, 230, 60);
+  draw(page2, p.father, 190, -4);
+  draw(page2, p.mother, 200, 35);
+  draw(page2, p.spouse, 245, 65);
 
-  draw(page2, p.rank, 200, 130);
-  draw(page2, p.fullNameOrg, 250, 160);
-  draw(page2, p.position, 230, 200);
+  draw(page2, p.rank, 215, 140);
+  draw(page2, p.fullNameOrg, 260, 170);
+  draw(page2, p.position, 240, 210);
 
   // ===== ใบเสร็จ =====
-  draw(page2, p.receiptBookNo, 700, -65);
-  draw(page2, p.receiptNo, 950, -65);
-  draw(page2, p.receiptDate, 700, -20);
+  draw(page2, p.receiptBookNo, 720, -60);
+  draw(page2, p.receiptNo, 970, -60);
+  draw(page2, p.receiptDate, 730, -20);
 
-  draw(page2, p.money, 700, 15);
-  draw(page2, p.moneyText, 900, 15);
+  draw(page2, p.money, 730, 15);
+  draw(page2, p.moneyText, 920, 15);
 
   draw(page2, p.organizationName, 700, 75);
-  draw(page2, p.rank, 875, 145);
-  draw(page2, p.fullNameOrg, 950, 175);
+  draw(page2, p.rank, 900, 145);
+  draw(page2, p.fullNameOrg, 950, 180);
 
   const pdfBytes = await pdfDoc.save();
 
