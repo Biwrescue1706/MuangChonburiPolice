@@ -1,3 +1,4 @@
+
 import { PDFDocument } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
@@ -98,16 +99,16 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.spouse, 230, 60);
 
   // ===== ใบเสร็จ =====
-  draw(page2, p.receiptBookNo, 700, 40);
-  draw(page2, p.receiptNo, 900, 40);
+  draw(page2, p.receiptBookNo, 700, -65);
+  draw(page2, p.receiptNo, 950, -65);
 
   draw(page2, p.receiptDate, 700, 45);
 
-  draw(page2, p.money, 600, 50);
-  draw(page2, p.moneyText, 900, 50);
+  draw(page2, p.money, 700, 35);
+  draw(page2, p.moneyText, 900, 35);
 
   // ===== เจ้าหน้าที่ =====
-  draw(page2, p.organizationName, 900, 50);
+  draw(page2, p.organizationName, 700, 60);
   draw(page2, p.rank, 140, 800);
   draw(page2, p.fullNameOrg, 300, 800);
 
