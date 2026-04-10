@@ -33,23 +33,22 @@ model Organization {
   position         String
 
   /* ===== คนที่ 2 (การเงิน) ===== */
-  rank2             String?
-  fullRank2         String?
-  firstName2        String
-  lastName2         String
-  fullName2         String
-  fullNameWithRank2 String
-  position2         String
-  fullPosition2    String
+  commanderRank             String?
+  commanderFullRank         String?
+  commanderFirstName        String?
+  commanderLastName         String?
+  commanderFullName         String?
+  commanderFullNameWithRank String?
+  commanderPosition         String?
+  commanderFullPosition     String?
 
-  /* ===== คนที่ 3 ===== */
-  rank3             String?
-  firstName3        String
-  lastName3         String
-  fullName3         String
-  fullNameWithRank3 String
-  position3         String
-
+  /* ===== คนที่ 3 (การเงิน) ===== */
+  financeRank             String?
+  financeFirstName        String?
+  financeLastName         String?
+  financeFullName         String?
+  financeFullNameWithRank String?
+  financePosition         String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime?

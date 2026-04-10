@@ -63,23 +63,39 @@ async function main() {
         ).join("\n")
     );
     // ORGANIZATION PROFILE
+    // 🔹 คนที่ 1 (ผู้ช่วย)
+    const organizationName = "สถานีตำรวจภูธรเมืองชลบุรี";
+
+    // 🔹 คนที่ 1 (ผู้พิมพ์)
     const firstName = "ธาดา";
     const lastName = "เสาวโค";
     const rank = "ส.ต.ต.";
     const position = "ผบ.หมู่ (ผช.พงส.) สภ.เมืองชลบุรี";
 
-    const organizationName = "สถานีตำรวจภูธรเมืองชลบุรี";
+    const fullName = `${firstName} ${lastName}`;
+    const fullNameWithRank = `${rank} ${fullName}`;
 
-    const position2 = "ผกก.สภ.เมืองชลบุรี";
-    const fullPosition2 = "ผู้กำกับการสถานีตำรวจภูธรเมืองชลบุรี";
-    const fullRank2 = "พลตำรวจเอก";
-    const rank2 = "พ.ต.อ.";
+    // 🔹 คนที่ 2 (ผู้กำกับ)
 
-    const fullName =
-        `${firstName} ${lastName}`;
+    const commanderRank = "พ.ต.อ.";
+    const commanderFullRank = "พันตำรวจเอก";
+    const commanderFirstName = "สมชาย";
+    const commanderLastName = "ทิวงษา";
+    const commanderPosition = "ผกก.สภ.เมืองชลบุรี";
+    const commanderFullPosition = "ผู้กำกับการสถานีตำรวจภูธรเมืองชลบุรี";
 
-    const fullNameWithRank =
-        `${rank}${fullName}`;
+    const commanderFullName = `${commanderFirstName} ${commanderLastName}`;
+    const commanderFullNameWithRank = `${commanderRank} ${commanderFullName}`;
+
+    // 🔹 คนที่ 3 (การเงิน)
+    const financeRank = "ร.ต.ต.หญิง";
+    const financeFirstName = "จันทิมา";
+    const financeLastName = "เชื้อสกุล";
+
+    const financePosition = "รอง สว.(ป.) สภ.เมืองชลบุรี";
+
+    const financeFullName = `${financeFirstName} ${financeLastName}`;
+    const financeFullNameWithRank = `${financeRank} ${financeFullName}`;
 
     await prisma.organization.upsert({
         where: { key: "MAIN" },
@@ -92,9 +108,24 @@ async function main() {
             fullName,
             fullNameWithRank,
             position,
-            position2,
-            fullPosition2,
-            fullRank2,
+
+            // คนที่ 2
+            commanderRank,
+            commanderFullRank,
+            commanderFirstName,
+            commanderLastName,
+            commanderFullName,
+            commanderFullNameWithRank,
+            commanderPosition,
+            commanderFullPosition,
+
+            // คนที่ 3
+            financeRank,
+            financeFirstName,
+            financeLastName,
+            financeFullName,
+            financeFullNameWithRank,
+            financePosition,
 
         },
 
@@ -107,14 +138,44 @@ async function main() {
             fullName,
             fullNameWithRank,
             position,
+
+            // คนที่ 2
+            commanderRank,
+            commanderFullRank,
+            commanderFirstName,
+            commanderLastName,
+            commanderFullName,
+            commanderFullNameWithRank,
+            commanderPosition,
+            commanderFullPosition,
+
+            // คนที่ 3
+            financeRank,
+            financeFirstName,
+            financeLastName,
+            financeFullName,
+            financeFullNameWithRank,
+            financePosition,
         }
     });
 
     console.log(
-        "✅ สร้างโปรไฟล์องค์กรสำเร็จ :\n",
-        "\nองค์กร:", organizationName,
-        "\nชื่อ:", fullNameWithRank,
-        "\nตำแหน่ง:", position
+        `✅ สร้างโปรไฟล์องค์กรสำเร็จ :
+
+องค์กร: ${organizationName}
+
+ผู้รับ/จนท.พิมพ์ลายนิ้วมือ:
+${fullNameWithRank}
+${position}
+
+ผกก.สภ.เมืองชลบุรี:
+${commanderFullNameWithRank}
+${commanderPosition}
+
+ผู้จ่าย/จนท.การเงิน:
+${financeFullNameWithRank}
+${financePosition}
+`
     );
 
 }
