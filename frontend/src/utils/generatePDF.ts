@@ -33,7 +33,7 @@ export const generatePDF = async (p: any) => {
     page.drawText(safe(text), {
       x,
       y: fixY(y),
-      size: 35,
+      size: 28,
       font,
     });
   };
@@ -71,14 +71,14 @@ export const generatePDF = async (p: any) => {
 
   // ส่วนสูง/น้ำหนัก
   draw(page2, p.height, 100, -335);
-  draw(page2, p.weight, 390, -335);
+  draw(page2, p.weight, 420, -335);
 
   // รูปร่าง
   draw(page2, p.bodyType, 100, -300);
-  draw(page2, p.skinColor, 370, -300);
+  draw(page2, p.skinColor, 400, -300);
 
   // ตำหนิ
-  draw(page2, p.distinguishingMarks, 220, -255);
+  draw(page2, p.distinguishingMarks, 220, -280);
 
 // ชื่อ
   draw(page2, p.fullName, 900, -240);
@@ -87,10 +87,10 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.behavior, 300, -200);
 
   // ที่อยู่
-  draw(page2, p.address, 110, -140);
+  draw(page2, p.address, 125, -140);
 
   // อาชีพ
-  draw(page2, p.occupation, 120, -70);
+  draw(page2, p.occupation, 110, -70);
   draw(page2, p.workplaceAddress, 150, -40);
 
   // ครอบครัว
@@ -99,8 +99,8 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.spouse, 230, 60);
 
   draw(page2, p.rank , 200 , 130 );
-  draw(page2, p.fullNameOrg , 250 , 170 );
-  draw(page2, p.position , 250 , 190 );
+  draw(page2, p.fullNameOrg , 250 , 160 );
+  draw(page2, p.position , 230 , 200 );
 
   // ===== ใบเสร็จ =====
   draw(page2, p.receiptBookNo, 700, -60);
