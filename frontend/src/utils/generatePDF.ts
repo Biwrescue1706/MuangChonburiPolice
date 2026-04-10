@@ -54,8 +54,8 @@ export const generatePDF = async (p: any) => {
   draw(page1, p.fingerprintDate, 270, -800);
   draw(page1, p.organizationName, 825, -800);
 
-  draw(page1, p.fullName, 340, -730);
-  draw(page1, p.birthDate, 780, -760);
+  draw(page1, p.fullName, 350, -730);
+  draw(page1, p.birthDate, 800, -760);
 
   draw(page1, p.fullNameWithRank, 200, -510);
   draw(page1, p.rank, 175, -480);
