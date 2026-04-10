@@ -1,4 +1,3 @@
-
 import { PDFDocument } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
@@ -10,11 +9,17 @@ export const generatePDF = async (p: any) => {
   const pdfDoc = await PDFDocument.load(templateBytes);
   pdfDoc.registerFontkit(fontkit);
 
+  // ===== โหลดฟอนต์ปกติ =====
   const fontBytes = await fetch("/fonts/THSarabunNew.ttf").then((r) =>
     r.arrayBuffer()
   );
-
   const font = await pdfDoc.embedFont(fontBytes);
+
+  // ===== โหลดฟอนต์ตัวหนา =====
+  const fontBoldBytes = await fetch("/fonts/THSarabunNew-Bold.ttf").then((r) =>
+    r.arrayBuffer()
+  );
+  const fontBold = await pdfDoc.embedFont(fontBoldBytes);
 
   const [page1, page2] = pdfDoc.getPages();
 
@@ -23,18 +28,25 @@ export const generatePDF = async (p: any) => {
 
   const clean = (v: any) =>
     safe(v)
-      .replace(/[\\/:*?"<>|]/g, "") // กันอักขระต้องห้าม
+      .replace(/[\\/:*?"<>|]/g, "")
       .trim()
-      .replace(/\s+/g, "-"); // เว้นวรรค → _
+      .replace(/\s+/g, "-");
 
   const fixY = (y: number) => 842 - y;
 
-  const draw = (page: any, text: any, x: number, y: number) => {
+  // ===== draw รองรับ size + font =====
+  const draw = (
+    page: any,
+    text: any,
+    x: number,
+    y: number,
+    options?: { size?: number; font?: any }
+  ) => {
     page.drawText(safe(text), {
       x,
       y: fixY(y),
-      size: 28,
-      font,
+      size: options?.size || 28,
+      font: options?.font || font,
     });
   };
 
@@ -54,8 +66,11 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.purpose, 200, -870);
   draw(page2, p.requestingAgency, 250, -830);
 
-  // บัตรประชาชน
-  draw(page2, p.citizenId, 180, -710);
+  // 🔥 บัตรประชาชน (ใหญ่ + หนา)
+  draw(page2, p.citizenId, 180, -710, {
+    size: 40,
+    font: fontBold,
+  });
 
   // ชื่อ
   draw(page2, p.fullName, 225, -440);
@@ -80,7 +95,7 @@ export const generatePDF = async (p: any) => {
   // ตำหนิ
   draw(page2, p.distinguishingMarks, 220, -275);
 
-// ชื่อ
+  // ชื่อ (ขวา)
   draw(page2, p.fullName, 900, -240);
 
   // พฤติกรรม
@@ -98,9 +113,9 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.mother, 190, 30);
   draw(page2, p.spouse, 230, 60);
 
-  draw(page2, p.rank , 200 , 130 );
-  draw(page2, p.fullNameOrg , 250 , 160 );
-  draw(page2, p.position , 230 , 200 );
+  draw(page2, p.rank, 200, 130);
+  draw(page2, p.fullNameOrg, 250, 160);
+  draw(page2, p.position, 230, 200);
 
   // ===== ใบเสร็จ =====
   draw(page2, p.receiptBookNo, 700, -65);
@@ -122,7 +137,6 @@ export const generatePDF = async (p: any) => {
 
   const url = URL.createObjectURL(blob);
 
-  // ✅ ตั้งชื่อไฟล์ตามที่ต้องการ
   const fileName = `${clean(p.receiptBookNo)}-${clean(
     p.receiptNo
   )}-${clean(p.fullName)}.pdf`;
