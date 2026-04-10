@@ -65,34 +65,34 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.birthYear, 480, -400);
 
   // สัญชาติ
-  draw(page2, p.nationality, 110, -390);
-  draw(page2, p.ethnicity, 370, -390);
+  draw(page2, p.nationality, 110, -375);
+  draw(page2, p.ethnicity, 390, -375);
 
   // ส่วนสูง/น้ำหนัก
-  draw(page2, p.height, 100, -340);
-  draw(page2, p.weight, 370, -340);
+  draw(page2, p.height, 100, -335);
+  draw(page2, p.weight, 390, -335);
 
   // รูปร่าง
-  draw(page2, p.bodyType, 180, -300);
-  draw(page2, p.skinColor, 340, -300);
+  draw(page2, p.bodyType, 100, -300);
+  draw(page2, p.skinColor, 370, -300);
 
   // ตำหนิ
-  draw(page2, p.distinguishingMarks, 180, -150);
+  draw(page2, p.distinguishingMarks, 200, -290);
 
   // พฤติกรรม
-  draw(page2, p.behavior, 180, -100);
+  draw(page2, p.behavior, 300, -250);
 
   // ที่อยู่
-  draw(page2, p.address, 180, -50);
+  draw(page2, p.address, 180, -150);
 
   // อาชีพ
-  draw(page2, p.occupation, 180, 480);
-  draw(page2, p.workplaceAddress, 180, 510);
+  draw(page2, p.occupation, 180, -50);
+  draw(page2, p.workplaceAddress, 180, -50);
 
   // ครอบครัว
-  draw(page2, p.father, 180, 540);
-  draw(page2, p.mother, 180, 570);
-  draw(page2, p.spouse, 180, 600);
+  draw(page2, p.father, 180, -20);
+  draw(page2, p.mother, 180, -10);
+  draw(page2, p.spouse, 180, 0);
 
   // ===== ใบเสร็จ =====
   draw(page2, p.receiptBookNo, 140, 660);
