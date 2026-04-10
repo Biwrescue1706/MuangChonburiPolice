@@ -98,21 +98,21 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.mother, 190, 30);
   draw(page2, p.spouse, 230, 60);
 
-  draw(page2, p.rank , 180 , 100 );
-  draw(page2, p.fullNameOrg , 200 , 120 );
-  draw(page2, p.position , 200 , 150 );
+  draw(page2, p.rank , 200 , 120 );
+  draw(page2, p.fullNameOrg , 200 , 150 );
+  draw(page2, p.position , 200 , 180 );
 
   // ===== ใบเสร็จ =====
   draw(page2, p.receiptBookNo, 700, -60);
   draw(page2, p.receiptNo, 950, -60);
   draw(page2, p.receiptDate, 700, -20);
 
-  draw(page2, p.money, 700, 25);
-  draw(page2, p.moneyText, 900, 25);
+  draw(page2, p.money, 700, 20);
+  draw(page2, p.moneyText, 900, 20);
 
-  draw(page2, p.organizationName, 700, 55);
-  draw(page2, p.rank, 850, 120);
-  draw(page2, p.fullNameOrg, 900, 130);
+  draw(page2, p.organizationName, 700, 65);
+  draw(page2, p.rank, 875, 135);
+  draw(page2, p.fullNameOrg, 900, 160);
 
   const pdfBytes = await pdfDoc.save();
 
