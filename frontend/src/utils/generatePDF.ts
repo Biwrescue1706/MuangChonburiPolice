@@ -95,22 +95,24 @@ export const generatePDF = async (p: any) => {
 
   // ครอบครัว
   draw(page2, p.father, 180, -5);
-  draw(page2, p.mother, 180, 30);
+  draw(page2, p.mother, 190, 30);
   draw(page2, p.spouse, 230, 60);
 
-  // ===== ใบเสร็จ =====
-  draw(page2, p.receiptBookNo, 700, -65);
-  draw(page2, p.receiptNo, 950, -65);
+  draw(page2, p.rank , 180 , 80 );
+  draw(page2, p.fullNameOrg , 200 , 90 );
+  draw(page2, p.position , 200 , 100 );
 
-  draw(page2, p.receiptDate, 700, 45);
+  // ===== ใบเสร็จ =====
+  draw(page2, p.receiptBookNo, 700, -60);
+  draw(page2, p.receiptNo, 950, -60);
+  draw(page2, p.receiptDate, 700, -10);
 
   draw(page2, p.money, 700, 35);
   draw(page2, p.moneyText, 900, 35);
 
-  // ===== เจ้าหน้าที่ =====
-  draw(page2, p.organizationName, 700, 60);
-  draw(page2, p.rank, 140, 800);
-  draw(page2, p.fullNameOrg, 300, 800);
+  draw(page2, p.organizationName, 700, 50);
+  draw(page2, p.rank, 850, 40);
+  draw(page2, p.fullNameOrg, 900, 40);
 
   const pdfBytes = await pdfDoc.save();
 
