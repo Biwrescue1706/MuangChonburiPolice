@@ -32,7 +32,7 @@ export const generatePDF = async (p: any) => {
     page.drawText(safe(text), {
       x,
       y: fixY(y),
-      size: 40,
+      size: 35,
       font,
     });
   };
@@ -50,40 +50,40 @@ export const generatePDF = async (p: any) => {
   // ================= PAGE 2 =================
 
   // จุดประสงค์
-  draw(page2, p.purpose, 170, -870);
+  draw(page2, p.purpose, 180, -870);
   draw(page2, p.requestingAgency, 230, -830);
 
   // บัตรประชาชน
   draw(page2, p.citizenId, 180, -710);
 
   // ชื่อ
-  draw(page2, p.fullName, 200, -450);
+  draw(page2, p.fullName, 200, -430);
 
   // วันเกิด
-  draw(page2, p.birthDay, 150, -420);
-  draw(page2, p.birthMonth, 240, -420);
-  draw(page2, p.birthYear, 400, -420);
+  draw(page2, p.birthDay, 110, -410);
+  draw(page2, p.birthMonth, 265, -410);
+  draw(page2, p.birthYear, 480, -410);
 
   // สัญชาติ
-  draw(page2, p.nationality, 180, -350);
-  draw(page2, p.ethnicity, 340, -470);
+  draw(page2, p.nationality, 180, -340);
+  draw(page2, p.ethnicity, 340, -340);
 
   // ส่วนสูง/น้ำหนัก
-  draw(page2, p.height, 180, -400);
-  draw(page2, p.weight, 340, -400);
+  draw(page2, p.height, 180, -250);
+  draw(page2, p.weight, 340, -250);
 
   // รูปร่าง
-  draw(page2, p.bodyType, 180, -350);
-  draw(page2, p.skinColor, 340, -350);
+  draw(page2, p.bodyType, 180, -200);
+  draw(page2, p.skinColor, 340, -200);
 
   // ตำหนิ
-  draw(page2, p.distinguishingMarks, 180, -250);
+  draw(page2, p.distinguishingMarks, 180, -150);
 
   // พฤติกรรม
-  draw(page2, p.behavior, 180, 410);
+  draw(page2, p.behavior, 180, -100);
 
   // ที่อยู่
-  draw(page2, p.address, 180, 440);
+  draw(page2, p.address, 180, -50);
 
   // อาชีพ
   draw(page2, p.occupation, 180, 480);
