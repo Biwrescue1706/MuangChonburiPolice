@@ -63,8 +63,8 @@ export const generatePDF = async (p: any) => {
   // ================= PAGE 2 =================
 
   // จุดประสงค์
-  draw(page2, p.purpose, 210, -860);
-  draw(page2, p.requestingAgency, 270, -850);
+  draw(page2, p.purpose, 210, -900);
+  draw(page2, p.requestingAgency, 270, -840);
 
   // 🔥 บัตรประชาชน (ใหญ่ + หนา)
   draw(page2, p.citizenId, 180, -720, {
@@ -93,7 +93,7 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.skinColor, 400, -300);
 
   // ตำหนิ
-  draw(page2, p.distinguishingMarks, 220, -275);
+  draw(page2, p.distinguishingMarks, 250, -275);
 
   // ชื่อ (ขวา)
   draw(page2, p.fullName, 950, -240);
@@ -102,7 +102,7 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.behavior, 300, -200);
 
   // ที่อยู่
-  draw(page2, p.address, 125, -140);
+  draw(page2, p.address, 135, -140);
 
   // อาชีพ
   draw(page2, p.occupation, 110, -70);
@@ -125,9 +125,9 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.money, 730, 15);
   draw(page2, p.moneyText, 920, 15);
 
-  draw(page2, p.organizationName, 700, 75);
-  draw(page2, p.rank, 900, 145);
-  draw(page2, p.fullNameOrg, 950, 180);
+  draw(page2, p.organizationName, 700, 80);
+  draw(page2, p.rank, 900, 155);
+  draw(page2, p.fullNameOrg, 950, 190);
 
   const pdfBytes = await pdfDoc.save();
 
