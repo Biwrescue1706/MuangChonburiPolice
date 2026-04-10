@@ -78,7 +78,7 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.skinColor, 370, -300);
 
   // ตำหนิ
-  draw(page2, p.distinguishingMarks, 200, -260);
+  draw(page2, p.distinguishingMarks, 220, -255);
 
 // ชื่อ
   draw(page2, p.fullName, 900, -240);
@@ -98,21 +98,21 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.mother, 190, 30);
   draw(page2, p.spouse, 230, 60);
 
-  draw(page2, p.rank , 200 , 120 );
-  draw(page2, p.fullNameOrg , 200 , 150 );
-  draw(page2, p.position , 200 , 180 );
+  draw(page2, p.rank , 200 , 130 );
+  draw(page2, p.fullNameOrg , 250 , 170 );
+  draw(page2, p.position , 250 , 190 );
 
   // ===== ใบเสร็จ =====
   draw(page2, p.receiptBookNo, 700, -60);
   draw(page2, p.receiptNo, 950, -60);
   draw(page2, p.receiptDate, 700, -20);
 
-  draw(page2, p.money, 700, 20);
-  draw(page2, p.moneyText, 900, 20);
+  draw(page2, p.money, 700, 18);
+  draw(page2, p.moneyText, 900, 18);
 
-  draw(page2, p.organizationName, 700, 65);
-  draw(page2, p.rank, 875, 135);
-  draw(page2, p.fullNameOrg, 900, 160);
+  draw(page2, p.organizationName, 700, 70);
+  draw(page2, p.rank, 875, 145);
+  draw(page2, p.fullNameOrg, 950, 175);
 
   const pdfBytes = await pdfDoc.save();
 
