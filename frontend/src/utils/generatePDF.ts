@@ -32,7 +32,7 @@ export const generatePDF = async (p: any) => {
     page.drawText(safe(text), {
       x,
       y: fixY(y),
-      size: 48,
+      size: 40,
       font,
     });
   };
@@ -44,28 +44,28 @@ export const generatePDF = async (p: any) => {
   draw(page1, p.fullName, 340, -720);
   draw(page1, p.birthDate, 765, -760);
 
-  draw(page1, p.fullNameWithRank, 200, -500);
-  draw(page1, p.rank, 175, -480);
+  draw(page1, p.fullNameWithRank, 200, -505);
+  draw(page1, p.rank, 175, -470);
 
   // ================= PAGE 2 =================
 
   // จุดประสงค์
-  draw(page2, p.purpose, 160, -870);
-  draw(page2, p.requestingAgency, 220, -830);
+  draw(page2, p.purpose, 170, -870);
+  draw(page2, p.requestingAgency, 230, -830);
 
   // บัตรประชาชน
   draw(page2, p.citizenId, 180, -710);
 
   // ชื่อ
-  draw(page2, p.fullName, 200, -600);
+  draw(page2, p.fullName, 200, -450);
 
   // วันเกิด
-  draw(page2, p.birthDay, 150, -550);
-  draw(page2, p.birthMonth, 240, -550);
-  draw(page2, p.birthYear, 330, -550);
+  draw(page2, p.birthDay, 150, -420);
+  draw(page2, p.birthMonth, 240, -420);
+  draw(page2, p.birthYear, 400, -420);
 
   // สัญชาติ
-  draw(page2, p.nationality, 180, -470);
+  draw(page2, p.nationality, 180, -350);
   draw(page2, p.ethnicity, 340, -470);
 
   // ส่วนสูง/น้ำหนัก
