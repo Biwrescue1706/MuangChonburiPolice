@@ -32,6 +32,25 @@ model Organization {
   fullNameWithRank String
   position         String
 
+  /* ===== คนที่ 2 (การเงิน) ===== */
+  rank2             String?
+  fullRank2         String?
+  firstName2        String
+  lastName2         String
+  fullName2         String
+  fullNameWithRank2 String
+  position2         String
+  fullPosition2    String
+
+  /* ===== คนที่ 3 ===== */
+  rank3             String?
+  firstName3        String
+  lastName3         String
+  fullName3         String
+  fullNameWithRank3 String
+  position3         String
+
+
   createdAt DateTime  @default(now())
   updatedAt DateTime?
 

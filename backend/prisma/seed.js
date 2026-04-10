@@ -67,7 +67,13 @@ async function main() {
     const lastName = "เสาวโค";
     const rank = "ส.ต.ต.";
     const position = "ผบ.หมู่ (ผช.พงส.) สภ.เมืองชลบุรี";
+
     const organizationName = "สถานีตำรวจภูธรเมืองชลบุรี";
+
+    const position2 = "ผกก.สภ.เมืองชลบุรี";
+    const fullPosition2 = "ผู้กำกับการสถานีตำรวจภูธรเมืองชลบุรี";
+    const fullRank2 = "พลตำรวจเอก";
+    const rank2 = "พ.ต.อ.";
 
     const fullName =
         `${firstName} ${lastName}`;
@@ -86,6 +92,10 @@ async function main() {
             fullName,
             fullNameWithRank,
             position,
+            position2,
+            fullPosition2,
+            fullRank2,
+
         },
 
         create: {
