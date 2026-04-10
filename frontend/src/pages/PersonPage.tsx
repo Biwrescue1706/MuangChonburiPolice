@@ -30,6 +30,7 @@ export default function PersonPage() {
       <h2 className="text-center">สร้างข้อมูลบุคคล</h2>
 
       <form onSubmit={handleSubmit}>
+        {/* 🔹 ข้อมูลพื้นฐาน */}
         <BasicInfo
           form={form}
           filteredDays={filteredDays}
@@ -38,6 +39,7 @@ export default function PersonPage() {
           handleChange={handleChange}
         />
 
+        {/* 🔹 ข้อมูลเพิ่มเติม */}
         <AdditionalInfo
           form={form}
           handleChange={handleChange}
@@ -49,15 +51,21 @@ export default function PersonPage() {
           filteredWeights={filteredWeights}
         />
 
+        {/* 🔹 ใบเสร็จ */}
         <ReceiptInfo
           form={form}
           handleChange={handleChange}
           receiptNumbers={receiptNumbers}
           setForm={setForm}
+          months={months}   // 🔥 สำคัญ
+          years={years}     // 🔥 สำคัญ
         />
 
+        {/* ปุ่มบันทึก */}
         <div className="text-end">
-          <button className="btn btn-primary px-4">บันทึกข้อมูล</button>
+          <button className="btn btn-primary px-4">
+            บันทึกข้อมูล
+          </button>
         </div>
       </form>
     </div>

@@ -64,20 +64,28 @@ router.get("/used/:bookNo", async (req, res) => {
 /* ================= GET ALL ================= */
 router.get("/all", async (req, res) => {
   try {
-    const receipts = await prisma.receipt.findMany({
-      orderBy: { createdAt: "desc" },
+    const receipts = await prisma.receipt.findMany();
+
+    const sorted = receipts.sort((a, b) => {
+      const bookA = Number(a.receiptBookNo || 0);
+      const bookB = Number(b.receiptBookNo || 0);
+
+      if (bookA !== bookB) return bookA - bookB;
+
+      return Number(a.receiptNo || 0) - Number(b.receiptNo || 0);
     });
 
     res.json({
       success: true,
-      data: receipts,
-      total: receipts.length,
+      data: sorted,
+      total: sorted.length,
     });
   } catch (err) {
-    console.error(err);
+    console.error("ERROR /receipt/all:", err);
+
     res.status(500).json({
       success: false,
-      error: "ดึงข้อมูลทั้งหมดไม่สำเร็จ",
+      error: err.message,
     });
   }
 });
