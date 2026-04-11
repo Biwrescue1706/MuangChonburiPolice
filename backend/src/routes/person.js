@@ -184,9 +184,6 @@ router.post("/", async (req, res) => {
         },
       });
 
-
-
-
       await tx.requestInfo.create({
         data: {
           personId: person.personId,
@@ -255,9 +252,6 @@ router.get("/getall", async (req, res) => {
           where.deleteAt = null;
         }
       }
-    } else {
-      // default → เอาเฉพาะที่ยังไม่ลบ
-      where.deleteAt = null;
     }
 
     // 🔍 ค้นรวม
