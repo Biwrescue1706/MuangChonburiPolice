@@ -32,7 +32,6 @@ model Organization {
   fullNameWithRank String
   position         String
 
-  /* ===== คนที่ 2 (การเงิน) ===== */
   commanderRank             String?
   commanderFullRank         String?
   commanderFirstName        String?
@@ -42,7 +41,6 @@ model Organization {
   commanderPosition         String?
   commanderFullPosition     String?
 
-  /* ===== คนที่ 3 (การเงิน) ===== */
   financeRank             String?
   financeFirstName        String?
   financeLastName         String?
