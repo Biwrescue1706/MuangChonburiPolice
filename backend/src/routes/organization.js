@@ -28,6 +28,23 @@ router.get("/", async (req, res) => {
     }
 });
 
+router.get("/key/:key", async (req, res) => {
+  try {
+    const org = await prisma.organization.findFirst({
+      where: { key: req.params.key },
+    });
+
+    if (!org) {
+      return res.status(404).json({ error: "ไม่พบหน่วยงาน" });
+    }
+
+    res.json({ success: true, data: org });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "โหลดข้อมูลไม่สำเร็จ" });
+  }
+});
+
 /* ================= READ ONE ================= */
 router.get("/:id", async (req, res) => {
     try {

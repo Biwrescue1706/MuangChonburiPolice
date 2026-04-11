@@ -66,8 +66,8 @@ export default function Dashboard() {
             เพิ่มข้อมูลบุคคล
           </Link>
 
-          <Link to="/person/status0" className="btn btn-success">
-            ดูข้อมูลบุคคล
+          <Link to="/person/history" className="btn btn-success">
+            ดูข้อมูลประวัติบุคคล
           </Link>
         </div>
       </div>

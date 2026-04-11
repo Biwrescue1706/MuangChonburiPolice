@@ -154,15 +154,11 @@ export default function ReceiptListPage() {
               <div className="card-body">
                 <h5 className="fw-bold">{item.fullName}</h5>
 
-                <p className="mb-1">📒 เล่ม: {item.receiptBookNo}</p>
-                <p className="mb-1">🔢 เลขที่: {item.receiptNo}</p>
+                <p className="mb-1">📒 เล่ม : {item.receiptBookNo}</p>
+                <p className="mb-1">🔢 เลขที่ : {item.receiptNo}</p>
                 <p className="mb-1">📅 {formatDate(item.createdAt)}</p>
-                <p className="mb-2 text-success">
-                  💰 {item.money} บาท
-                </p>
-
                 <button
-                  className="btn btn-primary w-100"
+                  className="btn btn-primary w-50"
                   onClick={() =>
                     navigate(`/receipt/${item.receiptId}`)
                   }

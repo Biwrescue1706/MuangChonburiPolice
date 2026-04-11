@@ -196,7 +196,7 @@ export default function AdditionalInfo({
           <div className="col-md-4">
             <label>สถานที่ทำงาน</label>
             <input
-              name="requestingAgency"
+              name="workplaceAddress"
               className="form-control"
               value={form.workplaceAddress || ""}
               onChange={handleChange}

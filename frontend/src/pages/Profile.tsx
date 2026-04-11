@@ -1,6 +1,6 @@
+//src/pages/Profile.tsx
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import Swal from "sweetalert2";
 
 type AdminProfile = {
   username: string;
@@ -15,13 +15,21 @@ export default function Profile() {
     position: "",
   });
 
+  const [password, setPassword] = useState({
+    oldPassword: "",
+    newPassword: "",
+  });
+
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+
   /* ================= LOAD PROFILE ================= */
   const loadProfile = async () => {
     try {
       const res = await api.get("/admin/me");
       setProfile(res.data);
     } catch {
-      Swal.fire("ผิดพลาด", "โหลดข้อมูลไม่สำเร็จ", "error");
+      alert("โหลดข้อมูลไม่สำเร็จ");
     }
   };
 
@@ -29,106 +37,205 @@ export default function Profile() {
     loadProfile();
   }, []);
 
-  /* ================= EDIT PROFILE POPUP ================= */
-  const openEditProfile = async () => {
-    const { value } = await Swal.fire({
-      title: "แก้ไขข้อมูลส่วนตัว",
-      html: `
-        <input id="username" class="swal2-input" placeholder="Username" value="${profile.username}">
-        <input id="name" class="swal2-input" placeholder="ชื่อ - นามสกุล" value="${profile.name}">
-        <input id="position" class="swal2-input" placeholder="ตำแหน่ง" value="${profile.position}">
-      `,
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: "บันทึก",
-      cancelButtonText: "ยกเลิก",
-      preConfirm: () => {
-        return {
-          username: (document.getElementById("username") as HTMLInputElement).value,
-          name: (document.getElementById("name") as HTMLInputElement).value,
-          position: (document.getElementById("position") as HTMLInputElement).value,
-        };
-      },
-    });
-
-    if (value) {
-      try {
-        await api.put("/admin/me", value);
-
-        setProfile(value);
-
-        Swal.fire("สำเร็จ", "บันทึกข้อมูลแล้ว", "success");
-      } catch {
-        Swal.fire("ผิดพลาด", "อัปเดตไม่สำเร็จ", "error");
-      }
-    }
+  /* ================= SAVE PROFILE ================= */
+  const handleSaveProfile = async () => {
+    await api.put("/admin/me", profile);
   };
 
-  /* ================= CHANGE PASSWORD POPUP ================= */
-  const openChangePassword = async () => {
-    const { value } = await Swal.fire({
-      title: "เปลี่ยนรหัสผ่าน",
-      html: `
-        <input id="oldPassword" type="password" class="swal2-input" placeholder="รหัสผ่านเดิม">
-        <input id="newPassword" type="password" class="swal2-input" placeholder="รหัสผ่านใหม่">
-      `,
-      showCancelButton: true,
-      confirmButtonText: "เปลี่ยนรหัสผ่าน",
-      cancelButtonText: "ยกเลิก",
-      preConfirm: () => {
-        const oldPassword = (document.getElementById("oldPassword") as HTMLInputElement).value;
-        const newPassword = (document.getElementById("newPassword") as HTMLInputElement).value;
-
-        if (!oldPassword || !newPassword) {
-          Swal.showValidationMessage("กรอกข้อมูลให้ครบ");
-          return;
-        }
-
-        if (oldPassword === newPassword) {
-          Swal.showValidationMessage("รหัสใหม่ห้ามซ้ำ");
-          return;
-        }
-
-        if (newPassword.length <= 6) {
-          Swal.showValidationMessage("รหัสต้องมากกว่า 6 ตัว");
-          return;
-        }
-
-        return { oldPassword, newPassword };
-      },
-    });
-
-    if (value) {
-      try {
-        await api.put("/auth/change-password", value);
-
-        Swal.fire({
-          icon: "success",
-          title: "เปลี่ยนรหัสผ่านสำเร็จ",
-          text: "กรุณาเข้าสู่ระบบใหม่",
-        });
-
-        window.location.href = "/";
-      } catch (err: any) {
-        Swal.fire("ผิดพลาด", err.response?.data?.error || "error", "error");
-      }
-    }
+  /* ================= CHANGE PASSWORD ================= */
+  const handleChangePassword = async () => {
+    await api.put("/auth/change-password", password);
+    setPassword({ oldPassword: "", newPassword: "" });
+    setShowOld(false);
+    setShowNew(false);
   };
 
   return (
     <div className="main-content">
-      <div className="container py-3 text-center">
-        <h3 className="fw-bold mb-4">👤 โปรไฟล์ผู้ใช้งาน</h3>
+      <div className="container py-4">
+        <h3 className="fw-bold mb-4 text-center">👤 โปรไฟล์ผู้ใช้งาน</h3>
 
-        {/* ปุ่ม */}
-        <div className="d-flex gap-3 justify-content-center">
-          <button className="btn btn-primary px-4" onClick={openEditProfile}>
-            🧑 แก้ไขข้อมูล
-          </button>
+        <div className="row justify-content-center">
+          <div className="col-12 col-md-6">
+            <div className="card shadow-sm border-0 rounded-4">
+              <div
+                className="card-header text-white text-center fw-bold"
+                style={{ background: "#800020" }}
+              >
+                ข้อมูลผู้ใช้งาน
+              </div>
 
-          <button className="btn btn-warning px-4" onClick={openChangePassword}>
-            🔒 เปลี่ยนรหัสผ่าน
-          </button>
+              <div className="card-body">
+                <div className="mb-3">
+                  <label className="fw-semibold">Username</label>
+                  <div className="form-control bg-light">
+                    {profile.username || "-"}
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label className="fw-semibold">ชื่อ - นามสกุล</label>
+                  <div className="form-control bg-light">
+                    {profile.name || "-"}
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="fw-semibold">ตำแหน่ง</label>
+                  <div className="form-control bg-light">
+                    {profile.position || "-"}
+                  </div>
+                </div>
+
+                <div className="d-flex gap-2">
+                  <button
+                    className="btn btn-primary w-50"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal"
+                  >
+                    🧑 แก้ไขข้อมูล
+                  </button>
+
+                  <button
+                    className="btn btn-warning w-50"
+                    data-bs-toggle="modal"
+                    data-bs-target="#passwordModal"
+                  >
+                    🔒 เปลี่ยนรหัสผ่าน
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= EDIT MODAL ================= */}
+      <div className="modal fade" id="editModal" tabIndex={-1}>
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content rounded-4">
+            <div className="modal-header bg-danger text-white">
+              <h5 className="modal-title">แก้ไขข้อมูล</h5>
+              <button
+                className="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+
+            <div className="modal-body">
+              <input
+                className="form-control mb-2"
+                value={profile.username}
+                onChange={(e) =>
+                  setProfile({ ...profile, username: e.target.value })
+                }
+              />
+
+              <input
+                className="form-control mb-2"
+                value={profile.name}
+                onChange={(e) =>
+                  setProfile({ ...profile, name: e.target.value })
+                }
+              />
+
+              <input
+                className="form-control"
+                value={profile.position}
+                onChange={(e) =>
+                  setProfile({ ...profile, position: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" data-bs-dismiss="modal">
+                ยกเลิก
+              </button>
+
+              <button
+                className="btn btn-success"
+                onClick={handleSaveProfile}
+                data-bs-dismiss="modal"
+              >
+                บันทึก
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= PASSWORD MODAL ================= */}
+      <div className="modal fade" id="passwordModal" tabIndex={-1}>
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content rounded-4">
+            <div className="modal-header bg-warning">
+              <h5 className="modal-title">เปลี่ยนรหัสผ่าน</h5>
+              <button className="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div className="modal-body">
+              {/* OLD PASSWORD */}
+              <div className="input-group mb-2">
+                <input
+                  type={showOld ? "text" : "password"}
+                  className="form-control"
+                  placeholder="รหัสเดิม"
+                  value={password.oldPassword}
+                  onChange={(e) =>
+                    setPassword({
+                      ...password,
+                      oldPassword: e.target.value,
+                    })
+                  }
+                />
+
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowOld(!showOld)}
+                >
+                  {showOld ? "🙈" : "👁"}
+                </button>
+              </div>
+
+              {/* NEW PASSWORD */}
+              <div className="input-group">
+                <input
+                  type={showNew ? "text" : "password"}
+                  className="form-control"
+                  placeholder="รหัสใหม่"
+                  value={password.newPassword}
+                  onChange={(e) =>
+                    setPassword({
+                      ...password,
+                      newPassword: e.target.value,
+                    })
+                  }
+                />
+
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowNew(!showNew)}
+                >
+                  {showNew ? "🙈" : "👁"}
+                </button>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" data-bs-dismiss="modal">
+                ยกเลิก
+              </button>
+
+              <button
+                className="btn btn-warning"
+                onClick={handleChangePassword}
+                data-bs-dismiss="modal"
+              >
+                ยืนยัน
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

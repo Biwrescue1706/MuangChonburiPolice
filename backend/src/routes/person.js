@@ -138,11 +138,11 @@ router.post("/", async (req, res) => {
           firstName: data.firstName,
           lastName: data.lastName,
           fullName:
-  data.fullName ||
-  `${data.prefix ? data.prefix : ""}${data.firstName} ${data.lastName}`,
+            data.fullName ||
+            `${data.prefix ? data.prefix : ""}${data.firstName} ${data.lastName}`,
 
           citizenId: formatCitizenId(data.citizenId),
-...formatBirthFields(data),
+          ...formatBirthFields(data),
 
           nationality: data.nationality,
           ethnicity: data.ethnicity,
@@ -184,10 +184,8 @@ router.post("/", async (req, res) => {
         },
       });
 
-      await createSnapshotIfChanged(tx, "nationalitySnapshot", "nationality", person.personId, person.nationality);
-      await createSnapshotIfChanged(tx, "ethnicitySnapshot", "ethnicity", person.personId, person.ethnicity);
-      await createSnapshotIfChanged(tx, "bodyTypeSnapshot", "bodyType", person.personId, person.bodyType);
-      await createSnapshotIfChanged(tx, "skinColorSnapshot", "skinColor", person.personId, person.skinColor);
+
+
 
       await tx.requestInfo.create({
         data: {
@@ -234,48 +232,78 @@ router.post("/", async (req, res) => {
 // GET ALL + SEARCH + FILTER
 router.get("/getall", async (req, res) => {
   try {
-    const { search, status, page = 1, limit = 20 } = req.query;
+    const {
+      search,
+      firstName,
+      lastName,
+      status,
+      page = 1,
+      limit = 20,
+    } = req.query;
 
-    const where = {
-      deleteAt: null,
-      AND: [],
-    };
+    let where = {}; // ✅ ต้องมีอันนี้ก่อน
 
-    if (search) {
-      where.AND.push({
-        OR: [
-          { firstName: { contains: search, mode: "insensitive" } },
-          { lastName: { contains: search, mode: "insensitive" } },
-          { fullName: { contains: search, mode: "insensitive" } },
-          { citizenId: { contains: search } },
-        ],
-      });
-    }
-
+    // 🔍 filter status
     if (status !== undefined && status !== "") {
       const statusNum = Number(status);
 
       if (!isNaN(statusNum)) {
-        where.AND.push({ status: statusNum });
+        where.status = statusNum;
+
+        // ❗ ถ้าไม่ใช่ status 3 → ซ่อนของลบ
+        if (statusNum !== 3) {
+          where.deleteAt = null;
+        }
+      }
+    } else {
+      // default → เอาเฉพาะที่ยังไม่ลบ
+      where.deleteAt = null;
+    }
+
+    // 🔍 ค้นรวม
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+        { fullName: { contains: search, mode: "insensitive" } },
+        { citizenId: { contains: search } },
+      ];
+    }
+
+    // 🔍 ค้นแยกชื่อ
+    if (firstName) {
+      where.firstName = {
+        contains: firstName,
+        mode: "insensitive",
+      };
+    }
+
+    // 🔍 ค้นแยกนามสกุล
+    if (lastName) {
+      where.lastName = {
+        contains: lastName,
+        mode: "insensitive",
+      };
+    }
+
+    // 🔍 filter status
+    if (status !== undefined && status !== "") {
+      const statusNum = Number(status);
+      if (!isNaN(statusNum)) {
+        where.status = statusNum;
       }
     }
 
     const skip = (Number(page) - 1) * Number(limit);
 
-    const finalWhere = where.AND.length
-      ? where
-      : { deleteAt: null };
-
     const [persons, total] = await Promise.all([
       prisma.person.findMany({
-        where: finalWhere,
+        where,
         skip,
         take: Number(limit),
         orderBy: { createdAt: "desc" },
       }),
-      prisma.person.count({
-        where: finalWhere,
-      }),
+      prisma.person.count({ where }),
     ]);
 
     res.json({
@@ -297,10 +325,6 @@ router.get("/:id", async (req, res) => {
     const person = await prisma.person.findUnique({
       where: { personId: req.params.id },
       include: {
-        nationalitySnapshot: true,
-        ethnicitySnapshot: true,
-        bodyTypeSnapshot: true,
-        skinColorSnapshot: true,
         requestInfos: true,
         receipts: true,
       },
@@ -402,12 +426,12 @@ router.put("/:id", async (req, res) => {
           lastName: data.lastName ?? oldPerson.lastName,
 
           fullName:
-  data.fullName ||
-  `${data.prefix ?? oldPerson.prefix ? (data.prefix ?? oldPerson.prefix) + " " : ""}${data.firstName ?? oldPerson.firstName} ${data.lastName ?? oldPerson.lastName}`,
+            data.fullName ||
+            `${data.prefix ?? oldPerson.prefix ? (data.prefix ?? oldPerson.prefix) + " " : ""}${data.firstName ?? oldPerson.firstName} ${data.lastName ?? oldPerson.lastName}`,
 
-citizenId: data.citizenId
-  ? formatCitizenId(data.citizenId)
-  : oldPerson.citizenId,
+          citizenId: data.citizenId
+            ? formatCitizenId(data.citizenId)
+            : oldPerson.citizenId,
 
           ...formatBirthFields({
             birthDay: data.birthDay ?? oldPerson.birthDay,
@@ -454,12 +478,6 @@ citizenId: data.citizenId
       if (org) {
         await syncOrganization(tx, person, org);
       }
-
-      // 🔥 snapshot
-      await createSnapshotIfChanged(tx, "nationalitySnapshot", "nationality", person.personId, person.nationality);
-      await createSnapshotIfChanged(tx, "ethnicitySnapshot", "ethnicity", person.personId, person.ethnicity);
-      await createSnapshotIfChanged(tx, "bodyTypeSnapshot", "bodyType", person.personId, person.bodyType);
-      await createSnapshotIfChanged(tx, "skinColorSnapshot", "skinColor", person.personId, person.skinColor);
 
       // 🔥 request info
       await tx.requestInfo.updateMany({
@@ -514,18 +532,6 @@ router.delete("/:id", async (req, res) => {
       prisma.requestInfo.deleteMany({
         where: { personId },
       }),
-      prisma.nationalitySnapshot.deleteMany({
-        where: { personId },
-      }),
-      prisma.ethnicitySnapshot.deleteMany({
-        where: { personId },
-      }),
-      prisma.bodyTypeSnapshot.deleteMany({
-        where: { personId },
-      }),
-      prisma.skinColorSnapshot.deleteMany({
-        where: { personId },
-      }),
       prisma.person.delete({
         where: { personId },
       }),
@@ -540,9 +546,10 @@ router.delete("/:id", async (req, res) => {
 // UPDATE STATUS (Bulk)
 router.patch("/bulk/status", async (req, res) => {
   try {
-    const { personIds, status } = req.body;
+    const { personIds } = req.body;
+    const statusNum = Number(req.body.status);
 
-    if (![0, 1, 2, 3].includes(status)) {
+    if (![0, 1, 2, 3].includes(statusNum)) {
       return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
     }
 
@@ -555,13 +562,19 @@ router.patch("/bulk/status", async (req, res) => {
         personId: { in: personIds },
       },
       data: {
-        status,
+        status: statusNum, // ✅ แก้ตรงนี้
         statusUpdatedAt: new Date(),
         updatedAt: new Date(),
+
         deleteAt:
-          status === 3
+          statusNum === 3 // ✅ แก้ตรงนี้
             ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
             : null,
+        returnDate:
+          statusNum === 3
+            ? (person.returnDate ?? new Date())
+            : null,
+
       },
     });
 
@@ -583,9 +596,9 @@ router.patch("/:id/status", async (req, res) => {
     console.log("ID:", req.params.id);
     console.log("BODY:", req.body);
 
-    const { status } = req.body;
+    const statusNum = Number(req.body.status);
 
-    if (![0, 1, 2, 3].includes(status)) {
+    if (![0, 1, 2, 3].includes(statusNum)) {
       return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
     }
 
@@ -600,12 +613,17 @@ router.patch("/:id/status", async (req, res) => {
     await prisma.person.update({
       where: { personId: req.params.id },
       data: {
-        status,
+        status: statusNum, // ✅ แก้ตรงนี้
         statusUpdatedAt: new Date(),
 
         deleteAt:
-          status === 3
+          statusNum === 3 // ✅ แก้ตรงนี้
             ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+            : null,
+
+        returnDate:
+          statusNum === 3
+            ? (person.returnDate ?? new Date())
             : null,
 
         updatedAt: new Date(),

@@ -59,7 +59,6 @@ model Organization {
 model Person {
   personId  String    @id @default(uuid())
   createdAt DateTime  @default(now())
-  updatedAt DateTime?
 
   prefix    String
   firstName String
@@ -107,6 +106,7 @@ model Person {
   statusUpdatedAt DateTime?
 
   deleteAt DateTime?
+  returnDate DateTime?
 
   // relation organization
   organizationId String?
@@ -117,6 +117,8 @@ model Person {
   rank             String?
   position         String?
   fullNameWithRank String?
+
+  updatedAt DateTime?
 
   // relation อื่น
   requestInfos RequestInfo[]

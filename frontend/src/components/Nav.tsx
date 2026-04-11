@@ -106,7 +106,7 @@ export default function Nav() {
             ➕ เพิ่มบุคคลตรวจประวัติ
           </button>
 
-          <button
+          {/* <button
             className={`btn text-start ${isActive("/person/status0")
               ? "btn-warning fw-bold"
               : "btn-warning"
@@ -144,7 +144,7 @@ export default function Nav() {
             onClick={() => navigate("/person/status3")}
           >
             ❌ ส่งคืน
-          </button>
+          </button> */}
 
           <button
             className="btn btn-warning text-start"
@@ -177,7 +177,7 @@ export default function Nav() {
           </button>
 
           <button
-            className="btn btn-light w-100 text-start mb-2"
+            className="btn btn-warning text-start"
             onClick={() => {
               setProfileOpen(false);
               setMenuOpen(false);
@@ -188,18 +188,7 @@ export default function Nav() {
           </button>
 
           <button
-            className="btn btn-light w-100 text-start mb-2"
-            onClick={() => {
-              setProfileOpen(false);
-              setMenuOpen(false);
-              navigate("/security");
-            }}
-          >
-            🔒 ความปลอดภัยบัญชี
-          </button>
-
-          <button
-            className="btn btn-light w-100 text-start"
+            className="btn btn-primary text-start"
             onClick={handleLogout}
           >
             🚪 ออกจากระบบ
@@ -249,7 +238,7 @@ export default function Nav() {
               ➕ เพิ่มบุคคลตรวจประวัติ
             </button>
 
-            <button
+            {/* <button
               className="btn btn-warning text-start"
               onClick={() => {
                 navigate("/person/status0");
@@ -287,7 +276,7 @@ export default function Nav() {
               }}
             >
               ❌ ส่งคืน
-            </button>
+            </button> */}
 
             <button
               className="btn btn-warning text-start"
@@ -330,7 +319,7 @@ export default function Nav() {
             </button>
 
             <button
-              className="btn btn-light w-100 text-start mb-2"
+              className="btn btn-warning text-start"
               onClick={() => {
                 setProfileOpen(false);
                 setMenuOpen(false);
@@ -341,18 +330,7 @@ export default function Nav() {
             </button>
 
             <button
-              className="btn btn-light w-100 text-start mb-2"
-              onClick={() => {
-                setProfileOpen(false);
-                setMenuOpen(false);
-                navigate("/security");
-              }}
-            >
-              🔒 ความปลอดภัยบัญชี
-            </button>
-
-            <button
-              className="btn btn-light w-100 text-start"
+              className="btn btn-primary text-start"
               onClick={handleLogout}
             >
               🚪 ออกจากระบบ

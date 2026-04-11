@@ -287,7 +287,7 @@ export default function usePersonForm(navigate: any) {
     try {
       await api.post("/person", finalForm);
       toast("success", "บันทึกสำเร็จ");
-      navigate("/person/status0");
+      navigate("/person/history");
     } catch (err: any) {
       toast(
         "error",

@@ -63,7 +63,7 @@ export const generatePDF = async (p: any) => {
   // ================= PAGE 2 =================
 
   // จุดประสงค์
-  draw(page2, p.purpose, 210, -900);
+  draw(page2, p.purpose, 210, -875);
   draw(page2, p.requestingAgency, 270, -840);
 
   // 🔥 บัตรประชาชน (ใหญ่ + หนา)
@@ -73,7 +73,10 @@ export const generatePDF = async (p: any) => {
   });
 
   // ชื่อ
-  draw(page2, p.fullName, 225, -440);
+  draw(page2, p.fullName, 225, -440 ,{
+    size: 32,
+    font: fontBold,
+  });
 
   // วันเกิด
   draw(page2, p.birthDay, 120, -405);

@@ -175,22 +175,12 @@ export default function PersonEditPage() {
   };
 
   const handleCancel = async () => {
-    const confirm = await Swal.fire({
-      title: "ยกเลิกการแก้ไข?",
-      text: "ข้อมูลที่แก้ไขจะไม่ถูกบันทึก",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "ใช่, ยกเลิก",
-      cancelButtonText: "ไม่",
-    });
-
-    if (!confirm.isConfirmed) return;
-
+    
     // 🔁 รีเซ็ต form กลับค่าเดิม (ตอนโหลดมา)
     setForm({ ...original });
 
     // หรือถ้าอยากให้กลับหน้าเลย ใช้อันนี้แทน 👇
-    navigate("/person/status0");
+    navigate("/person/history");
   };
 
   // ================= SUBMIT =================
