@@ -218,7 +218,7 @@ export default function OrganizationPage() {
 
                 <h5 className="fw-bold mb-3">✏️ แก้ไขข้อมูล</h5>
 
-                {/* คนหลัก */}
+                {/* 🧑 คนหลัก */}
                 <h6>🧑 คนหลัก</h6>
                 <input list="rank-list" className="form-control mb-2"
                   value={form.rank}
@@ -232,9 +232,14 @@ export default function OrganizationPage() {
                   value={form.lastName}
                   onChange={(e)=>setForm({...form, lastName:e.target.value})}
                 />
+                <input className="form-control mb-2"
+                  placeholder="ตำแหน่ง"
+                  value={form.position}
+                  onChange={(e)=>setForm({...form, position:e.target.value})}
+                />
                 <div className="text-muted mb-2">{previewMain}</div>
 
-                {/* ผู้กำกับ */}
+                {/* 👮 ผู้กำกับ */}
                 <h6>👮 ผู้กำกับ</h6>
                 <input list="rank-list" className="form-control mb-2"
                   value={form.commanderRank}
@@ -248,9 +253,14 @@ export default function OrganizationPage() {
                   value={form.commanderLastName}
                   onChange={(e)=>setForm({...form, commanderLastName:e.target.value})}
                 />
+                <input className="form-control mb-2"
+                  placeholder="ตำแหน่งผู้กำกับ"
+                  value={form.commanderPosition}
+                  onChange={(e)=>setForm({...form, commanderPosition:e.target.value})}
+                />
                 <div className="text-muted mb-2">{previewCommander}</div>
 
-                {/* การเงิน */}
+                {/* 💰 การเงิน */}
                 <h6>💰 การเงิน</h6>
                 <input list="rank-list" className="form-control mb-2"
                   value={form.financeRank}
@@ -264,16 +274,21 @@ export default function OrganizationPage() {
                   value={form.financeLastName}
                   onChange={(e)=>setForm({...form, financeLastName:e.target.value})}
                 />
+                <input className="form-control mb-2"
+                  placeholder="ตำแหน่งการเงิน"
+                  value={form.financePosition}
+                  onChange={(e)=>setForm({...form, financePosition:e.target.value})}
+                />
                 <div className="text-muted mb-2">{previewFinance}</div>
 
                 {/* datalist */}
                 <datalist id="rank-list">
                   {[
-                    "ส.ต.ต. ","ส.ต.ท. ","ส.ต.อ. ","จ.ส.ต. ","ด.ต. ",
-                    "ร.ต.ต. ","ร.ต.ท. ","ร.ต.อ. ","พ.ต.ต. ","พ.ต.ท. ",
-                    "พ.ต.อ. ","พล.ต.ต. ","พล.ต.ท. ","พล.ต.อ. ",
+                    "ส.ต.ต.","ส.ต.ท.","ส.ต.อ.","จ.ส.ต.","ด.ต.",
+                    "ร.ต.ต.","ร.ต.ท.","ร.ต.อ.","พ.ต.ต.","พ.ต.ท.",
+                    "พ.ต.อ.","พล.ต.ต.","พล.ต.ท.","พล.ต.อ.",
                   ]
-                    .flatMap(r => [r, `${r} หญิง `])
+                    .flatMap(r => [r, `${r} หญิง`])
                     .map(r => <option key={r} value={r} />)}
                 </datalist>
 
