@@ -154,6 +154,8 @@ router.post("/", async (req, res) => {
           behavior: data.behavior ?? "ปกติ",
           distinguishingMarks: data.distinguishingMarks ?? "-",
 
+priority : data.priority,
+
           address: data.address,
           occupation: data.occupation,
           workplaceAddress: data.workplaceAddress,
