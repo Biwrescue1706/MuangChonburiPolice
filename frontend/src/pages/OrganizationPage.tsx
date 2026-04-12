@@ -133,6 +133,26 @@ export default function OrganizationPage() {
     }
   };
 
+  /* ================= PREVIEW ================= */
+
+  const previewMain = buildFullName(
+    form.rank,
+    form.firstName,
+    form.lastName
+  );
+
+  const previewCommander = buildFullName(
+    form.commanderRank,
+    form.commanderFirstName,
+    form.commanderLastName
+  );
+
+  const previewFinance = buildFullName(
+    form.financeRank,
+    form.financeFirstName,
+    form.financeLastName
+  );
+
   /* ================= RETURN ================= */
 
   return (
@@ -143,9 +163,10 @@ export default function OrganizationPage() {
 
       {!isMobile && (
         <>
-          {/* ===== คนหลัก ===== */}
+          {/* คนหลัก */}
           <div className="card mb-4 shadow">
             <div className="card-header fw-bold">🧑 คนหลัก</div>
+
             <table className="table mb-0">
               <thead>
                 <tr>
@@ -155,6 +176,7 @@ export default function OrganizationPage() {
                   <th></th>
                 </tr>
               </thead>
+
               <tbody>
                 {loading ? (
                   <tr>
@@ -167,7 +189,6 @@ export default function OrganizationPage() {
                       <td>{formatText(i.fullNameWithRank)}</td>
                       <td>{formatText(i.position)}</td>
 
-                      {/* ✅ ปุ่มเดียว */}
                       <td>
                         <button
                           className="btn btn-warning btn-sm"
@@ -183,11 +204,12 @@ export default function OrganizationPage() {
             </table>
           </div>
 
-          {/* ===== ผู้กำกับ ===== */}
+          {/* ผู้กำกับ */}
           <div className="card mb-4 shadow">
             <div className="card-header fw-bold text-primary">
               👮 ผู้กำกับ
             </div>
+
             <table className="table mb-0">
               <tbody>
                 {data.map((i) => (
@@ -201,11 +223,12 @@ export default function OrganizationPage() {
             </table>
           </div>
 
-          {/* ===== การเงิน ===== */}
+          {/* การเงิน */}
           <div className="card mb-4 shadow">
             <div className="card-header fw-bold text-success">
               💰 การเงิน
             </div>
+
             <table className="table mb-0">
               <tbody>
                 {data.map((i) => (
@@ -233,25 +256,12 @@ export default function OrganizationPage() {
                   {i.organizationName}
                 </div>
 
-                {/* คนหลัก */}
-                <div>
-                  🧑 {formatText(i.fullNameWithRank)}
-                </div>
-                <small>{formatText(i.position)}</small>
+                <div>🧑 {formatText(i.fullNameWithRank)}</div>
+                <div>👮 {formatText(i.commanderFullNameWithRank)}</div>
+                <div>💰 {formatText(i.financeFullNameWithRank)}</div>
 
-                {/* ผู้กำกับ */}
-                <div className="mt-2 text-primary">
-                  👮 {formatText(i.commanderFullNameWithRank)}
-                </div>
-
-                {/* การเงิน */}
-                <div className="mt-1 text-success">
-                  💰 {formatText(i.financeFullNameWithRank)}
-                </div>
-
-                {/* ปุ่มเดียว */}
                 <button
-                  className="btn btn-warning btn-sm mt-3"
+                  className="btn btn-warning btn-sm mt-2"
                   onClick={() => handleEdit(i)}
                 >
                   ✏️ แก้ไข
@@ -277,39 +287,59 @@ export default function OrganizationPage() {
 
                 {/* คนหลัก */}
                 <h6>🧑 คนหลัก</h6>
-                <input
-                  className="form-control mb-2"
+                <input className="form-control mb-2"
                   value={form.rank}
                   onChange={(e)=>setForm({...form, rank:e.target.value})}
                 />
-                <input
-                  className="form-control mb-2"
+                <input className="form-control mb-2"
                   value={form.firstName}
                   onChange={(e)=>setForm({...form, firstName:e.target.value})}
                 />
-                <input
-                  className="form-control mb-2"
+                <input className="form-control mb-2"
                   value={form.lastName}
                   onChange={(e)=>setForm({...form, lastName:e.target.value})}
                 />
+                <div className="text-muted mb-2">
+                  {formatText(previewMain)}
+                </div>
 
                 {/* ผู้กำกับ */}
-                <h6 className="mt-3">👮 ผู้กำกับ</h6>
-                <input
-                  className="form-control mb-2"
+                <h6>👮 ผู้กำกับ</h6>
+                <input className="form-control mb-2"
+                  value={form.commanderRank}
+                  onChange={(e)=>setForm({...form, commanderRank:e.target.value})}
+                />
+                <input className="form-control mb-2"
                   value={form.commanderFirstName}
                   onChange={(e)=>setForm({...form, commanderFirstName:e.target.value})}
                 />
+                <input className="form-control mb-2"
+                  value={form.commanderLastName}
+                  onChange={(e)=>setForm({...form, commanderLastName:e.target.value})}
+                />
+                <div className="text-muted mb-2">
+                  {formatText(previewCommander)}
+                </div>
 
                 {/* การเงิน */}
-                <h6 className="mt-3">💰 การเงิน</h6>
-                <input
-                  className="form-control mb-2"
+                <h6>💰 การเงิน</h6>
+                <input className="form-control mb-2"
+                  value={form.financeRank}
+                  onChange={(e)=>setForm({...form, financeRank:e.target.value})}
+                />
+                <input className="form-control mb-2"
                   value={form.financeFirstName}
                   onChange={(e)=>setForm({...form, financeFirstName:e.target.value})}
                 />
+                <input className="form-control mb-2"
+                  value={form.financeLastName}
+                  onChange={(e)=>setForm({...form, financeLastName:e.target.value})}
+                />
+                <div className="text-muted mb-2">
+                  {formatText(previewFinance)}
+                </div>
 
-                <div className="mt-3 text-end">
+                <div className="text-end mt-3">
                   <button
                     className="btn btn-success me-2"
                     onClick={handleUpdate}
