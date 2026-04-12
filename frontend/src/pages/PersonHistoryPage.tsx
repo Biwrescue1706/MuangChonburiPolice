@@ -36,9 +36,9 @@ const renderStatus = (status: number) => {
     case 1:
       return <span className="badge bg-primary">ส่ง ศพฐ. แล้ว</span>;
     case 2:
-      return <span className="badge bg-success">รับแล้วจาก ศพฐ.</span>;
+      return <span className="badge bg-success">รับจาก ศพฐ. แล้ว</span>;
     case 3:
-      return <span className="badge bg-danger">ส่งคืน หน่วยงาน</span>;
+      return <span className="badge bg-danger">ส่งคืนแล้ว</span>;
     default:
       return "-";
   }
