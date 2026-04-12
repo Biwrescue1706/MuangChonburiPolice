@@ -54,12 +54,15 @@ export default function PersonHistoryPage() {
   const [persons, setPersons] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // ===== bulk =====
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // ===== search =====
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
+  // ===== debounce =====
   const [debounceFirstName, setDebounceFirstName] = useState("");
   const [debounceLastName, setDebounceLastName] = useState("");
 
@@ -68,19 +71,23 @@ export default function PersonHistoryPage() {
   const active = (value: string | null) =>
     statusParam === value ? "btn-dark" : "btn-outline-secondary";
 
+  // ===== debounce =====
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebounceFirstName(firstName);
       setDebounceLastName(lastName);
     }, 300);
+
     return () => clearTimeout(timer);
   }, [firstName, lastName]);
 
+  // ===== fetch =====
   const fetchPersons = async () => {
     try {
       setLoading(true);
 
       const params = new URLSearchParams();
+
       if (statusParam !== null) params.append("status", statusParam);
       if (debounceFirstName) params.append("firstName", debounceFirstName);
       if (debounceLastName) params.append("lastName", debounceLastName);
@@ -96,123 +103,217 @@ export default function PersonHistoryPage() {
     fetchPersons();
   }, [statusParam, debounceFirstName, debounceLastName]);
 
+  // ===== select =====
   const toggleSelect = (id: string, status: number) => {
     if (status >= 3) return;
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+
+    setSelectedIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((i) => i !== id)
+        : [...prev, id]
     );
   };
 
   const handleSelectAll = () => {
-    const valid = persons.filter(p => p.status < 3);
-    setSelectedIds(
-      selectedIds.length === valid.length
-        ? []
-        : valid.map(p => p.personId)
-    );
+    const valid = persons.filter((p) => p.status < 3);
+
+    if (selectedIds.length === valid.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(valid.map((p) => p.personId));
+    }
   };
 
+  // ===== actions =====
   const handleDelete = async (p: any) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการลบ?",
       icon: "warning",
       showCancelButton: true,
     });
+
     if (!confirm.isConfirmed) return;
 
-    await api.delete(`/person/${p.personId}`);
-    toast("success", "ลบเรียบร้อย");
-    fetchPersons();
+    try {
+      await api.delete(`/person/${p.personId}`);
+      toast("success", "ลบเรียบร้อย");
+      fetchPersons();
+    } catch (err: any) {
+      toast("error", "ลบไม่สำเร็จ", err?.response?.data?.error);
+    }
   };
 
   const handleUpdateStatus = async (p: any) => {
     if (p.status === 3) return;
 
+    const nextStatus = p.status + 1;
+
     const confirm = await Swal.fire({
-      title: "ยืนยัน?",
-      text: `${p.status} → ${p.status + 1}`,
+      title: "ยืนยันการเปลี่ยนสถานะ?",
+      text: `${p.status} → ${nextStatus}`,
+      icon: "question",
       showCancelButton: true,
     });
 
     if (!confirm.isConfirmed) return;
 
-    await api.patch(`/person/${p.personId}/status`, {
-      status: p.status + 1,
-    });
+    try {
+      await api.patch(`/person/${p.personId}/status`, {
+        status: nextStatus,
+      });
 
-    toast("success", "อัปเดตแล้ว");
-    fetchPersons();
+      toast("success", "อัปเดตสถานะแล้ว");
+      fetchPersons();
+    } catch (err: any) {
+      toast("error", "ไม่สำเร็จ", err?.response?.data?.error);
+    }
   };
 
+  // ===== bulk =====
   const handleBulkSend = async () => {
-    if (!selectMode || selectedIds.length === 0) return;
+    if (!selectMode) return toast("warning", "กรุณากดเลือกก่อน");
+    if (selectedIds.length === 0)
+      return toast("warning", "เลือกข้อมูลก่อน");
 
     const confirm = await Swal.fire({
-      title: "ยืนยัน?",
-      text: `${selectedIds.length} รายการ`,
+      title: "ยืนยันการอัปเดตสถานะ?",
+      text: `จำนวน ${selectedIds.length} รายการ`,
+      icon: "question",
       showCancelButton: true,
     });
 
     if (!confirm.isConfirmed) return;
 
-    await Promise.all(
-      selectedIds.map(async (id) => {
-        const p = persons.find(x => x.personId === id);
-        if (!p || p.status >= 3) return;
+    try {
+      let success = 0;
 
-        await api.patch(`/person/${id}/status`, {
-          status: p.status + 1,
-        });
-      })
-    );
+      await Promise.all(
+        selectedIds.map(async (id) => {
+          const p = persons.find((x) => x.personId === id);
+          if (!p || p.status >= 3) return;
 
-    setSelectedIds([]);
-    setSelectMode(false);
-    fetchPersons();
+          await api.patch(`/person/${id}/status`, {
+            status: p.status + 1,
+          });
+
+          success++;
+        })
+      );
+
+      setSelectedIds([]);
+      setSelectMode(false);
+
+      toast("success", `อัปเดตแล้ว ${success} รายการ`);
+      fetchPersons();
+    } catch (err: any) {
+      toast("error", "อัปเดตไม่สำเร็จ", err?.response?.data?.error);
+    }
   };
 
   const handleExportPDF = async (p: any) => {
-    await generatePDF(p);
+    try {
+      await generatePDF(p);
+    } catch {
+      toast("error", "สร้าง PDF ไม่สำเร็จ");
+    }
   };
 
   return (
     <div className="p-4">
-      <h4>📄 ประวัติทั้งหมด</h4>
+      <h4 className="mb-3">📄 ประวัติทั้งหมด</h4>
 
       {/* SEARCH */}
-      <div className="mb-3 d-flex gap-2">
-        <input className="form-control" placeholder="ชื่อ"
-          value={firstName} onChange={e => setFirstName(e.target.value)} />
-        <input className="form-control" placeholder="นามสกุล"
-          value={lastName} onChange={e => setLastName(e.target.value)} />
+      <div className="mb-3 d-flex gap-2 flex-wrap">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="ค้นหาชื่อ"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+        />
+
+        <input
+          type="text"
+          className="form-control"
+          placeholder="ค้นหานามสกุล"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+        />
+
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => {
+            setFirstName("");
+            setLastName("");
+          }}
+        >
+          ล้าง
+        </button>
+      </div>
+
+      {/* BULK */}
+      <div className="d-flex justify-content-end mb-2 gap-2">
+        <button
+          className="btn btn-secondary"
+          onClick={() => {
+            setSelectMode((prev) => !prev);
+            setSelectedIds([]);
+          }}
+        >
+          {selectMode ? "ยกเลิกเลือก" : "เลือก"}
+        </button>
+
+        {selectMode && (
+          <>
+            <button className="btn btn-outline-primary" onClick={handleSelectAll}>
+              เลือกทั้งหมด
+            </button>
+
+            <button className="btn btn-success" onClick={handleBulkSend}>
+              อัปเดตสถานะ (+1) ({selectedIds.length})
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* FILTER */}
+      <div className="mb-3 d-flex gap-2 flex-wrap">
+        <button className={`btn btn-sm ${active(null)}`} onClick={() => setSearchParams({})}>ทั้งหมด</button>
+        <button className={`btn btn-sm ${active("0")}`} onClick={() => setSearchParams({ status: "0" })}>รอส่ง</button>
+        <button className={`btn btn-sm ${active("1")}`} onClick={() => setSearchParams({ status: "1" })}>ส่งแล้ว</button>
+        <button className={`btn btn-sm ${active("2")}`} onClick={() => setSearchParams({ status: "2" })}>รับแล้ว</button>
+        <button className={`btn btn-sm ${active("3")}`} onClick={() => setSearchParams({ status: "3" })}>ส่งคืน</button>
       </div>
 
       {/* MOBILE */}
-      {isMobile && persons.map(p => (
-        <div key={p.personId} className="card p-3 mb-2">
+      {isMobile && (
+        <div className="d-flex flex-column gap-3">
+          {loading && <div>กำลังโหลด...</div>}
+          {!loading && persons.length === 0 && <div>ไม่พบข้อมูล</div>}
 
-          {selectMode && p.status < 3 && (
-            <input type="checkbox"
-              checked={selectedIds.includes(p.personId)}
-              onChange={() => toggleSelect(p.personId, p.status)} />
-          )}
+          {persons.map((p) => (
+            <div key={p.personId} className="card p-3">
 
-          <strong>{p.fullName}</strong>
-          <div>{renderStatus(p.status)}</div>
-          <div>{renderPriority(p.priority ?? 0)}</div>
+              <strong>{p.fullName}</strong>
 
-          {p.status === 3 && (
-            <div>📅 {formatThaiDate(p.returnDate)}</div>
-          )}
+              <div>{renderStatus(p.status)}</div>
+              <div>{renderPriority(p.priority ?? 0)}</div>
+
+              {p.status === 3 && (
+                <div className="text-danger">
+                  📅 วันคืน: {formatThaiDate(p.returnDate)}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
-      ))}
+      )}
 
       {/* DESKTOP */}
       {!isMobile && (
-        <table className="table table-bordered">
+        <table className="table table-bordered text-center">
           <thead>
             <tr>
-              {selectMode && <th></th>}
               <th>#</th>
               <th>ชื่อ</th>
               <th>สถานะ</th>
@@ -220,19 +321,9 @@ export default function PersonHistoryPage() {
               <th>วันคืน</th>
             </tr>
           </thead>
-
           <tbody>
             {persons.map((p, i) => (
               <tr key={p.personId}>
-                {selectMode && (
-                  <td>
-                    {p.status < 3 && (
-                      <input type="checkbox"
-                        checked={selectedIds.includes(p.personId)}
-                        onChange={() => toggleSelect(p.personId, p.status)} />
-                    )}
-                  </td>
-                )}
                 <td>{i + 1}</td>
                 <td>{p.fullName}</td>
                 <td>{renderStatus(p.status)}</td>
