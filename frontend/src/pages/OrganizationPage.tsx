@@ -38,6 +38,15 @@ export default function OrganizationPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  /* ================= LOCK SCROLL ================= */
+  useEffect(() => {
+    if (selected) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [selected]);
+
   /* ================= FETCH ================= */
   const fetchData = async () => {
     try {
@@ -83,7 +92,7 @@ export default function OrganizationPage() {
 
   return (
     <div className="container-fluid py-4 px-3">
-      <h3 className="fw-bold mb-4">🏢 จัดการหน่วยงาน</h3>
+      <h4 className="fw-bold mb-4">🏢 จัดการหน่วยงาน</h4>
 
       {/* ================= TABLE (จอใหญ่) ================= */}
       {!isMobile && (
@@ -151,17 +160,13 @@ export default function OrganizationPage() {
           ) : (
             data.map((item) => (
               <div className="col-12" key={item.organizationId}>
-                <div className="card shadow-sm border-0 rounded-4 h-100">
+                <div className="card shadow-sm border-0 rounded-4">
                   <div className="card-body">
-                    <h6 className="fw-bold mb-1">
+                    <h6 className="fw-bold">
                       {item.organizationName}
                     </h6>
-
-                    <div className="fw-medium">
-                      {item.fullNameWithRank}
-                    </div>
-
-                    <div className="text-muted small mb-3">
+                    <div>{item.fullNameWithRank}</div>
+                    <div className="text-muted small mb-2">
                       {item.position}
                     </div>
 
@@ -182,10 +187,15 @@ export default function OrganizationPage() {
       {/* ================= MODAL ================= */}
       {selected && (
         <div className="modal fade show d-block" tabIndex={-1}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div
+            className="modal-dialog modal-lg modal-dialog-centered"
+            style={{ marginTop: 80 }} // 👈 แก้ปัญหาโดน nav บัง
+          >
             <div className="modal-content rounded-4 shadow-lg">
               <div className="modal-header bg-warning">
-                <h5 className="modal-title fw-bold">✏️ แก้ไขข้อมูล</h5>
+                <h5 className="modal-title fw-bold">
+                  ✏️ แก้ไขข้อมูล
+                </h5>
                 <button
                   className="btn-close"
                   onClick={() => setSelected(null)}
