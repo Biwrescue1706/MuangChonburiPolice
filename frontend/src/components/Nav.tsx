@@ -9,7 +9,6 @@ export default function Nav() {
   const location = useLocation();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -18,24 +17,25 @@ export default function Nav() {
 
   const shortText = (text?: string, max = 20) => {
     if (!text) return "";
-    return text.length > max ? text.substring(0, max) + "" : text;
+    return text.length > max ? text.substring(0, max) : text;
   };
 
-  const adminName = admin ? admin.name : "";
-  const adminPosition = admin ? admin.position : "";
+  const adminName = admin?.name || "";
+  const adminPosition = admin?.position || "";
 
   const isActive = (path: string) => location.pathname.startsWith(path);
+
+  const go = (path: string) => {
+    navigate(path);
+    setMenuOpen(false);
+  };
 
   return (
     <>
       {/* ================= TOPBAR ================= */}
-      <div
-        className="position-fixed top-0 start-0 w-100 d-flex align-items-center shadow px-3"
-        style={{
-          height: 60,
-          backgroundColor: "#800020",
-          zIndex: 1500,
-        }}
+      <nav
+        className="navbar navbar-dark fixed-top shadow-sm px-3"
+        style={{ backgroundColor: "#800020", zIndex: 1030 }}
       >
         {/* LEFT */}
         <button
@@ -46,318 +46,169 @@ export default function Nav() {
         </button>
 
         {/* CENTER */}
-        <div className="d-flex justify-content-center align-items-center gap-3 flex-grow-1">
+        <div className="d-flex align-items-center gap-2 mx-auto">
           <img
             src="/muangchonburi.webp"
-            width={30}
-            height={30}
-            style={{ borderRadius: 10 }}
+            width={32}
+            height={32}
+            style={{ borderRadius: 8 }}
           />
-
-          <div className="text-start">
-            <h6 className="fw-bold text-warning m-0 small">
+          <div>
+            <div className="fw-bold text-warning small">
               🏠งานพิมพ์มือตรวจประวัติ
-            </h6>
-            <h6 className="text-white m-0 small">งานนโยบายและแผน</h6>
-          </div>
-        </div>
-
-        {/* RIGHT PROFILE */}
-        <div className="position-relative">
-          <div
-            style={{ cursor: "pointer" }}
-            onClick={() => setProfileOpen(!profileOpen)}
-          >
-            <div className="text-warning fw-bold small">
-              👤 {shortText(adminName, 9)}
             </div>
-
-            <small className="text-white">
-              ( {shortText(adminPosition, 8)} )
-            </small>
+            <div className="text-white small">
+              งานนโยบายและแผน
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* RIGHT */}
+        <div className="text-end">
+          <div className="text-warning fw-bold small">
+            👤 {shortText(adminName, 10)}
+          </div>
+          <small className="text-white">
+            ({shortText(adminPosition, 10)})
+          </small>
+        </div>
+      </nav>
 
       {/* ================= DESKTOP SIDEBAR ================= */}
       <div
         className="d-none d-xxl-flex flex-column position-fixed top-0 start-0 text-white shadow"
         style={{
-          width: 200,
+          width: 220,
           height: "100vh",
           paddingTop: 60,
           backgroundColor: "#800020",
-          zIndex: 1400,
+          zIndex: 1020,
         }}
       >
-        <div className="px-2 d-flex flex-column gap-2">
+        <div className="p-2 d-flex flex-column gap-2">
+
           <button
-            className={`btn text-start ${isActive("/dashboard") ? "btn-warning fw-bold" : "btn-warning"
-              }`}
-            onClick={() => navigate("/dashboard")}
+            className={`btn text-start ${isActive("/dashboard") ? "btn-warning fw-bold" : "btn-warning"}`}
+            onClick={() => go("/dashboard")}
           >
             🏠 หน้าแรก
           </button>
 
-          <button
-            className="btn btn-warning text-start"
-            onClick={() => navigate("/person/create")}
-          >
+          <button className="btn btn-warning text-start" onClick={() => go("/person/create")}>
             ➕ เพิ่มบุคคลตรวจประวัติ
           </button>
 
-          {/* <button
-            className={`btn text-start ${isActive("/person/status0")
-              ? "btn-warning fw-bold"
-              : "btn-warning"
-              }`}
-            onClick={() => navigate("/person/status0")}
-          >
-            📌 รอส่ง ศพฐ
-          </button>
-
-          <button
-            className={`btn text-start ${isActive("/person/status1")
-              ? "btn-warning fw-bold"
-              : "btn-warning"
-              }`}
-            onClick={() => navigate("/person/status1")}
-          >
-            📦 ส่งแล้ว
-          </button>
-
-          <button
-            className={`btn text-start ${isActive("/person/status2")
-              ? "btn-warning fw-bold"
-              : "btn-warning"
-              }`}
-            onClick={() => navigate("/person/status2")}
-          >
-            ✅ รับแล้ว
-          </button>
-
-          <button
-            className={`btn text-start ${isActive("/person/status3")
-              ? "btn-warning fw-bold"
-              : "btn-warning"
-              }`}
-            onClick={() => navigate("/person/status3")}
-          >
-            ❌ ส่งคืน
-          </button> */}
-
-          <button
-            className="btn btn-warning text-start"
-            onClick={() => navigate("/person/history")}
-          >
+          <button className="btn btn-warning text-start" onClick={() => go("/person/history")}>
             📄 ประวัติคนตรวจ
           </button>
 
           <button
-            className={`btn text-start ${isActive("/receipt") ? "btn-warning fw-bold" : "btn-warning"
-              }`}
-            onClick={() => navigate("/receipt")}
+            className={`btn text-start ${isActive("/receipt") ? "btn-warning fw-bold" : "btn-warning"}`}
+            onClick={() => go("/receipt")}
           >
             🧾 ใบเสร็จ
           </button>
 
-          <button
-            className="btn btn-warning text-start"
-            onClick={() => navigate("/admin/create")}
-          >
+          <button className="btn btn-warning text-start" onClick={() => go("/admin/create")}>
             ➕ เพิ่ม Admin
           </button>
 
           <button
-            className={`btn text-start ${isActive("/organization") ? "btn-warning fw-bold" : "btn-warning"
-              }`}
-            onClick={() => navigate("/organization")}
+            className={`btn text-start ${isActive("/organization") ? "btn-warning fw-bold" : "btn-warning"}`}
+            onClick={() => go("/organization")}
           >
             🏢 หน่วยงาน
           </button>
 
-          <button
-            className="btn btn-warning text-start"
-            onClick={() => {
-              setProfileOpen(false);
-              setMenuOpen(false);
-              navigate("/profile");
-            }}
-          >
+          <button className="btn btn-warning text-start" onClick={() => go("/profile")}>
             ⚙️ โปรไฟล์
           </button>
 
-          <button
-            className="btn btn-primary text-start"
-            onClick={handleLogout}
-          >
+          <button className="btn btn-primary text-start" onClick={handleLogout}>
             🚪 ออกจากระบบ
           </button>
+
         </div>
       </div>
 
       {/* ================= MOBILE SIDEBAR ================= */}
       {menuOpen && (
-        <div
-          className="position-fixed text-white p-3 shadow"
-          style={{
-            width: "60%",
-            maxWidth: 220,
-            top: 0,
-            left: 0,
-            height: "100vh",
-            backgroundColor: "#800020",
-            zIndex: 1500,
-          }}
-        >
-          <button
-            className="btn btn-warning btn-sm mb-3 fw-bold"
-            onClick={() => setMenuOpen(false)}
+        <>
+          <div
+            className="position-fixed text-white p-3 shadow"
+            style={{
+              width: "65%",
+              maxWidth: 240,
+              top: 0,
+              left: 0,
+              height: "100vh",
+              backgroundColor: "#800020",
+              zIndex: 1025,
+            }}
           >
-            ❌ ปิดเมนู
-          </button>
-
-          <div className="d-flex flex-column gap-2">
             <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                navigate("/dashboard");
-                setMenuOpen(false);
-              }}
+              className="btn btn-warning btn-sm mb-3 fw-bold"
+              onClick={() => setMenuOpen(false)}
             >
-              🏠 หน้าแรก
+              ❌ ปิดเมนู
             </button>
 
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                navigate("/person/create");
-                setMenuOpen(false);
-              }}
-            >
-              ➕ เพิ่มบุคคลตรวจประวัติ
-            </button>
+            <div className="d-flex flex-column gap-2">
 
-            {/* <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                navigate("/person/status0");
-                setMenuOpen(false);
-              }}
-            >
-              📌 รอส่ง ศพฐ
-            </button>
+              <button className="btn btn-warning text-start" onClick={() => go("/dashboard")}>
+                🏠 หน้าแรก
+              </button>
 
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                navigate("/person/status1");
-                setMenuOpen(false);
-              }}
-            >
-              📦 ส่งแล้ว
-            </button>
+              <button className="btn btn-warning text-start" onClick={() => go("/person/create")}>
+                ➕ เพิ่มบุคคลตรวจประวัติ
+              </button>
 
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                navigate("/person/status2");
-                setMenuOpen(false);
-              }}
-            >
-              ✅ รับแล้ว
-            </button>
+              <button className="btn btn-warning text-start" onClick={() => go("/person/history")}>
+                📄 ประวัติคนตรวจ
+              </button>
 
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                navigate("/person/status3");
-                setMenuOpen(false);
-              }}
-            >
-              ❌ ส่งคืน
-            </button> */}
+              <button className="btn btn-warning text-start" onClick={() => go("/receipt")}>
+                🧾 ใบเสร็จ
+              </button>
 
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                navigate("/person/history");
-                setMenuOpen(false);
-              }}
-            >
-              📄 ประวัติคนตรวจ
-            </button>
+              <button className="btn btn-warning text-start" onClick={() => go("/admin/create")}>
+                ➕ เพิ่ม Admin
+              </button>
 
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                navigate("/receipt");
-                setMenuOpen(false);
-              }}
-            >
-              🧾 ใบเสร็จ
-            </button>
+              <button className="btn btn-warning text-start" onClick={() => go("/organization")}>
+                🏢 หน่วยงาน
+              </button>
 
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                navigate("/admin/create");
-                setMenuOpen(false);
-              }}
-            >
-              ➕ เพิ่ม Admin
-            </button>
+              <button className="btn btn-warning text-start" onClick={() => go("/profile")}>
+                ⚙️ โปรไฟล์
+              </button>
 
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                navigate("/organization");
-                setMenuOpen(false);
-              }}
-            >
-              🏢 หน่วยงาน
-            </button>
+              <button className="btn btn-primary text-start" onClick={handleLogout}>
+                🚪 ออกจากระบบ
+              </button>
 
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => {
-                setProfileOpen(false);
-                setMenuOpen(false);
-                navigate("/profile");
-              }}
-            >
-              ⚙️ โปรไฟล์
-            </button>
-
-            <button
-              className="btn btn-primary text-start"
-              onClick={handleLogout}
-            >
-              🚪 ออกจากระบบ
-            </button>
-
+            </div>
           </div>
-        </div>
+
+          {/* OVERLAY */}
+          <div
+            className="position-fixed w-100 h-100"
+            style={{
+              top: 0,
+              left: 0,
+              background: "rgba(0,0,0,.35)",
+              zIndex: 1020,
+            }}
+            onClick={() => setMenuOpen(false)}
+          />
+        </>
       )}
 
-      {/* OVERLAY */}
-      {menuOpen && (
-        <div
-          className="position-fixed w-100 h-100"
-          style={{
-            top: 0,
-            left: 0,
-            background: "rgba(0,0,0,.35)",
-            zIndex: 1400,
-          }}
-          onClick={() => setMenuOpen(false)}
-        />
-      )}
-
+      {/* ================= CONTENT ================= */}
       <div
-        className="main-content"
         style={{
           minHeight: "100vh",
+          paddingTop: 60,
         }}
       >
         <Outlet />
