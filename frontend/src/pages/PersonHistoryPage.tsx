@@ -140,42 +140,45 @@ export default function PersonHistoryPage() {
 
   // ===== bulk +1 (frontend loop) =====
   const handleBulkSend = async () => {
-    if (!selectMode) return toast("warning", "กรุณากดเลือกก่อน");
-    if (selectedIds.length === 0)
-      return toast("warning", "เลือกข้อมูลก่อน");
+  if (!selectMode) return toast("warning", "กรุณากดเลือกก่อน");
+  if (selectedIds.length === 0)
+    return toast("warning", "เลือกข้อมูลก่อน");
 
-    const confirm = await Swal.fire({
-      title: "ยืนยันการอัปเดตสถานะ?",
-      text: `จำนวน ${selectedIds.length} รายการ (จะ +1 ทีละรายการ)`,
-      icon: "question",
-      showCancelButton: true,
-    });
+  const confirm = await Swal.fire({
+    title: "ยืนยันการอัปเดตสถานะ?",
+    text: `จำนวน ${selectedIds.length} รายการ (จะ +1 ทีละรายการ)`,
+    icon: "question",
+    showCancelButton: true,
+  });
 
-    if (!confirm.isConfirmed) return;
+  if (!confirm.isConfirmed) return;
 
-    try {
-      let success = 0;
+  try {
+    let success = 0;
 
-      await Promise.all(
-        selectedIds.map(async (id) => {
-          const p = persons.find((x) => x.personId === id);
-          if (!p || p.status >= 3) return;
+    await Promise.all(
+      selectedIds.map(async (id) => {
+        const p = persons.find((x) => x.personId === id);
+        if (!p || p.status >= 3) return;
 
-          await api.patch(`/person/${id}/status`, {
-            status: p.status + 1,
-          });
+        await api.patch(`/person/${id}/status`, {
+          status: p.status + 1,
+        });
 
-          success++;
-        })
-      );
+        success++;
+      })
+    );
 
-      setSelectedIds([]);
-      toast("success", `อัปเดตแล้ว ${success} รายการ`);
-      fetchPersons();
-    } catch (err: any) {
-      toast("error", "อัปเดตไม่สำเร็จ", err?.response?.data?.error);
-    }
-  };
+    // ✅ reset ทุกอย่าง
+    setSelectedIds([]);
+    setSelectMode(false);
+
+    toast("success", `อัปเดตแล้ว ${success} รายการ`);
+    fetchPersons();
+  } catch (err: any) {
+    toast("error", "อัปเดตไม่สำเร็จ", err?.response?.data?.error);
+  }
+};
 
   const handleExportPDF = async (p: any) => {
     try {
