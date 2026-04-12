@@ -135,23 +135,9 @@ export default function OrganizationPage() {
 
   /* ================= PREVIEW ================= */
 
-  const previewMain = buildFullName(
-    form.rank,
-    form.firstName,
-    form.lastName
-  );
-
-  const previewCommander = buildFullName(
-    form.commanderRank,
-    form.commanderFirstName,
-    form.commanderLastName
-  );
-
-  const previewFinance = buildFullName(
-    form.financeRank,
-    form.financeFirstName,
-    form.financeLastName
-  );
+  const previewMain = buildFullName(form.rank, form.firstName, form.lastName);
+  const previewCommander = buildFullName(form.commanderRank, form.commanderFirstName, form.commanderLastName);
+  const previewFinance = buildFullName(form.financeRank, form.financeFirstName, form.financeLastName);
 
   /* ================= RETURN ================= */
 
@@ -160,102 +146,51 @@ export default function OrganizationPage() {
       <h4 className="fw-bold mb-3">🏢 หน่วยงาน</h4>
 
       {/* ================= DESKTOP ================= */}
-
       {!isMobile && (
-        <>
-          {/* คนหลัก */}
-          <div className="card mb-4 shadow">
-            <div className="card-header fw-bold">🧑 คนหลัก</div>
+        <div className="card shadow">
+          <table className="table mb-0">
+            <thead>
+              <tr>
+                <th>หน่วยงาน</th>
+                <th>ชื่อ</th>
+                <th>ตำแหน่ง</th>
+                <th></th>
+              </tr>
+            </thead>
 
-            <table className="table mb-0">
-              <thead>
-                <tr>
-                  <th>หน่วยงาน</th>
-                  <th>ชื่อ</th>
-                  <th>ตำแหน่ง</th>
-                  <th></th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={4}>⏳</td>
-                  </tr>
-                ) : (
-                  data.map((i) => (
-                    <tr key={i.organizationId}>
-                      <td>{i.organizationName}</td>
-                      <td>{formatText(i.fullNameWithRank)}</td>
-                      <td>{formatText(i.position)}</td>
-
-                      <td>
-                        <button
-                          className="btn btn-warning btn-sm"
-                          onClick={() => handleEdit(i)}
-                        >
-                          ✏️
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* ผู้กำกับ */}
-          <div className="card mb-4 shadow">
-            <div className="card-header fw-bold text-primary">
-              👮 ผู้กำกับ
-            </div>
-
-            <table className="table mb-0">
-              <tbody>
-                {data.map((i) => (
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={4}>⏳</td></tr>
+              ) : (
+                data.map((i) => (
                   <tr key={i.organizationId}>
                     <td>{i.organizationName}</td>
-                    <td>{formatText(i.commanderFullNameWithRank)}</td>
-                    <td>{formatText(i.commanderPosition)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    <td>{formatText(i.fullNameWithRank)}</td>
+                    <td>{formatText(i.position)}</td>
 
-          {/* การเงิน */}
-          <div className="card mb-4 shadow">
-            <div className="card-header fw-bold text-success">
-              💰 การเงิน
-            </div>
-
-            <table className="table mb-0">
-              <tbody>
-                {data.map((i) => (
-                  <tr key={i.organizationId}>
-                    <td>{i.organizationName}</td>
-                    <td>{formatText(i.financeFullNameWithRank)}</td>
-                    <td>{formatText(i.financePosition)}</td>
+                    <td>
+                      <button
+                        className="btn btn-warning btn-sm"
+                        onClick={() => handleEdit(i)}
+                      >
+                        ✏️
+                      </button>
+                    </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* ================= MOBILE ================= */}
-
       {isMobile && (
         <div className="row g-2">
           {data.map((i) => (
             <div className="col-12" key={i.organizationId}>
               <div className="card p-3 shadow-sm">
-
-                <div className="fw-bold mb-2">
-                  {i.organizationName}
-                </div>
-
+                <b>{i.organizationName}</b>
                 <div>🧑 {formatText(i.fullNameWithRank)}</div>
                 <div>👮 {formatText(i.commanderFullNameWithRank)}</div>
                 <div>💰 {formatText(i.financeFullNameWithRank)}</div>
@@ -266,7 +201,6 @@ export default function OrganizationPage() {
                 >
                   ✏️ แก้ไข
                 </button>
-
               </div>
             </div>
           ))}
@@ -274,7 +208,6 @@ export default function OrganizationPage() {
       )}
 
       {/* ================= MODAL ================= */}
-
       {selected && (
         <>
           <div className="modal-backdrop fade show" />
@@ -287,7 +220,7 @@ export default function OrganizationPage() {
 
                 {/* คนหลัก */}
                 <h6>🧑 คนหลัก</h6>
-                <input className="form-control mb-2"
+                <input list="rank-list" className="form-control mb-2"
                   value={form.rank}
                   onChange={(e)=>setForm({...form, rank:e.target.value})}
                 />
@@ -299,13 +232,11 @@ export default function OrganizationPage() {
                   value={form.lastName}
                   onChange={(e)=>setForm({...form, lastName:e.target.value})}
                 />
-                <div className="text-muted mb-2">
-                  {formatText(previewMain)}
-                </div>
+                <div className="text-muted mb-2">{previewMain}</div>
 
                 {/* ผู้กำกับ */}
                 <h6>👮 ผู้กำกับ</h6>
-                <input className="form-control mb-2"
+                <input list="rank-list" className="form-control mb-2"
                   value={form.commanderRank}
                   onChange={(e)=>setForm({...form, commanderRank:e.target.value})}
                 />
@@ -317,13 +248,11 @@ export default function OrganizationPage() {
                   value={form.commanderLastName}
                   onChange={(e)=>setForm({...form, commanderLastName:e.target.value})}
                 />
-                <div className="text-muted mb-2">
-                  {formatText(previewCommander)}
-                </div>
+                <div className="text-muted mb-2">{previewCommander}</div>
 
                 {/* การเงิน */}
                 <h6>💰 การเงิน</h6>
-                <input className="form-control mb-2"
+                <input list="rank-list" className="form-control mb-2"
                   value={form.financeRank}
                   onChange={(e)=>setForm({...form, financeRank:e.target.value})}
                 />
@@ -335,22 +264,25 @@ export default function OrganizationPage() {
                   value={form.financeLastName}
                   onChange={(e)=>setForm({...form, financeLastName:e.target.value})}
                 />
-                <div className="text-muted mb-2">
-                  {formatText(previewFinance)}
-                </div>
+                <div className="text-muted mb-2">{previewFinance}</div>
+
+                {/* datalist */}
+                <datalist id="rank-list">
+                  {[
+                    "ส.ต.ต.","ส.ต.ท.","ส.ต.อ.","จ.ส.ต.","ด.ต.",
+                    "ร.ต.ต.","ร.ต.ท.","ร.ต.อ.","พ.ต.ต.","พ.ต.ท.",
+                    "พ.ต.อ.","พล.ต.ต.","พล.ต.ท.","พล.ต.อ.",
+                  ]
+                    .flatMap(r => [r, `${r} หญิง`])
+                    .map(r => <option key={r} value={r} />)}
+                </datalist>
 
                 <div className="text-end mt-3">
-                  <button
-                    className="btn btn-success me-2"
-                    onClick={handleUpdate}
-                  >
+                  <button className="btn btn-success me-2" onClick={handleUpdate}>
                     💾 บันทึก
                   </button>
 
-                  <button
-                    className="btn btn-secondary"
-                    onClick={()=>setSelected(null)}
-                  >
+                  <button className="btn btn-secondary" onClick={()=>setSelected(null)}>
                     ยกเลิก
                   </button>
                 </div>
