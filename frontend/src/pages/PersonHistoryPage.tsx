@@ -46,6 +46,7 @@ export default function PersonHistoryPage() {
   const [persons, setPersons] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // ===== bulk select =====
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -73,7 +74,7 @@ export default function PersonHistoryPage() {
 
   // ===== select =====
   const toggleSelect = (id: string, status: number) => {
-    if (status !== 0) return;
+    if (status >= 3) return;
 
     setSelectedIds((prev) =>
       prev.includes(id)
@@ -83,7 +84,7 @@ export default function PersonHistoryPage() {
   };
 
   const handleSelectAll = () => {
-    const valid = persons.filter((p) => p.status === 0);
+    const valid = persons.filter((p) => p.status < 3);
 
     if (selectedIds.length === valid.length) {
       setSelectedIds([]);
@@ -137,14 +138,15 @@ export default function PersonHistoryPage() {
     }
   };
 
+  // ===== bulk +1 (frontend loop) =====
   const handleBulkSend = async () => {
     if (!selectMode) return toast("warning", "กรุณากดเลือกก่อน");
     if (selectedIds.length === 0)
       return toast("warning", "เลือกข้อมูลก่อน");
 
     const confirm = await Swal.fire({
-      title: "ยืนยันการส่ง?",
-      text: `จำนวน ${selectedIds.length} รายการ`,
+      title: "ยืนยันการอัปเดตสถานะ?",
+      text: `จำนวน ${selectedIds.length} รายการ (จะ +1 ทีละรายการ)`,
       icon: "question",
       showCancelButton: true,
     });
@@ -152,16 +154,26 @@ export default function PersonHistoryPage() {
     if (!confirm.isConfirmed) return;
 
     try {
-      const res = await api.patch("/person/bulk/status", {
-        personIds: selectedIds,
-        status: 1,
-      });
+      let success = 0;
+
+      await Promise.all(
+        selectedIds.map(async (id) => {
+          const p = persons.find((x) => x.personId === id);
+          if (!p || p.status >= 3) return;
+
+          await api.patch(`/person/${id}/status`, {
+            status: p.status + 1,
+          });
+
+          success++;
+        })
+      );
 
       setSelectedIds([]);
-      toast("success", `ส่งแล้ว ${res.data.updated} รายการ`);
+      toast("success", `อัปเดตแล้ว ${success} รายการ`);
       fetchPersons();
     } catch (err: any) {
-      toast("error", "ส่งไม่สำเร็จ", err?.response?.data?.error);
+      toast("error", "อัปเดตไม่สำเร็จ", err?.response?.data?.error);
     }
   };
 
@@ -192,13 +204,13 @@ export default function PersonHistoryPage() {
         {selectMode && (
           <>
             <button className="btn btn-outline-primary" onClick={handleSelectAll}>
-              {selectedIds.length === persons.filter(p => p.status === 0).length
+              {selectedIds.length === persons.filter(p => p.status < 3).length
                 ? "ยกเลิกเลือกทั้งหมด"
                 : "เลือกทั้งหมด"}
             </button>
 
             <button className="btn btn-success" onClick={handleBulkSend}>
-              ส่งที่เลือก ({selectedIds.length})
+              อัปเดตสถานะ (+1) ({selectedIds.length})
             </button>
           </>
         )}
@@ -222,13 +234,12 @@ export default function PersonHistoryPage() {
           {persons.map((p) => (
             <div key={p.personId} className="card p-3">
 
-              {selectMode && (
+              {selectMode && p.status < 3 && (
                 <div className="form-check mb-2">
                   <input
                     type="checkbox"
                     className="form-check-input"
                     checked={selectedIds.includes(p.personId)}
-                    disabled={p.status !== 0}
                     onChange={() => toggleSelect(p.personId, p.status)}
                   />
                 </div>
@@ -275,7 +286,7 @@ export default function PersonHistoryPage() {
                       <input
                         type="checkbox"
                         checked={
-                          selectedIds.length === persons.filter(p => p.status === 0).length &&
+                          selectedIds.length === persons.filter(p => p.status < 3).length &&
                           persons.length > 0
                         }
                         onChange={handleSelectAll}
@@ -314,12 +325,13 @@ export default function PersonHistoryPage() {
                     <tr key={p.personId}>
                       {selectMode && (
                         <td>
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.includes(p.personId)}
-                            disabled={p.status !== 0}
-                            onChange={() => toggleSelect(p.personId, p.status)}
-                          />
+                          {p.status < 3 && (
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(p.personId)}
+                              onChange={() => toggleSelect(p.personId, p.status)}
+                            />
+                          )}
                         </td>
                       )}
 
@@ -335,7 +347,7 @@ export default function PersonHistoryPage() {
                       </td>
 
                       <td>
-                        <button className="btn btn-primary btn-sm" onClick={() => handleExportPDF(p)}>PDF</button>
+                        <button className="btn btn-primary btn-sm" onClick={() => handleExportPDF(p)}>PDF แบบพิมพ์มือ </button>
                       </td>
 
                       <td>
