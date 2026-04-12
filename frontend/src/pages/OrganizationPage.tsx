@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { toast } from "../utils/toast";
 
+/* ================= TYPES ================= */
+
 interface Organization {
   organizationId: string;
   organizationName: string;
@@ -29,6 +31,8 @@ interface Organization {
   financeLastName?: string;
 }
 
+/* ================= COMPONENT ================= */
+
 export default function OrganizationPage() {
   const [data, setData] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,6 +44,7 @@ export default function OrganizationPage() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1280);
 
   /* ================= RESPONSIVE ================= */
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1280);
@@ -48,7 +53,27 @@ export default function OrganizationPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  /* ================= HELPERS ================= */
+
+  const formatName = (name?: string) => name || "-";
+  const formatPosition = (pos?: string) => pos || "-";
+
+  const previewFullName = `${form.rank || ""}${form.firstName || ""} ${form.lastName || ""}`;
+
+  const isEmpty = (v: any) => v === null || v === undefined || v === "";
+
+  /* ================= VALIDATION ================= */
+
+  const validateForm = () => {
+    if (isEmpty(form.organizationName)) {
+      toast("error", "กรุณากรอกชื่อหน่วยงาน");
+      return false;
+    }
+    return true;
+  };
+
   /* ================= FETCH ================= */
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -65,7 +90,18 @@ export default function OrganizationPage() {
     fetchData();
   }, []);
 
+  /* ================= DEBUG ================= */
+
+  useEffect(() => {
+    console.log("DATA:", data);
+  }, [data]);
+
+  useEffect(() => {
+    console.log("FORM:", form);
+  }, [form]);
+
   /* ================= EDIT ================= */
+
   const handleEdit = (item: Organization) => {
     const f = {
       organizationName: item.organizationName ?? "",
@@ -91,8 +127,10 @@ export default function OrganizationPage() {
   };
 
   /* ================= UPDATE ================= */
+
   const handleUpdate = async () => {
     if (!selected || !original) return;
+    if (!validateForm()) return;
 
     const changed: any = {};
     Object.keys(form).forEach((k) => {
@@ -112,11 +150,19 @@ export default function OrganizationPage() {
     fetchData();
   };
 
+  /* ================= COMMON COMPONENT ================= */
+
+  const SectionHeader = ({ title, className }: any) => (
+    <div className={`card-header fw-bold ${className || ""}`}>
+      {title}
+    </div>
+  );
+
   /* ================= TABLE ================= */
 
   const renderMainTable = () => (
     <div className="card mb-4 shadow">
-      <div className="card-header fw-bold">🧑 คนหลัก</div>
+      <SectionHeader title="🧑 คนหลัก" />
       <table className="table mb-0">
         <thead>
           <tr>
@@ -130,13 +176,10 @@ export default function OrganizationPage() {
           {data.map((i) => (
             <tr key={i.organizationId}>
               <td>{i.organizationName}</td>
-              <td>{i.fullNameWithRank}</td>
-              <td>{i.position}</td>
+              <td>{formatName(i.fullNameWithRank)}</td>
+              <td>{formatPosition(i.position)}</td>
               <td>
-                <button
-                  className="btn btn-warning btn-sm"
-                  onClick={() => handleEdit(i)}
-                >
+                <button className="btn btn-warning btn-sm" onClick={() => handleEdit(i)}>
                   ✏️
                 </button>
               </td>
@@ -149,7 +192,7 @@ export default function OrganizationPage() {
 
   const renderCommanderTable = () => (
     <div className="card mb-4 shadow">
-      <div className="card-header fw-bold text-primary">👮 ผู้กำกับ</div>
+      <SectionHeader title="👮 ผู้กำกับ" className="text-primary" />
       <table className="table mb-0">
         <thead>
           <tr>
@@ -162,8 +205,8 @@ export default function OrganizationPage() {
           {data.map((i) => (
             <tr key={i.organizationId}>
               <td>{i.organizationName}</td>
-              <td>{i.commanderFullNameWithRank || "-"}</td>
-              <td>{i.commanderPosition || "-"}</td>
+              <td>{formatName(i.commanderFullNameWithRank)}</td>
+              <td>{formatPosition(i.commanderPosition)}</td>
             </tr>
           ))}
         </tbody>
@@ -173,7 +216,7 @@ export default function OrganizationPage() {
 
   const renderFinanceTable = () => (
     <div className="card mb-4 shadow">
-      <div className="card-header fw-bold text-success">💰 การเงิน</div>
+      <SectionHeader title="💰 การเงิน" className="text-success" />
       <table className="table mb-0">
         <thead>
           <tr>
@@ -186,8 +229,8 @@ export default function OrganizationPage() {
           {data.map((i) => (
             <tr key={i.organizationId}>
               <td>{i.organizationName}</td>
-              <td>{i.financeFullNameWithRank || "-"}</td>
-              <td>{i.financePosition || "-"}</td>
+              <td>{formatName(i.financeFullNameWithRank)}</td>
+              <td>{formatPosition(i.financePosition)}</td>
             </tr>
           ))}
         </tbody>
@@ -204,18 +247,13 @@ export default function OrganizationPage() {
   ) => (
     <div className="mb-4">
       <h6 className={`fw-bold ${color}`}>{title}</h6>
-
       <div className="row g-2">
         {data.map((i) => (
           <div className="col-12" key={i.organizationId}>
             <div className="card p-3 shadow-sm">
               <div className="fw-bold">{i.organizationName}</div>
               {render(i)}
-
-              <button
-                className="btn btn-warning btn-sm mt-2"
-                onClick={() => handleEdit(i)}
-              >
+              <button className="btn btn-warning btn-sm mt-2" onClick={() => handleEdit(i)}>
                 ✏️ แก้ไข
               </button>
             </div>
@@ -225,11 +263,12 @@ export default function OrganizationPage() {
     </div>
   );
 
+  /* ================= RETURN ================= */
+
   return (
     <div className="container py-4">
       <h4 className="fw-bold mb-3">🏢 หน่วยงาน</h4>
 
-      {/* DESKTOP */}
       {!isMobile && (
         <>
           {renderMainTable()}
@@ -238,33 +277,32 @@ export default function OrganizationPage() {
         </>
       )}
 
-      {/* MOBILE */}
       {isMobile && (
         <>
           {renderCardSection("🧑 คนหลัก", "", (i) => (
             <>
-              <div>{i.fullNameWithRank}</div>
-              <small>{i.position}</small>
+              <div>{formatName(i.fullNameWithRank)}</div>
+              <small>{formatPosition(i.position)}</small>
             </>
           ))}
 
           {renderCardSection("👮 ผู้กำกับ", "text-primary", (i) => (
             <>
-              <div>{i.commanderFullNameWithRank || "-"}</div>
-              <small>{i.commanderPosition || "-"}</small>
+              <div>{formatName(i.commanderFullNameWithRank)}</div>
+              <small>{formatPosition(i.commanderPosition)}</small>
             </>
           ))}
 
           {renderCardSection("💰 การเงิน", "text-success", (i) => (
             <>
-              <div>{i.financeFullNameWithRank || "-"}</div>
-              <small>{i.financePosition || "-"}</small>
+              <div>{formatName(i.financeFullNameWithRank)}</div>
+              <small>{formatPosition(i.financePosition)}</small>
             </>
           ))}
         </>
       )}
 
-      {/* MODAL */}
+      {/* ================= MODAL ================= */}
       {selected && (
         <div className="modal d-block">
           <div className="modal-dialog">
@@ -277,6 +315,10 @@ export default function OrganizationPage() {
                   setForm({ ...form, organizationName: e.target.value })
                 }
               />
+
+              <div className="text-muted small mb-2">
+                ตัวอย่าง: {previewFullName}
+              </div>
 
               <button className="btn btn-success me-2" onClick={handleUpdate}>
                 บันทึก
