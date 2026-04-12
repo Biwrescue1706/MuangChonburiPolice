@@ -1,3 +1,5 @@
+// src/pages/PersonHistoryPage.tsx
+
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../api/axios";
@@ -50,18 +52,41 @@ export default function PersonHistoryPage() {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // ===== search =====
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
+  // ===== debounce =====
+  const [debounceFirstName, setDebounceFirstName] = useState("");
+  const [debounceLastName, setDebounceLastName] = useState("");
+
   const isMobile = window.innerWidth < 1280;
 
   const active = (value: string | null) =>
     statusParam === value ? "btn-dark" : "btn-outline-secondary";
 
+  // ===== debounce =====
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebounceFirstName(firstName);
+      setDebounceLastName(lastName);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [firstName, lastName]);
+
   // ===== fetch =====
   const fetchPersons = async () => {
     try {
       setLoading(true);
-      let url = "/person/getall";
-      if (statusParam !== null) url += `?status=${statusParam}`;
-      const res = await api.get(url);
+
+      const params = new URLSearchParams();
+
+      if (statusParam !== null) params.append("status", statusParam);
+      if (debounceFirstName) params.append("firstName", debounceFirstName);
+      if (debounceLastName) params.append("lastName", debounceLastName);
+
+      const res = await api.get(`/person/getall?${params.toString()}`);
       setPersons(res.data.data || []);
     } finally {
       setLoading(false);
@@ -70,7 +95,7 @@ export default function PersonHistoryPage() {
 
   useEffect(() => {
     fetchPersons();
-  }, [statusParam]);
+  }, [statusParam, debounceFirstName, debounceLastName]);
 
   // ===== select =====
   const toggleSelect = (id: string, status: number) => {
@@ -138,47 +163,46 @@ export default function PersonHistoryPage() {
     }
   };
 
-  // ===== bulk +1 (frontend loop) =====
+  // ===== bulk =====
   const handleBulkSend = async () => {
-  if (!selectMode) return toast("warning", "กรุณากดเลือกก่อน");
-  if (selectedIds.length === 0)
-    return toast("warning", "เลือกข้อมูลก่อน");
+    if (!selectMode) return toast("warning", "กรุณากดเลือกก่อน");
+    if (selectedIds.length === 0)
+      return toast("warning", "เลือกข้อมูลก่อน");
 
-  const confirm = await Swal.fire({
-    title: "ยืนยันการอัปเดตสถานะ?",
-    text: `จำนวน ${selectedIds.length} รายการ (จะ +1 ทีละรายการ)`,
-    icon: "question",
-    showCancelButton: true,
-  });
+    const confirm = await Swal.fire({
+      title: "ยืนยันการอัปเดตสถานะ?",
+      text: `จำนวน ${selectedIds.length} รายการ`,
+      icon: "question",
+      showCancelButton: true,
+    });
 
-  if (!confirm.isConfirmed) return;
+    if (!confirm.isConfirmed) return;
 
-  try {
-    let success = 0;
+    try {
+      let success = 0;
 
-    await Promise.all(
-      selectedIds.map(async (id) => {
-        const p = persons.find((x) => x.personId === id);
-        if (!p || p.status >= 3) return;
+      await Promise.all(
+        selectedIds.map(async (id) => {
+          const p = persons.find((x) => x.personId === id);
+          if (!p || p.status >= 3) return;
 
-        await api.patch(`/person/${id}/status`, {
-          status: p.status + 1,
-        });
+          await api.patch(`/person/${id}/status`, {
+            status: p.status + 1,
+          });
 
-        success++;
-      })
-    );
+          success++;
+        })
+      );
 
-    // ✅ reset ทุกอย่าง
-    setSelectedIds([]);
-    setSelectMode(false);
+      setSelectedIds([]);
+      setSelectMode(false);
 
-    toast("success", `อัปเดตแล้ว ${success} รายการ`);
-    fetchPersons();
-  } catch (err: any) {
-    toast("error", "อัปเดตไม่สำเร็จ", err?.response?.data?.error);
-  }
-};
+      toast("success", `อัปเดตแล้ว ${success} รายการ`);
+      fetchPersons();
+    } catch (err: any) {
+      toast("error", "อัปเดตไม่สำเร็จ", err?.response?.data?.error);
+    }
+  };
 
   const handleExportPDF = async (p: any) => {
     try {
@@ -191,6 +215,35 @@ export default function PersonHistoryPage() {
   return (
     <div className="p-4">
       <h4 className="mb-3">📄 ประวัติทั้งหมด</h4>
+
+      {/* SEARCH */}
+      <div className="mb-3 d-flex gap-2 flex-wrap">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="ค้นหาชื่อ"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+        />
+
+        <input
+          type="text"
+          className="form-control"
+          placeholder="ค้นหานามสกุล"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+        />
+
+        <button
+          className="btn btn-outline-secondary"
+          onClick={() => {
+            setFirstName("");
+            setLastName("");
+          }}
+        >
+          ล้าง
+        </button>
+      </div>
 
       {/* ===== BULK ACTION ===== */}
       <div className="d-flex justify-content-end mb-2 gap-2">
