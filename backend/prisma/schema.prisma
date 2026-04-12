@@ -143,11 +143,7 @@ model Receipt {
   receiptId String @id @default(uuid())
 
   personId String?
-person   Person? @relation(
-  fields: [personId],
-  references: [personId],
-  onDelete: SetNull
-)
+person   Person? @relation(fields: [personId], references: [personId], onDelete: SetNull)
 
   prefix    String
   firstName String
