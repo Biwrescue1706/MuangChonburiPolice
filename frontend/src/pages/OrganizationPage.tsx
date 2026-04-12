@@ -29,6 +29,28 @@ export default function OrganizationPage() {
     position: "",
   });
 
+  const [original, setOriginal] = useState<any>(null);
+
+  /* ================= RANK OPTIONS ================= */
+  const baseRanks = [
+    "ส.ต.ต.",
+    "ส.ต.ท.",
+    "ส.ต.อ.",
+    "จ.ส.ต.",
+    "ด.ต.",
+    "ร.ต.ต.",
+    "ร.ต.ท.",
+    "ร.ต.อ.",
+    "พ.ต.ต.",
+    "พ.ต.ท.",
+    "พ.ต.อ.",
+    "พล.ต.ต.",
+    "พล.ต.ท.",
+    "พล.ต.อ.",
+  ];
+
+  const rankOptions = baseRanks.flatMap((r) => [r, `${r} หญิง`]);
+
   /* ================= RESPONSIVE ================= */
   useEffect(() => {
     const handleResize = () => {
@@ -40,11 +62,7 @@ export default function OrganizationPage() {
 
   /* ================= LOCK SCROLL ================= */
   useEffect(() => {
-    if (selected) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = selected ? "hidden" : "";
   }, [selected]);
 
   /* ================= FETCH ================= */
@@ -53,7 +71,7 @@ export default function OrganizationPage() {
       setLoading(true);
       const res = await api.get("/organization");
       setData(res.data);
-    } catch (err) {
+    } catch {
       toast("error", "โหลดข้อมูลไม่สำเร็จ");
     } finally {
       setLoading(false);
@@ -66,26 +84,46 @@ export default function OrganizationPage() {
 
   /* ================= EDIT ================= */
   const handleEdit = (item: Organization) => {
+    const dataForm = {
+      organizationName: item.organizationName ?? "",
+      rank: item.rank ?? "",
+      firstName: item.firstName ?? "",
+      lastName: item.lastName ?? "",
+      position: item.position ?? "",
+    };
+
     setSelected(item);
-    setForm({
-      organizationName: item.organizationName,
-      rank: item.rank || "",
-      firstName: item.firstName,
-      lastName: item.lastName,
-      position: item.position,
-    });
+    setForm(dataForm);
+    setOriginal(dataForm);
   };
 
   /* ================= UPDATE ================= */
   const handleUpdate = async () => {
-    if (!selected) return;
+    if (!selected || !original) return;
+
+    const changedData: any = {};
+
+    Object.keys(form).forEach((key) => {
+      if (form[key as keyof typeof form] !== original[key]) {
+        changedData[key] = form[key as keyof typeof form];
+      }
+    });
+
+    if (Object.keys(changedData).length === 0) {
+      toast("info", "ไม่มีการเปลี่ยนแปลง");
+      return;
+    }
 
     try {
-      await api.patch(`/organization/${selected.organizationId}`, form);
+      await api.patch(
+        `/organization/${selected.organizationId}`,
+        changedData
+      );
+
       toast("success", "แก้ไขสำเร็จ");
       setSelected(null);
       fetchData();
-    } catch (err) {
+    } catch {
       toast("error", "แก้ไขไม่สำเร็จ");
     }
   };
@@ -94,10 +132,10 @@ export default function OrganizationPage() {
     <div className="container-fluid py-4 px-3">
       <h4 className="fw-bold mb-4">🏢 จัดการหน่วยงาน</h4>
 
-      {/* ================= TABLE (จอใหญ่) ================= */}
+      {/* ================= TABLE ================= */}
       {!isMobile && (
         <div className="card shadow border-0 rounded-4">
-          <div className="card-header bg-dark text-white fw-semibold rounded-top-4">
+          <div className="card-header bg-dark text-white fw-semibold">
             📋 รายการหน่วยงาน
           </div>
 
@@ -135,7 +173,7 @@ export default function OrganizationPage() {
                       <td>{item.position}</td>
                       <td className="text-center">
                         <button
-                          className="btn btn-warning btn-sm rounded-pill px-3"
+                          className="btn btn-warning btn-sm rounded-pill"
                           onClick={() => handleEdit(item)}
                         >
                           ✏️
@@ -150,136 +188,161 @@ export default function OrganizationPage() {
         </div>
       )}
 
-      {/* ================= CARD (จอเล็ก) ================= */}
+      {/* ================= CARD ================= */}
       {isMobile && (
         <div className="row g-3">
-          {loading ? (
-            <p className="text-center">⏳ กำลังโหลด...</p>
-          ) : data.length === 0 ? (
-            <p className="text-center text-muted">ไม่มีข้อมูล</p>
-          ) : (
-            data.map((item) => (
-              <div className="col-12" key={item.organizationId}>
-                <div className="card shadow-sm border-0 rounded-4">
-                  <div className="card-body">
-                    <h6 className="fw-bold">
-                      {item.organizationName}
-                    </h6>
-                    <div>{item.fullNameWithRank}</div>
-                    <div className="text-muted small mb-2">
-                      {item.position}
-                    </div>
-
-                    <button
-                      className="btn btn-warning btn-sm w-100 rounded-pill"
-                      onClick={() => handleEdit(item)}
-                    >
-                      ✏️ แก้ไข
-                    </button>
+          {data.map((item) => (
+            <div className="col-12" key={item.organizationId}>
+              <div className="card shadow-sm border-0 rounded-4">
+                <div className="card-body">
+                  <h6 className="fw-bold">
+                    {item.organizationName}
+                  </h6>
+                  <div>{item.fullNameWithRank}</div>
+                  <div className="text-muted small mb-2">
+                    {item.position}
                   </div>
+
+                  <button
+                    className="btn btn-warning btn-sm w-100 rounded-pill"
+                    onClick={() => handleEdit(item)}
+                  >
+                    ✏️ แก้ไข
+                  </button>
                 </div>
               </div>
-            ))
-          )}
+            </div>
+          ))}
         </div>
       )}
 
       {/* ================= MODAL ================= */}
       {selected && (
-        <div className="modal fade show d-block" tabIndex={-1}>
+        <>
+          {/* backdrop */}
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }} />
+
+          {/* modal */}
           <div
-            className="modal-dialog modal-lg modal-dialog-centered"
-            style={{ marginTop: 80 }} // 👈 แก้ปัญหาโดน nav บัง
+            key={selected.organizationId}
+            className="modal fade show d-block"
+            style={{ zIndex: 1050 }}
           >
-            <div className="modal-content rounded-4 shadow-lg">
-              <div className="modal-header bg-warning">
-                <h5 className="modal-title fw-bold">
-                  ✏️ แก้ไขข้อมูล
-                </h5>
-                <button
-                  className="btn-close"
-                  onClick={() => setSelected(null)}
-                />
-              </div>
-
-              <div className="modal-body row g-3">
-                <div className="col-md-6">
-                  <label className="form-label">ชื่อหน่วยงาน</label>
-                  <input
-                    className="form-control"
-                    value={form.organizationName}
-                    onChange={(e) =>
-                      setForm({ ...form, organizationName: e.target.value })
-                    }
+            <div
+              className="modal-dialog modal-lg modal-dialog-centered"
+              style={{ marginTop: 80 }}
+            >
+              <div className="modal-content rounded-4 shadow-lg">
+                <div className="modal-header bg-warning">
+                  <h5 className="modal-title fw-bold">
+                    ✏️ แก้ไขข้อมูล
+                  </h5>
+                  <button
+                    className="btn-close"
+                    onClick={() => setSelected(null)}
                   />
                 </div>
 
-                <div className="col-md-3">
-                  <label className="form-label">ยศ</label>
-                  <input
-                    className="form-control"
-                    value={form.rank}
-                    onChange={(e) =>
-                      setForm({ ...form, rank: e.target.value })
-                    }
-                  />
+                <div className="modal-body row g-3">
+                  {/* หน่วยงาน */}
+                  <div className="col-md-6">
+                    <label className="form-label">ชื่อหน่วยงาน</label>
+                    <input
+                      className="form-control"
+                      value={form.organizationName}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          organizationName: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  {/* ยศ (combobox) */}
+                  <div className="col-md-3">
+                    <label className="form-label">ยศ</label>
+                    <input
+                      className="form-control"
+                      list="rank-list"
+                      placeholder="เลือกหรือพิมพ์..."
+                      value={form.rank}
+                      onChange={(e) =>
+                        setForm({ ...form, rank: e.target.value })
+                      }
+                    />
+                    <datalist id="rank-list">
+                      {rankOptions.map((r) => (
+                        <option key={r} value={r} />
+                      ))}
+                    </datalist>
+                  </div>
+
+                  {/* ตำแหน่ง */}
+                  <div className="col-md-3">
+                    <label className="form-label">ตำแหน่ง</label>
+                    <input
+                      className="form-control"
+                      value={form.position}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          position: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  {/* ชื่อ */}
+                  <div className="col-md-6">
+                    <label className="form-label">ชื่อ</label>
+                    <input
+                      className="form-control"
+                      value={form.firstName}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          firstName: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  {/* นามสกุล */}
+                  <div className="col-md-6">
+                    <label className="form-label">นามสกุล</label>
+                    <input
+                      className="form-control"
+                      value={form.lastName}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          lastName: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
-                <div className="col-md-3">
-                  <label className="form-label">ตำแหน่ง</label>
-                  <input
-                    className="form-control"
-                    value={form.position}
-                    onChange={(e) =>
-                      setForm({ ...form, position: e.target.value })
-                    }
-                  />
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-success rounded-pill px-4"
+                    onClick={handleUpdate}
+                  >
+                    💾 บันทึก
+                  </button>
+
+                  <button
+                    className="btn btn-outline-secondary rounded-pill px-4"
+                    onClick={() => setSelected(null)}
+                  >
+                    ยกเลิก
+                  </button>
                 </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">ชื่อ</label>
-                  <input
-                    className="form-control"
-                    value={form.firstName}
-                    onChange={(e) =>
-                      setForm({ ...form, firstName: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">นามสกุล</label>
-                  <input
-                    className="form-control"
-                    value={form.lastName}
-                    onChange={(e) =>
-                      setForm({ ...form, lastName: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button
-                  className="btn btn-success rounded-pill px-4"
-                  onClick={handleUpdate}
-                >
-                  💾 บันทึก
-                </button>
-
-                <button
-                  className="btn btn-outline-secondary rounded-pill px-4"
-                  onClick={() => setSelected(null)}
-                >
-                  ยกเลิก
-                </button>
               </div>
             </div>
           </div>
-
-          {/* backdrop */}
-          <div className="modal-backdrop fade show"></div>
-        </div>
+        </>
       )}
     </div>
   );
