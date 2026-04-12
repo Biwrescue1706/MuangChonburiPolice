@@ -145,7 +145,7 @@ export default function OrganizationPage() {
     <div className="container py-4">
       <h4 className="fw-bold mb-3">🏢 หน่วยงาน</h4>
 
-      {/* ================= DESKTOP ================= */}
+      {/* ================= TABLE ================= */}
       {!isMobile && (
         <div className="card shadow">
           <table className="table mb-0">
@@ -165,8 +165,27 @@ export default function OrganizationPage() {
                 data.map((i) => (
                   <tr key={i.organizationId}>
                     <td>{i.organizationName}</td>
-                    <td>{formatText(i.fullNameWithRank)}</td>
-                    <td>{formatText(i.position)}</td>
+
+                    <td>
+                      <div>🧑 {formatText(i.fullNameWithRank)}</div>
+                      <div className="text-primary small">
+                        👮 {formatText(i.commanderFullNameWithRank)}
+                      </div>
+                      <div className="text-success small">
+                        💰 {formatText(i.financeFullNameWithRank)}
+                      </div>
+                    </td>
+
+                    {/* 🔥 แสดงตำแหน่งครบ */}
+                    <td>
+                      <div>🧑 {formatText(i.position)}</div>
+                      <div className="text-primary small">
+                        👮 {formatText(i.commanderPosition)}
+                      </div>
+                      <div className="text-success small">
+                        💰 {formatText(i.financePosition)}
+                      </div>
+                    </td>
 
                     <td>
                       <button
@@ -190,10 +209,28 @@ export default function OrganizationPage() {
           {data.map((i) => (
             <div className="col-12" key={i.organizationId}>
               <div className="card p-3 shadow-sm">
+
                 <b>{i.organizationName}</b>
+
+                {/* คนหลัก */}
                 <div>🧑 {formatText(i.fullNameWithRank)}</div>
-                <div>👮 {formatText(i.commanderFullNameWithRank)}</div>
-                <div>💰 {formatText(i.financeFullNameWithRank)}</div>
+                <small className="text-muted">{formatText(i.position)}</small>
+
+                {/* ผู้กำกับ */}
+                <div className="mt-2 text-primary">
+                  👮 {formatText(i.commanderFullNameWithRank)}
+                </div>
+                <small className="text-muted">
+                  {formatText(i.commanderPosition)}
+                </small>
+
+                {/* การเงิน */}
+                <div className="mt-2 text-success">
+                  💰 {formatText(i.financeFullNameWithRank)}
+                </div>
+                <small className="text-muted">
+                  {formatText(i.financePosition)}
+                </small>
 
                 <button
                   className="btn btn-warning btn-sm mt-2"
@@ -201,6 +238,7 @@ export default function OrganizationPage() {
                 >
                   ✏️ แก้ไข
                 </button>
+
               </div>
             </div>
           ))}
