@@ -31,6 +31,12 @@ const renderStatus = (status: number) => {
   }
 };
 
+const renderPriority = (priority: number) => {
+  return priority === 1
+    ? <span className="badge bg-danger">ด่วน</span>
+    : <span className="badge bg-secondary">ไม่ด่วน</span>;
+};
+
 const getStatusButton = (status: number) => {
   switch (status) {
     case 0: return "ส่ง ศพฐ.";
@@ -48,15 +54,12 @@ export default function PersonHistoryPage() {
   const [persons, setPersons] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // ===== bulk select =====
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // ===== search =====
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
-  // ===== debounce =====
   const [debounceFirstName, setDebounceFirstName] = useState("");
   const [debounceLastName, setDebounceLastName] = useState("");
 
@@ -65,23 +68,19 @@ export default function PersonHistoryPage() {
   const active = (value: string | null) =>
     statusParam === value ? "btn-dark" : "btn-outline-secondary";
 
-  // ===== debounce =====
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebounceFirstName(firstName);
       setDebounceLastName(lastName);
     }, 300);
-
     return () => clearTimeout(timer);
   }, [firstName, lastName]);
 
-  // ===== fetch =====
   const fetchPersons = async () => {
     try {
       setLoading(true);
 
       const params = new URLSearchParams();
-
       if (statusParam !== null) params.append("status", statusParam);
       if (debounceFirstName) params.append("firstName", debounceFirstName);
       if (debounceLastName) params.append("lastName", debounceLastName);
@@ -97,338 +96,152 @@ export default function PersonHistoryPage() {
     fetchPersons();
   }, [statusParam, debounceFirstName, debounceLastName]);
 
-  // ===== select =====
   const toggleSelect = (id: string, status: number) => {
     if (status >= 3) return;
-
-    setSelectedIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((i) => i !== id)
-        : [...prev, id]
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
   const handleSelectAll = () => {
-    const valid = persons.filter((p) => p.status < 3);
-
-    if (selectedIds.length === valid.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(valid.map((p) => p.personId));
-    }
+    const valid = persons.filter(p => p.status < 3);
+    setSelectedIds(
+      selectedIds.length === valid.length
+        ? []
+        : valid.map(p => p.personId)
+    );
   };
 
-  // ===== actions =====
   const handleDelete = async (p: any) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการลบ?",
       icon: "warning",
       showCancelButton: true,
     });
-
     if (!confirm.isConfirmed) return;
 
-    try {
-      await api.delete(`/person/${p.personId}`);
-      toast("success", "ลบเรียบร้อย");
-      fetchPersons();
-    } catch (err: any) {
-      toast("error", "ลบไม่สำเร็จ", err?.response?.data?.error);
-    }
+    await api.delete(`/person/${p.personId}`);
+    toast("success", "ลบเรียบร้อย");
+    fetchPersons();
   };
 
   const handleUpdateStatus = async (p: any) => {
     if (p.status === 3) return;
 
-    const nextStatus = p.status + 1;
-
     const confirm = await Swal.fire({
-      title: "ยืนยันการเปลี่ยนสถานะ?",
-      text: `${p.status} → ${nextStatus}`,
-      icon: "question",
+      title: "ยืนยัน?",
+      text: `${p.status} → ${p.status + 1}`,
       showCancelButton: true,
     });
 
     if (!confirm.isConfirmed) return;
 
-    try {
-      await api.patch(`/person/${p.personId}/status`, {
-        status: nextStatus,
-      });
+    await api.patch(`/person/${p.personId}/status`, {
+      status: p.status + 1,
+    });
 
-      toast("success", "อัปเดตสถานะแล้ว");
-      fetchPersons();
-    } catch (err: any) {
-      toast("error", "ไม่สำเร็จ", err?.response?.data?.error);
-    }
+    toast("success", "อัปเดตแล้ว");
+    fetchPersons();
   };
 
-  // ===== bulk =====
   const handleBulkSend = async () => {
-    if (!selectMode) return toast("warning", "กรุณากดเลือกก่อน");
-    if (selectedIds.length === 0)
-      return toast("warning", "เลือกข้อมูลก่อน");
+    if (!selectMode || selectedIds.length === 0) return;
 
     const confirm = await Swal.fire({
-      title: "ยืนยันการอัปเดตสถานะ?",
-      text: `จำนวน ${selectedIds.length} รายการ`,
-      icon: "question",
+      title: "ยืนยัน?",
+      text: `${selectedIds.length} รายการ`,
       showCancelButton: true,
     });
 
     if (!confirm.isConfirmed) return;
 
-    try {
-      let success = 0;
+    await Promise.all(
+      selectedIds.map(async (id) => {
+        const p = persons.find(x => x.personId === id);
+        if (!p || p.status >= 3) return;
 
-      await Promise.all(
-        selectedIds.map(async (id) => {
-          const p = persons.find((x) => x.personId === id);
-          if (!p || p.status >= 3) return;
+        await api.patch(`/person/${id}/status`, {
+          status: p.status + 1,
+        });
+      })
+    );
 
-          await api.patch(`/person/${id}/status`, {
-            status: p.status + 1,
-          });
-
-          success++;
-        })
-      );
-
-      setSelectedIds([]);
-      setSelectMode(false);
-
-      toast("success", `อัปเดตแล้ว ${success} รายการ`);
-      fetchPersons();
-    } catch (err: any) {
-      toast("error", "อัปเดตไม่สำเร็จ", err?.response?.data?.error);
-    }
+    setSelectedIds([]);
+    setSelectMode(false);
+    fetchPersons();
   };
 
   const handleExportPDF = async (p: any) => {
-    try {
-      await generatePDF(p);
-    } catch {
-      toast("error", "สร้าง PDF ไม่สำเร็จ");
-    }
+    await generatePDF(p);
   };
 
   return (
     <div className="p-4">
-      <h4 className="mb-3">📄 ประวัติทั้งหมด</h4>
+      <h4>📄 ประวัติทั้งหมด</h4>
 
       {/* SEARCH */}
-      <div className="mb-3 d-flex gap-2 flex-wrap">
-        <input
-          type="text"
-          className="form-control"
-          placeholder="ค้นหาชื่อ"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-        />
-
-        <input
-          type="text"
-          className="form-control"
-          placeholder="ค้นหานามสกุล"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-        />
-
-        <button
-          className="btn btn-outline-secondary"
-          onClick={() => {
-            setFirstName("");
-            setLastName("");
-          }}
-        >
-          ล้าง
-        </button>
+      <div className="mb-3 d-flex gap-2">
+        <input className="form-control" placeholder="ชื่อ"
+          value={firstName} onChange={e => setFirstName(e.target.value)} />
+        <input className="form-control" placeholder="นามสกุล"
+          value={lastName} onChange={e => setLastName(e.target.value)} />
       </div>
 
-      {/* ===== BULK ACTION ===== */}
-      <div className="d-flex justify-content-end mb-2 gap-2">
-        <button
-          className="btn btn-secondary"
-          onClick={() => {
-            setSelectMode((prev) => !prev);
-            setSelectedIds([]);
-          }}
-        >
-          {selectMode ? "ยกเลิกเลือก" : "เลือก"}
-        </button>
+      {/* MOBILE */}
+      {isMobile && persons.map(p => (
+        <div key={p.personId} className="card p-3 mb-2">
 
-        {selectMode && (
-          <>
-            <button className="btn btn-outline-primary" onClick={handleSelectAll}>
-              {selectedIds.length === persons.filter(p => p.status < 3).length
-                ? "ยกเลิกเลือกทั้งหมด"
-                : "เลือกทั้งหมด"}
-            </button>
+          {selectMode && p.status < 3 && (
+            <input type="checkbox"
+              checked={selectedIds.includes(p.personId)}
+              onChange={() => toggleSelect(p.personId, p.status)} />
+          )}
 
-            <button className="btn btn-success" onClick={handleBulkSend}>
-              อัปเดตสถานะ (+1) ({selectedIds.length})
-            </button>
-          </>
-        )}
-      </div>
+          <strong>{p.fullName}</strong>
+          <div>{renderStatus(p.status)}</div>
+          <div>{renderPriority(p.priority ?? 0)}</div>
 
-      {/* ===== FILTER ===== */}
-      <div className="mb-3 d-flex gap-2 flex-wrap">
-        <button className={`btn btn-sm ${active(null)}`} onClick={() => setSearchParams({})}>ทั้งหมด</button>
-        <button className={`btn btn-sm ${active("0")}`} onClick={() => setSearchParams({ status: "0" })}>รอส่ง</button>
-        <button className={`btn btn-sm ${active("1")}`} onClick={() => setSearchParams({ status: "1" })}>ส่งแล้ว</button>
-        <button className={`btn btn-sm ${active("2")}`} onClick={() => setSearchParams({ status: "2" })}>รับแล้ว</button>
-        <button className={`btn btn-sm ${active("3")}`} onClick={() => setSearchParams({ status: "3" })}>ส่งคืน</button>
-      </div>
-
-      {/* ===== MOBILE ===== */}
-      {isMobile && (
-        <div className="d-flex flex-column gap-3">
-          {loading && <div>กำลังโหลด...</div>}
-          {!loading && persons.length === 0 && <div>ไม่พบข้อมูล</div>}
-
-          {persons.map((p) => (
-            <div key={p.personId} className="card p-3">
-
-              {selectMode && p.status < 3 && (
-                <div className="form-check mb-2">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    checked={selectedIds.includes(p.personId)}
-                    onChange={() => toggleSelect(p.personId, p.status)}
-                  />
-                </div>
-              )}
-
-              <strong>{p.fullName}</strong>
-
-              <div>📘 {p.receiptBookNo || "-"}</div>
-              <div>🧾 {p.receiptNo || "-"}</div>
-              <div>📅 {formatThaiDate(p.receiptDate)}</div>
-
-              <div className="mt-2">{renderStatus(p.status)}</div>
-
-              <div className="d-flex gap-2 mt-2 flex-wrap">
-                <button className="btn btn-info w-100" onClick={() => navigate(`/person/${p.personId}`)}>ดู</button>
-                <button className="btn btn-primary w-100" onClick={() => handleExportPDF(p)}>PDF</button>
-
-                {p.status === 0 && (
-                  <button className="btn btn-warning w-100" onClick={() => navigate(`/person/edit/${p.personId}`)}>แก้ไข</button>
-                )}
-
-                <button className="btn btn-danger w-100" onClick={() => handleDelete(p)}>ลบ</button>
-              </div>
-
-              {p.status < 3 && (
-                <button className="btn btn-success mt-2 w-100" onClick={() => handleUpdateStatus(p)}>
-                  {getStatusButton(p.status)}
-                </button>
-              )}
-            </div>
-          ))}
+          {p.status === 3 && (
+            <div>📅 {formatThaiDate(p.returnDate)}</div>
+          )}
         </div>
-      )}
+      ))}
 
-      {/* ===== DESKTOP ===== */}
+      {/* DESKTOP */}
       {!isMobile && (
-        <div className="card shadow-sm">
-          <div className="table-responsive">
-            <table className="table table-bordered text-center">
-              <thead className="table-dark">
-                <tr>
-                  {selectMode && (
-                    <th>
-                      <input
-                        type="checkbox"
-                        checked={
-                          selectedIds.length === persons.filter(p => p.status < 3).length &&
-                          persons.length > 0
-                        }
-                        onChange={handleSelectAll}
-                      />
-                    </th>
-                  )}
-                  <th>#</th>
-                  <th>ชื่อ</th>
-                  <th>เล่ม</th>
-                  <th>เลข</th>
-                  <th>วันที่</th>
-                  <th>สถานะ</th>
-                  <th>ดู</th>
-                  <th>PDF</th>
-                  <th>แก้ไข</th>
-                  <th>ลบ</th>
-                  <th>ส่ง</th>
-                </tr>
-              </thead>
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              {selectMode && <th></th>}
+              <th>#</th>
+              <th>ชื่อ</th>
+              <th>สถานะ</th>
+              <th>ความเร่งด่วน</th>
+              <th>วันคืน</th>
+            </tr>
+          </thead>
 
-              <tbody>
-                {loading && (
-                  <tr>
-                    <td colSpan={selectMode ? 12 : 11}>กำลังโหลด...</td>
-                  </tr>
+          <tbody>
+            {persons.map((p, i) => (
+              <tr key={p.personId}>
+                {selectMode && (
+                  <td>
+                    {p.status < 3 && (
+                      <input type="checkbox"
+                        checked={selectedIds.includes(p.personId)}
+                        onChange={() => toggleSelect(p.personId, p.status)} />
+                    )}
+                  </td>
                 )}
-
-                {!loading && persons.length === 0 && (
-                  <tr>
-                    <td colSpan={selectMode ? 12 : 11}>ไม่พบข้อมูล</td>
-                  </tr>
-                )}
-
-                {!loading &&
-                  persons.map((p, i) => (
-                    <tr key={p.personId}>
-                      {selectMode && (
-                        <td>
-                          {p.status < 3 && (
-                            <input
-                              type="checkbox"
-                              checked={selectedIds.includes(p.personId)}
-                              onChange={() => toggleSelect(p.personId, p.status)}
-                            />
-                          )}
-                        </td>
-                      )}
-
-                      <td>{i + 1}</td>
-                      <td>{p.fullName}</td>
-                      <td>{p.receiptBookNo || "-"}</td>
-                      <td>{p.receiptNo || "-"}</td>
-                      <td>{formatThaiDate(p.receiptDate)}</td>
-                      <td>{renderStatus(p.status)}</td>
-
-                      <td>
-                        <button className="btn btn-info btn-sm" onClick={() => navigate(`/person/${p.personId}`)}>ดู</button>
-                      </td>
-
-                      <td>
-                        <button className="btn btn-primary btn-sm" onClick={() => handleExportPDF(p)}>PDF แบบพิมพ์มือ </button>
-                      </td>
-
-                      <td>
-                        {p.status === 0 && (
-                          <button className="btn btn-warning btn-sm" onClick={() => navigate(`/person/edit/${p.personId}`)}>แก้ไข</button>
-                        )}
-                      </td>
-
-                      <td>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p)}>ลบ</button>
-                      </td>
-
-                      <td>
-                        {p.status < 3 && (
-                          <button className="btn btn-success btn-sm" onClick={() => handleUpdateStatus(p)}>
-                            {getStatusButton(p.status)}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                <td>{i + 1}</td>
+                <td>{p.fullName}</td>
+                <td>{renderStatus(p.status)}</td>
+                <td>{renderPriority(p.priority ?? 0)}</td>
+                <td>{p.status === 3 ? formatThaiDate(p.returnDate) : "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );
