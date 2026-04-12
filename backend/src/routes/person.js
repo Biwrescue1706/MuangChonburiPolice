@@ -537,11 +537,10 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: "ลบไม่สำเร็จ" });
   }
 });
-// UPDATE STATUS (Bulk)
 router.patch("/bulk/status", async (req, res) => {
   try {
-    const { personIds } = req.body;
-    const statusNum = Number(req.body.status);
+    const { personIds, status } = req.body;
+    const statusNum = Number(status);
 
     if (![0, 1, 2, 3].includes(statusNum)) {
       return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
@@ -551,28 +550,27 @@ router.patch("/bulk/status", async (req, res) => {
       return res.status(400).json({ error: "ไม่มีรายการบุคคล" });
     }
 
+    const now = new Date();
+
     const result = await prisma.person.updateMany({
       where: {
         personId: { in: personIds },
       },
       data: {
-        status: statusNum, // ✅ แก้ตรงนี้
-        statusUpdatedAt: new Date(),
-        updatedAt: new Date(),
+        status: statusNum,
+        statusUpdatedAt: now,
+        updatedAt: now,
 
         deleteAt:
-          statusNum === 3 // ✅ แก้ตรงนี้
-            ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
-            : null,
-        returnDate:
           statusNum === 3
-            ? (person.returnDate ?? new Date())
+            ? new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000)
             : null,
 
+        returnDate:
+          statusNum === 3 ? now : null,
       },
     });
 
-    // ✅ เพิ่มตรงนี้
     if (result.count === 0) {
       return res.status(400).json({ error: "ไม่มีข้อมูลที่อัปเดตได้" });
     }
