@@ -33,15 +33,17 @@ interface Organization {
 
 /* ================= HELPERS ================= */
 
+// กันค่าว่าง
 const isEmpty = (v: any) =>
   v === null || v === undefined || v === "";
 
+// แสดง "-" ถ้าไม่มีค่า
 const formatText = (v?: string) =>
   v && v.trim() !== "" ? v : "-";
 
-const buildFullName = (rank?: string, first?: string, last?: string) => {
-  return `${rank || ""}${first || ""} ${last || ""}`.trim();
-};
+// รวมชื่อ
+const buildFullName = (rank?: string, first?: string, last?: string) =>
+  `${rank || ""}${first || ""} ${last || ""}`.trim();
 
 /* ================= COMPONENT ================= */
 
@@ -171,8 +173,16 @@ export default function OrganizationPage() {
   /* ================= PREVIEW ================= */
 
   const previewMain = buildFullName(form.rank, form.firstName, form.lastName);
-  const previewCommander = buildFullName(form.commanderRank, form.commanderFirstName, form.commanderLastName);
-  const previewFinance = buildFullName(form.financeRank, form.financeFirstName, form.financeLastName);
+  const previewCommander = buildFullName(
+    form.commanderRank,
+    form.commanderFirstName,
+    form.commanderLastName
+  );
+  const previewFinance = buildFullName(
+    form.financeRank,
+    form.financeFirstName,
+    form.financeLastName
+  );
 
   /* ================= COMPONENTS ================= */
 
@@ -199,9 +209,9 @@ export default function OrganizationPage() {
               ) : (
                 data.map((i) => (
                   <tr key={i.organizationId}>
-                    <td>{i.organizationName}</td>
-                    <td>{i.fullNameWithRank}</td>
-                    <td>{i.position}</td>
+                    <td>{formatText(i.organizationName)}</td>
+                    <td>{formatText(i.fullNameWithRank)}</td>
+                    <td>{formatText(i.position)}</td>
                     <td>
                       <button onClick={() => handleEdit(i)}>✏️</button>
                     </td>
@@ -220,28 +230,28 @@ export default function OrganizationPage() {
           <div className="modal-dialog modal-xl">
             <div className="modal-content p-4">
 
-              <h5>✏️ แก้ไข</h5>
+              <h5>✏️ แก้ไขข้อมูล</h5>
 
               {/* คนหลัก */}
               <h6>🧑 คนหลัก</h6>
               <input list="rank-list" value={form.rank} onChange={(e)=>setForm({...form, rank:e.target.value})}/>
               <input value={form.firstName} onChange={(e)=>setForm({...form, firstName:e.target.value})}/>
               <input value={form.lastName} onChange={(e)=>setForm({...form, lastName:e.target.value})}/>
-              <div>Preview: {previewMain}</div>
+              <div>Preview: {formatText(previewMain)}</div>
 
               {/* ผู้กำกับ */}
               <h6>👮 ผู้กำกับ</h6>
               <input list="rank-list" value={form.commanderRank} onChange={(e)=>setForm({...form, commanderRank:e.target.value})}/>
               <input value={form.commanderFirstName} onChange={(e)=>setForm({...form, commanderFirstName:e.target.value})}/>
               <input value={form.commanderLastName} onChange={(e)=>setForm({...form, commanderLastName:e.target.value})}/>
-              <div>Preview: {previewCommander}</div>
+              <div>Preview: {formatText(previewCommander)}</div>
 
               {/* การเงิน */}
               <h6>💰 การเงิน</h6>
               <input list="rank-list" value={form.financeRank} onChange={(e)=>setForm({...form, financeRank:e.target.value})}/>
               <input value={form.financeFirstName} onChange={(e)=>setForm({...form, financeFirstName:e.target.value})}/>
               <input value={form.financeLastName} onChange={(e)=>setForm({...form, financeLastName:e.target.value})}/>
-              <div>Preview: {previewFinance}</div>
+              <div>Preview: {formatText(previewFinance)}</div>
 
               <datalist id="rank-list">
                 {rankOptions.map(r => <option key={r} value={r} />)}
