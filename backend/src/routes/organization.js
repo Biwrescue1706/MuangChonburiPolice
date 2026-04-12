@@ -77,52 +77,95 @@ router.patch("/:id", async (req, res) => {
       return res.status(404).json({ error: "Organization not found" });
     }
 
-    // 🔥 filter ค่า ""
-    let updateData = {};
-    Object.keys(data).forEach((key) => {
-      if (data[key] !== "" && data[key] !== undefined) {
+    /* ================= CLEAN DATA ================= */
+    const updateData = {};
+    for (const key in data) {
+      if (data[key] !== "" && data[key] !== undefined && data[key] !== null) {
         updateData[key] = data[key];
       }
-    });
+    }
 
-    // 🔥 rebuild name เสมอ
-    const { fullName, fullNameWithRank } = buildFullName({
+    /* ================= BUILD NAME ================= */
+    const mainName = buildFullName({
       firstName: updateData.firstName ?? existing.firstName,
       lastName: updateData.lastName ?? existing.lastName,
       rank: updateData.rank ?? existing.rank,
     });
 
-    updateData.fullName = fullName;
-    updateData.fullNameWithRank = fullNameWithRank;
+    updateData.fullName = mainName.fullName;
+    updateData.fullNameWithRank = mainName.fullNameWithRank;
 
-    const organization = await prisma.organization.update({
-      where: { organizationId: id },
-      data: updateData,
+    /* ================= COMMANDER ================= */
+    if (
+      updateData.commanderFirstName ||
+      updateData.commanderLastName ||
+      updateData.commanderRank
+    ) {
+      const commander = buildFullName({
+        firstName:
+          updateData.commanderFirstName ?? existing.commanderFirstName,
+        lastName:
+          updateData.commanderLastName ?? existing.commanderLastName,
+        rank: updateData.commanderRank ?? existing.commanderRank,
+      });
+
+      updateData.commanderFullName = commander.fullName;
+      updateData.commanderFullNameWithRank =
+        commander.fullNameWithRank;
+    }
+
+    /* ================= FINANCE ================= */
+    if (
+      updateData.financeFirstName ||
+      updateData.financeLastName ||
+      updateData.financeRank
+    ) {
+      const finance = buildFullName({
+        firstName:
+          updateData.financeFirstName ?? existing.financeFirstName,
+        lastName:
+          updateData.financeLastName ?? existing.financeLastName,
+        rank: updateData.financeRank ?? existing.financeRank,
+      });
+
+      updateData.financeFullName = finance.fullName;
+      updateData.financeFullNameWithRank =
+        finance.fullNameWithRank;
+    }
+
+    /* ================= TRANSACTION ================= */
+    const result = await prisma.$transaction(async (tx) => {
+      const organization = await tx.organization.update({
+        where: { organizationId: id },
+        data: updateData,
+      });
+
+      await tx.person.updateMany({
+        where: { organizationId: id },
+        data: {
+          organizationName: organization.organizationName,
+          fullNameOrg: organization.fullName,
+          rank: organization.rank,
+          position: organization.position,
+          fullNameWithRank: organization.fullNameWithRank,
+        },
+      });
+
+      await tx.receipt.updateMany({
+        where: { organizationId: id },
+        data: {
+          organizationName: organization.organizationName,
+          fullNameOrg: organization.fullName,
+          rank: organization.rank,
+          position: organization.position,
+          fullNameWithRank: organization.fullNameWithRank,
+        },
+      });
+
+      return organization;
     });
 
-    await prisma.person.updateMany({
-      where: { organizationId: id },
-      data: {
-        organizationName: organization.organizationName,
-        fullNameOrg: organization.fullName,
-        rank: organization.rank,
-        position: organization.position,
-        fullNameWithRank: organization.fullNameWithRank,
-      },
-    });
-
-    await prisma.receipt.updateMany({
-      where: { organizationId: id },
-      data: {
-        organizationName: organization.organizationName,
-        fullNameOrg: organization.fullName,
-        rank: organization.rank,
-        position: organization.position,
-        fullNameWithRank: organization.fullNameWithRank,
-      },
-    });
-
-    res.json(organization);
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Update organization failed" });
