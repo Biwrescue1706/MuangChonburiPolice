@@ -98,7 +98,7 @@ export default function PersonDetailPage() {
   const style = getStatusStyle(person.status);
 
   return (
-    <div className="p-4">
+    <div className="p-4 main-content" >
       <div className="d-flex justify-content-between mb-3">
         <button className="btn btn-secondary" onClick={() => navigate(-1)}>
           ← กลับ

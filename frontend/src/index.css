@@ -300,8 +300,7 @@ body.login-page .form-control::placeholder {
     background-color: #f8f9fa;
     margin-left: 0px;
     margin-right: 0px;
-    margin-top: 60px;
-    padding: 5px;
+    margin-top: 20px;
   }
 
   .responsive-table table {
@@ -335,7 +334,7 @@ body.login-page .form-control::placeholder {
   .main-content {
     margin-left: 0px;
     margin-right: 0px;
-    margin-top: 60px;
+    margin-top: 20px;
   }
 
   .responsive-table table {
@@ -355,9 +354,9 @@ body.login-page .form-control::placeholder {
 
 @media (min-width: 769px) and (max-width: 1279px) {
   .main-content {
-    margin-left: 15px;
+    margin-left: 0px;
     margin-right: 15px;
-    margin-top: 60px;
+    margin-top: 20px;
   }
 
   .responsive-table table {
@@ -368,7 +367,7 @@ body.login-page .form-control::placeholder {
 
 @media (min-width: 1280px) {
   .main-content {
-    margin-left: 220px;
+    margin-left: 210px; /* 🔥 ต้องเท่ากับ sidebar */
     margin-top: 60px;
   }
 

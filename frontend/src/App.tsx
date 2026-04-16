@@ -13,10 +13,6 @@ import ResetPassword from "./pages/Password/ResetPassword";
 import CreateAdmin from "./pages/CreateAdmin";
 import NotFound from "./pages/NotFound";
 import PersonPage from "./pages/PersonPage";
-import PersonStatus0Page from "./pages/statusPerson/PersonStatus0Page";
-import PersonStatus1Page from "./pages/statusPerson/PersonStatus1Page";
-import PersonStatus2Page from "./pages/statusPerson/PersonStatus2Page";
-import PersonStatus3Page from "./pages/statusPerson/PersonStatus3Page";
 import PersonDetailPage from "./pages/PersonDetailPage";
 import PersonHistoryPage from "./pages/PersonHistoryPage";
 import PersonEditPage from "./pages/statusPerson/PersonEditPage";
@@ -60,10 +56,6 @@ function App() {
           <Route path="/receipt/:id" element={<ReceiptDetailPage />} />
 
           {/* ⭐ STATUS FLOW */}
-          <Route path="/person/status0" element={<PersonStatus0Page />} />
-          <Route path="/person/status1" element={<PersonStatus1Page />} />
-          <Route path="/person/status2" element={<PersonStatus2Page />} />
-          <Route path="/person/status3" element={<PersonStatus3Page />} />
           <Route path="/person/edit/:id" element={<PersonEditPage />} />
 
           {/* ⭐ HISTORY */}

@@ -26,7 +26,7 @@ export default function PersonPage() {
   } = usePersonForm(navigate);
 
   return (
-    <div className="p-4">
+    <div className="p-4 main-content" >
       <h2 className="text-center">สร้างข้อมูลบุคคล</h2>
 
       <form onSubmit={handleSubmit}>
@@ -57,15 +57,13 @@ export default function PersonPage() {
           handleChange={handleChange}
           receiptNumbers={receiptNumbers}
           setForm={setForm}
-          months={months}   // 🔥 สำคัญ
-          years={years}     // 🔥 สำคัญ
+          months={months} // 🔥 สำคัญ
+          years={years} // 🔥 สำคัญ
         />
 
         {/* ปุ่มบันทึก */}
         <div className="text-end">
-          <button className="btn btn-primary px-4">
-            บันทึกข้อมูล
-          </button>
+          <button className="btn btn-primary px-4">บันทึกข้อมูล</button>
         </div>
       </form>
     </div>

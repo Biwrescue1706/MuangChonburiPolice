@@ -63,7 +63,7 @@ export default function ReceiptDetailPage() {
   }
 
   return (
-    <div className="container py-4">
+    <div className="container py-4 main-content">
       <div className="card shadow-sm border-0">
         {/* ACTION */}
         <div className="mb-4">

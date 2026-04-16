@@ -33,8 +33,7 @@ interface Organization {
 
 /* ================= HELPERS ================= */
 
-const formatText = (v?: string) =>
-  v && v.trim() !== "" ? v : "-";
+const formatText = (v?: string) => (v && v.trim() !== "" ? v : "-");
 
 const buildFullName = (rank?: string, first?: string, last?: string) =>
   `${rank || ""}${first || ""} ${last || ""}`.trim();
@@ -136,14 +135,22 @@ export default function OrganizationPage() {
   /* ================= PREVIEW ================= */
 
   const previewMain = buildFullName(form.rank, form.firstName, form.lastName);
-  const previewCommander = buildFullName(form.commanderRank, form.commanderFirstName, form.commanderLastName);
-  const previewFinance = buildFullName(form.financeRank, form.financeFirstName, form.financeLastName);
+  const previewCommander = buildFullName(
+    form.commanderRank,
+    form.commanderFirstName,
+    form.commanderLastName,
+  );
+  const previewFinance = buildFullName(
+    form.financeRank,
+    form.financeFirstName,
+    form.financeLastName,
+  );
 
   /* ================= RETURN ================= */
 
   return (
-    <div className="container py-4">
-      <h4 className="fw-bold mb-3">🏢 หน่วยงาน</h4>
+    <div className="p-4 main-content">
+      <h2 className="fw-bold mb-3 text-center">🏢 หน่วยงาน</h2>
 
       {/* ================= TABLE ================= */}
       {!isMobile && (
@@ -160,7 +167,9 @@ export default function OrganizationPage() {
 
             <tbody>
               {loading ? (
-                <tr><td colSpan={4}>⏳</td></tr>
+                <tr>
+                  <td colSpan={4}>⏳</td>
+                </tr>
               ) : (
                 data.map((i) => (
                   <tr key={i.organizationId}>
@@ -209,7 +218,6 @@ export default function OrganizationPage() {
           {data.map((i) => (
             <div className="col-12" key={i.organizationId}>
               <div className="card p-3 shadow-sm">
-
                 <b>{i.organizationName}</b>
 
                 {/* คนหลัก */}
@@ -238,7 +246,6 @@ export default function OrganizationPage() {
                 >
                   ✏️ แก้ไข
                 </button>
-
               </div>
             </div>
           ))}
@@ -253,99 +260,152 @@ export default function OrganizationPage() {
           <div className="modal d-block">
             <div className="modal-dialog modal-xl">
               <div className="modal-content p-4">
-
                 <h5 className="fw-bold mb-3">✏️ แก้ไขข้อมูล</h5>
 
                 {/* 🧑 คนหลัก */}
                 <h6>🧑 คนหลัก</h6>
-                <input list="rank-list" className="form-control mb-2"
+                <input
+                  list="rank-list"
+                  className="form-control mb-2"
                   value={form.rank}
-                  onChange={(e)=>setForm({...form, rank:e.target.value})}
+                  onChange={(e) => setForm({ ...form, rank: e.target.value })}
                 />
-                <input className="form-control mb-2"
+                <input
+                  className="form-control mb-2"
                   value={form.firstName}
-                  onChange={(e)=>setForm({...form, firstName:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, firstName: e.target.value })
+                  }
                 />
-                <input className="form-control mb-2"
+                <input
+                  className="form-control mb-2"
                   value={form.lastName}
-                  onChange={(e)=>setForm({...form, lastName:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, lastName: e.target.value })
+                  }
                 />
-                <input className="form-control mb-2"
+                <input
+                  className="form-control mb-2"
                   placeholder="ตำแหน่ง"
                   value={form.position}
-                  onChange={(e)=>setForm({...form, position:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, position: e.target.value })
+                  }
                 />
                 <div className="text-muted mb-2">{previewMain}</div>
 
                 {/* 👮 ผู้กำกับ */}
                 <h6>👮 ผู้กำกับ</h6>
-                <input list="rank-list" className="form-control mb-2"
+                <input
+                  list="rank-list"
+                  className="form-control mb-2"
                   value={form.commanderRank}
-                  onChange={(e)=>setForm({...form, commanderRank:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, commanderRank: e.target.value })
+                  }
                 />
-                <input className="form-control mb-2"
+                <input
+                  className="form-control mb-2"
                   value={form.commanderFirstName}
-                  onChange={(e)=>setForm({...form, commanderFirstName:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, commanderFirstName: e.target.value })
+                  }
                 />
-                <input className="form-control mb-2"
+                <input
+                  className="form-control mb-2"
                   value={form.commanderLastName}
-                  onChange={(e)=>setForm({...form, commanderLastName:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, commanderLastName: e.target.value })
+                  }
                 />
-                <input className="form-control mb-2"
+                <input
+                  className="form-control mb-2"
                   placeholder="ตำแหน่งผู้กำกับ"
                   value={form.commanderPosition}
-                  onChange={(e)=>setForm({...form, commanderPosition:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, commanderPosition: e.target.value })
+                  }
                 />
                 <div className="text-muted mb-2">{previewCommander}</div>
 
                 {/* 💰 การเงิน */}
                 <h6>💰 การเงิน</h6>
-                <input list="rank-list" className="form-control mb-2"
+                <input
+                  list="rank-list"
+                  className="form-control mb-2"
                   value={form.financeRank}
-                  onChange={(e)=>setForm({...form, financeRank:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, financeRank: e.target.value })
+                  }
                 />
-                <input className="form-control mb-2"
+                <input
+                  className="form-control mb-2"
                   value={form.financeFirstName}
-                  onChange={(e)=>setForm({...form, financeFirstName:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, financeFirstName: e.target.value })
+                  }
                 />
-                <input className="form-control mb-2"
+                <input
+                  className="form-control mb-2"
                   value={form.financeLastName}
-                  onChange={(e)=>setForm({...form, financeLastName:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, financeLastName: e.target.value })
+                  }
                 />
-                <input className="form-control mb-2"
+                <input
+                  className="form-control mb-2"
                   placeholder="ตำแหน่งการเงิน"
                   value={form.financePosition}
-                  onChange={(e)=>setForm({...form, financePosition:e.target.value})}
+                  onChange={(e) =>
+                    setForm({ ...form, financePosition: e.target.value })
+                  }
                 />
                 <div className="text-muted mb-2">{previewFinance}</div>
 
                 {/* datalist */}
                 <datalist id="rank-list">
                   {[
-                    "ส.ต.ต.","ส.ต.ท.","ส.ต.อ.","จ.ส.ต.","ด.ต.",
-                    "ร.ต.ต.","ร.ต.ท.","ร.ต.อ.","พ.ต.ต.","พ.ต.ท.",
-                    "พ.ต.อ.","พล.ต.ต.","พล.ต.ท.","พล.ต.อ.",
+                    "ส.ต.ต.",
+                    "ส.ต.ท.",
+                    "ส.ต.อ.",
+                    "จ.ส.ต.",
+                    "ด.ต.",
+                    "ร.ต.ต.",
+                    "ร.ต.ท.",
+                    "ร.ต.อ.",
+                    "พ.ต.ต.",
+                    "พ.ต.ท.",
+                    "พ.ต.อ.",
+                    "พล.ต.ต.",
+                    "พล.ต.ท.",
+                    "พล.ต.อ.",
                   ]
-                    .flatMap(r => [r, `${r} หญิง`])
-                    .map(r => <option key={r} value={r} />)}
+                    .flatMap((r) => [r, `${r} หญิง`])
+                    .map((r) => (
+                      <option key={r} value={r} />
+                    ))}
                 </datalist>
 
                 <div className="text-end mt-3">
-                  <button className="btn btn-success me-2" onClick={handleUpdate}>
+                  <button
+                    className="btn btn-success me-2"
+                    onClick={handleUpdate}
+                  >
                     💾 บันทึก
                   </button>
 
-                  <button className="btn btn-secondary" onClick={()=>setSelected(null)}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setSelected(null)}
+                  >
                     ยกเลิก
                   </button>
                 </div>
-
               </div>
             </div>
           </div>
         </>
       )}
-
     </div>
   );
 }

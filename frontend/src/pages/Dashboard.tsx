@@ -5,6 +5,17 @@ import { Link } from "react-router-dom";
 export default function Dashboard() {
   const { admin } = useAuth();
   const [thaiTime, setThaiTime] = useState("");
+  const [isWide, setIsWide] = useState(window.innerWidth > 1280);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsWide(window.innerWidth > 1280);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const update = () => {
@@ -41,7 +52,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="p-4">
+    <div className="p-4 main-content" >
       {/* CARD */}
       <div className="card shadow-sm border-0 p-3">
         <h3 className="fw-bold">หน้าหลัก (Dashboard)</h3>
@@ -51,9 +62,7 @@ export default function Dashboard() {
         <div className="mt-3">
           <p className="mb-1">ยินดีต้อนรับ</p>
           <p className="fw-semibold mb-1">{admin?.name || "-"}</p>
-          <p className="text-black mb-0">
-            ตำแหน่ง : {admin?.position || "-"}
-          </p>
+          <p className="text-black mb-0">ตำแหน่ง : {admin?.position || "-"}</p>
         </div>
       </div>
 

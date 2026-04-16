@@ -41,7 +41,7 @@ export default function ReceiptListPage() {
   const filtered = data.filter((item) =>
     `${item.fullName} ${item.receiptNo} ${item.receiptBookNo}`
       .toLowerCase()
-      .includes(search.toLowerCase())
+      .includes(search.toLowerCase()),
   );
 
   /* ================= SORT ================= */
@@ -65,8 +65,8 @@ export default function ReceiptListPage() {
   };
 
   return (
-    <div className="container-fluid py-4 px-3">
-      <h3 className="fw-bold mb-4">🧾 รายการใบเสร็จ</h3>
+    <div className="container-fluid py-4  main-content" >
+      <h2 className="fw-bold mb-4 text-center">🧾 รายการใบเสร็จ</h2>
 
       {/* SEARCH */}
       <div className="mb-3">
@@ -123,9 +123,7 @@ export default function ReceiptListPage() {
                       <td className="text-center">
                         <button
                           className="btn btn-sm btn-primary"
-                          onClick={() =>
-                            navigate(`/receipt/${item.receiptId}`)
-                          }
+                          onClick={() => navigate(`/receipt/${item.receiptId}`)}
                         >
                           ดู
                         </button>
@@ -147,10 +145,7 @@ export default function ReceiptListPage() {
           <p className="text-center text-muted">ไม่มีข้อมูล</p>
         ) : (
           sorted.map((item) => (
-            <div
-              key={item.receiptId}
-              className="card shadow-sm mb-3 border-0"
-            >
+            <div key={item.receiptId} className="card shadow-sm mb-3 border-0">
               <div className="card-body">
                 <h5 className="fw-bold">{item.fullName}</h5>
 
@@ -159,9 +154,7 @@ export default function ReceiptListPage() {
                 <p className="mb-1">📅 {formatDate(item.createdAt)}</p>
                 <button
                   className="btn btn-primary w-50"
-                  onClick={() =>
-                    navigate(`/receipt/${item.receiptId}`)
-                  }
+                  onClick={() => navigate(`/receipt/${item.receiptId}`)}
                 >
                   ดูรายละเอียด
                 </button>

@@ -14,8 +14,18 @@ const formatThaiDate = (value: any) => {
   if (isNaN(d.getTime())) return value;
 
   const months = [
-    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
-    "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม",
+    "มกราคม",
+    "กุมภาพันธ์",
+    "มีนาคม",
+    "เมษายน",
+    "พฤษภาคม",
+    "มิถุนายน",
+    "กรกฎาคม",
+    "สิงหาคม",
+    "กันยายน",
+    "ตุลาคม",
+    "พฤศจิกายน",
+    "ธันวาคม",
   ];
 
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
@@ -23,26 +33,37 @@ const formatThaiDate = (value: any) => {
 
 const renderStatus = (status: number) => {
   switch (status) {
-    case 0: return <span className="badge bg-warning text-dark">รอส่ง ศพฐ.</span>;
-    case 1: return <span className="badge bg-primary">ส่ง ศพฐ. แล้ว</span>;
-    case 2: return <span className="badge bg-success">รับจาก ศพฐ. แล้ว</span>;
-    case 3: return <span className="badge bg-danger">ส่งคืนแล้ว</span>;
-    default: return "-";
+    case 0:
+      return <span className="badge bg-warning text-dark">รอส่ง ศพฐ.</span>;
+    case 1:
+      return <span className="badge bg-primary">ส่ง ศพฐ. แล้ว</span>;
+    case 2:
+      return <span className="badge bg-success">รับจาก ศพฐ. แล้ว</span>;
+    case 3:
+      return <span className="badge bg-danger">ส่งคืนแล้ว</span>;
+    default:
+      return "-";
   }
 };
 
 const renderPriority = (priority: number) => {
-  return priority === 1
-    ? <span className="badge bg-danger">ด่วน</span>
-    : <span className="badge bg-secondary">ไม่ด่วน</span>;
+  return priority === 1 ? (
+    <span className="badge bg-danger">ด่วน</span>
+  ) : (
+    <span className="badge bg-secondary">ไม่ด่วน</span>
+  );
 };
 
 const getStatusButton = (status: number) => {
   switch (status) {
-    case 0: return "ส่ง ศพฐ.";
-    case 1: return "รับผลจาก ศพฐ.";
-    case 2: return "ส่งคืน";
-    default: return null;
+    case 0:
+      return "ส่ง ศพฐ.";
+    case 1:
+      return "รับผลจาก ศพฐ.";
+    case 2:
+      return "ส่งคืน";
+    default:
+      return null;
   }
 };
 
@@ -68,14 +89,14 @@ export default function PersonHistoryPage() {
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1280);
 
-useEffect(() => {
-  const handleResize = () => {
-    setIsMobile(window.innerWidth < 1280);
-  };
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1280);
+    };
 
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const active = (value: string | null) =>
     statusParam === value ? "btn-dark" : "btn-outline-secondary";
@@ -117,9 +138,7 @@ useEffect(() => {
     if (status >= 3) return;
 
     setSelectedIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((i) => i !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -181,8 +200,7 @@ useEffect(() => {
   // ===== bulk =====
   const handleBulkSend = async () => {
     if (!selectMode) return toast("warning", "กรุณากดเลือกก่อน");
-    if (selectedIds.length === 0)
-      return toast("warning", "เลือกข้อมูลก่อน");
+    if (selectedIds.length === 0) return toast("warning", "เลือกข้อมูลก่อน");
 
     const confirm = await Swal.fire({
       title: "ยืนยันการอัปเดตสถานะ?",
@@ -206,7 +224,7 @@ useEffect(() => {
           });
 
           success++;
-        })
+        }),
       );
 
       setSelectedIds([]);
@@ -228,9 +246,8 @@ useEffect(() => {
   };
 
   return (
-    <div className="p-4">
-      <h4 className="mb-3">📄 ประวัติทั้งหมด</h4>
-
+    <div className="p-4 main-content" >
+      <h2 className="mb-3 text-center">📄 ประวัติทั้งหมด</h2>
       {/* SEARCH */}
       <div className="mb-3 d-flex gap-2 flex-wrap">
         <input
@@ -259,7 +276,6 @@ useEffect(() => {
           ล้าง
         </button>
       </div>
-
       {/* ===== BULK ACTION ===== */}
       <div className="d-flex justify-content-end mb-2 gap-2">
         <button
@@ -274,8 +290,11 @@ useEffect(() => {
 
         {selectMode && (
           <>
-            <button className="btn btn-outline-primary" onClick={handleSelectAll}>
-              {selectedIds.length === persons.filter(p => p.status < 3).length
+            <button
+              className="btn btn-outline-primary"
+              onClick={handleSelectAll}
+            >
+              {selectedIds.length === persons.filter((p) => p.status < 3).length
                 ? "ยกเลิกเลือกทั้งหมด"
                 : "เลือกทั้งหมด"}
             </button>
@@ -286,16 +305,39 @@ useEffect(() => {
           </>
         )}
       </div>
-
       {/* ===== FILTER ===== */}
       <div className="mb-3 d-flex gap-2 flex-wrap">
-        <button className={`btn btn-sm ${active(null)}`} onClick={() => setSearchParams({})}>ทั้งหมด</button>
-        <button className={`btn btn-sm ${active("0")}`} onClick={() => setSearchParams({ status: "0" })}>รอส่ง</button>
-        <button className={`btn btn-sm ${active("1")}`} onClick={() => setSearchParams({ status: "1" })}>ส่งแล้ว</button>
-        <button className={`btn btn-sm ${active("2")}`} onClick={() => setSearchParams({ status: "2" })}>รับแล้ว</button>
-        <button className={`btn btn-sm ${active("3")}`} onClick={() => setSearchParams({ status: "3" })}>ส่งคืน</button>
+        <button
+          className={`btn btn-sm ${active(null)}`}
+          onClick={() => setSearchParams({})}
+        >
+          ทั้งหมด
+        </button>
+        <button
+          className={`btn btn-sm ${active("0")}`}
+          onClick={() => setSearchParams({ status: "0" })}
+        >
+          รอส่ง
+        </button>
+        <button
+          className={`btn btn-sm ${active("1")}`}
+          onClick={() => setSearchParams({ status: "1" })}
+        >
+          ส่งแล้ว
+        </button>
+        <button
+          className={`btn btn-sm ${active("2")}`}
+          onClick={() => setSearchParams({ status: "2" })}
+        >
+          รับแล้ว
+        </button>
+        <button
+          className={`btn btn-sm ${active("3")}`}
+          onClick={() => setSearchParams({ status: "3" })}
+        >
+          ส่งคืน
+        </button>
       </div>
-
       {/* ===== MOBILE ===== */}
       {isMobile && (
         <div className="d-flex flex-column gap-3">
@@ -304,7 +346,6 @@ useEffect(() => {
 
           {persons.map((p) => (
             <div key={p.personId} className="card p-3">
-
               {selectMode && p.status < 3 && (
                 <div className="form-check mb-2">
                   <input
@@ -323,29 +364,50 @@ useEffect(() => {
               <div>📅 {formatThaiDate(p.receiptDate)}</div>
               <div className="mt-2">{renderStatus(p.status)}</div>
 
-<div className="mt-1">
-  {renderPriority(p.priority ?? 0)}
-</div>
+              <div className="mt-1">{renderPriority(p.priority ?? 0)}</div>
 
-{p.status === 3 && (
-  <div className="mt-1 text-danger">
-    📅 วันคืน: {formatThaiDate(p.returnDate)}
-  </div>
-)}
+              {p.status === 3 && (
+                <div className="mt-1 text-danger">
+                  📅 วันคืน: {formatThaiDate(p.returnDate)}
+                </div>
+              )}
 
               <div className="d-flex gap-2 mt-2 flex-wrap">
-                <button className="btn btn-info w-100" onClick={() => navigate(`/person/${p.personId}`)}>ดู</button>
-                <button className="btn btn-primary w-100" onClick={() => handleExportPDF(p)}>PDF</button>
+                <button
+                  className="btn btn-info w-100"
+                  onClick={() => navigate(`/person/${p.personId}`)}
+                >
+                  ดู
+                </button>
+                <button
+                  className="btn btn-primary w-100"
+                  onClick={() => handleExportPDF(p)}
+                >
+                  PDF
+                </button>
 
                 {p.status === 0 && (
-                  <button className="btn btn-warning w-100" onClick={() => navigate(`/person/edit/${p.personId}`)}>แก้ไข</button>
+                  <button
+                    className="btn btn-warning w-100"
+                    onClick={() => navigate(`/person/edit/${p.personId}`)}
+                  >
+                    แก้ไข
+                  </button>
                 )}
 
-                <button className="btn btn-danger w-100" onClick={() => handleDelete(p)}>ลบ</button>
+                <button
+                  className="btn btn-danger w-100"
+                  onClick={() => handleDelete(p)}
+                >
+                  ลบ
+                </button>
               </div>
 
               {p.status < 3 && (
-                <button className="btn btn-success mt-2 w-100" onClick={() => handleUpdateStatus(p)}>
+                <button
+                  className="btn btn-success mt-2 w-100"
+                  onClick={() => handleUpdateStatus(p)}
+                >
                   {getStatusButton(p.status)}
                 </button>
               )}
@@ -353,7 +415,6 @@ useEffect(() => {
           ))}
         </div>
       )}
-
       {/* ===== DESKTOP ===== */}
       {!isMobile && (
         <div className="card shadow-sm">
@@ -366,7 +427,8 @@ useEffect(() => {
                       <input
                         type="checkbox"
                         checked={
-                          selectedIds.length === persons.filter(p => p.status < 3).length &&
+                          selectedIds.length ===
+                            persons.filter((p) => p.status < 3).length &&
                           persons.length > 0
                         }
                         onChange={handleSelectAll}
@@ -411,7 +473,9 @@ useEffect(() => {
                             <input
                               type="checkbox"
                               checked={selectedIds.includes(p.personId)}
-                              onChange={() => toggleSelect(p.personId, p.status)}
+                              onChange={() =>
+                                toggleSelect(p.personId, p.status)
+                              }
                             />
                           )}
                         </td>
@@ -423,32 +487,57 @@ useEffect(() => {
                       <td>{p.receiptNo || "-"}</td>
                       <td>{formatThaiDate(p.receiptDate)}</td>
                       <td>{renderStatus(p.status)}</td>
-<td>{renderPriority(p.priority ?? 0)}</td>
-<td>
-  {p.status === 3 ? formatThaiDate(p.returnDate) : "-"}
-</td>
-
+                      <td>{renderPriority(p.priority ?? 0)}</td>
                       <td>
-                        <button className="btn btn-info btn-sm" onClick={() => navigate(`/person/${p.personId}`)}>ดู</button>
+                        {p.status === 3 ? formatThaiDate(p.returnDate) : "-"}
                       </td>
 
                       <td>
-                        <button className="btn btn-primary btn-sm" onClick={() => handleExportPDF(p)}>PDF แบบพิมพ์มือ </button>
+                        <button
+                          className="btn btn-info btn-sm"
+                          onClick={() => navigate(`/person/${p.personId}`)}
+                        >
+                          ดู
+                        </button>
+                      </td>
+
+                      <td>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => handleExportPDF(p)}
+                        >
+                          PDF แบบพิมพ์มือ{" "}
+                        </button>
                       </td>
 
                       <td>
                         {p.status === 0 && (
-                          <button className="btn btn-warning btn-sm" onClick={() => navigate(`/person/edit/${p.personId}`)}>แก้ไข</button>
+                          <button
+                            className="btn btn-warning btn-sm"
+                            onClick={() =>
+                              navigate(`/person/edit/${p.personId}`)
+                            }
+                          >
+                            แก้ไข
+                          </button>
                         )}
                       </td>
 
                       <td>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p)}>ลบ</button>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDelete(p)}
+                        >
+                          ลบ
+                        </button>
                       </td>
 
                       <td>
                         {p.status < 3 && (
-                          <button className="btn btn-success btn-sm" onClick={() => handleUpdateStatus(p)}>
+                          <button
+                            className="btn btn-success btn-sm"
+                            onClick={() => handleUpdateStatus(p)}
+                          >
                             {getStatusButton(p.status)}
                           </button>
                         )}
