@@ -5,17 +5,6 @@ import { Link } from "react-router-dom";
 export default function Dashboard() {
   const { admin } = useAuth();
   const [thaiTime, setThaiTime] = useState("");
-  const [isWide, setIsWide] = useState(window.innerWidth > 1280);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsWide(window.innerWidth > 1280);
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   useEffect(() => {
     const update = () => {
