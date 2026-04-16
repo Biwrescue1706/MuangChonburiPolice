@@ -7,33 +7,34 @@ export default function Nav() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
-  const handleLogout = async () => {
+  const handleLogout = async (): Promise<void> => {
     await logout();
     navigate("/");
   };
 
-  const shortText = (text, max = 20) => {
-    if (!text) return "";
+  const shortText = (text: string = "", max: number = 20): string => {
     return text.length > max ? text.substring(0, max) : text;
   };
 
-  const isActive = (path) => location.pathname.startsWith(path);
+  const isActive = (path: string): boolean => {
+    return location.pathname.startsWith(path);
+  };
 
-  const go = (path) => {
+  const go = (path: string): void => {
     navigate(path);
     setMenuOpen(false);
   };
 
   return (
     <>
-      {/* TOPBAR */}
+      {/* ================= TOPBAR ================= */}
       <nav
         className="navbar navbar-dark fixed-top shadow-sm px-3"
         style={{ backgroundColor: "#800020", zIndex: 1030 }}
       >
-        {/* mobile button */}
+        {/* ปุ่มเปิด */}
         <button
           className="btn btn-warning btn-sm d-xl-none me-3 fw-bold"
           onClick={() => setMenuOpen(true)}
@@ -41,9 +42,9 @@ export default function Nav() {
           ☰
         </button>
 
-        {/* center */}
+        {/* CENTER */}
         <div className="d-flex align-items-center gap-2 mx-auto">
-          <img src="/muangchonburi.webp" width={32} height={32} />
+          <img src="/muangchonburi.webp" width={32} height={32} alt="logo" />
           <div>
             <div className="fw-bold text-warning small">
               🏠งานพิมพ์มือตรวจประวัติ
@@ -52,18 +53,18 @@ export default function Nav() {
           </div>
         </div>
 
-        {/* right */}
+        {/* RIGHT */}
         <div className="text-end">
           <div className="text-warning fw-bold small">
-            👤 {shortText(admin?.name, 10)}
+            👤 {shortText(admin?.name || "", 10)}
           </div>
           <small className="text-white">
-            ({shortText(admin?.position, 10)})
+            ({shortText(admin?.position || "", 10)})
           </small>
         </div>
       </nav>
 
-      {/* DESKTOP SIDEBAR */}
+      {/* ================= DESKTOP SIDEBAR ================= */}
       <div
         className="d-none d-xl-flex flex-column position-fixed top-0 start-0 text-white shadow"
         style={{
@@ -76,57 +77,64 @@ export default function Nav() {
       >
         <div className="p-2 d-flex flex-column gap-2">
           <button
-            className="btn btn-warning text-start"
+            className={`btn text-start ${isActive("/dashboard") ? "btn-warning fw-bold" : "btn-warning"}`}
             onClick={() => go("/dashboard")}
           >
             🏠 หน้าแรก
           </button>
+
           <button
             className="btn btn-warning text-start"
             onClick={() => go("/person/create")}
           >
             ➕ เพิ่มบุคคลตรวจ
           </button>
+
           <button
             className="btn btn-warning text-start"
             onClick={() => go("/person/history")}
           >
             📄 ประวัติ
           </button>
+
           <button
-            className="btn btn-warning text-start"
+            className={`btn text-start ${isActive("/receipt") ? "btn-warning fw-bold" : "btn-warning"}`}
             onClick={() => go("/receipt")}
           >
             🧾 ใบเสร็จ
           </button>
+
           <button
             className="btn btn-warning text-start"
             onClick={() => go("/admin/create")}
           >
             ➕ Admin
           </button>
+
           <button
-            className="btn btn-warning text-start"
+            className={`btn text-start ${isActive("/organization") ? "btn-warning fw-bold" : "btn-warning"}`}
             onClick={() => go("/organization")}
           >
             🏢 หน่วยงาน
           </button>
+
           <button
             className="btn btn-warning text-start"
             onClick={() => go("/profile")}
           >
             ⚙️ โปรไฟล์
           </button>
+
           <button className="btn btn-primary text-start" onClick={handleLogout}>
             🚪 ออก
           </button>
         </div>
       </div>
 
-      {/* MOBILE SIDEBAR */}
+      {/* ================= MOBILE SIDEBAR ================= */}
       <>
         <div
-          className={`position-fixed text-white p-3 shadow ${menuOpen ? "open" : ""}`}
+          className="position-fixed text-white shadow"
           style={{
             width: "65%",
             maxWidth: 240,
@@ -139,14 +147,20 @@ export default function Nav() {
             transition: "0.3s",
           }}
         >
-          <button
-            className="btn btn-warning mb-3"
-            onClick={() => setMenuOpen(false)}
-          >
-            ❌ ปิด
-          </button>
+          {/* HEADER + ปุ่มปิด */}
+          <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
+            <span className="fw-bold text-warning">เมนู</span>
 
-          <div className="d-flex flex-column gap-2">
+            <button
+              className="btn btn-light fw-bold"
+              onClick={() => setMenuOpen(false)}
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* MENU */}
+          <div className="p-3 d-flex flex-column gap-2">
             <button
               className="btn btn-warning text-start"
               onClick={() => go("/dashboard")}
@@ -198,6 +212,7 @@ export default function Nav() {
           </div>
         </div>
 
+        {/* overlay */}
         {menuOpen && (
           <div
             className="position-fixed w-100 h-100"
@@ -212,7 +227,7 @@ export default function Nav() {
         )}
       </>
 
-      {/* CONTENT */}
+      {/* ================= CONTENT ================= */}
       <div className="main-content">
         <Outlet />
       </div>

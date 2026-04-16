@@ -65,79 +65,100 @@ export default function ReceiptListPage() {
   };
 
   return (
-    <div className="container-fluid py-4  main-content" >
+    <div className="container-fluid py-4 main-content">
       <h2 className="fw-bold mb-4 text-center">🧾 รายการใบเสร็จ</h2>
 
       {/* SEARCH */}
-      <div className="mb-3">
-        <input
-          type="text"
-          className="form-control"
-          placeholder="🔍 ค้นหา ชื่อ / เลขที่ / เล่ม..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+      <div className="mb-3 d-flex justify-content-center">
+        <div style={{ width: "100%", maxWidth: "500px" }}>
+          <div className="input-group">
+            <span className="input-group-text">🔍</span>
 
-      {/* ================= TABLE (>=1280) ================= */}
-      <div className="d-none d-xl-block">
-        <div className="card shadow-sm border-0">
-          <div className="card-header bg-dark text-white fw-bold">
-            📋 รายการทั้งหมด
-          </div>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="ค้นหา ชื่อ / เลขที่ / เล่ม..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
 
-          <div className="table-responsive">
-            <table className="table table-hover align-middle mb-0">
-              <thead className="table-light">
-                <tr>
-                  <th>#</th>
-                  <th>ชื่อ</th>
-                  <th>เล่ม</th>
-                  <th>เลขที่</th>
-                  <th>วันที่พิมพ์</th>
-                  <th className="text-center">ดู</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-4">
-                      ⏳ กำลังโหลด...
-                    </td>
-                  </tr>
-                ) : sorted.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-4 text-muted">
-                      ไม่มีข้อมูล
-                    </td>
-                  </tr>
-                ) : (
-                  sorted.map((item, index) => (
-                    <tr key={item.receiptId}>
-                      <td>{index + 1}</td>
-                      <td className="fw-semibold">{item.fullName}</td>
-                      <td>{item.receiptBookNo}</td>
-                      <td>{item.receiptNo}</td>
-                      <td>{formatDate(item.createdAt)}</td>
-                      <td className="text-center">
-                        <button
-                          className="btn btn-sm btn-primary"
-                          onClick={() => navigate(`/receipt/${item.receiptId}`)}
-                        >
-                          ดู
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+            {search && (
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setSearch("")}
+              >
+                ❌
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ================= CARD (<1280) ================= */}
+      {/* ================= TABLE (>=1200) ================= */}
+      <div className="d-none d-xl-block">
+        <div className="d-flex justify-content-center">
+          <div style={{ width: "100%", maxWidth: "1000px" }}>
+            <div className="card shadow-sm border-0">
+              <div className="card-header bg-dark text-white fw-bold">
+                📋 รายการทั้งหมด
+              </div>
+
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th>#</th>
+                      <th>ชื่อ</th>
+                      <th>เล่ม</th>
+                      <th>เลขที่</th>
+                      <th>วันที่พิมพ์</th>
+                      <th className="text-center">ดู</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan={6} className="text-center py-4">
+                          ⏳ กำลังโหลด...
+                        </td>
+                      </tr>
+                    ) : sorted.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center py-4 text-muted">
+                          ไม่มีข้อมูล
+                        </td>
+                      </tr>
+                    ) : (
+                      sorted.map((item, index) => (
+                        <tr key={item.receiptId}>
+                          <td>{index + 1}</td>
+                          <td className="fw-semibold">{item.fullName}</td>
+                          <td>{item.receiptBookNo}</td>
+                          <td>{item.receiptNo}</td>
+                          <td>{formatDate(item.createdAt)}</td>
+                          <td className="text-center">
+                            <button
+                              className="btn btn-sm btn-primary px-3"
+                              onClick={() =>
+                                navigate(`/receipt/${item.receiptId}`)
+                              }
+                            >
+                              ดู
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= CARD (<1200) ================= */}
       <div className="d-block d-xl-none">
         {loading ? (
           <p className="text-center">⏳ กำลังโหลด...</p>
@@ -152,6 +173,7 @@ export default function ReceiptListPage() {
                 <p className="mb-1">📒 เล่ม : {item.receiptBookNo}</p>
                 <p className="mb-1">🔢 เลขที่ : {item.receiptNo}</p>
                 <p className="mb-1">📅 {formatDate(item.createdAt)}</p>
+
                 <button
                   className="btn btn-primary w-50"
                   onClick={() => navigate(`/receipt/${item.receiptId}`)}

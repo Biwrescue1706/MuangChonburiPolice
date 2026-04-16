@@ -367,8 +367,8 @@ body.login-page .form-control::placeholder {
 
 @media (min-width: 1280px) {
   .main-content {
-    margin-left: 210px; /* 🔥 ต้องเท่ากับ sidebar */
-    margin-top: 60px;
+    margin-left: 100px; /* 🔥 ต้องเท่ากับ sidebar */
+    margin-top: 20px;
   }
 
   .responsive-table table {

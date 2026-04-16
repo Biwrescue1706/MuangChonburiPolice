@@ -12,119 +12,230 @@ export default function ReceiptDetailPage() {
   const [loading, setLoading] = useState(false);
   const [organization, setOrganization] = useState<any>(null);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get(`/receipt/${id}`);
-      setData(res.data.data);
-    } catch (err) {
-      console.error(err);
-      toast("error", "โหลดข้อมูลไม่สำเร็จ");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/receipt/${id}`);
+        setData(res.data.data);
+      } catch {
+        toast("error", "โหลดข้อมูลไม่สำเร็จ");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchData();
   }, [id]);
 
-  const fetchorganization = async () => {
-    try {
-      const res = await api.get(`/organization/key/MAIN`);
-      setOrganization(res.data.data);
-    } catch (err) {
-      console.error(err);
-      toast("error", "โหลดข้อมูลหน่วยงานไม่สำเร็จ");
-      setOrganization(null);
-    }
-  };
-
   useEffect(() => {
-    fetchorganization();
+    const fetchOrg = async () => {
+      try {
+        const res = await api.get(`/organization/key/MAIN`);
+        setOrganization(res.data.data);
+      } catch {
+        setOrganization(null);
+      }
+    };
+    fetchOrg();
   }, []);
 
-  if (loading) {
-    return <p className="text-center mt-5">⏳ กำลังโหลด...</p>;
-  }
+  if (loading) return <p className="text-center mt-5">⏳ กำลังโหลด...</p>;
+  if (!data) return <p className="text-center mt-5">ไม่พบข้อมูล</p>;
 
-  if (!data) {
-    return (
-      <div className="text-center mt-5">
-        <p>ไม่พบข้อมูล</p>
-        <button
-          className="btn btn-secondary"
-          onClick={() => navigate("/receipt")}
-        >
-          ← กลับ
-        </button>
-      </div>
-    );
-  }
+  // 🔥 แยก receiptDate → วัน เดือน ปี
+  const splitDate = (dateStr: string) => {
+    if (!dateStr) return { day: "-", month: "-", year: "-" };
+
+    const parts = dateStr.split(" ");
+    return {
+      day: parts[0] || "-",
+      month: parts[1] || "-",
+      year: parts[2] || "-",
+    };
+  };
+
+  const { day, month, year } = splitDate(data.receiptDate);
 
   return (
     <div className="container py-4 main-content">
-      <div className="card shadow-sm border-0">
-        {/* ACTION */}
-        <div className="mb-4">
-          <button
-            className="btn btn-secondary"
-            onClick={() => navigate("/receipt")}
-          >
-            ← กลับ
-          </button>
+      <button
+        className="btn btn-secondary mb-3"
+        onClick={() => navigate("/receipt")}
+      >
+        ← กลับ
+      </button>
+
+      <div
+        style={{
+          maxWidth: "750px",
+          margin: "0 auto",
+          padding: "24px",
+          border: "2px solid black",
+          background: "#e6f4f4",
+          fontFamily: "TH Sarabun New, sans-serif",
+          fontSize: "18px",
+        }}
+      >
+        {/* HEADER */}
+        <div className="text-center mb-1">(ต้นฉบับ)</div>
+
+        <div className="d-flex justify-content-between mb-2">
+          <div>เล่มที่ {data.receiptBookNo}</div>
+          <div>เลขที่ {data.receiptNo}</div>
         </div>
-        <div className="card-header bg-primary text-white fw-bold d-flex justify-content-between">
-          <span>🧾 รายละเอียดใบเสร็จ</span>
-          <span></span>
-          <span>
-            #{data.receiptBookNo} - {data.receiptNo}
+
+        {/* LOGO */}
+        <div className="text-center mb-2">
+          <img src="/images.png" width={40} alt="logo" />
+        </div>
+
+        {/* TITLE */}
+        <div className="text-center mb-3">
+          <div className="fw-bold">ใบเสร็จรับเงิน</div>
+          <div>ในราชการสำนักงานตำรวจแห่งชาติ</div>
+
+          <div>
+            ที่ทำการ{" "}
+            <span
+              style={{
+                borderBottom: "1px dotted black",
+                padding: "0 10px",
+                display: "inline-block",
+                minWidth: "250px",
+                textAlign: "center",
+              }}
+            >
+              {organization?.organizationName}
+            </span>
+          </div>
+        </div>
+
+        {/* วันที่ */}
+        <div className="mb-3 text-center">
+          วันที่{" "}
+          <span style={{ borderBottom: "1px dotted black", padding: "0 10px" }}>
+            {day}
+          </span>{" "}
+          เดือน{" "}
+          <span style={{ borderBottom: "1px dotted black", padding: "0 20px" }}>
+            {month}
+          </span>{" "}
+          พ.ศ.{" "}
+          <span style={{ borderBottom: "1px dotted black", padding: "0 10px" }}>
+            {year}
           </span>
         </div>
 
-        <div className="card-body">
-          <div className="row g-3">
-            <div className="col-md-6 text-center">
-              <label className="text-muted">เลขเล่ม</label>
-              <div className="fw-semibold">{data.receiptBookNo}</div>
-            </div>
+        {/* ผู้จ่าย */}
+        <div className="mb-3 text-center">
+          ได้รับเงินจาก{" "}
+          <span
+            style={{
+              borderBottom: "1px dotted black",
+              padding: "0 20px",
+              display: "inline-block",
+              minWidth: "250px",
+              textAlign: "center",
+            }}
+          >
+            {data.fullName}
+          </span>
+        </div>
 
-            <div className="col-md-6 text-center">
-              <label className="text-muted">เลขที่</label>
-              <div className="fw-semibold">{data.receiptNo}</div>
-            </div>
-            <div></div>
-            <div className="col-md-12 text-center">
-              <div className="fw-semibold">{data.organizationName}</div>
-            </div>
+        {/* ตาราง */}
+        <table className="table table-bordered text-center">
+          <thead>
+            <tr>
+              <th>รายการ</th>
+              <th style={{ width: "120px" }}>จำนวนเงิน</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                ค่าธรรมเนียมการขอสำเนาข้อมูล <br />
+                ข่าวสารของทางราชการสำหรับการ <br />
+                ตรวจสอบประวัติอาชญากรรม
+              </td>
+              <td>{data.money}</td>
+            </tr>
+          </tbody>
+        </table>
 
-            <div className="col-md-12 text-center">
-              <div className="fw-semibold">{data.receiptDate}</div>
-            </div>
+        {/* รวม */}
+        <div className="text-end mb-2">
+          รวม{" "}
+          <span style={{ borderBottom: "1px dotted black", padding: "0 15px" }}>
+            {data.money}
+          </span>{" "}
+          บาท
+        </div>
 
-            <div className="col-12 text-center">
-              <div className="fw-semibold">{data.fullName}</div>
-            </div>
+        {/* ตัวอักษร */}
+        <div className="mb-2">
+          (ตัวอักษร{" "}
+          <span style={{ borderBottom: "1px dotted black", padding: "0 15px" }}>
+            {data.moneyText}
+          </span>
+          )
+        </div>
 
-            <div className="col-md-8 text-end">
-              <div className="fw-semibold text-success">{data.money}</div>
-            </div>
+        <div className="mb-4">ไว้เป็นหลักฐานในการรับเงินแล้ว</div>
 
-            <div className="col-md-12 ">
-              <div className="fw-semibold">( {data.moneyText || "-"} )</div>
-            </div>
-            <div className="col-md-6">
-              <div className="fw-semibold">{data.rank}</div>
-            </div>
-            <div className="col-md-6">
-              <div className="fw-semibold">{organization?.firstName}</div>
-            </div>
-            <div className="col-md-12">
-              <div className="fw-semibold">( {data.fullNameOrg} )</div>
-            </div>
-            <div className="col-md-12">
-              <div className="fw-semibold">({data.position})</div>
-            </div>
+        {/* ลายเซ็น */}
+        <div
+          style={{
+            marginTop: "30px",
+            textAlign: "right",
+            paddingRight: "40px",
+          }}
+        >
+          {/* ลงชื่อ */}
+          <div style={{ marginBottom: "8px" }}>
+            (ลงชื่อ)
+            <span
+              style={{
+                display: "inline-block",
+                borderBottom: "1px dotted black",
+                minWidth: "190px",
+                marginLeft: "10px",
+                textAlign: "left",
+              }}
+            >
+              {data.rank} {organization?.firstName}
+            </span>
+          </div>
+
+          {/* ชื่อเต็ม */}
+          <div style={{ marginBottom: "5px" }}>
+            (
+            <span
+              style={{
+                display: "inline-block",
+                borderBottom: "1px dotted black",
+                minWidth: "120px",
+                textAlign: "center",
+              }}
+            >
+              {data.fullNameOrg}
+            </span>
+            ) ผู้รับเงิน
+          </div>
+
+          {/* ตำแหน่ง */}
+          <div>
+            (ตำแหน่ง)
+            <span
+              style={{
+                display: "inline-block",
+                borderBottom: "1px dotted black",
+                minWidth: "200px",
+                marginLeft: "10px",
+                textAlign: "center",
+              }}
+            >
+              {data.position}
+            </span>
           </div>
         </div>
       </div>

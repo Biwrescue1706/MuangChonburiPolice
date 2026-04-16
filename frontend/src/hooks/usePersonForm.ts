@@ -1,3 +1,4 @@
+//src/hooks/usePersonForm.ts
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { toast } from "../utils/toast";
@@ -26,9 +27,36 @@ export default function usePersonForm(navigate: any) {
   const allReceiptNumbers = Array.from({ length: 50 }, (_, i) => i + 1);
 
   const months = [
-    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+    "มกราคม",
+    "กุมภาพันธ์",
+    "มีนาคม",
+    "เมษายน",
+    "พฤษภาคม",
+    "มิถุนายน",
+    "กรกฎาคม",
+    "สิงหาคม",
+    "กันยายน",
+    "ตุลาคม",
+    "พฤศจิกายน",
+    "ธันวาคม",
   ];
+
+  // 🔥 function วันนี้ (ไทย)
+  const getTodayTH = () => {
+    const now = new Date();
+
+    const day = now.getDate();
+    const monthIndex = now.getMonth();
+    const year = now.getFullYear() + 543;
+
+    return {
+      day: day.toString(),
+      month: months[monthIndex],
+      year: year.toString(),
+    };
+  };
+
+  const today = getTodayTH();
 
   const [form, setForm] = useState<any>({
     prefix: "นาย",
@@ -53,23 +81,21 @@ export default function usePersonForm(navigate: any) {
     birthMonth: "",
     birthYear: "",
 
-    // 🔥 fingerprint (แยก)
-    fingerprintDay: "",
-    fingerprintMonth: "",
-    fingerprintYear: "",
+    // 🔥 fingerprint (ใส่อัตโนมัติ)
+    fingerprintDay: today.day,
+    fingerprintMonth: today.month,
+    fingerprintYear: today.year,
 
-    // 🔥 receipt (แยก)
-    receiptDay: "",
-    receiptMonth: "",
-    receiptYear: "",
+    // 🔥 receipt (ใส่อัตโนมัติ)
+    receiptDay: today.day,
+    receiptMonth: today.month,
+    receiptYear: today.year,
 
     // 🔥 final string
     fingerprintDate: "",
     receiptDate: "",
 
-    // 🔥 priority (1=ด่วน, 0=ไม่ด่วน)
     priority: 0,
-
     status: 0,
     receiptBookNo: "",
     receiptNo: "",
@@ -275,7 +301,11 @@ export default function usePersonForm(navigate: any) {
     const missingFields = requiredFields.filter((f) => isEmpty(finalForm[f]));
 
     if (missingFields.length > 0) {
-      toast("warning", "กรอกข้อมูลไม่ครบ", `ยังขาด ${missingFields.length} ช่อง`);
+      toast(
+        "warning",
+        "กรอกข้อมูลไม่ครบ",
+        `ยังขาด ${missingFields.length} ช่อง`,
+      );
       return;
     }
 
