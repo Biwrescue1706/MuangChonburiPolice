@@ -248,34 +248,38 @@ export default function PersonHistoryPage() {
   return (
     <div className="p-4 main-content" >
       <h2 className="mb-3 text-center">📄 ประวัติทั้งหมด</h2>
+
       {/* SEARCH */}
-      <div className="mb-3 d-flex gap-2 flex-wrap">
-        <input
-          type="text"
-          className="form-control"
-          placeholder="ค้นหาชื่อ"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-        />
+      <div className="mb-3 d-flex gap-2 align-items-center flex-nowrap">
+  <input
+    type="text"
+    className="form-control form-control-sm"
+    style={{ width: 160 }}
+    placeholder="ค้นหาชื่อ"
+    value={firstName}
+    onChange={(e) => setFirstName(e.target.value)}
+  />
 
-        <input
-          type="text"
-          className="form-control"
-          placeholder="ค้นหานามสกุล"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-        />
+  <input
+    type="text"
+    className="form-control form-control-sm"
+    style={{ width: 160 }}
+    placeholder="ค้นหานามสกุล"
+    value={lastName}
+    onChange={(e) => setLastName(e.target.value)}
+  />
 
-        <button
-          className="btn btn-outline-secondary"
-          onClick={() => {
-            setFirstName("");
-            setLastName("");
-          }}
-        >
-          ล้าง
-        </button>
-      </div>
+  <button
+    className="btn btn-outline-secondary btn-sm"
+    onClick={() => {
+      setFirstName("");
+      setLastName("");
+    }}
+  >
+    ล้าง
+  </button>
+</div>
+
       {/* ===== BULK ACTION ===== */}
       <div className="d-flex justify-content-end mb-2 gap-2">
         <button
