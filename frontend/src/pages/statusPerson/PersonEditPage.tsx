@@ -758,13 +758,13 @@ useEffect(() => {
 </div>
 </div>
 
-</div> {/* 🔥 ปิด row g-3 */}
-
       <button className="btn btn-secondary me-2" onClick={handleCancel}>
         ยกเลิก
       </button>
       <button className="btn btn-success" onClick={handleSubmit}>
         บันทึก
       </button>
+
+</div>
   );
 }
