@@ -322,39 +322,54 @@ export default function PersonHistoryPage() {
           </>
         )}
       </div>
-      {/* ===== FILTER ===== */}
-      <div className="mb-3 d-flex gap-2 flex-wrap">
-        <button
-          className={`btn btn-sm ${active(null)}`}
-          onClick={() => setSearchParams({})}
-        >
-          ทั้งหมด
-        </button>
-        <button
-          className={`btn btn-sm ${active("0")}`}
-          onClick={() => setSearchParams({ status: "0" })}
-        >
-          รอส่ง ศพฐ 
-        </button>
-        <button
-          className={`btn btn-sm ${active("1")}`}
-          onClick={() => setSearchParams({ status: "1" })}
-        >
-          ส่ง ศพฐ แล้ว
-        </button>
-        <button
-          className={`btn btn-sm ${active("2")}`}
-          onClick={() => setSearchParams({ status: "2" })}
-        >
-          รับจาก ศพฐ แล้ว
-        </button>
-        <button
-          className={`btn btn-sm ${active("3")}`}
-          onClick={() => setSearchParams({ status: "3" })}
-        >
-          ส่งคืน ต้นสังกัด แล้ว
-        </button>
-      </div>
+
+   {/* ===== FILTER ===== */}
+<div className="mb-3 d-flex gap-2 flex-wrap">
+  <button
+    className={`btn btn-sm ${active(null) || "btn-secondary"}`}
+    onClick={() => setSearchParams({})}
+  >
+    ทั้งหมด
+  </button>
+
+  <button
+    className={`btn btn-sm ${
+      active("0") || "btn-warning text-dark"
+    }`}
+    onClick={() => setSearchParams({ status: "0" })}
+  >
+    รอส่ง ศพฐ 
+  </button>
+
+  <button
+    className={`btn btn-sm ${
+      active("1") || "btn-info text-dark"
+    }`}
+    onClick={() => setSearchParams({ status: "1" })}
+  >
+    ส่ง ศพฐ แล้ว
+  </button>
+
+  <button
+    className={`btn btn-sm ${
+      active("2") || "btn-primary"
+    }`}
+    onClick={() => setSearchParams({ status: "2" })}
+  >
+    รับจาก ศพฐ แล้ว
+  </button>
+
+  <button
+    className={`btn btn-sm ${
+      active("3") || "btn-success"
+    }`}
+    onClick={() => setSearchParams({ status: "3" })}
+  >
+    ส่งคืน ต้นสังกัด แล้ว
+  </button>
+</div>
+
+
       {/* ===== MOBILE ===== */}
       {isMobile && (
         <div className="d-flex flex-column gap-3">
