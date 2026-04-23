@@ -31,12 +31,17 @@ export default function Nav() {
     <>
       {/* ================= TOPBAR ================= */}
       <nav
-        className="navbar navbar-dark fixed-top shadow-sm px-3"
-        style={{ backgroundColor: "#800020", zIndex: 1030 }}
+        className="navbar navbar-dark fixed-top shadow-sm px-2 py-1"
+        style={{
+          backgroundColor: "#800020",
+          zIndex: 1030,
+          height: 48,
+          borderBottom: "1px solid rgba(255,255,255,0.15)",
+        }}
       >
         {/* ปุ่มเปิด */}
         <button
-          className="btn btn-warning btn-sm d-xl-none me-3 fw-bold"
+          className="btn btn-warning btn-sm d-xl-none me-2 fw-bold"
           onClick={() => setMenuOpen(true)}
         >
           ☰
@@ -44,21 +49,35 @@ export default function Nav() {
 
         {/* CENTER */}
         <div className="d-flex align-items-center gap-2 mx-auto">
-          <img src="/muangchonburi.webp" width={32} height={32} alt="logo" />
+          <img src="/muangchonburi.webp" width={26} height={26} alt="logo" />
           <div>
-            <div className="fw-bold text-warning small">
+            <div
+              className="fw-bold text-warning"
+              style={{ fontSize: "12px", lineHeight: 1.2 }}
+            >
               🏠งานพิมพ์มือตรวจประวัติ
             </div>
-            <div className="text-white small">งานนโยบายและแผน</div>
+            <div
+              className="text-white"
+              style={{ fontSize: "11px", lineHeight: 1.2 }}
+            >
+              งานนโยบายและแผน
+            </div>
           </div>
         </div>
 
         {/* RIGHT */}
         <div className="text-end">
-          <div className="text-warning fw-bold small">
+          <div
+            className="text-warning fw-bold"
+            style={{ fontSize: "12px", lineHeight: 1.2 }}
+          >
             👤 {shortText(admin?.name || "", 10)}
           </div>
-          <small className="text-white">
+          <small
+            className="text-white"
+            style={{ fontSize: "11px", lineHeight: 1.2 }}
+          >
             ({shortText(admin?.position || "", 10)})
           </small>
         </div>
@@ -70,14 +89,16 @@ export default function Nav() {
         style={{
           width: 210,
           height: "100vh",
-          paddingTop: 60,
+          paddingTop: 50, // 🔥 ปรับตาม topbar ใหม่
           backgroundColor: "#800020",
           zIndex: 1020,
         }}
       >
         <div className="p-2 d-flex flex-column gap-2">
           <button
-            className={`btn text-start ${isActive("/dashboard") ? "btn-warning fw-bold" : "btn-warning"}`}
+            className={`btn text-start ${
+              isActive("/dashboard") ? "btn-warning fw-bold" : "btn-warning"
+            }`}
             onClick={() => go("/dashboard")}
           >
             🏠 หน้าแรก
@@ -98,7 +119,9 @@ export default function Nav() {
           </button>
 
           <button
-            className={`btn text-start ${isActive("/receipt") ? "btn-warning fw-bold" : "btn-warning"}`}
+            className={`btn text-start ${
+              isActive("/receipt") ? "btn-warning fw-bold" : "btn-warning"
+            }`}
             onClick={() => go("/receipt")}
           >
             🧾 ใบเสร็จ
@@ -112,7 +135,9 @@ export default function Nav() {
           </button>
 
           <button
-            className={`btn text-start ${isActive("/organization") ? "btn-warning fw-bold" : "btn-warning"}`}
+            className={`btn text-start ${
+              isActive("/organization") ? "btn-warning fw-bold" : "btn-warning"
+            }`}
             onClick={() => go("/organization")}
           >
             🏢 หน่วยงาน
@@ -147,7 +172,6 @@ export default function Nav() {
             transition: "0.3s",
           }}
         >
-          {/* HEADER + ปุ่มปิด */}
           <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
             <span className="fw-bold text-warning">เมนู</span>
 
@@ -159,60 +183,18 @@ export default function Nav() {
             </button>
           </div>
 
-          {/* MENU */}
           <div className="p-3 d-flex flex-column gap-2">
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => go("/dashboard")}
-            >
-              🏠 หน้าแรก
-            </button>
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => go("/person/create")}
-            >
-              ➕ เพิ่มบุคคลตรวจ
-            </button>
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => go("/person/history")}
-            >
-              📄 ประวัติ
-            </button>
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => go("/receipt")}
-            >
-              🧾 ใบเสร็จ
-            </button>
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => go("/admin/create")}
-            >
-              ➕ Admin
-            </button>
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => go("/organization")}
-            >
-              🏢 หน่วยงาน
-            </button>
-            <button
-              className="btn btn-warning text-start"
-              onClick={() => go("/profile")}
-            >
-              ⚙️ โปรไฟล์
-            </button>
-            <button
-              className="btn btn-primary text-start"
-              onClick={handleLogout}
-            >
-              🚪 ออก
-            </button>
+            <button className="btn btn-warning text-start" onClick={() => go("/dashboard")}>🏠 หน้าแรก</button>
+            <button className="btn btn-warning text-start" onClick={() => go("/person/create")}>➕ เพิ่มบุคคลตรวจ</button>
+            <button className="btn btn-warning text-start" onClick={() => go("/person/history")}>📄 ประวัติ</button>
+            <button className="btn btn-warning text-start" onClick={() => go("/receipt")}>🧾 ใบเสร็จ</button>
+            <button className="btn btn-warning text-start" onClick={() => go("/admin/create")}>➕ Admin</button>
+            <button className="btn btn-warning text-start" onClick={() => go("/organization")}>🏢 หน่วยงาน</button>
+            <button className="btn btn-warning text-start" onClick={() => go("/profile")}>⚙️ โปรไฟล์</button>
+            <button className="btn btn-primary text-start" onClick={handleLogout}>🚪 ออก</button>
           </div>
         </div>
 
-        {/* overlay */}
         {menuOpen && (
           <div
             className="position-fixed w-100 h-100"
