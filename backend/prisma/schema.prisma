@@ -53,8 +53,6 @@ model OrganizationFinance {
   fullNameWithRank String?
   position         String?
 
-  signatureImage String? // รูปลายเซ็น
-
   createdAt DateTime @default(now())
   updatedAt DateTime?
 }
