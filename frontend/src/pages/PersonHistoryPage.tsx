@@ -80,8 +80,6 @@ const getStatusButton = (status: number) => {
   }
 };
 
-
-
 export default function PersonHistoryPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -114,7 +112,10 @@ export default function PersonHistoryPage() {
   }, []);
 
   const active = (value: string | null, color: string) =>
-  statusParam === value ? color : `btn-${color}`;
+  statusParam === value
+    ? `btn-${color} text-white shadow fw-bold`
+    : `btn-${color} text-white opacity-75`;
+
 
   // ===== debounce =====
   useEffect(() => {
