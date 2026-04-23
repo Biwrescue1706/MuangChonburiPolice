@@ -114,7 +114,7 @@ export default function PersonHistoryPage() {
   }, []);
 
   const active = (value: string | null, color: string) =>
-  statusParam === value ? color : `btn-outline-${color}`;
+  statusParam === value ? color : `${color}`;
 
   // ===== debounce =====
   useEffect(() => {
