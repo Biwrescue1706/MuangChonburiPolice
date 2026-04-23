@@ -50,7 +50,7 @@ auth.post("/login", async (req, res) => {
         domain: ".smartdorm-biwboong.shop",
       }),
       path: "/",
-      maxAge: 90 * 60 * 1000,
+      maxAge: 45 * 60 * 1000,
     });
 
     res.json({
