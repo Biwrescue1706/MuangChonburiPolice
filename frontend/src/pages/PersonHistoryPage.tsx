@@ -321,25 +321,25 @@ export default function PersonHistoryPage() {
           className={`btn btn-sm ${active("0")}`}
           onClick={() => setSearchParams({ status: "0" })}
         >
-          รอส่ง
+          รอส่ง ศพฐ 
         </button>
         <button
           className={`btn btn-sm ${active("1")}`}
           onClick={() => setSearchParams({ status: "1" })}
         >
-          ส่งแล้ว
+          ส่ง ศพฐ แล้ว
         </button>
         <button
           className={`btn btn-sm ${active("2")}`}
           onClick={() => setSearchParams({ status: "2" })}
         >
-          รับแล้ว
+          รับจาก ศพฐ แล้ว
         </button>
         <button
           className={`btn btn-sm ${active("3")}`}
           onClick={() => setSearchParams({ status: "3" })}
         >
-          ส่งคืน
+          ส่งคืน ต้นสังกัด แล้ว
         </button>
       </div>
       {/* ===== MOBILE ===== */}
