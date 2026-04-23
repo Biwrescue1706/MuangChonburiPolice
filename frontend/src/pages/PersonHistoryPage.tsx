@@ -80,8 +80,7 @@ const getStatusButton = (status: number) => {
   }
 };
 
-const active = (value: string | null, color: string) =>
-  statusParam === value ? color : `btn-outline-${color}`;
+
 
 export default function PersonHistoryPage() {
   const navigate = useNavigate();
@@ -114,8 +113,8 @@ export default function PersonHistoryPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const active = (value: string | null) =>
-    statusParam === value ? "btn-dark" : "btn-outline-secondary";
+  const active = (value: string | null, color: string) =>
+  statusParam === value ? color : `btn-outline-${color}`;
 
   // ===== debounce =====
   useEffect(() => {
@@ -326,52 +325,43 @@ export default function PersonHistoryPage() {
         )}
       </div>
 
-   {/* ===== FILTER ===== */}
+ {/* ===== FILTER ===== */}
 <div className="mb-3 d-flex gap-2 flex-wrap">
   <button
-    className={`btn btn-sm ${active(null) || "btn-secondary"}`}
+    className={`btn btn-sm ${active(null, "secondary")}`}
     onClick={() => setSearchParams({})}
   >
     ทั้งหมด
   </button>
 
   <button
-    className={`btn btn-sm ${
-      active("0") || "btn-warning text-dark"
-    }`}
+    className={`btn btn-sm ${active("0", "warning")}`}
     onClick={() => setSearchParams({ status: "0" })}
   >
     รอส่ง ศพฐ 
   </button>
 
   <button
-    className={`btn btn-sm ${
-      active("1") || "btn-info text-dark"
-    }`}
+    className={`btn btn-sm ${active("1", "info")}`}
     onClick={() => setSearchParams({ status: "1" })}
   >
     ส่ง ศพฐ แล้ว
   </button>
 
   <button
-    className={`btn btn-sm ${
-      active("2") || "btn-primary"
-    }`}
+    className={`btn btn-sm ${active("2", "primary")}`}
     onClick={() => setSearchParams({ status: "2" })}
   >
     รับจาก ศพฐ แล้ว
   </button>
 
   <button
-    className={`btn btn-sm ${
-      active("3") || "btn-success"
-    }`}
+    className={`btn btn-sm ${active("3", "success")}`}
     onClick={() => setSearchParams({ status: "3" })}
   >
     ส่งคืน ต้นสังกัด แล้ว
   </button>
 </div>
-
 
       {/* ===== MOBILE ===== */}
       {isMobile && (
