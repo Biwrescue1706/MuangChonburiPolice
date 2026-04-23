@@ -87,7 +87,7 @@ export default function Nav() {
       <div
         className="d-none d-xl-flex flex-column position-fixed top-0 start-0 text-white shadow"
         style={{
-          width: 210,
+          width: 170,
           height: "100vh",
           paddingTop: 50, // 🔥 ปรับตาม topbar ใหม่
           backgroundColor: "#800020",
@@ -151,7 +151,7 @@ export default function Nav() {
           </button>
 
           <button className="btn btn-primary text-start" onClick={handleLogout}>
-            🚪 ออก
+            🚪 ออกจากระบบ
           </button>
         </div>
       </div>
@@ -162,7 +162,7 @@ export default function Nav() {
           className="position-fixed text-white shadow"
           style={{
             width: "65%",
-            maxWidth: 240,
+            maxWidth: 200,
             top: 0,
             left: 0,
             height: "100vh",
