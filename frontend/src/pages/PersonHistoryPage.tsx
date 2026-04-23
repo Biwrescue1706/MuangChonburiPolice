@@ -21,44 +21,41 @@ const formatThaiDate = (value: any) => {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
 };
 
-// ===== STATUS MAP =====
-const statusMap: any = {
-  0: {
-    label: "รอส่ง ศพฐ.",
-    badge: "bg-warning text-dark",
-    button: { text: "ส่ง ศพฐ.", class: "btn-warning text-dark" },
-  },
-  1: {
-    label: "ส่ง ศพฐ. แล้ว",
-    badge: "bg-info text-dark",
-    button: { text: "รับผลจาก ศพฐ.", class: "btn-info text-dark" },
-  },
-  2: {
-    label: "รับจาก ศพฐ. แล้ว",
-    badge: "bg-primary",
-    button: { text: "ส่งคืน ต้นสังกัด", class: "btn-primary" },
-  },
-  3: {
-    label: "ส่งคืนแล้ว",
-    badge: "bg-success",
-  },
-};
-
-// ===== render =====
+// ===== STATUS =====
 const renderStatus = (status: number) => {
-  const s = statusMap[status];
-  if (!s) return "-";
-  return <span className={`badge ${s.badge}`}>{s.label}</span>;
+  switch (status) {
+    case 0:
+      return <span className="badge bg-warning text-dark">รอส่ง ศพฐ.</span>;
+    case 1:
+      return <span className="badge bg-primary">ส่ง ศพฐ. แล้ว</span>;
+    case 2:
+      return <span className="badge bg-success">รับจาก ศพฐ. แล้ว</span>;
+    case 3:
+      return <span className="badge bg-danger">ส่งคืนแล้ว</span>;
+    default:
+      return "-";
+  }
 };
 
+// ===== PRIORITY =====
 const renderPriority = (priority: number) => {
   return priority === 1
     ? <span className="badge bg-danger">ด่วน</span>
     : <span className="badge bg-secondary">ไม่ด่วน</span>;
 };
 
+// ===== STATUS BUTTON (แก้แล้ว) =====
 const getStatusButton = (status: number) => {
-  return statusMap[status]?.button || null;
+  switch (status) {
+    case 0:
+      return { text: "ส่ง ศพฐ.", class: "btn-warning text-dark" };
+    case 1:
+      return { text: "รับผลจาก ศพฐ.", class: "btn-info text-dark" };
+    case 2:
+      return { text: "ส่งคืน", class: "btn-primary" };
+    default:
+      return null;
+  }
 };
 
 export default function PersonHistoryPage() {
@@ -70,7 +67,7 @@ export default function PersonHistoryPage() {
   const [loading, setLoading] = useState(false);
 
   const [selectMode, setSelectMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>([];
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -89,6 +86,7 @@ export default function PersonHistoryPage() {
   const active = (value: string | null) =>
     statusParam === value ? "btn-dark" : "btn-outline-secondary";
 
+  // debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebounceFirstName(firstName);
@@ -97,6 +95,7 @@ export default function PersonHistoryPage() {
     return () => clearTimeout(timer);
   }, [firstName, lastName]);
 
+  // fetch
   const fetchPersons = async () => {
     try {
       setLoading(true);
@@ -117,6 +116,7 @@ export default function PersonHistoryPage() {
     fetchPersons();
   }, [statusParam, debounceFirstName, debounceLastName]);
 
+  // select
   const toggleSelect = (id: string, status: number) => {
     if (status >= 3) return;
     setSelectedIds((prev) =>
@@ -133,6 +133,7 @@ export default function PersonHistoryPage() {
     );
   };
 
+  // actions
   const handleDelete = async (p: any) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการลบ?",
@@ -153,9 +154,11 @@ export default function PersonHistoryPage() {
   const handleUpdateStatus = async (p: any) => {
     if (p.status === 3) return;
 
+    const nextStatus = p.status + 1;
+
     const confirm = await Swal.fire({
       title: "ยืนยันการเปลี่ยนสถานะ?",
-      text: `${statusMap[p.status].label} → ${statusMap[p.status + 1].label}`,
+      text: `${p.status} → ${nextStatus}`,
       icon: "question",
       showCancelButton: true,
     });
@@ -164,7 +167,7 @@ export default function PersonHistoryPage() {
 
     try {
       await api.patch(`/person/${p.personId}/status`, {
-        status: p.status + 1,
+        status: nextStatus,
       });
 
       toast("success", "อัปเดตสถานะแล้ว");
@@ -225,55 +228,62 @@ export default function PersonHistoryPage() {
     <div className="p-4 main-content">
       <h2 className="mb-3 text-center">📄 ประวัติทั้งหมด</h2>
 
-      {/* SEARCH */}
-      <div className="mb-3 d-flex gap-2">
-        <input className="form-control form-control-sm" placeholder="ชื่อ" value={firstName} onChange={(e)=>setFirstName(e.target.value)} />
-        <input className="form-control form-control-sm" placeholder="นามสกุล" value={lastName} onChange={(e)=>setLastName(e.target.value)} />
-        <button className="btn btn-outline-secondary btn-sm" onClick={()=>{setFirstName("");setLastName("");}}>ล้าง</button>
-      </div>
-
       {/* FILTER */}
       <div className="mb-3 d-flex gap-2 flex-wrap">
-        <button className={`btn btn-sm ${active(null) || "btn-secondary"}`} onClick={()=>setSearchParams({})}>ทั้งหมด</button>
+        <button className={`btn btn-sm ${active(null)}`} onClick={()=>setSearchParams({})}>ทั้งหมด</button>
         {[0,1,2,3].map(s=>(
           <button key={s}
-            className={`btn btn-sm ${active(String(s)) || statusMap[s].button?.class || "btn-secondary"}`}
+            className={`btn btn-sm ${active(String(s))}`}
             onClick={()=>setSearchParams({status:String(s)})}>
-            {statusMap[s].label}
+            {renderStatus(s)}
           </button>
         ))}
       </div>
 
-      {/* TABLE */}
-      <table className="table table-bordered text-center">
-        <thead className="table-dark">
-          <tr>
-            <th>#</th>
-            <th>ชื่อ</th>
-            <th>สถานะ</th>
-            <th>ส่ง</th>
-          </tr>
-        </thead>
+      {/* MOBILE */}
+      {isMobile && (
+        <div className="d-flex flex-column gap-3">
+          {persons.map(p=>{
+            const btn = getStatusButton(p.status);
+            return (
+              <div key={p.personId} className="card p-3">
+                <strong>{p.fullName}</strong>
+                {renderStatus(p.status)}
 
-        <tbody>
-          {persons.map((p,i)=>(
-            <tr key={p.personId}>
-              <td>{i+1}</td>
-              <td>{p.fullName}</td>
-              <td>{renderStatus(p.status)}</td>
-              <td>
-                {p.status<3 && (
-                  <button
-                    className={`btn btn-sm ${statusMap[p.status].button.class}`}
-                    onClick={()=>handleUpdateStatus(p)}>
-                    {statusMap[p.status].button.text}
+                {p.status<3 && btn && (
+                  <button className={`btn mt-2 w-100 ${btn.class}`} onClick={()=>handleUpdateStatus(p)}>
+                    {btn.text}
                   </button>
                 )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* DESKTOP */}
+      {!isMobile && (
+        <table className="table table-bordered text-center">
+          <tbody>
+            {persons.map(p=>{
+              const btn = getStatusButton(p.status);
+              return (
+                <tr key={p.personId}>
+                  <td>{p.fullName}</td>
+                  <td>{renderStatus(p.status)}</td>
+                  <td>
+                    {p.status<3 && btn && (
+                      <button className={`btn btn-sm ${btn.class}`} onClick={()=>handleUpdateStatus(p)}>
+                        {btn.text}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
