@@ -14,8 +14,18 @@ const formatThaiDate = (value: any) => {
   if (isNaN(d.getTime())) return value;
 
   const months = [
-    "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
-    "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม",
+    "มกราคม",
+    "กุมภาพันธ์",
+    "มีนาคม",
+    "เมษายน",
+    "พฤษภาคม",
+    "มิถุนายน",
+    "กรกฎาคม",
+    "สิงหาคม",
+    "กันยายน",
+    "ตุลาคม",
+    "พฤศจิกายน",
+    "ธันวาคม",
   ];
 
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
@@ -37,9 +47,24 @@ const renderStatus = (status: number) => {
 };
 
 const renderPriority = (priority: number) => {
-  return priority === 1
-    ? <span className="badge bg-danger">ด่วน</span>
-    : <span className="badge bg-secondary">ไม่ด่วน</span>;
+  return priority === 1 ? (
+    <span className="badge bg-danger">ด่วน</span>
+  ) : (
+    <span className="badge bg-secondary">ไม่ด่วน</span>
+  );
+};
+
+const getStatusButtonStyle = (status: number) => {
+  switch (status) {
+    case 0:
+      return "btn-warning text-dark";
+    case 1:
+      return "btn-info text-dark";
+    case 2:
+      return "btn-primary";
+    default:
+      return "btn-secondary";
+  }
 };
 
 const getStatusButton = (status: number) => {
@@ -55,20 +80,6 @@ const getStatusButton = (status: number) => {
   }
 };
 
-// ✅ เพิ่มใหม่ (ไม่กระทบของเดิม)
-const getStatusButtonStyle = (status: number) => {
-  switch (status) {
-    case 0:
-      return "btn-warning text-dark";
-    case 1:
-      return "btn-info text-dark";
-    case 2:
-      return "btn-primary";
-    default:
-      return "btn-secondary";
-  }
-};
-
 export default function PersonHistoryPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -77,12 +88,15 @@ export default function PersonHistoryPage() {
   const [persons, setPersons] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // ===== bulk select =====
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // ===== search =====
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
+  // ===== debounce =====
   const [debounceFirstName, setDebounceFirstName] = useState("");
   const [debounceLastName, setDebounceLastName] = useState("");
 
@@ -100,17 +114,21 @@ export default function PersonHistoryPage() {
   const active = (value: string | null) =>
     statusParam === value ? "btn-dark" : "btn-outline-secondary";
 
+  // ===== debounce =====
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebounceFirstName(firstName);
       setDebounceLastName(lastName);
     }, 300);
+
     return () => clearTimeout(timer);
   }, [firstName, lastName]);
 
+  // ===== fetch =====
   const fetchPersons = async () => {
     try {
       setLoading(true);
+
       const params = new URLSearchParams();
 
       if (statusParam !== null) params.append("status", statusParam);
@@ -128,6 +146,7 @@ export default function PersonHistoryPage() {
     fetchPersons();
   }, [statusParam, debounceFirstName, debounceLastName]);
 
+  // ===== select =====
   const toggleSelect = (id: string, status: number) => {
     if (status >= 3) return;
 
@@ -146,6 +165,7 @@ export default function PersonHistoryPage() {
     }
   };
 
+  // ===== actions =====
   const handleDelete = async (p: any) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการลบ?",
@@ -190,6 +210,7 @@ export default function PersonHistoryPage() {
     }
   };
 
+  // ===== bulk =====
   const handleBulkSend = async () => {
     if (!selectMode) return toast("warning", "กรุณากดเลือกก่อน");
     if (selectedIds.length === 0) return toast("warning", "เลือกข้อมูลก่อน");
@@ -238,16 +259,166 @@ export default function PersonHistoryPage() {
   };
 
   return (
-    <div className="p-4 main-content">
+    <div className="p-4 main-content" >
       <h2 className="mb-3 text-center">📄 ประวัติทั้งหมด</h2>
 
-      {/* MOBILE */}
+      {/* SEARCH */}
+      <div className="mb-3 d-flex gap-2 align-items-center flex-nowrap">
+  <input
+    type="text"
+    className="form-control form-control-sm"
+    style={{ width: 160 }}
+    placeholder="ค้นหาชื่อ"
+    value={firstName}
+    onChange={(e) => setFirstName(e.target.value)}
+  />
+
+  <input
+    type="text"
+    className="form-control form-control-sm"
+    style={{ width: 160 }}
+    placeholder="ค้นหานามสกุล"
+    value={lastName}
+    onChange={(e) => setLastName(e.target.value)}
+  />
+
+  <button
+    className="btn btn-outline-secondary btn-sm"
+    onClick={() => {
+      setFirstName("");
+      setLastName("");
+    }}
+  >
+    ล้าง
+  </button>
+</div>
+
+      {/* ===== BULK ACTION ===== */}
+      <div className="d-flex justify-content-end mb-2 gap-2">
+        <button
+          className="btn btn-secondary"
+          onClick={() => {
+            setSelectMode((prev) => !prev);
+            setSelectedIds([]);
+          }}
+        >
+          {selectMode ? "ยกเลิกเลือก" : "เลือก"}
+        </button>
+
+        {selectMode && (
+          <>
+            <button
+              className="btn btn-outline-primary"
+              onClick={handleSelectAll}
+            >
+              {selectedIds.length === persons.filter((p) => p.status < 3).length
+                ? "ยกเลิกเลือกทั้งหมด"
+                : "เลือกทั้งหมด"}
+            </button>
+
+            <button className="btn btn-success" onClick={handleBulkSend}>
+              อัปเดตสถานะ (+1) ({selectedIds.length})
+            </button>
+          </>
+        )}
+      </div>
+      {/* ===== FILTER ===== */}
+      <div className="mb-3 d-flex gap-2 flex-wrap">
+        <button
+          className={`btn btn-sm ${active(null)}`}
+          onClick={() => setSearchParams({})}
+        >
+          ทั้งหมด
+        </button>
+        <button
+          className={`btn btn-sm ${active("0")}`}
+          onClick={() => setSearchParams({ status: "0" })}
+        >
+          รอส่ง ศพฐ 
+        </button>
+        <button
+          className={`btn btn-sm ${active("1")}`}
+          onClick={() => setSearchParams({ status: "1" })}
+        >
+          ส่ง ศพฐ แล้ว
+        </button>
+        <button
+          className={`btn btn-sm ${active("2")}`}
+          onClick={() => setSearchParams({ status: "2" })}
+        >
+          รับจาก ศพฐ แล้ว
+        </button>
+        <button
+          className={`btn btn-sm ${active("3")}`}
+          onClick={() => setSearchParams({ status: "3" })}
+        >
+          ส่งคืน ต้นสังกัด แล้ว
+        </button>
+      </div>
+      {/* ===== MOBILE ===== */}
       {isMobile && (
         <div className="d-flex flex-column gap-3">
+          {loading && <div>กำลังโหลด...</div>}
+          {!loading && persons.length === 0 && <div>ไม่พบข้อมูล</div>}
+
           {persons.map((p) => (
             <div key={p.personId} className="card p-3">
+              {selectMode && p.status < 3 && (
+                <div className="form-check mb-2">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    checked={selectedIds.includes(p.personId)}
+                    onChange={() => toggleSelect(p.personId, p.status)}
+                  />
+                </div>
+              )}
+
               <strong>{p.fullName}</strong>
+
+              <div>📘 {p.receiptBookNo || "-"}</div>
+              <div>🧾 {p.receiptNo || "-"}</div>
+              <div>📅 {formatThaiDate(p.receiptDate)}</div>
               <div className="mt-2">{renderStatus(p.status)}</div>
+
+              <div className="mt-1">{renderPriority(p.priority ?? 0)}</div>
+
+              {p.status === 3 && (
+                <div className="mt-1 text-danger">
+                  📅 วันคืน: {formatThaiDate(p.returnDate)}
+                </div>
+              )}
+
+              <div className="d-flex gap-2 mt-2 flex-wrap">
+                <button
+                  className="btn btn-info w-100"
+                  onClick={() => navigate(`/person/${p.personId}`)}
+                >
+                  ดู
+                </button>
+                <button
+                  className="btn btn-primary w-100"
+                  onClick={() => handleExportPDF(p)}
+                >
+                  PDF
+                </button>
+
+                {p.status === 0 && (
+                  <button
+                    className="btn btn-warning w-100"
+                    onClick={() => navigate(`/person/edit/${p.personId}`)}
+                  >
+                    แก้ไข
+                  </button>
+                )}
+
+                <button
+                  className="btn btn-danger w-100"
+                  onClick={() => handleDelete(p)}
+                >
+                  ลบ
+                </button>
+              </div>
 
               {p.status < 3 && (
                 <button
@@ -261,29 +432,140 @@ export default function PersonHistoryPage() {
           ))}
         </div>
       )}
-
-      {/* DESKTOP */}
+      {/* ===== DESKTOP ===== */}
       {!isMobile && (
-        <table className="table table-bordered text-center">
-          <tbody>
-            {persons.map((p) => (
-              <tr key={p.personId}>
-                <td>{p.fullName}</td>
-                <td>{renderStatus(p.status)}</td>
-                <td>
-                  {p.status < 3 && (
-                    <button
-                      className={`btn btn-sm ${getStatusButtonStyle(p.status)}`}
-                      onClick={() => handleUpdateStatus(p)}
-                    >
-                      {getStatusButton(p.status)}
-                    </button>
+        <div className="card shadow-sm">
+          <div className="table-responsive">
+            <table className="table table-bordered text-center">
+              <thead className="table-dark">
+                <tr>
+                  {selectMode && (
+                    <th>
+                      <input
+                        type="checkbox"
+                        checked={
+                          selectedIds.length ===
+                            persons.filter((p) => p.status < 3).length &&
+                          persons.length > 0
+                        }
+                        onChange={handleSelectAll}
+                      />
+                    </th>
                   )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  <th>#</th>
+                  <th>ชื่อ</th>
+                  <th>เล่ม</th>
+                  <th>เลข</th>
+                  <th>วันที่</th>
+                  <th>สถานะ</th>
+                  <th>ความเร่งด่วน</th>
+                  <th>วันคืน</th>
+                  <th>ดู</th>
+                  <th>PDF</th>
+                  <th>แก้ไข</th>
+                  <th>ลบ</th>
+                  <th>ส่ง</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {loading && (
+                  <tr>
+                    <td colSpan={selectMode ? 12 : 11}>กำลังโหลด...</td>
+                  </tr>
+                )}
+
+                {!loading && persons.length === 0 && (
+                  <tr>
+                    <td colSpan={selectMode ? 12 : 11}>ไม่พบข้อมูล</td>
+                  </tr>
+                )}
+
+                {!loading &&
+                  persons.map((p, i) => (
+                    <tr key={p.personId}>
+                      {selectMode && (
+                        <td>
+                          {p.status < 3 && (
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(p.personId)}
+                              onChange={() =>
+                                toggleSelect(p.personId, p.status)
+                              }
+                            />
+                          )}
+                        </td>
+                      )}
+
+                      <td>{i + 1}</td>
+                      <td>{p.fullName}</td>
+                      <td>{p.receiptBookNo || "-"}</td>
+                      <td>{p.receiptNo || "-"}</td>
+                      <td>{formatThaiDate(p.receiptDate)}</td>
+                      <td>{renderStatus(p.status)}</td>
+                      <td>{renderPriority(p.priority ?? 0)}</td>
+                      <td>
+                        {p.status === 3 ? formatThaiDate(p.returnDate) : "-"}
+                      </td>
+
+                      <td>
+                        <button
+                          className="btn btn-info btn-sm"
+                          onClick={() => navigate(`/person/${p.personId}`)}
+                        >
+                          ดู
+                        </button>
+                      </td>
+
+                      <td>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => handleExportPDF(p)}
+                        >
+                          PDF แบบพิมพ์มือ{" "}
+                        </button>
+                      </td>
+
+                      <td>
+                        {p.status === 0 && (
+                          <button
+                            className="btn btn-warning btn-sm"
+                            onClick={() =>
+                              navigate(`/person/edit/${p.personId}`)
+                            }
+                          >
+                            แก้ไข
+                          </button>
+                        )}
+                      </td>
+
+                      <td>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDelete(p)}
+                        >
+                          ลบ
+                        </button>
+                      </td>
+
+                      <td>
+                        {p.status < 3 && (
+                          <button
+                            className={`btn btn-sm ${getStatusButtonStyle(p.status)}`}
+
+                            onClick={() => handleUpdateStatus(p)}
+                          >
+                            {getStatusButton(p.status)}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   );
