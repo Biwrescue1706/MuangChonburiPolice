@@ -266,11 +266,10 @@ export default function PersonHistoryPage() {
       <h2 className="mb-3 text-center">📄 ประวัติทั้งหมด</h2>
 
       {/* SEARCH */}
-      <div className="mb-3 d-flex gap-2 align-items-center flex-nowrap">
+      <div className="mb-3 d-flex gap-2 align-items-center flex-wrap">
   <input
     type="text"
-    className="form-control form-control-sm"
-    style={{ width: 160 }}
+    className="form-control form-control-sm flex-grow-1"
     placeholder="ค้นหาชื่อ"
     value={firstName}
     onChange={(e) => setFirstName(e.target.value)}
@@ -278,8 +277,7 @@ export default function PersonHistoryPage() {
 
   <input
     type="text"
-    className="form-control form-control-sm"
-    style={{ width: 160 }}
+    className="form-control form-control-sm flex-grow-1"
     placeholder="ค้นหานามสกุล"
     value={lastName}
     onChange={(e) => setLastName(e.target.value)}
