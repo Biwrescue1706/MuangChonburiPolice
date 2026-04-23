@@ -174,24 +174,36 @@ export default function PersonEditPage() {
     });
   };
 
-  const handleCancel = async () => {
-    
-    // 🔁 รีเซ็ต form กลับค่าเดิม (ตอนโหลดมา)
-    setForm({ ...original });
-
-    // หรือถ้าอยากให้กลับหน้าเลย ใช้อันนี้แทน 👇
+  const handleCancel = () => {
+  if (window.history.length > 1) {
+    navigate(-1);
+  } else {
     navigate("/person/history");
-  };
+  }
+};
 
   // ================= SUBMIT =================
   const handleSubmit = async () => {
+
+if (loading) return;
+
     const fingerprintDate = buildFingerprintDateTH(form);
 
-    const confirm = await Swal.fire({
-      title: "บันทึกข้อมูล?",
-      icon: "question",
-      showCancelButton: true,
-    });
+if (!form.firstName || !form.lastName) {
+  toast("error", "กรุณากรอกชื่อ-นามสกุล");
+  return;
+}
+
+if (form.citizenId && form.citizenId.length !== 13) {
+  toast("error", "เลขบัตรประชาชนต้อง 13 หลัก");
+  return;
+}
+
+const confirm = await Swal.fire({
+  title: "บันทึกข้อมูล?",
+  icon: "question",
+  showCancelButton: true,
+});
 
     if (!confirm.isConfirmed) return;
 
@@ -199,16 +211,18 @@ export default function PersonEditPage() {
       setLoading(true);
 
       const finalData = {
-        ...original,
-        ...form,
-        birthDate: buildThaiDate(
-          form.birthDay,
-          form.birthMonth,
-          form.birthYear,
-        ),
-        fingerprintDate,
-        fullName: `${form.prefix || ""} ${form.firstName} ${form.lastName}`.trim(),
-      };
+  ...original,
+  ...form,
+  birthDate: buildThaiDate(
+    form.birthDay,
+    form.birthMonth,
+    form.birthYear,
+  ),
+  fingerprintDate: fingerprintDate || original.fingerprintDate,
+  fullName: [form.prefix, form.firstName, form.lastName]
+    .filter(Boolean)
+    .join(" "),
+};
 
       await api.put(`/person/${id}`, finalData);
       toast("success", "บันทึกข้อมูลสำเร็จ");
@@ -220,13 +234,13 @@ export default function PersonEditPage() {
     }
   };
   useEffect(() => {
-    if (!form.fingerprintYear) {
-      setForm((prev: any) => ({
-        ...prev,
-        fingerprintYear: String(currentYearTH),
-      }));
-    }
-  }, []);
+  if (!form.fingerprintYear) {
+    setForm((prev: any) => ({
+      ...prev,
+      fingerprintYear: String(currentYearTH),
+    }));
+  }
+}, [form.fingerprintYear]);
   if (loading) return <div className="p-4">กำลังโหลด...</div>;
 
   return (
@@ -412,14 +426,16 @@ export default function PersonEditPage() {
             <div className="col-md-4">
               <label>เลขบัตรประชาชน</label>
               <input
-                name="citizenId"
-                className="form-control"
-                value={form.citizenId || ""}
-                onChange={handleChange}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={13}
-              />
+  name="citizenId"
+  className="form-control"
+  value={form.citizenId || ""}
+  onChange={(e) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setForm({ ...form, citizenId: value });
+  }}
+  inputMode="numeric"
+  maxLength={13}
+/>
             </div>
 
             <div className="col-md-4">
@@ -428,7 +444,7 @@ export default function PersonEditPage() {
                 list="nationality-list"
                 name="nationality"
                 className="form-control"
-                value={form.nationality}
+                value={form.nationality || ""}
                 onChange={handleChange}
               />
               <datalist id="nationality-list">
@@ -444,7 +460,7 @@ export default function PersonEditPage() {
                 list="ethnicity-list"
                 name="ethnicity"
                 className="form-control"
-                value={form.ethnicity}
+                value={form.ethnicity || ""}
                 onChange={handleChange}
               />
               <datalist id="ethnicity-list">
@@ -495,7 +511,7 @@ export default function PersonEditPage() {
                 list="bodyType-list"
                 name="bodyType"
                 className="form-control"
-                value={form.bodyType}
+                value={form.bodyType || ""}
                 onChange={handleChange}
               />
               <datalist id="bodyType-list">
@@ -511,7 +527,7 @@ export default function PersonEditPage() {
                 list="skinColor-list"
                 name="skinColor"
                 className="form-control"
-                value={form.skinColor}
+                value={form.skinColor || ""}
                 onChange={handleChange}
               />
               <datalist id="skinColor-list">
@@ -526,7 +542,7 @@ export default function PersonEditPage() {
               <input
                 name="distinguishingMarks"
                 className="form-control"
-                value={form.distinguishingMarks}
+                value={form.distinguishingMarks || ""}
                 onChange={handleChange}
               />
             </div>
@@ -536,7 +552,7 @@ export default function PersonEditPage() {
               <input
                 name="behavior"
                 className="form-control"
-                value={form.behavior}
+                value={form.behavior || ""}
                 onChange={handleChange}
               />
             </div>
@@ -601,13 +617,17 @@ export default function PersonEditPage() {
         </div>
       </div>
 
-      <button className="btn btn-success mt-3" onClick={handleCancel}>
-        ยกเลิก
-      </button>
+      <button className="btn btn-secondary mt-3 me-2" onClick={handleCancel}>
+  ยกเลิก
+</button>
 
-      <button className="btn btn-success mt-3" onClick={handleSubmit}>
-        บันทึก
-      </button>
+<button
+  className="btn btn-success mt-3"
+  onClick={handleSubmit}
+  disabled={loading}
+>
+  บันทึก
+</button>
     </div>
   );
 }
