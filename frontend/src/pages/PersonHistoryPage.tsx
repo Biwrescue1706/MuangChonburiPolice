@@ -80,6 +80,9 @@ const getStatusButton = (status: number) => {
   }
 };
 
+const active = (value: string | null, color: string) =>
+  statusParam === value ? color : `btn-outline-${color}`;
+
 export default function PersonHistoryPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
