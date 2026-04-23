@@ -756,6 +756,7 @@ useEffect(() => {
 
   </div>
 </div>
+</div>
 
 </div> {/* 🔥 ปิด row g-3 */}
 
