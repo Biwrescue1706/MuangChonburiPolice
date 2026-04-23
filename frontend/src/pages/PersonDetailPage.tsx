@@ -33,11 +33,11 @@ const getStatus = (status: number) => {
     case 0:
       return "รอส่ง ศพฐ";
     case 1:
-      return "ส่งแล้ว";
+      return "ส่ง ศพฐ แล้ว";
     case 2:
-      return "รับแล้ว";
+      return "รับจาก ศพฐ แล้ว";
     case 3:
-      return "ส่งคืน";
+      return "ส่งคืน ต้นสังกัดแล้ว ";
     default:
       return "-";
   }
