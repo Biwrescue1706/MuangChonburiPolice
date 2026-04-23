@@ -230,7 +230,7 @@ export default function PersonEditPage() {
   if (loading) return <div className="p-4">กำลังโหลด...</div>;
 
   return (
-    <div className="container mt-4">
+      <div className="p-4 main-content" >
       <h4>แก้ไขข้อมูล</h4>
 
       <div className="row g-3">
