@@ -367,7 +367,7 @@ body.login-page .form-control::placeholder {
 
 @media (min-width: 1280px) {
   .main-content {
-    margin-left: 170px;
+    margin-left: 100px;
     margin-top: 20px;
   }
 
