@@ -228,6 +228,14 @@ useEffect(() => {
   });
 };
 
+const handleCancel = () => {
+  if (window.history.length > 1) {
+    navigate(-1);
+  } else {
+    navigate("/person/history");
+  }
+};
+
   // ================= SUBMIT =================
   const handleSubmit = async () => {
   if (loading) return;
