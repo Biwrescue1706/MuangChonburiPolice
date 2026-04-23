@@ -19,7 +19,46 @@ model Admin {
   updatedAt DateTime?
 }
 
-// ORGANIZATION
+model OrganizationCommander {
+  commanderId String @id @default(uuid())
+
+  organizationId String @unique
+  organization   Organization @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade)
+
+  rank             String?
+  fullRank         String?
+  firstName        String?
+  lastName         String?
+  fullName         String?
+  fullNameWithRank String?
+  position         String?
+  fullPosition     String?
+
+  signatureImage String? // รูปลายเซ็น
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime?
+}
+
+model OrganizationFinance {
+  financeId String @id @default(uuid())
+
+  organizationId String @unique
+  organization   Organization @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade)
+
+  rank             String?
+  firstName        String?
+  lastName         String?
+  fullName         String?
+  fullNameWithRank String?
+  position         String?
+
+  signatureImage String? // รูปลายเซ็น
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime?
+}
+
 model Organization {
   organizationId   String @id @default(uuid())
   key              String @unique @default("MAIN")
@@ -32,27 +71,14 @@ model Organization {
   fullNameWithRank String
   position         String
 
-  commanderRank             String?
-  commanderFullRank         String?
-  commanderFirstName        String?
-  commanderLastName         String?
-  commanderFullName         String?
-  commanderFullNameWithRank String?
-  commanderPosition         String?
-  commanderFullPosition     String?
-
-  financeRank             String?
-  financeFirstName        String?
-  financeLastName         String?
-  financeFullName         String?
-  financeFullNameWithRank String?
-  financePosition         String?
-
   createdAt DateTime  @default(now())
   updatedAt DateTime?
 
   receipts Receipt[]
   persons  Person[]
+
+  commander OrganizationCommander?
+  finance   OrganizationFinance?
 }
 
 // PERSON
