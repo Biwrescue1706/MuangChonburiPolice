@@ -21,7 +21,6 @@ const formatThaiDate = (value: any) => {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
 };
 
-// ===== STATUS =====
 const renderStatus = (status: number) => {
   switch (status) {
     case 0:
@@ -37,24 +36,36 @@ const renderStatus = (status: number) => {
   }
 };
 
-// ===== PRIORITY =====
 const renderPriority = (priority: number) => {
   return priority === 1
     ? <span className="badge bg-danger">ด่วน</span>
     : <span className="badge bg-secondary">ไม่ด่วน</span>;
 };
 
-// ===== STATUS BUTTON (แก้แล้ว) =====
 const getStatusButton = (status: number) => {
   switch (status) {
     case 0:
-      return { text: "ส่ง ศพฐ.", class: "btn-warning text-dark" };
+      return "ส่ง ศพฐ.";
     case 1:
-      return { text: "รับผลจาก ศพฐ.", class: "btn-info text-dark" };
+      return "รับผลจาก ศพฐ.";
     case 2:
-      return { text: "ส่งคืน", class: "btn-primary" };
+      return "ส่งคืน";
     default:
       return null;
+  }
+};
+
+// ✅ เพิ่มใหม่ (ไม่กระทบของเดิม)
+const getStatusButtonStyle = (status: number) => {
+  switch (status) {
+    case 0:
+      return "btn-warning text-dark";
+    case 1:
+      return "btn-info text-dark";
+    case 2:
+      return "btn-primary";
+    default:
+      return "btn-secondary";
   }
 };
 
@@ -78,7 +89,10 @@ export default function PersonHistoryPage() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1280);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1280);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1280);
+    };
+
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -86,7 +100,6 @@ export default function PersonHistoryPage() {
   const active = (value: string | null) =>
     statusParam === value ? "btn-dark" : "btn-outline-secondary";
 
-  // debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebounceFirstName(firstName);
@@ -95,7 +108,6 @@ export default function PersonHistoryPage() {
     return () => clearTimeout(timer);
   }, [firstName, lastName]);
 
-  // fetch
   const fetchPersons = async () => {
     try {
       setLoading(true);
@@ -116,30 +128,31 @@ export default function PersonHistoryPage() {
     fetchPersons();
   }, [statusParam, debounceFirstName, debounceLastName]);
 
-  // select
   const toggleSelect = (id: string, status: number) => {
     if (status >= 3) return;
+
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
   const handleSelectAll = () => {
     const valid = persons.filter((p) => p.status < 3);
-    setSelectedIds(
-      selectedIds.length === valid.length
-        ? []
-        : valid.map((p) => p.personId)
-    );
+
+    if (selectedIds.length === valid.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(valid.map((p) => p.personId));
+    }
   };
 
-  // actions
   const handleDelete = async (p: any) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการลบ?",
       icon: "warning",
       showCancelButton: true,
     });
+
     if (!confirm.isConfirmed) return;
 
     try {
@@ -203,7 +216,7 @@ export default function PersonHistoryPage() {
           });
 
           success++;
-        })
+        }),
       );
 
       setSelectedIds([]);
@@ -228,36 +241,24 @@ export default function PersonHistoryPage() {
     <div className="p-4 main-content">
       <h2 className="mb-3 text-center">📄 ประวัติทั้งหมด</h2>
 
-      {/* FILTER */}
-      <div className="mb-3 d-flex gap-2 flex-wrap">
-        <button className={`btn btn-sm ${active(null)}`} onClick={()=>setSearchParams({})}>ทั้งหมด</button>
-        {[0,1,2,3].map(s=>(
-          <button key={s}
-            className={`btn btn-sm ${active(String(s))}`}
-            onClick={()=>setSearchParams({status:String(s)})}>
-            {renderStatus(s)}
-          </button>
-        ))}
-      </div>
-
       {/* MOBILE */}
       {isMobile && (
         <div className="d-flex flex-column gap-3">
-          {persons.map(p=>{
-            const btn = getStatusButton(p.status);
-            return (
-              <div key={p.personId} className="card p-3">
-                <strong>{p.fullName}</strong>
-                {renderStatus(p.status)}
+          {persons.map((p) => (
+            <div key={p.personId} className="card p-3">
+              <strong>{p.fullName}</strong>
+              <div className="mt-2">{renderStatus(p.status)}</div>
 
-                {p.status<3 && btn && (
-                  <button className={`btn mt-2 w-100 ${btn.class}`} onClick={()=>handleUpdateStatus(p)}>
-                    {btn.text}
-                  </button>
-                )}
-              </div>
-            )
-          })}
+              {p.status < 3 && (
+                <button
+                  className={`btn mt-2 w-100 ${getStatusButtonStyle(p.status)}`}
+                  onClick={() => handleUpdateStatus(p)}
+                >
+                  {getStatusButton(p.status)}
+                </button>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -265,22 +266,22 @@ export default function PersonHistoryPage() {
       {!isMobile && (
         <table className="table table-bordered text-center">
           <tbody>
-            {persons.map(p=>{
-              const btn = getStatusButton(p.status);
-              return (
-                <tr key={p.personId}>
-                  <td>{p.fullName}</td>
-                  <td>{renderStatus(p.status)}</td>
-                  <td>
-                    {p.status<3 && btn && (
-                      <button className={`btn btn-sm ${btn.class}`} onClick={()=>handleUpdateStatus(p)}>
-                        {btn.text}
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              )
-            })}
+            {persons.map((p) => (
+              <tr key={p.personId}>
+                <td>{p.fullName}</td>
+                <td>{renderStatus(p.status)}</td>
+                <td>
+                  {p.status < 3 && (
+                    <button
+                      className={`btn btn-sm ${getStatusButtonStyle(p.status)}`}
+                      onClick={() => handleUpdateStatus(p)}
+                    >
+                      {getStatusButton(p.status)}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       )}
