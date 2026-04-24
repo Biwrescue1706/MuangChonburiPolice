@@ -15,16 +15,19 @@ export default function BasicInfo({
         {/* คำนำหน้า */}
         <div className="col-md-2">
           <label className="form-label">คำนำหน้า</label>
-          <select
-            name="prefix"
-            className="form-control"
-            value={form.prefix}
-            onChange={handleChange}
-          >
-            <option>นาย</option>
-            <option>นางสาว</option>
-            <option>นาง</option>
-          </select>
+          <input
+  list="prefix-list"
+  name="prefix"
+  className="form-control"
+  value={form.prefix || ""}
+  onChange={handleChange}
+/>
+
+<datalist id="prefix-list">
+  <option value="นาย" />
+  <option value="นางสาว" />
+  <option value="นาง" />
+</datalist>
         </div>
 
         {/* ชื่อ */}
