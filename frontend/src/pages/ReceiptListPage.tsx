@@ -11,6 +11,7 @@ interface Receipt {
   fullName: string;
   money: number;
   createdAt: string;
+  receiptDate?: string;
 }
 
 export default function ReceiptListPage() {
@@ -44,14 +45,11 @@ export default function ReceiptListPage() {
       .includes(search.toLowerCase()),
   );
 
-  /* ================= SORT ================= */
+  /* ================= SORT (ตาม receiptDate) ================= */
   const sorted = [...filtered].sort((a, b) => {
-    const bookA = Number(a.receiptBookNo);
-    const bookB = Number(b.receiptBookNo);
-
-    if (bookA !== bookB) return bookA - bookB;
-
-    return Number(a.receiptNo) - Number(b.receiptNo);
+    const dateA = new Date(a.receiptDate || a.createdAt).getTime();
+    const dateB = new Date(b.receiptDate || b.createdAt).getTime();
+    return dateB - dateA; // ล่าสุดขึ้นบน
   });
 
   /* ================= DATE ================= */
@@ -109,9 +107,9 @@ export default function ReceiptListPage() {
                     <tr>
                       <th>#</th>
                       <th>ชื่อ</th>
-                      <th>เล่ม</th>
+                      <th>เล่มที่</th>
                       <th>เลขที่</th>
-                      <th>วันที่พิมพ์</th>
+                      <th>วันที่</th>
                       <th className="text-center">ดู</th>
                     </tr>
                   </thead>
@@ -136,7 +134,11 @@ export default function ReceiptListPage() {
                           <td className="fw-semibold">{item.fullName}</td>
                           <td>{item.receiptBookNo}</td>
                           <td>{item.receiptNo}</td>
-                          <td>{formatDate(item.createdAt)}</td>
+                          <td>
+                            {formatDate(
+                              item.receiptDate || item.createdAt,
+                            )}
+                          </td>
                           <td className="text-center">
                             <button
                               className="btn btn-sm btn-primary px-3"
@@ -168,14 +170,31 @@ export default function ReceiptListPage() {
           sorted.map((item) => (
             <div key={item.receiptId} className="card shadow-sm mb-3 border-0">
               <div className="card-body">
-                <h5 className="fw-bold">{item.fullName}</h5>
 
-                <p className="mb-1">📒 เล่ม : {item.receiptBookNo}</p>
-                <p className="mb-1">🔢 เลขที่ : {item.receiptNo}</p>
-                <p className="mb-1">📅 {formatDate(item.createdAt)}</p>
+                {/* ชื่อ */}
+                <h5 className="fw-bold mb-3">{item.fullName}</h5>
 
+                {/* ข้อมูลแบบมี label */}
+                <div className="row small mb-2">
+                  <div className="col-5 text-muted">📒 เล่มที่</div>
+                  <div className="col-7 fw-semibold">{item.receiptBookNo}</div>
+                </div>
+
+                <div className="row small mb-2">
+                  <div className="col-5 text-muted">🔢 เลขที่</div>
+                  <div className="col-7 fw-semibold">{item.receiptNo}</div>
+                </div>
+
+                <div className="row small mb-3">
+                  <div className="col-5 text-muted">📅 วันที่</div>
+                  <div className="col-7 fw-semibold">
+                    {formatDate(item.receiptDate || item.createdAt)}
+                  </div>
+                </div>
+
+                {/* ปุ่ม */}
                 <button
-                  className="btn btn-primary w-50"
+                  className="btn btn-primary w-100"
                   onClick={() => navigate(`/receipt/${item.receiptId}`)}
                 >
                   ดูรายละเอียด
