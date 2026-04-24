@@ -383,36 +383,36 @@ export default function PersonHistoryPage() {
 
               <strong>{p.fullName}</strong>
 
-              <div>📘 {p.receiptBookNo || "-"}</div>
-              <div>🧾 {p.receiptNo || "-"}</div>
-              <div>📅 {formatThaiDate(p.receiptDate)}</div>
-              <div className="mt-2">{renderStatus(p.status)}</div>
+              <div>📘 เล่มใบเสร็จ : {p.receiptBookNo || "-"}</div>
+              <div>🧾 เลขที่ใบเสร็จ :  {p.receiptNo || "-"}</div>
+              <div>📅 วันที่ พิมพ์มือ :  {formatThaiDate(p.receiptDate)}</div>
+              <div className="mt-2">สถานะ : {renderStatus(p.status)}</div>
 
-              <div className="mt-1">{renderPriority(p.priority ?? 0)}</div>
+              <div className="mt-1">ความเร่งด่วน : {renderPriority(p.priority ?? 0)}</div>
 
               {p.status === 3 && (
                 <div className="mt-1 text-danger">
-                  📅 วันคืน: {formatThaiDate(p.returnDate)}
+                  📅 วันคืน : {formatThaiDate(p.returnDate)}
                 </div>
               )}
 
               <div className="d-flex gap-2 mt-2 flex-wrap">
                 <button
-                  className="btn btn-info w-100"
+                  className="btn btn-info w-50"
                   onClick={() => navigate(`/person/${p.personId}`)}
                 >
                   ดู
                 </button>
                 <button
-                  className="btn btn-primary w-100"
+                  className="btn btn-primary w-50"
                   onClick={() => handleExportPDF(p)}
                 >
-                  PDF
+                  PDF แบบพิมพ์มือ
                 </button>
 
                 {p.status === 0 && (
                   <button
-                    className="btn btn-warning w-100"
+                    className="btn btn-warning w-50"
                     onClick={() => navigate(`/person/edit/${p.personId}`)}
                   >
                     แก้ไข
@@ -420,7 +420,7 @@ export default function PersonHistoryPage() {
                 )}
 
                 <button
-                  className="btn btn-danger w-100"
+                  className="btn btn-danger w-50"
                   onClick={() => handleDelete(p)}
                 >
                   ลบ
@@ -429,7 +429,7 @@ export default function PersonHistoryPage() {
 
               {p.status < 3 && (
                 <button
-                  className={`btn mt-2 w-100 ${getStatusButtonStyle(p.status)}`}
+                  className={`btn mt-2 w-50 ${getStatusButtonStyle(p.status)}`}
                   onClick={() => handleUpdateStatus(p)}
                 >
                   {getStatusButton(p.status)}
@@ -530,7 +530,7 @@ export default function PersonHistoryPage() {
                           className="btn btn-primary btn-sm"
                           onClick={() => handleExportPDF(p)}
                         >
-                          PDF แบบพิมพ์มือ{" "}
+                          PDF แบบพิมพ์มือ
                         </button>
                       </td>
 
