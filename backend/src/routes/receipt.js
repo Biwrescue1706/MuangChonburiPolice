@@ -7,28 +7,40 @@ const router = express.Router();
 /* ================= GET LATEST RECEIPT ================= */
 router.get("/latest", async (req, res) => {
   try {
-    const latestReceipt = await prisma.receipt.findFirst({
-      orderBy: { createdAt: "desc" },
+    // 👉 ดึงเลขเล่มทั้งหมด (ไม่ซ้ำ)
+    const books = await prisma.receipt.findMany({
+      select: { receiptBookNo: true },
+      distinct: ["receiptBookNo"],
     });
 
-    if (!latestReceipt) {
+    if (!books.length) {
       return res.json({
         bookNo: null,
         usedNumbers: [],
       });
     }
 
+    // 👉 หาเล่มล่าสุดจาก "เลข"
+    const latestBookNo = books
+      .map((b) => Number(b.receiptBookNo))
+      .filter((n) => !isNaN(n))
+      .sort((a, b) => b - a)[0]
+      ?.toString()
+      .padStart(5, "0");
+
+    // 👉 ดึงเลขที่ใช้ในเล่มนั้น
     const receipts = await prisma.receipt.findMany({
-      where: { receiptBookNo: latestReceipt.receiptBookNo },
+      where: { receiptBookNo: latestBookNo },
       select: { receiptNo: true },
     });
 
     const usedNumbers = receipts
       .map((r) => Number(r.receiptNo))
-      .filter((n) => !isNaN(n));
+      .filter((n) => !isNaN(n))
+      .sort((a, b) => a - b); // เรียงเลขสวย ๆ
 
     res.json({
-      bookNo: latestReceipt.receiptBookNo,
+      bookNo: latestBookNo,
       usedNumbers,
     });
   } catch (err) {
@@ -52,7 +64,8 @@ router.get("/used/:bookNo", async (req, res) => {
 
     const usedNumbers = receipts
       .map((r) => Number(r.receiptNo))
-      .filter((n) => !isNaN(n));
+      .filter((n) => !isNaN(n))
+      .sort((a, b) => a - b);
 
     res.json({ usedNumbers });
   } catch (err) {
