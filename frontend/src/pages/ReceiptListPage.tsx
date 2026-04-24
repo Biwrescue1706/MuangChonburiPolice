@@ -21,6 +21,7 @@ export default function ReceiptListPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
 
+  /* ================= FETCH ================= */
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -38,6 +39,37 @@ export default function ReceiptListPage() {
     fetchData();
   }, []);
 
+  /* ================= PARSE THAI DATE ================= */
+  const parseThaiDate = (dateStr?: string) => {
+    if (!dateStr) return 0;
+
+    const months: Record<string, number> = {
+      มกราคม: 0,
+      กุมภาพันธ์: 1,
+      มีนาคม: 2,
+      เมษายน: 3,
+      พฤษภาคม: 4,
+      มิถุนายน: 5,
+      กรกฎาคม: 6,
+      สิงหาคม: 7,
+      กันยายน: 8,
+      ตุลาคม: 9,
+      พฤศจิกายน: 10,
+      ธันวาคม: 11,
+    };
+
+    const parts = dateStr.trim().split(" ");
+    if (parts.length !== 3) return 0;
+
+    const day = Number(parts[0]);
+    const month = months[parts[1]];
+    const year = Number(parts[2]) - 543;
+
+    if (isNaN(day) || month === undefined || isNaN(year)) return 0;
+
+    return new Date(year, month, day).getTime();
+  };
+
   /* ================= SEARCH ================= */
   const filtered = data.filter((item) =>
     `${item.fullName} ${item.receiptNo} ${item.receiptBookNo}`
@@ -45,16 +77,26 @@ export default function ReceiptListPage() {
       .includes(search.toLowerCase()),
   );
 
-  /* ================= SORT (ตาม receiptDate) ================= */
+  /* ================= SORT ================= */
   const sorted = [...filtered].sort((a, b) => {
-    const dateA = new Date(a.receiptDate || a.createdAt).getTime();
-    const dateB = new Date(b.receiptDate || b.createdAt).getTime();
+    const dateA = a.receiptDate
+      ? parseThaiDate(a.receiptDate)
+      : new Date(a.createdAt).getTime();
+
+    const dateB = b.receiptDate
+      ? parseThaiDate(b.receiptDate)
+      : new Date(b.createdAt).getTime();
+
     return dateB - dateA; // ล่าสุดขึ้นบน
   });
 
-  /* ================= DATE ================= */
+  /* ================= FORMAT DATE ================= */
   const formatDate = (date: string) => {
     if (!date) return "-";
+
+    // ถ้าเป็นไทยอยู่แล้ว → คืนค่าเลย
+    if (date.includes(" ")) return date;
+
     return new Date(date).toLocaleDateString("th-TH", {
       year: "numeric",
       month: "short",
@@ -160,7 +202,7 @@ export default function ReceiptListPage() {
         </div>
       </div>
 
-      {/* ================= CARD (<1200) ================= */}
+      {/* ================= MOBILE ================= */}
       <div className="d-block d-xl-none">
         {loading ? (
           <p className="text-center">⏳ กำลังโหลด...</p>
@@ -171,10 +213,8 @@ export default function ReceiptListPage() {
             <div key={item.receiptId} className="card shadow-sm mb-3 border-0">
               <div className="card-body">
 
-                {/* ชื่อ */}
                 <h5 className="fw-bold mb-3">{item.fullName}</h5>
 
-                {/* ข้อมูลแบบมี label */}
                 <div className="row small mb-2">
                   <div className="col-5 text-muted">📒 เล่มที่</div>
                   <div className="col-7 fw-semibold">{item.receiptBookNo}</div>
@@ -192,7 +232,6 @@ export default function ReceiptListPage() {
                   </div>
                 </div>
 
-                {/* ปุ่ม */}
                 <button
                   className="btn btn-primary w-100"
                   onClick={() => navigate(`/receipt/${item.receiptId}`)}
