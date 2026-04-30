@@ -66,14 +66,17 @@ export default function PersonHistoryPage() {
       ? `btn-${color} text-white shadow fw-bold`
       : `btn-${color} text-white opacity-75`;
 
-  const sortedPersons = [...persons].sort((a, b) => {
+const sortedPersons = [...persons].sort((a, b) => {
+  // เรียงเล่มก่อน
   if (a.receiptBookNo !== b.receiptBookNo) {
     return (a.receiptBookNo || "").localeCompare(b.receiptBookNo || "");
   }
 
-  return (a.receiptNo || "").localeCompare(b.receiptNo || "", undefined, {
-    numeric: true,
-  });
+  // ✅ เล่มเท่ากัน → แปลงเป็น number แล้วเรียง
+  const noA = Number(a.receiptNo) || 0;
+  const noB = Number(b.receiptNo) || 0;
+
+  return noA - noB;
 });
 
   return (
@@ -180,8 +183,8 @@ export default function PersonHistoryPage() {
 
       {/* CONTENT */}
       {isMobile ? (
-        <PersonCardList
-          persons={sortedPersons}
+<PersonCardList 
+persons={sortedPersons}
           loading={loading}
           selectMode={selectMode}
           selectedIds={selectedIds}
