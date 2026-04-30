@@ -66,6 +66,16 @@ export default function PersonHistoryPage() {
       ? `btn-${color} text-white shadow fw-bold`
       : `btn-${color} text-white opacity-75`;
 
+  const sortedPersons = [...persons].sort((a, b) => {
+  if (a.receiptBookNo !== b.receiptBookNo) {
+    return (a.receiptBookNo || "").localeCompare(b.receiptBookNo || "");
+  }
+
+  return (a.receiptNo || "").localeCompare(b.receiptNo || "", undefined, {
+    numeric: true,
+  });
+});
+
   return (
     <div className="p-4 main-content">
       <h2 className="mb-3 text-center">📄 ประวัติทั้งหมด</h2>
@@ -171,7 +181,7 @@ export default function PersonHistoryPage() {
       {/* CONTENT */}
       {isMobile ? (
         <PersonCardList
-          persons={persons}
+          persons={sortedPersons}
           loading={loading}
           selectMode={selectMode}
           selectedIds={selectedIds}
@@ -182,7 +192,7 @@ export default function PersonHistoryPage() {
         />
       ) : (
         <PersonTable
-          persons={persons}
+          persons={sortedPersons}
           loading={loading}
           selectMode={selectMode}
           selectedIds={selectedIds}
