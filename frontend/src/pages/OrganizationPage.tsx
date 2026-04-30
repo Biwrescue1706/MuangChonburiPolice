@@ -53,18 +53,25 @@ export default function OrganizationPage() {
 
   const saveCommander = async () => {
     try {
-      const formData = new FormData();
+      let signatureUrl = commanderForm.signatureImage;
 
-      Object.keys(commanderForm).forEach((key) => {
-        formData.append(key, commanderForm[key]);
-      });
-
+      // STEP 1: upload รูป
       if (signatureFile) {
-        formData.append("signatureImage", signatureFile);
+        const formData = new FormData();
+        formData.append("file", signatureFile);
+
+        const res = await api.post(
+          `/organization/${orgId}/upload-signature`,
+          formData,
+        );
+
+        signatureUrl = res.data.url;
       }
 
-      await api.patch(`/organization/${orgId}/commander`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // STEP 2: save data
+      await api.patch(`/organization/${orgId}/commander`, {
+        ...commanderForm,
+        signatureImage: signatureUrl,
       });
 
       toast("success", "บันทึกผู้กำกับสำเร็จ");
