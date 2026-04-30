@@ -65,7 +65,7 @@ export default function PersonTable({
               <th>PDF</th>
               <th>แก้ไข</th>
               <th>ลบ</th>
-              <th>ส่ง</th>
+              {persons.some((p) => p.status < 3) && <th>ส่ง</th>}
             </tr>
           </thead>
 
@@ -156,6 +156,7 @@ export default function PersonTable({
                     </button>
                   </td>
 
+                  {persons.some((x) => x.status === 3) && (
                   <td>
                     {p.status < 3 && (
                       <button
@@ -168,6 +169,7 @@ export default function PersonTable({
                       </button>
                     )}
                   </td>
+                  )}
                 </tr>
               ))}
           </tbody>

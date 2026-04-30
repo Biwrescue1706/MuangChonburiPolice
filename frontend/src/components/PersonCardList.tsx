@@ -1,4 +1,4 @@
-//src/components/PersonCardList.tsx
+// src/components/PersonCardList.tsx
 import { useNavigate } from "react-router-dom";
 import {
   formatThaiDate,
@@ -76,46 +76,57 @@ export default function PersonCardList({
             </div>
           )}
 
-          <div className="d-flex gap-2 mt-2 flex-wrap">
-            <button
-              className="btn btn-info w-50"
-              onClick={() => navigate(`/person/${p.personId}`)}
-            >
-              ดู
-            </button>
+          {/* 🔥 ปุ่ม */}
+          <div className="row mt-2 g-2">
+            <div className="col-6">
+              <button
+                className="btn btn-info w-100"
+                onClick={() => navigate(`/person/${p.personId}`)}
+              >
+                ดู
+              </button>
+            </div>
 
-            <button
-              className="btn btn-primary w-50"
-              onClick={() => handleExportPDF(p)}
-            >
-              PDF แบบพิมพ์มือ
-            </button>
+            <div className="col-6">
+              <button
+                className="btn btn-primary w-100"
+                onClick={() => handleExportPDF(p)}
+              >
+                PDF แบบพิมพ์มือ
+              </button>
+            </div>
 
             {p.status < 3 && (
-              <button
-                className="btn btn-warning w-50"
-                onClick={() => navigate(`/person/edit/${p.personId}`)}
-              >
-                ✏️
-              </button>
+              <div className="col-6">
+                <button
+                  className="btn btn-warning w-100"
+                  onClick={() => navigate(`/person/edit/${p.personId}`)}
+                >
+                  ✏️
+                </button>
+              </div>
             )}
 
-            <button
-              className="btn btn-danger w-50"
-              onClick={() => handleDelete(p)}
-            >
-              🗑️
-            </button>
-          </div>
+            <div className="col-6">
+              <button
+                className="btn btn-danger w-100"
+                onClick={() => handleDelete(p)}
+              >
+                🗑️
+              </button>
+            </div>
 
-          {p.status < 3 && (
-            <button
-              className={`btn mt-2 w-50 ${getStatusButtonStyle(p.status)}`}
-              onClick={() => handleUpdateStatus(p)}
-            >
-              {getStatusButton(p.status)}
-            </button>
-          )}
+            {p.status < 3 && (
+              <div className="col-12">
+                <button
+                  className={`btn w-100 ${getStatusButtonStyle(p.status)}`}
+                  onClick={() => handleUpdateStatus(p)}
+                >
+                  {getStatusButton(p.status)}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       ))}
     </div>
