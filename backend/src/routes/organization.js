@@ -1,3 +1,4 @@
+//src/routes/organization.js
 import express from "express";
 import prisma from "../prisma.js";
 import multer from "multer";
@@ -8,7 +9,7 @@ const router = express.Router();
 /* ================= SUPABASE ================= */
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_KEY
 );
 
 /* ================= MULTER ================= */
@@ -135,6 +136,51 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+
+
+/* ================= COMMANDER ================= */
+
+router.get("/:id/commander", async (req, res) => {
+  try {
+    const data = await prisma.organizationCommander.findUnique({
+      where: { organizationId: req.params.id },
+    });
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "Fetch commander failed" });
+  }
+});
+
+router.patch("/:id/commander", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+
+    const name = buildFullName(data);
+
+    const result = await prisma.organizationCommander.upsert({
+      where: { organizationId: id },
+      update: {
+        ...data,
+        fullName: name.fullName,
+        fullNameWithRank: name.fullNameWithRank,
+      },
+      create: {
+        organizationId: id,
+        ...data,
+        fullName: name.fullName,
+        fullNameWithRank: name.fullNameWithRank,
+      },
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Update commander failed" });
+  }
+});
+
 /* ================= UPLOAD SIGNATURE ================= */
 
 router.post(
@@ -204,49 +250,6 @@ router.post(
     }
   }
 );
-
-/* ================= COMMANDER ================= */
-
-router.get("/:id/commander", async (req, res) => {
-  try {
-    const data = await prisma.organizationCommander.findUnique({
-      where: { organizationId: req.params.id },
-    });
-
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: "Fetch commander failed" });
-  }
-});
-
-router.patch("/:id/commander", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const data = req.body;
-
-    const name = buildFullName(data);
-
-    const result = await prisma.organizationCommander.upsert({
-      where: { organizationId: id },
-      update: {
-        ...data,
-        fullName: name.fullName,
-        fullNameWithRank: name.fullNameWithRank,
-      },
-      create: {
-        organizationId: id,
-        ...data,
-        fullName: name.fullName,
-        fullNameWithRank: name.fullNameWithRank,
-      },
-    });
-
-    res.json(result);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Update commander failed" });
-  }
-});
 
 /* ================= FINANCE ================= */
 
