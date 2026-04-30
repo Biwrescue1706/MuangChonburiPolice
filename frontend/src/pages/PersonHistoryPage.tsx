@@ -381,11 +381,17 @@ export default function PersonHistoryPage() {
                 </div>
               )}
 
-              <strong>{p.fullName}</strong>
+              <h5><strong>{p.fullName}</strong></h5>
 
-              <div>📘 เล่มใบเสร็จ : {p.receiptBookNo || "-"}</div>
-              <div>🧾 เลขที่ใบเสร็จ :  {p.receiptNo || "-"}</div>
+              <div className="mt-1"> ใบเสร็จรับเงิน
+
+              <div className="mt-1" >📘 เล่มใบเสร็จ : {p.receiptBookNo || "-"}</div>
+              <div>🧾 เลขที่ :  {p.receiptNo || "-"}</div>
               <div>📅 วันที่ พิมพ์มือ :  {formatThaiDate(p.receiptDate)}</div>
+
+              </div>
+
+              <div>เรื่องที่ขออนุญาต : {p.purpose || "-" } </div>
               <div className="mt-2">สถานะ : {renderStatus(p.status)}</div>
 
               <div className="mt-1">ความเร่งด่วน : {renderPriority(p.priority ?? 0)}</div>
@@ -464,9 +470,10 @@ export default function PersonHistoryPage() {
                   <th>เล่ม</th>
                   <th>เลข</th>
                   <th>วันที่</th>
+                  <th>เรื่องที่ขออนุญาต</th>
                   <th>สถานะ</th>
                   <th>ความเร่งด่วน</th>
-                  <th>วันคืน</th>
+                  {persons.some((p) => p.status === 3) && <th>วันคืน</th>}
                   <th>ดู</th>
                   <th>PDF</th>
                   <th>แก้ไข</th>
@@ -510,6 +517,7 @@ export default function PersonHistoryPage() {
                       <td>{p.receiptBookNo || "-"}</td>
                       <td>{p.receiptNo || "-"}</td>
                       <td>{formatThaiDate(p.receiptDate)}</td>
+                      <td>{p.purpose}</td>
                       <td>{renderStatus(p.status)}</td>
                       <td>{renderPriority(p.priority ?? 0)}</td>
                       <td>

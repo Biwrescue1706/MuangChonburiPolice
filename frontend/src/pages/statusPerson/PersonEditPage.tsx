@@ -126,8 +126,8 @@ export default function PersonEditPage() {
       const res = await api.get(`/person/${id}`);
       const data = res.data.data;
 
-const fp = splitFingerprint(data.fingerprintDate);
-const rc = splitReceiptDate(data.receiptDate); // 👈 เพิ่ม
+      const fp = splitFingerprint(data.fingerprintDate);
+      const rc = splitReceiptDate(data.receiptDate); // 👈 เพิ่ม
 
       const newData = {
         ...data,
@@ -142,7 +142,7 @@ const rc = splitReceiptDate(data.receiptDate); // 👈 เพิ่ม
       setOriginal({ ...newData });
     } catch {
       toast("error", "โหลดข้อมูลไม่สำเร็จ");
-      navigate("/person/status0");
+      navigate("/person/history");
     } finally {
       setLoading(false);
     }
@@ -161,11 +161,11 @@ const rc = splitReceiptDate(data.receiptDate); // 👈 เพิ่ม
   // ✅ fingerprint logic
   const maxDayFP = getDaysInMonth(form.fingerprintMonth, form.fingerprintYear);
 
-const maxDayRC = getDaysInMonth(form.receiptMonth, form.receiptYear);
+  const maxDayRC = getDaysInMonth(form.receiptMonth, form.receiptYear);
 
-const daysRC = Array.from({ length: maxDayRC }, (_, i) =>
-  String(i + 1).padStart(2, "0"),
-);
+  const daysRC = Array.from({ length: maxDayRC }, (_, i) =>
+    String(i + 1).padStart(2, "0"),
+  );
 
 
   const filteredDaysFP = Array.from({ length: maxDayFP }, (_, i) =>
@@ -197,103 +197,103 @@ const daysRC = Array.from({ length: maxDayRC }, (_, i) =>
     }
   }, [form.fingerprintMonth, form.fingerprintYear]);
 
-useEffect(() => {
-  if (form.receiptDay && Number(form.receiptDay) > maxDayRC) {
-    setForm((prev: any) => ({
-      ...prev,
-      receiptDay: "",
-    }));
-  }
-}, [form.receiptMonth, form.receiptYear]);
+  useEffect(() => {
+    if (form.receiptDay && Number(form.receiptDay) > maxDayRC) {
+      setForm((prev: any) => ({
+        ...prev,
+        receiptDay: "",
+      }));
+    }
+  }, [form.receiptMonth, form.receiptYear]);
 
-useEffect(() => {
-  if (!form.receiptYear) {
-    setForm((prev: any) => ({
-      ...prev,
-      receiptYear: String(currentYearTH),
-    }));
-  }
-}, [form.receiptYear]);
+  useEffect(() => {
+    if (!form.receiptYear) {
+      setForm((prev: any) => ({
+        ...prev,
+        receiptYear: String(currentYearTH),
+      }));
+    }
+  }, [form.receiptYear]);
 
   // ================= CHANGE =================
   const handleChange = (e: any) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  setForm({
-    ...form,
-    [name]:
-      name === "priority" || name === "money"
-        ? Number(value)
-        : value,
-  });
-};
+    setForm({
+      ...form,
+      [name]:
+        name === "priority" || name === "money"
+          ? Number(value)
+          : value,
+    });
+  };
 
-const handleCancel = () => {
-  if (window.history.length > 1) {
-    navigate(-1);
-  } else {
-    navigate("/person/history");
-  }
-};
+  const handleCancel = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/person/history");
+    }
+  };
 
   // ================= SUBMIT =================
   const handleSubmit = async () => {
-  if (loading) return;
+    if (loading) return;
 
-  const fingerprintDate = buildFingerprintDateTH(form);
-  const receiptDate = buildReceiptDateTH(form);
+    const fingerprintDate = buildFingerprintDateTH(form);
+    const receiptDate = buildReceiptDateTH(form);
 
-  if (!form.firstName || !form.lastName) {
-    toast("error", "กรุณากรอกชื่อ-นามสกุล");
-    return;
-  }
+    if (!form.firstName || !form.lastName) {
+      toast("error", "กรุณากรอกชื่อ-นามสกุล");
+      return;
+    }
 
-  if (form.citizenId && form.citizenId.length !== 13) {
-    toast("error", "เลขบัตรประชาชนต้อง 13 หลัก");
-    return;
-  }
+    if (form.citizenId && form.citizenId.length !== 13) {
+      toast("error", "เลขบัตรประชาชนต้อง 13 หลัก");
+      return;
+    }
 
-  const confirm = await Swal.fire({
-    title: "บันทึกข้อมูล?",
-    icon: "question",
-    showCancelButton: true,
-  });
+    const confirm = await Swal.fire({
+      title: "บันทึกข้อมูล?",
+      icon: "question",
+      showCancelButton: true,
+    });
 
-  if (!confirm.isConfirmed) return;
+    if (!confirm.isConfirmed) return;
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const finalData = {
-      ...original,
-      ...form,
-      birthDate: buildThaiDate(
-        form.birthDay,
-        form.birthMonth,
-        form.birthYear,
-      ),
-      fingerprintDate: fingerprintDate || original.fingerprintDate,
-      receiptDate: receiptDate || original.receiptDate,
-      fullName: [form.prefix, form.firstName, form.lastName]
-        .filter(Boolean)
-        .join(" "),
-    };
+      const finalData = {
+        ...original,
+        ...form,
+        birthDate: buildThaiDate(
+          form.birthDay,
+          form.birthMonth,
+          form.birthYear,
+        ),
+        fingerprintDate: fingerprintDate || original.fingerprintDate,
+        receiptDate: receiptDate || original.receiptDate,
+        fullName: [form.prefix, form.firstName, form.lastName]
+          .filter(Boolean)
+          .join(" "),
+      };
 
-    await api.put(`/person/${id}`, finalData);
+      await api.put(`/person/${id}`, finalData);
 
-    toast("success", "บันทึกข้อมูลสำเร็จ");
-    navigate("/person/status0");
-  } catch {
-    toast("error", "บันทึกข้อมูลไม่สำเร็จ");
-  } finally {
-    setLoading(false);
-  }
-};
+      toast("success", "บันทึกข้อมูลสำเร็จ");
+      navigate("/person/history");
+    } catch {
+      toast("error", "บันทึกข้อมูลไม่สำเร็จ");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) return <div className="p-4">กำลังโหลด...</div>;
 
   return (
-      <div className="p-4 main-content" >
+    <div className="p-4 main-content" >
       <h4>แก้ไขข้อมูล</h4>
 
       <div className="row g-3">
@@ -475,16 +475,16 @@ const handleCancel = () => {
             <div className="col-md-4">
               <label>เลขบัตรประชาชน</label>
               <input
-  name="citizenId"
-  className="form-control"
-  value={form.citizenId || ""}
-  onChange={(e) => {
-    const value = e.target.value.replace(/\D/g, "");
-    setForm({ ...form, citizenId: value });
-  }}
-  inputMode="numeric"
-  maxLength={13}
-/>
+                name="citizenId"
+                className="form-control"
+                value={form.citizenId || ""}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
+                  setForm({ ...form, citizenId: value });
+                }}
+                inputMode="numeric"
+                maxLength={13}
+              />
             </div>
 
             <div className="col-md-4">
@@ -665,106 +665,106 @@ const handleCancel = () => {
           </div>
         </div>
 
-{/* ===== RECEIPT ===== */}
-<div className="card mb-3">
-  <div className="card-header">ข้อมูลใบเสร็จ</div>
-  <div className="card-body row g-3">
+        {/* ===== RECEIPT ===== */}
+        <div className="card mb-3">
+          <div className="card-header">ข้อมูลใบเสร็จ</div>
+          <div className="card-body row g-3">
 
-    <div className="col-md-3">
-      <label>เล่มที่</label>
-      <input
-        name="receiptBookNo"
-        className="form-control"
-        value={form.receiptBookNo || ""}
-        onChange={handleChange}
-      />
-    </div>
+            <div className="col-md-3">
+              <label>เล่มที่</label>
+              <input
+                name="receiptBookNo"
+                className="form-control"
+                value={form.receiptBookNo || ""}
+                onChange={handleChange}
+              />
+            </div>
 
-    <div className="col-md-3">
-      <label>เลขที่</label>
-      <input
-        name="receiptNo"
-        className="form-control"
-        value={form.receiptNo || ""}
-        onChange={handleChange}
-      />
-    </div>
+            <div className="col-md-3">
+              <label>เลขที่</label>
+              <input
+                name="receiptNo"
+                className="form-control"
+                value={form.receiptNo || ""}
+                onChange={handleChange}
+              />
+            </div>
 
-    <div className="col-md-2">
-      <label>วัน</label>
-      <input
-        list="rc-day"
-        name="receiptDay"
-        className="form-control"
-        value={form.receiptDay || ""}
-        onChange={handleChange}
-      />
-      <datalist id="rc-day">
-        {daysRC.map((d) => (
-          <option key={d} value={d} />
-        ))}
-      </datalist>
-    </div>
+            <div className="col-md-2">
+              <label>วัน</label>
+              <input
+                list="rc-day"
+                name="receiptDay"
+                className="form-control"
+                value={form.receiptDay || ""}
+                onChange={handleChange}
+              />
+              <datalist id="rc-day">
+                {daysRC.map((d) => (
+                  <option key={d} value={d} />
+                ))}
+              </datalist>
+            </div>
 
-    <div className="col-md-3">
-      <label>เดือน</label>
-      <input
-        list="rc-month"
-        name="receiptMonth"
-        className="form-control"
-        value={form.receiptMonth || ""}
-        onChange={handleChange}
-      />
-      <datalist id="rc-month">
-        {months.map((m) => (
-          <option key={m} value={m} />
-        ))}
-      </datalist>
-    </div>
+            <div className="col-md-3">
+              <label>เดือน</label>
+              <input
+                list="rc-month"
+                name="receiptMonth"
+                className="form-control"
+                value={form.receiptMonth || ""}
+                onChange={handleChange}
+              />
+              <datalist id="rc-month">
+                {months.map((m) => (
+                  <option key={m} value={m} />
+                ))}
+              </datalist>
+            </div>
 
-    <div className="col-md-2">
-      <label>ปี</label>
-      <input
-        list="rc-year"
-        name="receiptYear"
-        className="form-control"
-        value={form.receiptYear || ""}
-        onChange={handleChange}
-      />
-      <datalist id="rc-year">
-        {years.map((y) => (
-          <option key={y} value={y} />
-        ))}
-      </datalist>
-    </div>
+            <div className="col-md-2">
+              <label>ปี</label>
+              <input
+                list="rc-year"
+                name="receiptYear"
+                className="form-control"
+                value={form.receiptYear || ""}
+                onChange={handleChange}
+              />
+              <datalist id="rc-year">
+                {years.map((y) => (
+                  <option key={y} value={y} />
+                ))}
+              </datalist>
+            </div>
 
-    <div className="col-md-3">
-      <label>จำนวนเงิน</label>
-      <input
-        type="number"
-        name="money"
-        className="form-control"
-        value={form.money || ""}
-        onChange={handleChange}
-      />
-    </div>
+            <div className="col-md-3">
+              <label>จำนวนเงิน</label>
+              <input
+                type="number"
+                name="money"
+                className="form-control"
+                value={form.money || ""}
+                onChange={handleChange}
+              />
+            </div>
 
-    <div className="col-md-3">
-      <label>ความเร่งด่วน</label>
-      <select
-        name="priority"
-        className="form-select"
-        value={form.priority ?? 0}
-        onChange={handleChange}
-      >
-        <option value={0}>ไม่ด่วน</option>
-        <option value={1}>ด่วน</option>
-      </select>
-    </div>
+            <div className="col-md-3">
+              <label>ความเร่งด่วน</label>
+              <select
+                name="priority"
+                className="form-select"
+                value={form.priority ?? 0}
+                onChange={handleChange}
+              >
+                <option value={0}>ไม่ด่วน</option>
+                <option value={1}>ด่วน</option>
+              </select>
+            </div>
 
-  </div>
-</div>
-</div>
+          </div>
+        </div>
+      </div>
 
       <button className="btn btn-secondary me-2" onClick={handleCancel}>
         ยกเลิก
@@ -773,6 +773,6 @@ const handleCancel = () => {
         บันทึก
       </button>
 
-</div>
+    </div>
   );
 }
