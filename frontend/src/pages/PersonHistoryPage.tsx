@@ -422,7 +422,7 @@ export default function PersonHistoryPage() {
                     className="btn btn-warning w-50"
                     onClick={() => navigate(`/person/edit/${p.personId}`)}
                   >
-                    แก้ไข
+                    ✏️
                   </button>
                 )}
 
@@ -430,7 +430,7 @@ export default function PersonHistoryPage() {
                   className="btn btn-danger w-50"
                   onClick={() => handleDelete(p)}
                 >
-                  ลบ
+                  🗑️
                 </button>
               </div>
 
@@ -467,10 +467,10 @@ export default function PersonHistoryPage() {
                     </th>
                   )}
                   <th>#</th>
-                  <th>ชื่อ</th>
-                  <th>เล่ม</th>
-                  <th>เลข</th>
-                  <th>วันที่</th>
+                  <th>ชื่อ และชื่อสกุล</th>
+                  <th>เล่มที่</th>
+                  <th>เลขที่</th>
+                  <th>ลงวันที่</th>
                   <th>เรื่องที่ขออนุญาต</th>
                   <th>สถานะ</th>
                   <th>ความเร่งด่วน</th>
@@ -521,16 +521,18 @@ export default function PersonHistoryPage() {
                       <td>{p.purpose}</td>
                       <td>{renderStatus(p.status)}</td>
                       <td>{renderPriority(p.priority ?? 0)}</td>
-                      <td>
-                        {p.status === 3 ? formatThaiDate(p.returnDate) : "-"}
-                      </td>
+{persons.some((p) => p.status === 3) && (
+  <td>
+    {p.status === 3 ? formatThaiDate(p.returnDate) : "-"}
+  </td>
+)}
 
                       <td>
                         <button
                           className="btn btn-info btn-sm"
                           onClick={() => navigate(`/person/${p.personId}`)}
                         >
-                          ดู
+                          🗑️
                         </button>
                       </td>
 
@@ -551,7 +553,7 @@ export default function PersonHistoryPage() {
                               navigate(`/person/edit/${p.personId}`)
                             }
                           >
-                            แก้ไข
+                            ✏️
                           </button>
                         )}
                       </td>
