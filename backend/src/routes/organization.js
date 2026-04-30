@@ -19,8 +19,13 @@ function buildFullName({ firstName, lastName, rank }) {
 router.get("/", async (req, res) => {
   try {
     const data = await prisma.organization.findMany({
+      include: {
+        commander: true,
+        finance: true
+      },
       orderBy: { createdAt: "desc" }
     });
+
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: "Fetch failed" });

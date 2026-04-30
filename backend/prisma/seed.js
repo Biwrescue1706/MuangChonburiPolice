@@ -7,8 +7,7 @@ async function main() {
   console.log("🌱 Start Seed");
 
   // ================= ADMIN =================
-  const defaultPassword = "123456";
-  const passwordHash = await bcrypt.hash(defaultPassword, 10);
+  const passwordHash = await bcrypt.hash("123456", 10);
 
   const admins = [
     { username: "Admin", name: "นายภูวณัฐ พาหะละ", position: "งาน นผ.3" },
@@ -21,7 +20,7 @@ async function main() {
   for (const admin of admins) {
     await prisma.admin.upsert({
       where: { username: admin.username },
-      update: {}, // ไม่แก้ของเดิม
+      update: {},
       create: {
         username: admin.username,
         password: passwordHash,
@@ -44,29 +43,38 @@ async function main() {
   const fullName = `${firstName} ${lastName}`;
   const fullNameWithRank = `${rank} ${fullName}`;
 
-  // ===== upsert organization =====
-  const org = await prisma.organization.upsert({
-    where: { key: "MAIN" }, // ต้อง unique
-    update: {
-      organizationName,
-      rank,
-      firstName,
-      lastName,
-      fullName,
-      fullNameWithRank,
-      position
-    },
-    create: {
-      key: "MAIN",
-      organizationName,
-      rank,
-      firstName,
-      lastName,
-      fullName,
-      fullNameWithRank,
-      position
-    }
-  });
+  // 🔥 หา org ก่อน (กัน DB เพี้ยน)
+  let org = await prisma.organization.findFirst();
+
+  if (org) {
+    org = await prisma.organization.update({
+      where: { organizationId: org.organizationId },
+      data: {
+        organizationName,
+        rank,
+        firstName,
+        lastName,
+        fullName,
+        fullNameWithRank,
+        position
+      }
+    });
+  } else {
+    org = await prisma.organization.create({
+      data: {
+        key: "MAIN",
+        organizationName,
+        rank,
+        firstName,
+        lastName,
+        fullName,
+        fullNameWithRank,
+        position
+      }
+    });
+  }
+
+  console.log("✅ Organization ready");
 
   // ================= COMMANDER =================
   const commander = {
@@ -96,6 +104,8 @@ async function main() {
     }
   });
 
+  console.log("✅ Commander ready");
+
   // ================= FINANCE =================
   const finance = {
     rank: "ร.ต.ต.หญิง",
@@ -122,12 +132,13 @@ async function main() {
     }
   });
 
-  console.log("✅ Seed Organization + Commander + Finance สำเร็จ");
+  console.log("✅ Finance ready");
+
+  console.log("🌱 Seed Success");
 }
 
 main()
   .then(async () => {
-    console.log("🌱 Seed Success");
     await prisma.$disconnect();
   })
   .catch(async (err) => {
