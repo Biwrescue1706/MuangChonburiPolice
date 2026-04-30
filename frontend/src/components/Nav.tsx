@@ -159,19 +159,19 @@ export default function Nav() {
       {/* ================= MOBILE SIDEBAR ================= */}
       <>
         <div
-  className="position-fixed text-white shadow d-xl-none"
-  style={{
-    width: "65%",
-    maxWidth: 200,
-    top: 0,
-    left: 0,
-    height: "100vh",
-    backgroundColor: "#800020",
-    zIndex: 1025,
-    transform: menuOpen ? "translateX(0)" : "translateX(-100%)",
-    transition: "0.3s",
-  }}
->
+          className="position-fixed text-white shadow d-xl-none"
+          style={{
+            width: "60%",
+            maxWidth: 200,
+            top: 0,
+            left: 0,
+            height: "100vh",
+            backgroundColor: "#800020",
+            zIndex: 1090,
+            transform: menuOpen ? "translateX(0)" : "translateX(-100%)",
+            transition: "0.3s",
+          }}
+        >
           <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
             <span className="fw-bold text-warning">เมนู</span>
 
@@ -184,14 +184,54 @@ export default function Nav() {
           </div>
 
           <div className="p-3 d-flex flex-column gap-2">
-            <button className="btn btn-warning text-start" onClick={() => go("/dashboard")}>🏠 หน้าแรก</button>
-            <button className="btn btn-warning text-start" onClick={() => go("/person/create")}>➕ เพิ่มบุคคลตรวจ</button>
-            <button className="btn btn-warning text-start" onClick={() => go("/person/history")}>📄 ประวัติ</button>
-            <button className="btn btn-warning text-start" onClick={() => go("/receipt")}>🧾 ใบเสร็จ</button>
-            <button className="btn btn-warning text-start" onClick={() => go("/admin/create")}>➕ Admin</button>
-            <button className="btn btn-warning text-start" onClick={() => go("/organization")}>🏢 หน่วยงาน</button>
-            <button className="btn btn-warning text-start" onClick={() => go("/profile")}>⚙️ โปรไฟล์</button>
-            <button className="btn btn-primary text-start" onClick={handleLogout}>🚪 ออกจากระบบ</button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => go("/dashboard")}
+            >
+              🏠 หน้าแรก
+            </button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => go("/person/create")}
+            >
+              ➕ เพิ่มบุคคลตรวจ
+            </button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => go("/person/history")}
+            >
+              📄 ประวัติ
+            </button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => go("/receipt")}
+            >
+              🧾 ใบเสร็จ
+            </button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => go("/admin/create")}
+            >
+              ➕ Admin
+            </button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => go("/organization")}
+            >
+              🏢 หน่วยงาน
+            </button>
+            <button
+              className="btn btn-warning text-start"
+              onClick={() => go("/profile")}
+            >
+              ⚙️ โปรไฟล์
+            </button>
+            <button
+              className="btn btn-primary text-start"
+              onClick={handleLogout}
+            >
+              🚪 ออกจากระบบ
+            </button>
           </div>
         </div>
 

@@ -1,7 +1,21 @@
 import express from "express";
 import prisma from "../prisma.js";
+import multer from "multer";
+import { createClient } from "@supabase/supabase-js";
 
 const router = express.Router();
+
+/* ================= SUPABASE ================= */
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+/* ================= MULTER ================= */
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+});
 
 /* ================= UTIL ================= */
 function buildFullName({ firstName, lastName, rank }) {
@@ -13,7 +27,7 @@ function buildFullName({ firstName, lastName, rank }) {
   return { fullName, fullNameWithRank };
 }
 
-/* ==== ORGANIZATION ==== */
+/* ================= ORGANIZATION ================= */
 
 // GET ALL
 router.get("/", async (req, res) => {
@@ -21,9 +35,9 @@ router.get("/", async (req, res) => {
     const data = await prisma.organization.findMany({
       include: {
         commander: true,
-        finance: true
+        finance: true,
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
     });
 
     res.json(data);
@@ -32,15 +46,15 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET ONE (รวม commander + finance)
+// GET ONE
 router.get("/:id", async (req, res) => {
   try {
     const data = await prisma.organization.findUnique({
       where: { organizationId: req.params.id },
       include: {
         commander: true,
-        finance: true
-      }
+        finance: true,
+      },
     });
 
     if (!data) return res.status(404).json({ error: "Not found" });
@@ -51,14 +65,14 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// UPDATE ORGANIZATION ONLY
+// UPDATE
 router.patch("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
 
     const existing = await prisma.organization.findUnique({
-      where: { organizationId: id }
+      where: { organizationId: id },
     });
 
     if (!existing) {
@@ -75,7 +89,7 @@ router.patch("/:id", async (req, res) => {
     const name = buildFullName({
       firstName: clean.firstName ?? existing.firstName,
       lastName: clean.lastName ?? existing.lastName,
-      rank: clean.rank ?? existing.rank
+      rank: clean.rank ?? existing.rank,
     });
 
     clean.fullName = name.fullName;
@@ -84,7 +98,7 @@ router.patch("/:id", async (req, res) => {
     const result = await prisma.$transaction(async (tx) => {
       const org = await tx.organization.update({
         where: { organizationId: id },
-        data: clean
+        data: clean,
       });
 
       // sync person
@@ -95,8 +109,8 @@ router.patch("/:id", async (req, res) => {
           fullNameOrg: org.fullName,
           rank: org.rank,
           position: org.position,
-          fullNameWithRank: org.fullNameWithRank
-        }
+          fullNameWithRank: org.fullNameWithRank,
+        },
       });
 
       // sync receipt
@@ -107,8 +121,8 @@ router.patch("/:id", async (req, res) => {
           fullNameOrg: org.fullName,
           rank: org.rank,
           position: org.position,
-          fullNameWithRank: org.fullNameWithRank
-        }
+          fullNameWithRank: org.fullNameWithRank,
+        },
       });
 
       return org;
@@ -121,13 +135,82 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-/* ==== COMMANDER ==== */
+/* ================= UPLOAD SIGNATURE ================= */
 
-// GET
+router.post(
+  "/:id/upload-signature",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      if (!file.mimetype.startsWith("image/")) {
+        return res.status(400).json({ error: "Only image allowed" });
+      }
+
+      // หา record เดิม (เผื่อลบรูปเก่า)
+      const existing = await prisma.organization.findUnique({
+        where: { organizationId: id },
+      });
+
+      // ลบรูปเก่า (ถ้ามี)
+      if (existing?.signatureImage) {
+        const oldPath = existing.signatureImage.split("/signatures/")[1];
+        if (oldPath) {
+          await supabase.storage.from("signatures").remove([oldPath]);
+        }
+      }
+
+      // ตั้งชื่อไฟล์ใหม่
+      const ext = file.mimetype.split("/")[1];
+      const fileName = `signature_${id}_${Date.now()}.${ext}`;
+
+      // upload
+      const { error: uploadError } = await supabase.storage
+        .from("signatures")
+        .upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // get public URL
+      const { data } = supabase.storage
+        .from("signatures")
+        .getPublicUrl(fileName);
+
+      const publicUrl = data.publicUrl;
+
+      // save DB
+      await prisma.organization.update({
+        where: { organizationId: id },
+        data: {
+          signatureImage: publicUrl,
+        },
+      });
+
+      res.json({
+        message: "Upload success",
+        url: publicUrl,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Upload failed" });
+    }
+  }
+);
+
+/* ================= COMMANDER ================= */
+
 router.get("/:id/commander", async (req, res) => {
   try {
     const data = await prisma.organizationCommander.findUnique({
-      where: { organizationId: req.params.id }
+      where: { organizationId: req.params.id },
     });
 
     res.json(data);
@@ -136,7 +219,6 @@ router.get("/:id/commander", async (req, res) => {
   }
 });
 
-// CREATE / UPDATE
 router.patch("/:id/commander", async (req, res) => {
   try {
     const { id } = req.params;
@@ -149,14 +231,14 @@ router.patch("/:id/commander", async (req, res) => {
       update: {
         ...data,
         fullName: name.fullName,
-        fullNameWithRank: name.fullNameWithRank
+        fullNameWithRank: name.fullNameWithRank,
       },
       create: {
         organizationId: id,
         ...data,
         fullName: name.fullName,
-        fullNameWithRank: name.fullNameWithRank
-      }
+        fullNameWithRank: name.fullNameWithRank,
+      },
     });
 
     res.json(result);
@@ -166,13 +248,12 @@ router.patch("/:id/commander", async (req, res) => {
   }
 });
 
-/* ==== FINANCE ==== */
+/* ================= FINANCE ================= */
 
-// GET
 router.get("/:id/finance", async (req, res) => {
   try {
     const data = await prisma.organizationFinance.findUnique({
-      where: { organizationId: req.params.id }
+      where: { organizationId: req.params.id },
     });
 
     res.json(data);
@@ -181,7 +262,6 @@ router.get("/:id/finance", async (req, res) => {
   }
 });
 
-// CREATE / UPDATE
 router.patch("/:id/finance", async (req, res) => {
   try {
     const { id } = req.params;
@@ -194,14 +274,14 @@ router.patch("/:id/finance", async (req, res) => {
       update: {
         ...data,
         fullName: name.fullName,
-        fullNameWithRank: name.fullNameWithRank
+        fullNameWithRank: name.fullNameWithRank,
       },
       create: {
         organizationId: id,
         ...data,
         fullName: name.fullName,
-        fullNameWithRank: name.fullNameWithRank
-      }
+        fullNameWithRank: name.fullNameWithRank,
+      },
     });
 
     res.json(result);
