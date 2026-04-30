@@ -11,37 +11,17 @@ async function main() {
   const passwordHash = await bcrypt.hash(defaultPassword, 10);
 
   const admins = [
-    {
-      username: "Admin",
-      name: "นายภูวณัฐ พาหะละ",
-      position: "งาน นผ.3"
-    },
-    {
-      username: "admin1",
-      name: "บิวบอง",
-      position: "งาน นผ.3"
-    },
-    {
-      username: "BiwBoong",
-      name: "บิวบอง",
-      position: "งาน นผ.3"
-    },
-    {
-      username: "Bank",
-      name: "จ.ส.ต.ชาญณรงค์เดช กันตพัชรโรจน์",
-      position: "งาน นผ. 1"
-    },
-    {
-      username: "Max",
-      name: "ส.ต.ต.ธาดา เสาวโค",
-      position: "งาน นผ. 2"
-    }
+    { username: "Admin", name: "นายภูวณัฐ พาหะละ", position: "งาน นผ.3" },
+    { username: "admin1", name: "บิวบอง", position: "งาน นผ.3" },
+    { username: "BiwBoong", name: "บิวบอง", position: "งาน นผ.3" },
+    { username: "Bank", name: "จ.ส.ต.ชาญณรงค์เดช กันตพัชรโรจน์", position: "งาน นผ. 1" },
+    { username: "Max", name: "ส.ต.ต.ธาดา เสาวโค", position: "งาน นผ. 2" }
   ];
 
   for (const admin of admins) {
     await prisma.admin.upsert({
       where: { username: admin.username },
-      update: {},
+      update: {}, // ไม่แก้ของเดิม
       create: {
         username: admin.username,
         password: passwordHash,
@@ -56,7 +36,6 @@ async function main() {
   // ================= ORGANIZATION =================
   const organizationName = "สถานีตำรวจภูธรเมืองชลบุรี";
 
-  // ผู้พิมพ์
   const firstName = "ธาดา";
   const lastName = "เสาวโค";
   const rank = "ส.ต.ต.";
@@ -65,29 +44,9 @@ async function main() {
   const fullName = `${firstName} ${lastName}`;
   const fullNameWithRank = `${rank} ${fullName}`;
 
-  // COMMANDER
-  const commanderRank = "พ.ต.อ.";
-  const commanderFullRank = "พันตำรวจเอก";
-  const commanderFirstName = "สมชาย";
-  const commanderLastName = "ทิวงษา";
-  const commanderPosition = "ผกก.สภ.เมืองชลบุรี";
-  const commanderFullPosition = "ผู้กำกับการสถานีตำรวจภูธรเมืองชลบุรี";
-
-  const commanderFullName = `${commanderFirstName} ${commanderLastName}`;
-  const commanderFullNameWithRank = `${commanderRank} ${commanderFullName}`;
-
-  // FINANCE
-  const financeRank = "ร.ต.ต.หญิง";
-  const financeFirstName = "จันทิมา";
-  const financeLastName = "เชื้อสกุล";
-  const financePosition = "รอง สว.(ป.) สภ.เมืองชลบุรี";
-
-  const financeFullName = `${financeFirstName} ${financeLastName}`;
-  const financeFullNameWithRank = `${financeRank} ${financeFullName}`;
-
   // ===== upsert organization =====
   const org = await prisma.organization.upsert({
-    where: { key: "MAIN" },
+    where: { key: "MAIN" }, // ต้อง unique
     update: {
       organizationName,
       rank,
@@ -110,51 +69,56 @@ async function main() {
   });
 
   // ================= COMMANDER =================
+  const commander = {
+    rank: "พ.ต.อ.",
+    fullRank: "พันตำรวจเอก",
+    firstName: "สมชาย",
+    lastName: "ทิวงษา",
+    position: "ผกก.สภ.เมืองชลบุรี",
+    fullPosition: "ผู้กำกับการสถานีตำรวจภูธรเมืองชลบุรี"
+  };
+
+  const commanderFullName = `${commander.firstName} ${commander.lastName}`;
+  const commanderFullNameWithRank = `${commander.rank} ${commanderFullName}`;
+
   await prisma.organizationCommander.upsert({
     where: { organizationId: org.organizationId },
     update: {
-      rank: commanderRank,
-      fullRank: commanderFullRank,
-      firstName: commanderFirstName,
-      lastName: commanderLastName,
+      ...commander,
       fullName: commanderFullName,
-      fullNameWithRank: commanderFullNameWithRank,
-      position: commanderPosition,
-      fullPosition: commanderFullPosition
-      // signatureImage: "/uploads/signatures/commander.png"
+      fullNameWithRank: commanderFullNameWithRank
     },
     create: {
       organizationId: org.organizationId,
-      rank: commanderRank,
-      fullRank: commanderFullRank,
-      firstName: commanderFirstName,
-      lastName: commanderLastName,
+      ...commander,
       fullName: commanderFullName,
-      fullNameWithRank: commanderFullNameWithRank,
-      position: commanderPosition,
-      fullPosition: commanderFullPosition
+      fullNameWithRank: commanderFullNameWithRank
     }
   });
 
   // ================= FINANCE =================
+  const finance = {
+    rank: "ร.ต.ต.หญิง",
+    firstName: "จันทิมา",
+    lastName: "เชื้อสกุล",
+    position: "รอง สว.(ป.) สภ.เมืองชลบุรี"
+  };
+
+  const financeFullName = `${finance.firstName} ${finance.lastName}`;
+  const financeFullNameWithRank = `${finance.rank} ${financeFullName}`;
+
   await prisma.organizationFinance.upsert({
     where: { organizationId: org.organizationId },
     update: {
-      rank: financeRank,
-      firstName: financeFirstName,
-      lastName: financeLastName,
+      ...finance,
       fullName: financeFullName,
-      fullNameWithRank: financeFullNameWithRank,
-      position: financePosition
+      fullNameWithRank: financeFullNameWithRank
     },
     create: {
       organizationId: org.organizationId,
-      rank: financeRank,
-      firstName: financeFirstName,
-      lastName: financeLastName,
+      ...finance,
       fullName: financeFullName,
-      fullNameWithRank: financeFullNameWithRank,
-      position: financePosition
+      fullNameWithRank: financeFullNameWithRank
     }
   });
 
@@ -162,11 +126,12 @@ async function main() {
 }
 
 main()
-  .then(() => {
+  .then(async () => {
     console.log("🌱 Seed Success");
-    process.exit(0);
+    await prisma.$disconnect();
   })
-  .catch((err) => {
+  .catch(async (err) => {
     console.error(err);
+    await prisma.$disconnect();
     process.exit(1);
   });

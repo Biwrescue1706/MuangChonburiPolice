@@ -8,7 +8,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ADMIN
 model Admin {
   adminId   String    @id @default(uuid())
   username  String    @unique
@@ -20,11 +19,8 @@ model Admin {
 }
 
 model OrganizationCommander {
-  commanderId String @id @default(uuid())
-
-  organizationId String @unique
-  organization   Organization @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade)
-
+  commanderId      String       @id @default(uuid())
+  organizationId   String       @unique
   rank             String?
   fullRank         String?
   firstName        String?
@@ -33,165 +29,124 @@ model OrganizationCommander {
   fullNameWithRank String?
   position         String?
   fullPosition     String?
-
-  signatureImage String? // รูปลายเซ็น
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime?
+  signatureImage   String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime?
+  organization     Organization @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade)
 }
 
 model OrganizationFinance {
-  financeId String @id @default(uuid())
-
-  organizationId String @unique
-  organization   Organization @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade)
-
+  financeId        String       @id @default(uuid())
+  organizationId   String       @unique
   rank             String?
   firstName        String?
   lastName         String?
   fullName         String?
   fullNameWithRank String?
   position         String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime?
+  organization     Organization @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade)
 }
 
 model Organization {
-  organizationId   String @id @default(uuid())
-  key              String @unique @default("MAIN")
+  organizationId   String                 @id @default(uuid())
+  key              String                 @unique @default("MAIN")
   organizationName String
-
   rank             String?
   firstName        String
   lastName         String
   fullName         String
   fullNameWithRank String
   position         String
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
-
-  receipts Receipt[]
-  persons  Person[]
-
-  commander OrganizationCommander?
-  finance   OrganizationFinance?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime?
+  commander        OrganizationCommander?
+  finance          OrganizationFinance?
+  persons          Person[]
+  receipts         Receipt[]
 }
 
-// PERSON
 model Person {
-  personId  String    @id @default(uuid())
-  createdAt DateTime  @default(now())
-
-  prefix    String
-  firstName String
-  lastName  String
-  fullName  String
-  citizenId String
-
-  // ⭐ ความเร่งด่วน
-  priority Int @default(0) // 0 = ไม่ด่วน, 1 = ด่วน
-
-  birthDate  String?
-  birthDay   String?
-  birthMonth String?
-  birthYear  String?
-
-  nationality String?
-  ethnicity   String?
-
+  personId            String        @id @default(uuid())
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime?
+  prefix              String
+  firstName           String
+  lastName            String
+  fullName            String
+  citizenId           String
+  birthDate           String?
+  birthDay            String?
+  birthMonth          String?
+  birthYear           String?
+  nationality         String?
+  ethnicity           String?
   weight              Int?
   height              Int?
-  bodyType            String? @default("สันทัด")
-  skinColor           String? @default("ดำแดง")
-  behavior            String? @default("ปกติ")
-  distinguishingMarks String? @default("-")
-
-  address          String?
-  occupation       String?
-  workplaceAddress String?
-  father           String?
-  mother           String?
-  spouse           String? @default("-")
-
-  fingerprintDate String?
-
-  purpose          String?
-  requestingAgency String?
-
-  receiptBookNo String?
-  receiptNo     String?
-  receiptDate   String?
-  money         Int     @default(100)
-  moneyText     String?
-
-  status          Int       @default(0)
-  statusUpdatedAt DateTime?
-
-  deleteAt DateTime?
-  returnDate DateTime?
-
-  // relation organization
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
-
-  organizationName String?
-  fullNameOrg      String?
-  rank             String?
-  position         String?
-  fullNameWithRank String?
-
-  updatedAt DateTime?
-
-  // relation อื่น
-  requestInfos RequestInfo[]
-  receipts     Receipt[]
+  bodyType            String?       @default("สันทัด")
+  skinColor           String?       @default("ดำแดง")
+  behavior            String?       @default("ปกติ")
+  distinguishingMarks String?       @default("-")
+  address             String?
+  occupation          String?
+  workplaceAddress    String?
+  father              String?
+  mother              String?
+  spouse              String?       @default("-")
+  fingerprintDate     String?
+  purpose             String?
+  requestingAgency    String?
+  receiptBookNo       String?
+  receiptNo           String?
+  receiptDate         String?
+  money               Int           @default(100)
+  moneyText           String?
+  status              Int           @default(0)
+  statusUpdatedAt     DateTime?
+  deleteAt            DateTime?
+  organizationId      String?
+  organizationName    String?
+  fullNameOrg         String?
+  rank                String?
+  position            String?
+  fullNameWithRank    String?
+  priority            Int           @default(0)
+  returnDate          DateTime?
+  organization        Organization? @relation(fields: [organizationId], references: [organizationId])
+  receipts            Receipt[]
+  requestInfos        RequestInfo[]
 }
 
-// REQUEST INFO
 model RequestInfo {
-  requestInfoId String @id @default(uuid())
-
-  personId String
-  person   Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
-
+  requestInfoId    String   @id @default(uuid())
+  personId         String
   purpose          String?
   requestingAgency String?
-
-  createdAt DateTime @default(now())
+  createdAt        DateTime @default(now())
+  person           Person   @relation(fields: [personId], references: [personId], onDelete: Cascade)
 }
 
-// RECEIPT
 model Receipt {
-  receiptId String @id @default(uuid())
-
-  personId String?
-person   Person? @relation(fields: [personId], references: [personId], onDelete: SetNull)
-
-  prefix    String
-  firstName String
-  lastName  String
-  fullName  String
-
-  // ⭐ snapshot priority
-  priority Int @default(0) // 0 = ไม่ด่วน, 1 = ด่วน
-
-  // snapshot org
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
-
+  receiptId        String        @id @default(uuid())
+  personId         String?
+  prefix           String
+  firstName        String
+  lastName         String
+  fullName         String
+  organizationId   String?
   organizationName String?
   fullNameOrg      String?
   rank             String?
   position         String?
   fullNameWithRank String?
-
-  receiptBookNo String?
-  receiptNo     String?
-  receiptDate   String?
-  money         Int
-  moneyText     String?
-
-  createdAt DateTime @default(now())
+  receiptBookNo    String?
+  receiptNo        String?
+  receiptDate      String?
+  money            Int
+  moneyText        String?
+  createdAt        DateTime      @default(now())
+  priority         Int           @default(0)
+  organization     Organization? @relation(fields: [organizationId], references: [organizationId])
+  person           Person?       @relation(fields: [personId], references: [personId])
 }
