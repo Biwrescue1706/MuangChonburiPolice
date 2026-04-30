@@ -410,7 +410,7 @@ export default function PersonHistoryPage() {
                   PDF แบบพิมพ์มือ
                 </button>
 
-                {p.status === 0 && (
+                {p.status < 3 && (
                   <button
                     className="btn btn-warning w-50"
                     onClick={() => navigate(`/person/edit/${p.personId}`)}
@@ -535,7 +535,7 @@ export default function PersonHistoryPage() {
                       </td>
 
                       <td>
-                        {p.status === 0 && (
+                        {p.status < 3 && (
                           <button
                             className="btn btn-warning btn-sm"
                             onClick={() =>
