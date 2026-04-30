@@ -7,6 +7,18 @@ import {
   getStatusButtonStyle,
 } from "../utils/personHelper";
 
+interface Props {
+  persons: any[];
+  loading: boolean;
+  selectMode: boolean;
+  selectedIds: string[];
+  toggleSelect: (id: string, status: number) => void;
+  handleSelectAll: () => void;
+  handleDelete: (p: any) => void;
+  handleUpdateStatus: (p: any) => void;
+  handleExportPDF: (p: any) => void;
+}
+
 export default function PersonTable({
   persons,
   loading,
@@ -17,7 +29,7 @@ export default function PersonTable({
   handleDelete,
   handleUpdateStatus,
   handleExportPDF,
-}: any) {
+}: Props) {
   const navigate = useNavigate();
 
   return (
@@ -32,7 +44,7 @@ export default function PersonTable({
                     type="checkbox"
                     checked={
                       selectedIds.length ===
-                        persons.filter((p: any) => p.status < 3).length &&
+                        persons.filter((p) => p.status < 3).length &&
                       persons.length > 0
                     }
                     onChange={handleSelectAll}
@@ -47,7 +59,7 @@ export default function PersonTable({
               <th>เรื่องที่ขออนุญาต</th>
               <th>สถานะ</th>
               <th>ความเร่งด่วน</th>
-              {persons.some((p: any) => p.status === 3) && <th>วันคืน</th>}
+              {persons.some((p) => p.status === 3) && <th>วันคืน</th>}
               <th>ดู</th>
               <th>PDF</th>
               <th>แก้ไข</th>
@@ -70,7 +82,7 @@ export default function PersonTable({
             )}
 
             {!loading &&
-              persons.map((p: any, i: number) => (
+              persons.map((p, i) => (
                 <tr key={p.personId}>
                   {selectMode && (
                     <td>
@@ -95,7 +107,7 @@ export default function PersonTable({
                   <td>{renderStatus(p.status)}</td>
                   <td>{renderPriority(p.priority ?? 0)}</td>
 
-                  {persons.some((p: any) => p.status === 3) && (
+                  {persons.some((x) => x.status === 3) && (
                     <td>
                       {p.status === 3
                         ? formatThaiDate(p.returnDate)
