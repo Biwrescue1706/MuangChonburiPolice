@@ -1,411 +1,278 @@
-// src/pages/OrganizationPage.tsx
-
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import { toast } from "../utils/toast";
-
-/* ================= TYPES ================= */
-
-interface Organization {
-  organizationId: string;
-  organizationName: string;
-
-  rank?: string;
-  firstName: string;
-  lastName: string;
-  fullNameWithRank: string;
-  position: string;
-
-  commanderFullNameWithRank?: string;
-  commanderPosition?: string;
-
-  financeFullNameWithRank?: string;
-  financePosition?: string;
-
-  commanderRank?: string;
-  commanderFirstName?: string;
-  commanderLastName?: string;
-
-  financeRank?: string;
-  financeFirstName?: string;
-  financeLastName?: string;
-}
-
-/* ================= HELPERS ================= */
-
-const formatText = (v?: string) => (v && v.trim() !== "" ? v : "-");
-
-const buildFullName = (rank?: string, first?: string, last?: string) =>
-  `${rank || ""}${first || ""} ${last || ""}`.trim();
-
-/* ================= COMPONENT ================= */
 
 export default function OrganizationPage() {
-  const [data, setData] = useState<Organization[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState<Organization | null>(null);
+  const [org, setOrg] = useState<any>(null);
+  const [orgForm, setOrgForm] = useState<any>({});
 
-  const [form, setForm] = useState<any>({});
-  const [original, setOriginal] = useState<any>(null);
+  const [commanderForm, setCommanderForm] = useState<any>({});
+  const [financeForm, setFinanceForm] = useState<any>({});
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1280);
-
-  /* ================= RESPONSIVE ================= */
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1280);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  /* ================= FETCH ================= */
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/organization");
-      setData(res.data.data || res.data);
-    } catch {
-      toast("error", "โหลดข้อมูลไม่สำเร็จ");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const orgId = org?.organizationId;
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  /* ================= EDIT ================= */
+  const fetchData = async () => {
+    const res = await api.get("/organization");
+    const data = res.data[0]; // ใช้ตัวแรก (MAIN)
 
-  const handleEdit = (item: Organization) => {
-    const f = {
-      organizationName: item.organizationName ?? "",
-      rank: item.rank ?? "",
-      firstName: item.firstName ?? "",
-      lastName: item.lastName ?? "",
-      position: item.position ?? "",
+    setOrg(data);
+    setOrgForm(data);
 
-      commanderRank: item.commanderRank ?? "",
-      commanderFirstName: item.commanderFirstName ?? "",
-      commanderLastName: item.commanderLastName ?? "",
-      commanderPosition: item.commanderPosition ?? "",
-
-      financeRank: item.financeRank ?? "",
-      financeFirstName: item.financeFirstName ?? "",
-      financeLastName: item.financeLastName ?? "",
-      financePosition: item.financePosition ?? "",
-    };
-
-    setSelected(item);
-    setForm(f);
-    setOriginal(f);
+    setCommanderForm(data?.commander || {});
+    setFinanceForm(data?.finance || {});
   };
 
-  /* ================= UPDATE ================= */
-
-  const handleUpdate = async () => {
-    if (!selected || !original) return;
-
-    const changed: any = {};
-
-    Object.keys(form).forEach((k) => {
-      if (form[k] !== original[k]) {
-        changed[k] = form[k];
-      }
-    });
-
-    if (Object.keys(changed).length === 0) {
-      toast("info", "ไม่มีการเปลี่ยนแปลง");
-      return;
-    }
-
-    try {
-      await api.patch(`/organization/${selected.organizationId}`, changed);
-      toast("success", "บันทึกสำเร็จ");
-      setSelected(null);
-      fetchData();
-    } catch {
-      toast("error", "บันทึกไม่สำเร็จ");
-    }
+  const handleChange = (e: any, setForm: any, form: any) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  /* ================= PREVIEW ================= */
+  const saveOrganization = async () => {
+    await api.patch(`/organization/${orgId}`, orgForm);
+    fetchData();
+  };
 
-  const previewMain = buildFullName(form.rank, form.firstName, form.lastName);
-  const previewCommander = buildFullName(
-    form.commanderRank,
-    form.commanderFirstName,
-    form.commanderLastName,
-  );
-  const previewFinance = buildFullName(
-    form.financeRank,
-    form.financeFirstName,
-    form.financeLastName,
-  );
+  const saveCommander = async () => {
+    await api.patch(`/organization/${orgId}/commander`, commanderForm);
+    fetchData();
+  };
 
-  /* ================= RETURN ================= */
+  const saveFinance = async () => {
+    await api.patch(`/organization/${orgId}/finance`, financeForm);
+    fetchData();
+  };
+
+  if (!org) return <div className="p-4">Loading...</div>;
 
   return (
-    <div className="p-4 main-content">
-      <h2 className="fw-bold mb-3 text-center">🏢 หน่วยงาน</h2>
+    <div className="container py-4">
 
-      {/* ================= TABLE ================= */}
-      {!isMobile && (
-        <div className="card shadow">
-          <table className="table mb-0">
-            <thead>
-              <tr>
-                <th>หน่วยงาน</th>
-                <th>ชื่อ</th>
-                <th>ตำแหน่ง</th>
-                <th></th>
-              </tr>
-            </thead>
+      {/* ================= ORGANIZATION ================= */}
+      <div className="card p-3 mb-4">
+        <h4>🏢 หน่วยงาน</h4>
 
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={4}>⏳</td>
-                </tr>
-              ) : (
-                data.map((i) => (
-                  <tr key={i.organizationId}>
-                    <td>{i.organizationName}</td>
-
-                    <td>
-                      <div>🧑 {formatText(i.fullNameWithRank)}</div>
-                      <div className="text-primary small">
-                        👮 {formatText(i.commanderFullNameWithRank)}
-                      </div>
-                      <div className="text-success small">
-                        💰 {formatText(i.financeFullNameWithRank)}
-                      </div>
-                    </td>
-
-                    {/* 🔥 แสดงตำแหน่งครบ */}
-                    <td>
-                      <div>🧑 {formatText(i.position)}</div>
-                      <div className="text-primary small">
-                        👮 {formatText(i.commanderPosition)}
-                      </div>
-                      <div className="text-success small">
-                        💰 {formatText(i.financePosition)}
-                      </div>
-                    </td>
-
-                    <td>
-                      <button
-                        className="btn btn-warning btn-sm"
-                        onClick={() => handleEdit(i)}
-                      >
-                        ✏️
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* ================= MOBILE ================= */}
-      {isMobile && (
-        <div className="row g-2">
-          {data.map((i) => (
-            <div className="col-12" key={i.organizationId}>
-              <div className="card p-3 shadow-sm">
-                <b>{i.organizationName}</b>
-
-                {/* คนหลัก */}
-                <div>🧑 {formatText(i.fullNameWithRank)}</div>
-                <small className="text-muted">{formatText(i.position)}</small>
-
-                {/* ผู้กำกับ */}
-                <div className="mt-2 text-primary">
-                  👮 {formatText(i.commanderFullNameWithRank)}
-                </div>
-                <small className="text-muted">
-                  {formatText(i.commanderPosition)}
-                </small>
-
-                {/* การเงิน */}
-                <div className="mt-2 text-success">
-                  💰 {formatText(i.financeFullNameWithRank)}
-                </div>
-                <small className="text-muted">
-                  {formatText(i.financePosition)}
-                </small>
-
-                <button
-                  className="btn btn-warning btn-sm mt-2"
-                  onClick={() => handleEdit(i)}
-                >
-                  ✏️ แก้ไข
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ================= MODAL ================= */}
-      {selected && (
-        <>
-          <div className="modal-backdrop fade show" />
-
-          <div className="modal d-block">
-            <div className="modal-dialog modal-xl">
-              <div className="modal-content p-4">
-                <h5 className="fw-bold mb-3">✏️ แก้ไขข้อมูล</h5>
-
-                {/* 🧑 คนหลัก */}
-                <h6>🧑 คนหลัก</h6>
+        <table className="table">
+          <tbody>
+            <tr>
+              <td>ชื่อหน่วยงาน</td>
+              <td>
                 <input
-                  list="rank-list"
-                  className="form-control mb-2"
-                  value={form.rank}
-                  onChange={(e) => setForm({ ...form, rank: e.target.value })}
+                  className="form-control"
+                  name="organizationName"
+                  value={orgForm.organizationName || ""}
+                  onChange={(e) => handleChange(e, setOrgForm, orgForm)}
                 />
+              </td>
+            </tr>
+
+            <tr>
+              <td>ยศ</td>
+              <td>
                 <input
-                  className="form-control mb-2"
-                  value={form.firstName}
+                  className="form-control"
+                  name="rank"
+                  value={orgForm.rank || ""}
+                  onChange={(e) => handleChange(e, setOrgForm, orgForm)}
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td>ชื่อ</td>
+              <td>
+                <input
+                  className="form-control"
+                  name="firstName"
+                  value={orgForm.firstName || ""}
+                  onChange={(e) => handleChange(e, setOrgForm, orgForm)}
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td>นามสกุล</td>
+              <td>
+                <input
+                  className="form-control"
+                  name="lastName"
+                  value={orgForm.lastName || ""}
+                  onChange={(e) => handleChange(e, setOrgForm, orgForm)}
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td>ตำแหน่ง</td>
+              <td>
+                <input
+                  className="form-control"
+                  name="position"
+                  value={orgForm.position || ""}
+                  onChange={(e) => handleChange(e, setOrgForm, orgForm)}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button className="btn btn-primary" onClick={saveOrganization}>
+          💾 บันทึกหน่วยงาน
+        </button>
+      </div>
+
+      {/* ================= COMMANDER ================= */}
+      <div className="card p-3 mb-4">
+        <h4>👮 ผู้กำกับ</h4>
+
+        <table className="table">
+          <tbody>
+            <tr>
+              <td>ยศ</td>
+              <td>
+                <input
+                  className="form-control"
+                  name="rank"
+                  value={commanderForm.rank || ""}
                   onChange={(e) =>
-                    setForm({ ...form, firstName: e.target.value })
+                    handleChange(e, setCommanderForm, commanderForm)
                   }
                 />
-                <input
-                  className="form-control mb-2"
-                  value={form.lastName}
-                  onChange={(e) =>
-                    setForm({ ...form, lastName: e.target.value })
-                  }
-                />
-                <input
-                  className="form-control mb-2"
-                  placeholder="ตำแหน่ง"
-                  value={form.position}
-                  onChange={(e) =>
-                    setForm({ ...form, position: e.target.value })
-                  }
-                />
-                <div className="text-muted mb-2">{previewMain}</div>
+              </td>
+            </tr>
 
-                {/* 👮 ผู้กำกับ */}
-                <h6>👮 ผู้กำกับ</h6>
+            <tr>
+              <td>ชื่อ</td>
+              <td>
                 <input
-                  list="rank-list"
-                  className="form-control mb-2"
-                  value={form.commanderRank}
+                  className="form-control"
+                  name="firstName"
+                  value={commanderForm.firstName || ""}
                   onChange={(e) =>
-                    setForm({ ...form, commanderRank: e.target.value })
+                    handleChange(e, setCommanderForm, commanderForm)
                   }
                 />
-                <input
-                  className="form-control mb-2"
-                  value={form.commanderFirstName}
-                  onChange={(e) =>
-                    setForm({ ...form, commanderFirstName: e.target.value })
-                  }
-                />
-                <input
-                  className="form-control mb-2"
-                  value={form.commanderLastName}
-                  onChange={(e) =>
-                    setForm({ ...form, commanderLastName: e.target.value })
-                  }
-                />
-                <input
-                  className="form-control mb-2"
-                  placeholder="ตำแหน่งผู้กำกับ"
-                  value={form.commanderPosition}
-                  onChange={(e) =>
-                    setForm({ ...form, commanderPosition: e.target.value })
-                  }
-                />
-                <div className="text-muted mb-2">{previewCommander}</div>
+              </td>
+            </tr>
 
-                {/* 💰 การเงิน */}
-                <h6>💰 การเงิน</h6>
+            <tr>
+              <td>นามสกุล</td>
+              <td>
                 <input
-                  list="rank-list"
-                  className="form-control mb-2"
-                  value={form.financeRank}
+                  className="form-control"
+                  name="lastName"
+                  value={commanderForm.lastName || ""}
                   onChange={(e) =>
-                    setForm({ ...form, financeRank: e.target.value })
+                    handleChange(e, setCommanderForm, commanderForm)
                   }
                 />
-                <input
-                  className="form-control mb-2"
-                  value={form.financeFirstName}
-                  onChange={(e) =>
-                    setForm({ ...form, financeFirstName: e.target.value })
-                  }
-                />
-                <input
-                  className="form-control mb-2"
-                  value={form.financeLastName}
-                  onChange={(e) =>
-                    setForm({ ...form, financeLastName: e.target.value })
-                  }
-                />
-                <input
-                  className="form-control mb-2"
-                  placeholder="ตำแหน่งการเงิน"
-                  value={form.financePosition}
-                  onChange={(e) =>
-                    setForm({ ...form, financePosition: e.target.value })
-                  }
-                />
-                <div className="text-muted mb-2">{previewFinance}</div>
+              </td>
+            </tr>
 
-                {/* datalist */}
-                <datalist id="rank-list">
-                  {[
-                    "ส.ต.ต.",
-                    "ส.ต.ท.",
-                    "ส.ต.อ.",
-                    "จ.ส.ต.",
-                    "ด.ต.",
-                    "ร.ต.ต.",
-                    "ร.ต.ท.",
-                    "ร.ต.อ.",
-                    "พ.ต.ต.",
-                    "พ.ต.ท.",
-                    "พ.ต.อ.",
-                    "พล.ต.ต.",
-                    "พล.ต.ท.",
-                    "พล.ต.อ.",
-                  ]
-                    .flatMap((r) => [r, `${r} หญิง`])
-                    .map((r) => (
-                      <option key={r} value={r} />
-                    ))}
-                </datalist>
+            <tr>
+              <td>ตำแหน่ง</td>
+              <td>
+                <input
+                  className="form-control"
+                  name="position"
+                  value={commanderForm.position || ""}
+                  onChange={(e) =>
+                    handleChange(e, setCommanderForm, commanderForm)
+                  }
+                />
+              </td>
+            </tr>
 
-                <div className="text-end mt-3">
-                  <button
-                    className="btn btn-success me-2"
-                    onClick={handleUpdate}
-                  >
-                    💾 บันทึก
-                  </button>
+            <tr>
+              <td>ตำแหน่งเต็ม</td>
+              <td>
+                <input
+                  className="form-control"
+                  name="fullPosition"
+                  value={commanderForm.fullPosition || ""}
+                  onChange={(e) =>
+                    handleChange(e, setCommanderForm, commanderForm)
+                  }
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => setSelected(null)}
-                  >
-                    ยกเลิก
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+        <button className="btn btn-warning" onClick={saveCommander}>
+          💾 บันทึกผู้กำกับ
+        </button>
+      </div>
+
+      {/* ================= FINANCE ================= */}
+      <div className="card p-3">
+        <h4>💰 การเงิน</h4>
+
+        <table className="table">
+          <tbody>
+            <tr>
+              <td>ยศ</td>
+              <td>
+                <input
+                  className="form-control"
+                  name="rank"
+                  value={financeForm.rank || ""}
+                  onChange={(e) =>
+                    handleChange(e, setFinanceForm, financeForm)
+                  }
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td>ชื่อ</td>
+              <td>
+                <input
+                  className="form-control"
+                  name="firstName"
+                  value={financeForm.firstName || ""}
+                  onChange={(e) =>
+                    handleChange(e, setFinanceForm, financeForm)
+                  }
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td>นามสกุล</td>
+              <td>
+                <input
+                  className="form-control"
+                  name="lastName"
+                  value={financeForm.lastName || ""}
+                  onChange={(e) =>
+                    handleChange(e, setFinanceForm, financeForm)
+                  }
+                />
+              </td>
+            </tr>
+
+            <tr>
+              <td>ตำแหน่ง</td>
+              <td>
+                <input
+                  className="form-control"
+                  name="position"
+                  value={financeForm.position || ""}
+                  onChange={(e) =>
+                    handleChange(e, setFinanceForm, financeForm)
+                  }
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button className="btn btn-success" onClick={saveFinance}>
+          💾 บันทึกการเงิน
+        </button>
+      </div>
     </div>
   );
 }
