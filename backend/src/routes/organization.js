@@ -4,171 +4,205 @@ import prisma from "../prisma.js";
 const router = express.Router();
 
 /* ================= UTIL ================= */
-
 function buildFullName({ firstName, lastName, rank }) {
-    const fullName = `${firstName} ${lastName}`;
-    const fullNameWithRank = rank
-        ? `${rank}${firstName} ${lastName}`
-        : fullName;
+  const fullName = `${firstName || ""} ${lastName || ""}`.trim();
+  const fullNameWithRank = rank
+    ? `${rank}${firstName || ""} ${lastName || ""}`.trim()
+    : fullName;
 
-    return { fullName, fullNameWithRank };
+  return { fullName, fullNameWithRank };
 }
 
-/* ================= READ ALL ================= */
+/* ==== ORGANIZATION ==== */
+
+// GET ALL
 router.get("/", async (req, res) => {
-    try {
-        const organizations = await prisma.organization.findMany({
-            orderBy: { createdAt: "desc" },
-        });
-
-        res.json(organizations);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Fetch organizations failed" });
-    }
-});
-
-router.get("/key/:key", async (req, res) => {
   try {
-    const org = await prisma.organization.findFirst({
-      where: { key: req.params.key },
+    const data = await prisma.organization.findMany({
+      orderBy: { createdAt: "desc" }
     });
-
-    if (!org) {
-      return res.status(404).json({ error: "ไม่พบหน่วยงาน" });
-    }
-
-    res.json({ success: true, data: org });
+    res.json(data);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "โหลดข้อมูลไม่สำเร็จ" });
+    res.status(500).json({ error: "Fetch failed" });
   }
 });
 
-/* ================= READ ONE ================= */
+// GET ONE (รวม commander + finance)
 router.get("/:id", async (req, res) => {
-    try {
-        const organization = await prisma.organization.findUnique({
-            where: { organizationId: req.params.id },
-        });
+  try {
+    const data = await prisma.organization.findUnique({
+      where: { organizationId: req.params.id },
+      include: {
+        commander: true,
+        finance: true
+      }
+    });
 
-        if (!organization) {
-            return res.status(404).json({ error: "Organization not found" });
-        }
+    if (!data) return res.status(404).json({ error: "Not found" });
 
-        res.json(organization);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Fetch organization failed" });
-    }
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "Fetch failed" });
+  }
 });
 
-/* ================= UPDATE ================= */
+// UPDATE ORGANIZATION ONLY
 router.patch("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
 
     const existing = await prisma.organization.findUnique({
-      where: { organizationId: id },
+      where: { organizationId: id }
     });
 
     if (!existing) {
       return res.status(404).json({ error: "Organization not found" });
     }
 
-    /* ================= CLEAN DATA ================= */
-    const updateData = {};
+    const clean = {};
     for (const key in data) {
-      if (data[key] !== "" && data[key] !== undefined && data[key] !== null) {
-        updateData[key] = data[key];
+      if (data[key] !== "" && data[key] !== null && data[key] !== undefined) {
+        clean[key] = data[key];
       }
     }
 
-    /* ================= BUILD NAME ================= */
-    const mainName = buildFullName({
-      firstName: updateData.firstName ?? existing.firstName,
-      lastName: updateData.lastName ?? existing.lastName,
-      rank: updateData.rank ?? existing.rank,
+    const name = buildFullName({
+      firstName: clean.firstName ?? existing.firstName,
+      lastName: clean.lastName ?? existing.lastName,
+      rank: clean.rank ?? existing.rank
     });
 
-    updateData.fullName = mainName.fullName;
-    updateData.fullNameWithRank = mainName.fullNameWithRank;
+    clean.fullName = name.fullName;
+    clean.fullNameWithRank = name.fullNameWithRank;
 
-    /* ================= COMMANDER ================= */
-    if (
-      updateData.commanderFirstName ||
-      updateData.commanderLastName ||
-      updateData.commanderRank
-    ) {
-      const commander = buildFullName({
-        firstName:
-          updateData.commanderFirstName ?? existing.commanderFirstName,
-        lastName:
-          updateData.commanderLastName ?? existing.commanderLastName,
-        rank: updateData.commanderRank ?? existing.commanderRank,
-      });
-
-      updateData.commanderFullName = commander.fullName;
-      updateData.commanderFullNameWithRank =
-        commander.fullNameWithRank;
-    }
-
-    /* ================= FINANCE ================= */
-    if (
-      updateData.financeFirstName ||
-      updateData.financeLastName ||
-      updateData.financeRank
-    ) {
-      const finance = buildFullName({
-        firstName:
-          updateData.financeFirstName ?? existing.financeFirstName,
-        lastName:
-          updateData.financeLastName ?? existing.financeLastName,
-        rank: updateData.financeRank ?? existing.financeRank,
-      });
-
-      updateData.financeFullName = finance.fullName;
-      updateData.financeFullNameWithRank =
-        finance.fullNameWithRank;
-    }
-
-    /* ================= TRANSACTION ================= */
     const result = await prisma.$transaction(async (tx) => {
-      const organization = await tx.organization.update({
+      const org = await tx.organization.update({
         where: { organizationId: id },
-        data: updateData,
+        data: clean
       });
 
+      // sync person
       await tx.person.updateMany({
         where: { organizationId: id },
         data: {
-          organizationName: organization.organizationName,
-          fullNameOrg: organization.fullName,
-          rank: organization.rank,
-          position: organization.position,
-          fullNameWithRank: organization.fullNameWithRank,
-        },
+          organizationName: org.organizationName,
+          fullNameOrg: org.fullName,
+          rank: org.rank,
+          position: org.position,
+          fullNameWithRank: org.fullNameWithRank
+        }
       });
 
+      // sync receipt
       await tx.receipt.updateMany({
         where: { organizationId: id },
         data: {
-          organizationName: organization.organizationName,
-          fullNameOrg: organization.fullName,
-          rank: organization.rank,
-          position: organization.position,
-          fullNameWithRank: organization.fullNameWithRank,
-        },
+          organizationName: org.organizationName,
+          fullNameOrg: org.fullName,
+          rank: org.rank,
+          position: org.position,
+          fullNameWithRank: org.fullNameWithRank
+        }
       });
 
-      return organization;
+      return org;
     });
 
     res.json(result);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Update organization failed" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Update failed" });
+  }
+});
+
+/* ==== COMMANDER ==== */
+
+// GET
+router.get("/:id/commander", async (req, res) => {
+  try {
+    const data = await prisma.organizationCommander.findUnique({
+      where: { organizationId: req.params.id }
+    });
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "Fetch commander failed" });
+  }
+});
+
+// CREATE / UPDATE
+router.patch("/:id/commander", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+
+    const name = buildFullName(data);
+
+    const result = await prisma.organizationCommander.upsert({
+      where: { organizationId: id },
+      update: {
+        ...data,
+        fullName: name.fullName,
+        fullNameWithRank: name.fullNameWithRank
+      },
+      create: {
+        organizationId: id,
+        ...data,
+        fullName: name.fullName,
+        fullNameWithRank: name.fullNameWithRank
+      }
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Update commander failed" });
+  }
+});
+
+/* ==== FINANCE ==== */
+
+// GET
+router.get("/:id/finance", async (req, res) => {
+  try {
+    const data = await prisma.organizationFinance.findUnique({
+      where: { organizationId: req.params.id }
+    });
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "Fetch finance failed" });
+  }
+});
+
+// CREATE / UPDATE
+router.patch("/:id/finance", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+
+    const name = buildFullName(data);
+
+    const result = await prisma.organizationFinance.upsert({
+      where: { organizationId: id },
+      update: {
+        ...data,
+        fullName: name.fullName,
+        fullNameWithRank: name.fullNameWithRank
+      },
+      create: {
+        organizationId: id,
+        ...data,
+        fullName: name.fullName,
+        fullNameWithRank: name.fullNameWithRank
+      }
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Update finance failed" });
   }
 });
 

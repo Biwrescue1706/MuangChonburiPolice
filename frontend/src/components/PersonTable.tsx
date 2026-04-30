@@ -152,7 +152,7 @@ export default function PersonTable({
                       className="btn btn-danger btn-sm"
                       onClick={() => handleDelete(p)}
                     >
-                      ลบ
+                      🗑️
                     </button>
                   </td>
 
