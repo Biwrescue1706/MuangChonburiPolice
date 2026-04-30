@@ -1,5 +1,5 @@
 //src/utils/personHelper.tsx
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export const formatThaiDate = (value: any) => {
   if (!value) return "-";
