@@ -391,7 +391,8 @@ export default function PersonHistoryPage() {
 
               </div>
 
-              <div>เรื่องที่ขออนุญาต : {p.purpose || "-" } </div>
+              <div className="mt-1 mb-1"><strong>เรื่องที่ขออนุญาต </strong> : {p.purpose || "-" } </div>
+
               <div className="mt-2">สถานะ : {renderStatus(p.status)}</div>
 
               <div className="mt-1">ความเร่งด่วน : {renderPriority(p.priority ?? 0)}</div>
