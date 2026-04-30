@@ -1,4 +1,3 @@
-//src/routes/organization.js
 import express from "express";
 import prisma from "../prisma.js";
 import multer from "multer";
@@ -9,7 +8,7 @@ const router = express.Router();
 /* ================= SUPABASE ================= */
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
+  process.env.SUPABASE_KEY // หรือ SERVICE_ROLE_KEY ก็ได้ แต่ต้องตรงกับ env
 );
 
 /* ================= MULTER ================= */
@@ -34,15 +33,11 @@ function buildFullName({ firstName, lastName, rank }) {
 router.get("/", async (req, res) => {
   try {
     const data = await prisma.organization.findMany({
-      include: {
-        commander: true,
-        finance: true,
-      },
+      include: { commander: true, finance: true },
       orderBy: { createdAt: "desc" },
     });
-
     res.json(data);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Fetch failed" });
   }
 });
@@ -52,21 +47,16 @@ router.get("/:id", async (req, res) => {
   try {
     const data = await prisma.organization.findUnique({
       where: { organizationId: req.params.id },
-      include: {
-        commander: true,
-        finance: true,
-      },
+      include: { commander: true, finance: true },
     });
-
     if (!data) return res.status(404).json({ error: "Not found" });
-
     res.json(data);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Fetch failed" });
   }
 });
 
-// UPDATE
+// UPDATE ORG
 router.patch("/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -96,37 +86,9 @@ router.patch("/:id", async (req, res) => {
     clean.fullName = name.fullName;
     clean.fullNameWithRank = name.fullNameWithRank;
 
-    const result = await prisma.$transaction(async (tx) => {
-      const org = await tx.organization.update({
-        where: { organizationId: id },
-        data: clean,
-      });
-
-      // sync person
-      await tx.person.updateMany({
-        where: { organizationId: id },
-        data: {
-          organizationName: org.organizationName,
-          fullNameOrg: org.fullName,
-          rank: org.rank,
-          position: org.position,
-          fullNameWithRank: org.fullNameWithRank,
-        },
-      });
-
-      // sync receipt
-      await tx.receipt.updateMany({
-        where: { organizationId: id },
-        data: {
-          organizationName: org.organizationName,
-          fullNameOrg: org.fullName,
-          rank: org.rank,
-          position: org.position,
-          fullNameWithRank: org.fullNameWithRank,
-        },
-      });
-
-      return org;
+    const result = await prisma.organization.update({
+      where: { organizationId: id },
+      data: clean,
     });
 
     res.json(result);
@@ -136,22 +98,21 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-
-
 /* ================= COMMANDER ================= */
 
+// GET
 router.get("/:id/commander", async (req, res) => {
   try {
     const data = await prisma.organizationCommander.findUnique({
       where: { organizationId: req.params.id },
     });
-
     res.json(data);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Fetch commander failed" });
   }
 });
 
+// PATCH
 router.patch("/:id/commander", async (req, res) => {
   try {
     const { id } = req.params;
@@ -176,7 +137,7 @@ router.patch("/:id/commander", async (req, res) => {
 
     res.json(result);
   } catch (err) {
-    console.error(err);
+    console.error("COMMANDER ERROR:", err);
     res.status(500).json({ error: "Update commander failed" });
   }
 });
@@ -199,43 +160,61 @@ router.post(
         return res.status(400).json({ error: "Only image allowed" });
       }
 
-      // หา record เดิม (เผื่อลบรูปเก่า)
-      const existing = await prisma.organization.findUnique({
+      // เช็ค org
+      const org = await prisma.organization.findUnique({
         where: { organizationId: id },
       });
 
-      // ลบรูปเก่า (ถ้ามี)
-      if (existing?.signatureImage) {
-        const oldPath = existing.signatureImage.split("/signatures/")[1];
-        if (oldPath) {
-          await supabase.storage.from("signatures").remove([oldPath]);
+      if (!org) {
+        return res.status(404).json({ error: "Organization not found" });
+      }
+
+      // ลบรูปเก่า (จาก commander)
+      const existingCommander =
+        await prisma.organizationCommander.findUnique({
+          where: { organizationId: id },
+        });
+
+      if (existingCommander?.signatureImage) {
+        try {
+          const oldPath =
+            existingCommander.signatureImage.split("/signatures/")[1];
+          if (oldPath) {
+            await supabase.storage.from("signatures").remove([oldPath]);
+          }
+        } catch (e) {
+          console.warn("Delete old image fail:", e.message);
         }
       }
 
-      // ตั้งชื่อไฟล์ใหม่
+      // ตั้งชื่อไฟล์
       const ext = file.mimetype.split("/")[1];
       const fileName = `signature_${id}_${Date.now()}.${ext}`;
 
       // upload
-      const { error: uploadError } = await supabase.storage
+      const { error } = await supabase.storage
         .from("signatures")
         .upload(fileName, file.buffer, {
           contentType: file.mimetype,
         });
 
-      if (uploadError) throw uploadError;
+      if (error) throw error;
 
-      // get public URL
+      // get url
       const { data } = supabase.storage
         .from("signatures")
         .getPublicUrl(fileName);
 
       const publicUrl = data.publicUrl;
 
-      // save DB
-      await prisma.organization.update({
+      // ✅ save ไป commander (สำคัญ!)
+      await prisma.organizationCommander.upsert({
         where: { organizationId: id },
-        data: {
+        update: {
+          signatureImage: publicUrl,
+        },
+        create: {
+          organizationId: id,
           signatureImage: publicUrl,
         },
       });
@@ -245,7 +224,7 @@ router.post(
         url: publicUrl,
       });
     } catch (err) {
-      console.error(err);
+      console.error("UPLOAD ERROR:", err);
       res.status(500).json({ error: "Upload failed" });
     }
   }
@@ -258,9 +237,8 @@ router.get("/:id/finance", async (req, res) => {
     const data = await prisma.organizationFinance.findUnique({
       where: { organizationId: req.params.id },
     });
-
     res.json(data);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Fetch finance failed" });
   }
 });
