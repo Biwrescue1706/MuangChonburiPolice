@@ -1,3 +1,6 @@
+//src/utils/personHelper.tsx
+import { ReactNode } from "react";
+
 export const formatThaiDate = (value: any) => {
   if (!value) return "-";
   const d = new Date(value);
@@ -11,7 +14,7 @@ export const formatThaiDate = (value: any) => {
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
 };
 
-export const renderStatus = (status: number) => {
+export const renderStatus = (status: number): ReactNode => {
   switch (status) {
     case 0:
       return <span className="badge bg-warning text-dark">รอส่ง ศพฐ.</span>;
@@ -26,7 +29,7 @@ export const renderStatus = (status: number) => {
   }
 };
 
-export const renderPriority = (priority: number) => {
+export const renderPriority = (priority: number): ReactNode => {
   return priority === 1 ? (
     <span className="badge bg-danger">ด่วน</span>
   ) : (

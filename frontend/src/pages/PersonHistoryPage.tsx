@@ -28,14 +28,14 @@ export default function PersonHistoryPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ===== data hook =====
+  // ===== data =====
   const { persons, loading, fetchPersons } = usePersonHistory(
     statusParam,
     firstName,
     lastName
   );
 
-  // ===== selection hook =====
+  // ===== selection =====
   const {
     selectMode,
     setSelectMode,
@@ -45,7 +45,7 @@ export default function PersonHistoryPage() {
     handleSelectAll,
   } = useSelection(persons);
 
-  // ===== actions hook =====
+  // ===== actions =====
   const {
     handleDelete,
     handleUpdateStatus,
@@ -60,7 +60,7 @@ export default function PersonHistoryPage() {
     fetchPersons,
   });
 
-  // ===== filter button style =====
+  // ===== filter style =====
   const active = (value: string | null, color: string) =>
     statusParam === value
       ? `btn-${color} text-white shadow fw-bold`
@@ -99,7 +99,7 @@ export default function PersonHistoryPage() {
         </button>
       </div>
 
-      {/* BULK ACTION */}
+      {/* BULK */}
       <div className="d-flex justify-content-end mb-2 gap-2">
         <button
           className="btn btn-secondary"
