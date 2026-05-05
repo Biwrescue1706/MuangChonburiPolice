@@ -192,19 +192,18 @@ export default function ReceiptDetailPage() {
         >
           {/* ลงชื่อ */}
           <div style={{ marginBottom: "8px" }}>
-            (ลงชื่อ)
-            <span
-              style={{
-                display: "inline-block",
-                borderBottom: "1px dotted black",
-                minWidth: "190px",
-                marginLeft: "10px",
-                textAlign: "left",
-              }}
-            >
-              {data.rank} {organization?.firstName}
-            </span>
-          </div>
+  (ลงชื่อ)
+  <span
+    style={{
+      display: "inline-block",
+      borderBottom: "1px dotted black",
+      minWidth: "190px",
+      marginLeft: "10px",
+    }}
+  >
+    {organization?.firstName}
+  </span>
+</div>
 
           {/* ชื่อเต็ม */}
           <div style={{ marginBottom: "5px" }}>
