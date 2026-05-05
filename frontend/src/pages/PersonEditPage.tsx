@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import api from "../../api/axios";
-import { toast } from "../../utils/toast";
+import api from "../api/axios";
+import { toast } from "../utils/toast";
 
 // ================= CONSTANT =================
 const currentYear = new Date().getFullYear();
@@ -118,7 +118,6 @@ export default function PersonEditPage() {
   const [original, setOriginal] = useState<any>({});
   const [loading, setLoading] = useState(false);
 
-
   // ================= FETCH =================
   const fetchPerson = async () => {
     try {
@@ -126,11 +125,16 @@ export default function PersonEditPage() {
       const res = await api.get(`/person/${id}`);
       const data = res.data.data;
 
+      const cleanCitizenId = data.citizenId
+        ? data.citizenId.replace(/\D/g, "")
+        : "";
+
       const fp = splitFingerprint(data.fingerprintDate);
       const rc = splitReceiptDate(data.receiptDate); // 👈 เพิ่ม
 
       const newData = {
         ...data,
+        citizenId: cleanCitizenId,
         birthDay: data.birthDay,
         birthMonth: data.birthMonth,
         birthYear: data.birthYear,
@@ -166,7 +170,6 @@ export default function PersonEditPage() {
   const daysRC = Array.from({ length: maxDayRC }, (_, i) =>
     String(i + 1).padStart(2, "0"),
   );
-
 
   const filteredDaysFP = Array.from({ length: maxDayFP }, (_, i) =>
     String(i + 1).padStart(2, "0"),
@@ -221,10 +224,7 @@ export default function PersonEditPage() {
 
     setForm({
       ...form,
-      [name]:
-        name === "priority" || name === "money"
-          ? Number(value)
-          : value,
+      [name]: name === "priority" || name === "money" ? Number(value) : value,
     });
   };
 
@@ -293,8 +293,16 @@ export default function PersonEditPage() {
   if (loading) return <div className="p-4">กำลังโหลด...</div>;
 
   return (
-    <div className="p-4 main-content" >
-      <h4>แก้ไขข้อมูล</h4>
+    <div className="p-4 main-content">
+      <div className="d-flex justify-content-between mb-3">
+        <button className="btn btn-secondary" onClick={() => navigate(-1)}>
+          ← กลับ
+        </button>
+      </div>
+
+      <div className="d-flex justify-content-center mb-3">
+        <h1>แก้ไขข้อมูล</h1>
+      </div>
 
       <div className="row g-3">
         <div className="card mb-4 shadow-sm">
@@ -667,9 +675,8 @@ export default function PersonEditPage() {
 
         {/* ===== RECEIPT ===== */}
         <div className="card mb-3">
-          <div className="card-header">ข้อมูลใบเสร็จ</div>
+          <div className="card-header bg-success text-white">ข้อมูลใบเสร็จ</div>
           <div className="card-body row g-3">
-
             <div className="col-md-3">
               <label>เล่มที่</label>
               <input
@@ -761,7 +768,6 @@ export default function PersonEditPage() {
                 <option value={1}>ด่วน</option>
               </select>
             </div>
-
           </div>
         </div>
       </div>
@@ -772,7 +778,6 @@ export default function PersonEditPage() {
       <button className="btn btn-success" onClick={handleSubmit}>
         บันทึก
       </button>
-
     </div>
   );
 }
