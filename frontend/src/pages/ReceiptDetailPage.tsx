@@ -1,4 +1,3 @@
-// src/pages/ReceiptDetailPage.tsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
@@ -12,6 +11,7 @@ export default function ReceiptDetailPage() {
   const [loading, setLoading] = useState(false);
   const [organization, setOrganization] = useState<any>(null);
 
+  // ================= โหลดใบเสร็จ =================
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -27,11 +27,17 @@ export default function ReceiptDetailPage() {
     fetchData();
   }, [id]);
 
+  // ================= โหลด organization =================
   useEffect(() => {
     const fetchOrg = async () => {
       try {
-        const res = await api.get(`/organization/key/MAIN`);
-        setOrganization(res.data.data);
+        const res = await api.get(`/organization`);
+
+        // 🔥 ตรงนี้คือจุดสำคัญ
+        setOrganization(res.data[0]);
+
+        // debug
+        console.log("ORG:", res.data[0]);
       } catch {
         setOrganization(null);
       }
@@ -42,7 +48,7 @@ export default function ReceiptDetailPage() {
   if (loading) return <p className="text-center mt-5">⏳ กำลังโหลด...</p>;
   if (!data) return <p className="text-center mt-5">ไม่พบข้อมูล</p>;
 
-  // 🔥 แยก receiptDate → วัน เดือน ปี
+  // ================= แยกวันที่ =================
   const splitDate = (dateStr: string) => {
     if (!dateStr) return { day: "-", month: "-", year: "-" };
 
@@ -192,18 +198,19 @@ export default function ReceiptDetailPage() {
         >
           {/* ลงชื่อ */}
           <div style={{ marginBottom: "8px" }}>
-  (ลงชื่อ)
-  <span
-    style={{
-      display: "inline-block",
-      borderBottom: "1px dotted black",
-      minWidth: "190px",
-      marginLeft: "10px",
-    }}
-  >
-    {organization?.firstName}
-  </span>
-</div>
+            (ลงชื่อ)
+            <span
+              style={{
+                display: "inline-block",
+                borderBottom: "1px dotted black",
+                minWidth: "180px",
+                marginLeft: "10px",
+                textAlign: "left",
+              }}
+            >
+              {data.rank} <span style={{ marginLeft: "30px" }}>{organization?.firstName}</span> 
+            </span>
+          </div>
 
           {/* ชื่อเต็ม */}
           <div style={{ marginBottom: "5px" }}>
@@ -216,9 +223,9 @@ export default function ReceiptDetailPage() {
                 textAlign: "center",
               }}
             >
-              {data.fullNameOrg}
+              {organization?.fullName} 
             </span>
-            ) ผู้รับเงิน
+            )  {" "}ผู้รับเงิน
           </div>
 
           {/* ตำแหน่ง */}
@@ -233,7 +240,7 @@ export default function ReceiptDetailPage() {
                 textAlign: "center",
               }}
             >
-              {data.position}
+              {organization?.position}
             </span>
           </div>
         </div>
