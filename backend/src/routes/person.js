@@ -631,16 +631,4 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
-/* ================= AUTO DELETE ================= */
-
-// setInterval(async () => {
-//   await prisma.person.deleteMany({
-//     where: {
-//       deleteAt: {
-//         lte: new Date(),
-//       },
-//     },
-//   });
-// }, 60000);
-
 export default router;

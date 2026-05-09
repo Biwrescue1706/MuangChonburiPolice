@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import api from "../../api/axios";
-import { toast } from "../../utils/toast";
+import api from "../api/axios";
+import { toast } from "../utils/toast";
 
 // ================= CONSTANT =================
 const currentYear = new Date().getFullYear();
@@ -125,11 +125,16 @@ export default function PersonEditPage() {
       const res = await api.get(`/person/${id}`);
       const data = res.data.data;
 
+      const cleanCitizenId = data.citizenId
+        ? data.citizenId.replace(/\D/g, "")
+        : "";
+
       const fp = splitFingerprint(data.fingerprintDate);
       const rc = splitReceiptDate(data.receiptDate); // 👈 เพิ่ม
 
       const newData = {
         ...data,
+        citizenId: cleanCitizenId,
         birthDay: data.birthDay,
         birthMonth: data.birthMonth,
         birthYear: data.birthYear,
@@ -670,7 +675,7 @@ export default function PersonEditPage() {
 
         {/* ===== RECEIPT ===== */}
         <div className="card mb-3">
-          <div className="card-header">ข้อมูลใบเสร็จ</div>
+          <div className="card-header bg-success text-white">ข้อมูลใบเสร็จ</div>
           <div className="card-body row g-3">
             <div className="col-md-3">
               <label>เล่มที่</label>

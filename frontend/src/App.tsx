@@ -15,7 +15,7 @@ import NotFound from "./pages/NotFound";
 import PersonPage from "./pages/PersonPage";
 import PersonDetailPage from "./pages/PersonDetailPage";
 import PersonHistoryPage from "./pages/PersonHistoryPage";
-import PersonEditPage from "./pages/statusPerson/PersonEditPage";
+import PersonEditPage from "./pages/PersonEditPage";
 import OrganizationPage from "./pages/OrganizationPage";
 import ReceiptListPage from "./pages/ReceiptListPage";
 import ReceiptDetailPage from "./pages/ReceiptDetailPage";

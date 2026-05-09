@@ -168,30 +168,35 @@ export default function OrganizationPage() {
               {/* ===== ORG ===== */}
               {modalType === "org" && (
                 <>
+                  <label>ชื่อหน่วยงาน</label>
                   <input
                     className="form-control mb-2"
                     name="organizationName"
                     value={orgForm.organizationName || ""}
                     onChange={(e) => handleChange(e, setOrgForm, orgForm)}
                   />
+                  <label>ยศ</label>
                   <input
                     className="form-control mb-2"
                     name="rank"
                     value={orgForm.rank || ""}
                     onChange={(e) => handleChange(e, setOrgForm, orgForm)}
                   />
+                  <label>ชื่อ</label>
                   <input
                     className="form-control mb-2"
                     name="firstName"
                     value={orgForm.firstName || ""}
                     onChange={(e) => handleChange(e, setOrgForm, orgForm)}
                   />
+                  <label>นามสกุล</label>
                   <input
                     className="form-control mb-2"
                     name="lastName"
                     value={orgForm.lastName || ""}
                     onChange={(e) => handleChange(e, setOrgForm, orgForm)}
                   />
+                  <label>ตำแหน่ง</label>
                   <input
                     className="form-control mb-2"
                     name="position"
