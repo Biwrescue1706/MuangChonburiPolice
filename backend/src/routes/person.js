@@ -50,36 +50,49 @@ async function createSnapshotIfChanged(tx, model, field, personId, value) {
 /* ================= BIRTH ================= */
 
 function formatBirthFields(data) {
-  let birthDate = null;
+  const birthDay =
+    data.birthDay && data.birthDay !== ""
+      ? String(data.birthDay).padStart(2, "0")
+      : "-";
 
-  if (data.birthDay && data.birthMonth && data.birthYear) {
-    const monthsFull = [
-      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน",
-      "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม",
-      "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
-    ];
+  const birthMonth =
+    data.birthMonth && data.birthMonth !== ""
+      ? data.birthMonth
+      : "-";
 
-    const monthsShort = [
-      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.",
-      "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.",
-      "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
-    ];
+  const birthYear =
+    data.birthYear && data.birthYear !== ""
+      ? data.birthYear
+      : "-";
 
-    const day = String(data.birthDay).padStart(2, "0");
-    const monthIndex = monthsFull.indexOf(data.birthMonth);
-    const month = monthsShort[monthIndex] || null;
-    const year = Number(data.birthYear);
+  let birthDate = "-";
 
-    if (month !== null) {
-      birthDate = `${day} ${month} ${year}`;
-    }
+  const monthsFull = [
+    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน",
+    "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม",
+    "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+  ];
+
+  const monthsShort = [
+    "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.",
+    "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.",
+    "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+  ];
+
+  if (birthMonth !== "-") {
+    const monthIndex = monthsFull.indexOf(birthMonth);
+    const monthShort = monthsShort[monthIndex] || birthMonth;
+
+    birthDate = `${birthDay} ${monthShort} ${birthYear}`;
+  } else {
+    birthDate = `${birthDay} - ${birthYear}`;
   }
 
   return {
     birthDate,
-    birthDay: data.birthDay ? String(data.birthDay).padStart(2, "0") : null,
-    birthMonth: data.birthMonth,
-    birthYear: data.birthYear,
+    birthDay,
+    birthMonth,
+    birthYear,
   };
 }
 
@@ -445,6 +458,7 @@ router.put("/:id", async (req, res) => {
           skinColor: data.skinColor ?? oldPerson.skinColor,
           behavior: data.behavior ?? oldPerson.behavior,
           distinguishingMarks: data.distinguishingMarks ?? oldPerson.distinguishingMarks,
+priority: data.priority ?? oldPerson.priority,
 
           address: data.address ?? oldPerson.address,
           occupation: data.occupation ?? oldPerson.occupation,
