@@ -26,15 +26,15 @@ auth.post("/login", async (req, res) => {
       });
     }
 
-    /* ===== normalize username ===== */
-    const normalizedUsername =
-      username.trim().toLowerCase();
+    /* ===== trim only ===== */
+    const cleanUsername =
+      username.trim();
 
     /* ===== find user ===== */
     const adminUser =
       await prisma.admin.findUnique({
         where: {
-          username: normalizedUsername,
+          username: cleanUsername,
         },
       });
 
@@ -71,7 +71,7 @@ auth.post("/login", async (req, res) => {
     const isProd =
       process.env.NODE_ENV === "production";
 
-    /* ===== set cookie ===== */
+    /* ===== cookie ===== */
     res.cookie("token", token, {
       httpOnly: true,
       secure: isProd,
@@ -84,8 +84,8 @@ auth.post("/login", async (req, res) => {
 
       path: "/",
 
-      /* ===== 90 นาที ===== */
-      maxAge: 90 * 60 * 1000,
+      maxAge:
+        90 * 60 * 1000,
     });
 
     /* ===== response ===== */
@@ -93,10 +93,17 @@ auth.post("/login", async (req, res) => {
       message: "เข้าสู่ระบบสำเร็จ",
 
       admin: {
-        adminId: adminUser.adminId,
-        username: adminUser.username,
-        name: adminUser.name,
-        position: adminUser.position,
+        adminId:
+          adminUser.adminId,
+
+        username:
+          adminUser.username,
+
+        name:
+          adminUser.name,
+
+        position:
+          adminUser.position,
       },
     });
 
@@ -133,7 +140,8 @@ auth.get("/verify", async (req, res) => {
     const adminUser =
       await prisma.admin.findUnique({
         where: {
-          adminId: decoded.adminId,
+          adminId:
+            decoded.adminId,
         },
 
         select: {
@@ -170,7 +178,8 @@ auth.post("/logout", (_req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: isProd,
-    sameSite: isProd ? "none" : "lax",
+    sameSite:
+      isProd ? "none" : "lax",
 
     ...(isProd && {
       domain:
@@ -181,7 +190,8 @@ auth.post("/logout", (_req, res) => {
   });
 
   res.json({
-    message: "ออกจากระบบสำเร็จ",
+    message:
+      "ออกจากระบบสำเร็จ",
   });
 });
 
@@ -237,7 +247,7 @@ auth.put(
         });
       }
 
-      /* ===== check old password ===== */
+      /* ===== check old ===== */
       const valid =
         await bcrypt.compare(
           oldPassword,
@@ -251,7 +261,7 @@ auth.put(
         });
       }
 
-      /* ===== hash new password ===== */
+      /* ===== hash ===== */
       const hash =
         await bcrypt.hash(
           newPassword,
@@ -261,7 +271,8 @@ auth.put(
       /* ===== update ===== */
       await prisma.admin.update({
         where: {
-          adminId: user.adminId,
+          adminId:
+            user.adminId,
         },
 
         data: {
@@ -295,20 +306,19 @@ auth.post(
 
       if (!username) {
         return res.status(400).json({
-          error: "กรุณากรอก username",
+          error:
+            "กรุณากรอก username",
         });
       }
 
-      const normalizedUsername =
-        username
-          .trim()
-          .toLowerCase();
+      const cleanUsername =
+        username.trim();
 
       const user =
         await prisma.admin.findUnique({
           where: {
             username:
-              normalizedUsername,
+              cleanUsername,
           },
 
           select: {
@@ -319,7 +329,8 @@ auth.post(
 
       if (!user) {
         return res.status(404).json({
-          error: "ไม่พบผู้ใช้",
+          error:
+            "ไม่พบผู้ใช้",
         });
       }
 
@@ -364,23 +375,22 @@ auth.put(
         });
       }
 
-      const normalizedUsername =
-        username
-          .trim()
-          .toLowerCase();
+      const cleanUsername =
+        username.trim();
 
       /* ===== check user ===== */
       const exist =
         await prisma.admin.findUnique({
           where: {
             username:
-              normalizedUsername,
+              cleanUsername,
           },
         });
 
       if (!exist) {
         return res.status(404).json({
-          error: "ไม่พบผู้ใช้",
+          error:
+            "ไม่พบผู้ใช้",
         });
       }
 
@@ -395,7 +405,7 @@ auth.put(
       await prisma.admin.update({
         where: {
           username:
-            normalizedUsername,
+            cleanUsername,
         },
 
         data: {
