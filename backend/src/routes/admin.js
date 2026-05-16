@@ -8,6 +8,7 @@ const admin = Router();
 /* ================= REGISTER ================= */
 admin.post("/register", async (req, res) => {
   try {
+
     const {
       username,
       password,
@@ -21,14 +22,15 @@ admin.post("/register", async (req, res) => {
       });
     }
 
-    /* ===== normalize username ===== */
-    const normalizedUsername =
-      username.trim().toLowerCase();
+    /* ===== trim only ===== */
+    const cleanUsername =
+      username.trim();
 
     /* ===== validate password ===== */
     if (password.length < 6) {
       return res.status(400).json({
-        error: "รหัสผ่านต้องอย่างน้อย 6 ตัว",
+        error:
+          "รหัสผ่านต้องอย่างน้อย 6 ตัว",
       });
     }
 
@@ -36,17 +38,18 @@ admin.post("/register", async (req, res) => {
     const exist =
       await prisma.admin.findUnique({
         where: {
-          username: normalizedUsername,
+          username: cleanUsername,
         },
       });
 
     if (exist) {
       return res.status(400).json({
-        error: "username ถูกใช้งานแล้ว",
+        error:
+          "username ถูกใช้งานแล้ว",
       });
     }
 
-    /* ===== hash password ===== */
+    /* ===== hash ===== */
     const hash =
       await bcrypt.hash(password, 10);
 
@@ -54,7 +57,7 @@ admin.post("/register", async (req, res) => {
     const user =
       await prisma.admin.create({
         data: {
-          username: normalizedUsername,
+          username: cleanUsername,
           password: hash,
           name,
           position,
@@ -62,10 +65,15 @@ admin.post("/register", async (req, res) => {
       });
 
     /* ===== hide password ===== */
-    const { password: _, ...safeUser } = user;
+    const {
+      password: _,
+      ...safeUser
+    } = user;
 
     res.json({
-      message: "สร้างสมาชิกสำเร็จ",
+      message:
+        "สร้างสมาชิกสำเร็จ",
+
       admin: safeUser,
     });
 
@@ -88,7 +96,8 @@ admin.get(
       const user =
         await prisma.admin.findUnique({
           where: {
-            adminId: req.admin.adminId,
+            adminId:
+              req.admin.adminId,
           },
         });
 
@@ -127,7 +136,9 @@ admin.get(
 
       const admins =
         await prisma.admin.findMany({
-          skip: (page - 1) * limit,
+          skip:
+            (page - 1) * limit,
+
           take: limit,
 
           select: {
@@ -149,7 +160,8 @@ admin.get(
       console.error(err);
 
       res.status(500).json({
-        error: "Get admins error",
+        error:
+          "Get admins error",
       });
     }
   }
@@ -168,20 +180,25 @@ admin.put(
         position,
       } = req.body;
 
-      const normalizedUsername =
-        username?.trim().toLowerCase();
+      const cleanUsername =
+        username?.trim();
 
       const updated =
         await prisma.admin.update({
           where: {
-            adminId: req.admin.adminId,
+            adminId:
+              req.admin.adminId,
           },
 
           data: {
-            username: normalizedUsername,
+            username:
+              cleanUsername,
+
             name,
             position,
-            updatedAt: new Date(),
+
+            updatedAt:
+              new Date(),
           },
         });
 
@@ -191,7 +208,9 @@ admin.put(
       } = updated;
 
       res.json({
-        message: "อัปเดตสำเร็จ",
+        message:
+          "อัปเดตสำเร็จ",
+
         admin: safeUser,
       });
 
@@ -199,7 +218,8 @@ admin.put(
       console.error(err);
 
       res.status(500).json({
-        error: "Update profile error",
+        error:
+          "Update profile error",
       });
     }
   }
@@ -212,11 +232,14 @@ admin.get(
   async (req, res) => {
     try {
 
-      const { adminId } = req.params;
+      const { adminId } =
+        req.params;
 
       const user =
         await prisma.admin.findUnique({
-          where: { adminId },
+          where: {
+            adminId,
+          },
 
           select: {
             adminId: true,
@@ -237,7 +260,8 @@ admin.get(
       console.error(err);
 
       res.status(500).json({
-        error: "Get admin error",
+        error:
+          "Get admin error",
       });
     }
   }
@@ -250,12 +274,16 @@ admin.delete(
   async (req, res) => {
     try {
 
-      const { adminId } = req.params;
+      const { adminId } =
+        req.params;
 
       /* ===== ห้ามลบตัวเอง ===== */
-      if (req.admin.adminId === adminId) {
+      if (
+        req.admin.adminId === adminId
+      ) {
         return res.status(400).json({
-          error: "ไม่สามารถลบบัญชีตัวเองได้",
+          error:
+            "ไม่สามารถลบบัญชีตัวเองได้",
         });
       }
 
@@ -272,7 +300,9 @@ admin.delete(
         });
 
       /* ===== ห้ามลบ super admin ===== */
-      if (firstAdmin?.adminId === adminId) {
+      if (
+        firstAdmin?.adminId === adminId
+      ) {
         return res.status(400).json({
           error:
             "ไม่สามารถลบ Admin หลักของระบบได้",
@@ -282,29 +312,36 @@ admin.delete(
       /* ===== check exist ===== */
       const exist =
         await prisma.admin.findUnique({
-          where: { adminId },
+          where: {
+            adminId,
+          },
         });
 
       if (!exist) {
         return res.status(404).json({
-          error: "ไม่พบ admin",
+          error:
+            "ไม่พบ admin",
         });
       }
 
       /* ===== delete ===== */
       await prisma.admin.delete({
-        where: { adminId },
+        where: {
+          adminId,
+        },
       });
 
       res.json({
-        message: "ลบ admin สำเร็จ",
+        message:
+          "ลบ admin สำเร็จ",
       });
 
     } catch (err) {
       console.error(err);
 
       res.status(500).json({
-        error: "Delete admin error",
+        error:
+          "Delete admin error",
       });
     }
   }
