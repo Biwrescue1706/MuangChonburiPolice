@@ -32,7 +32,7 @@ export default function PersonHistoryPage() {
   const { persons, loading, fetchPersons } = usePersonHistory(
     statusParam,
     firstName,
-    lastName
+    lastName,
   );
 
   // ===== selection =====
@@ -46,19 +46,15 @@ export default function PersonHistoryPage() {
   } = useSelection(persons);
 
   // ===== actions =====
-  const {
-    handleDelete,
-    handleUpdateStatus,
-    handleBulkSend,
-    handleExportPDF,
-  } = usePersonActions({
-    persons,
-    selectedIds,
-    setSelectedIds,
-    selectMode,
-    setSelectMode,
-    fetchPersons,
-  });
+  const { handleDelete, handleUpdateStatus, handleBulkSend, handleExportPDF } =
+    usePersonActions({
+      persons,
+      selectedIds,
+      setSelectedIds,
+      selectMode,
+      setSelectMode,
+      fetchPersons,
+    });
 
   // ===== filter style =====
   const active = (value: string | null, color: string) =>
@@ -66,18 +62,26 @@ export default function PersonHistoryPage() {
       ? `btn-${color} text-white shadow fw-bold`
       : `btn-${color} text-white opacity-75`;
 
-const sortedPersons = [...persons].sort((a, b) => {
-  // เรียงเล่มก่อน
-  if (a.receiptBookNo !== b.receiptBookNo) {
-    return (a.receiptBookNo || "").localeCompare(b.receiptBookNo || "");
-  }
+  const sortedPersons = [...persons].sort((a, b) => {
+    // ✅ เรียง status ก่อน
+    if (a.status !== b.status) {
+      return a.status - b.status;
+    }
 
-  // ✅ เล่มเท่ากัน → แปลงเป็น number แล้วเรียง
-  const noA = Number(a.receiptNo) || 0;
-  const noB = Number(b.receiptNo) || 0;
+    // ✅ เรียงเล่ม
+    const bookA = Number(a.receiptBookNo) || 0;
+    const bookB = Number(b.receiptBookNo) || 0;
 
-  return noA - noB;
-});
+    if (bookA !== bookB) {
+      return bookA - bookB;
+    }
+
+    // ✅ เล่มเท่ากัน → เรียงเลขที่
+    const noA = Number(a.receiptNo) || 0;
+    const noB = Number(b.receiptNo) || 0;
+
+    return noA - noB;
+  });
 
   return (
     <div className="p-4 main-content">
@@ -130,8 +134,7 @@ const sortedPersons = [...persons].sort((a, b) => {
               className="btn btn-outline-primary"
               onClick={handleSelectAll}
             >
-              {selectedIds.length ===
-              persons.filter((p) => p.status < 3).length
+              {selectedIds.length === persons.filter((p) => p.status < 3).length
                 ? "ยกเลิกเลือกทั้งหมด"
                 : "เลือกทั้งหมด"}
             </button>
@@ -183,8 +186,8 @@ const sortedPersons = [...persons].sort((a, b) => {
 
       {/* CONTENT */}
       {isMobile ? (
-<PersonCardList 
-persons={sortedPersons}
+        <PersonCardList
+          persons={sortedPersons}
           loading={loading}
           selectMode={selectMode}
           selectedIds={selectedIds}
