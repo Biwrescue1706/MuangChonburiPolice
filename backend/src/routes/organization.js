@@ -36,7 +36,7 @@ function buildFullName({
   const fullNameWithRank =
     rank
       ? `${rank}${firstName || ""} ${lastName || ""}`
-          .trim()
+        .trim()
       : fullName;
 
   return {
@@ -65,6 +65,9 @@ router.get("/", async (req, res) => {
         select: {
           organizationId: true,
           organizationName: true,
+          firstName: true,
+          lastName: true,
+          rank: true,
           fullName: true,
           fullNameWithRank: true,
           position: true,
@@ -72,7 +75,13 @@ router.get("/", async (req, res) => {
 
           commander: {
             select: {
+              rank: true,
+              fullRank: true,
+              firstName: true,
+              lastName: true,
               fullName: true,
+              position: true,
+              fullPosition: true,
               fullNameWithRank: true,
               signatureImage: true,
             },
@@ -80,8 +89,12 @@ router.get("/", async (req, res) => {
 
           finance: {
             select: {
+              rank: true,
+              firstName: true,
+              lastName: true,
               fullName: true,
               fullNameWithRank: true,
+              position: true,
             },
           },
         },
