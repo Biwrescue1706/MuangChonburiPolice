@@ -29,11 +29,16 @@ export default function PersonHistoryPage() {
   }, []);
 
   // ===== data =====
-  const { persons, loading, fetchPersons } = usePersonHistory(
-    statusParam,
-    firstName,
-    lastName,
-  );
+  const {
+  persons,
+  allPersons,
+  loading,
+  fetchPersons,
+} = usePersonHistory(
+  statusParam,
+  firstName,
+  lastName,
+);
 
   // ===== selection =====
   const {
@@ -152,35 +157,43 @@ export default function PersonHistoryPage() {
     className={`btn btn-sm ${active(null, "secondary")}`}
     onClick={() => setSearchParams({})}
   >
-    ทั้งหมด ({persons.length})
+    ทั้งหมด ({allPersons.length})
   </button>
 
   <button
     className={`btn btn-sm ${active("0", "warning")}`}
     onClick={() => setSearchParams({ status: "0" })}
   >
-    รอส่ง ศพฐ ({persons.filter((p) => p.status === 0).length})
+    รอส่ง ศพฐ (
+    {allPersons.filter((p) => p.status === 0).length}
+    )
   </button>
 
   <button
     className={`btn btn-sm ${active("1", "info")}`}
     onClick={() => setSearchParams({ status: "1" })}
   >
-    ส่ง ศพฐ แล้ว ({persons.filter((p) => p.status === 1).length})
+    ส่ง ศพฐ แล้ว (
+    {allPersons.filter((p) => p.status === 1).length}
+    )
   </button>
 
   <button
     className={`btn btn-sm ${active("2", "primary")}`}
     onClick={() => setSearchParams({ status: "2" })}
   >
-    รับจาก ศพฐ แล้ว ({persons.filter((p) => p.status === 2).length})
+    รับจาก ศพฐ แล้ว (
+    {allPersons.filter((p) => p.status === 2).length}
+    )
   </button>
 
   <button
     className={`btn btn-sm ${active("3", "success")}`}
     onClick={() => setSearchParams({ status: "3" })}
   >
-    ส่งคืน ต้นสังกัด แล้ว ({persons.filter((p) => p.status === 3).length})
+    ส่งคืน ต้นสังกัด แล้ว (
+    {allPersons.filter((p) => p.status === 3).length}
+    )
   </button>
 </div>
 
