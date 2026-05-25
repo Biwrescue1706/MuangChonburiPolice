@@ -220,13 +220,13 @@ export default function PersonEditPage() {
 
   // ================= CHANGE =================
   const handleChange = (e: any) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
 
-    setForm({
-      ...form,
-      [name]: name === "priority" || name === "money" ? Number(value) : value,
-    });
-  };
+  setForm((prev: any) => ({
+    ...prev,
+    [name]: name === "money" ? Number(value) : value,
+  }));
+};
 
   const handleCancel = () => {
     if (window.history.length > 1) {
@@ -267,6 +267,9 @@ export default function PersonEditPage() {
       const finalData = {
         ...original,
         ...form,
+
+priority: Number(form.priority ?? 0),
+
         birthDate: buildThaiDate(
           form.birthDay,
           form.birthMonth,
@@ -756,18 +759,18 @@ export default function PersonEditPage() {
               />
             </div>
 
-            <div className="col-md-3">
-              <label>ความเร่งด่วน</label>
-              <select
-                name="priority"
-                className="form-select"
-                value={form.priority ?? 0}
-                onChange={handleChange}
-              >
-                <option value={0}>ไม่ด่วน</option>
-                <option value={1}>ด่วน</option>
-              </select>
-            </div>
+           <div className="col-md-3">  
+          <label>ความเร่งด่วน</label>  
+          <select
+  name="priority"
+  className="form-select"
+  value={String(form.priority ?? 0)}
+  onChange={handleChange}
+>
+  <option value="0">ไม่ด่วน</option>
+  <option value="1">ด่วน</option>
+</select>
+            </div>  
           </div>
         </div>
       </div>

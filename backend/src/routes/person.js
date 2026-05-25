@@ -50,36 +50,49 @@ async function createSnapshotIfChanged(tx, model, field, personId, value) {
 /* ================= BIRTH ================= */
 
 function formatBirthFields(data) {
-  let birthDate = null;
+  const birthDay =
+    data.birthDay && data.birthDay !== ""
+      ? String(data.birthDay).padStart(2, "0")
+      : "-";
 
-  if (data.birthDay && data.birthMonth && data.birthYear) {
-    const monthsFull = [
-      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน",
-      "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม",
-      "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
-    ];
+  const birthMonth =
+    data.birthMonth && data.birthMonth !== ""
+      ? data.birthMonth
+      : "-";
 
-    const monthsShort = [
-      "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.",
-      "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.",
-      "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
-    ];
+  const birthYear =
+    data.birthYear && data.birthYear !== ""
+      ? data.birthYear
+      : "-";
 
-    const day = String(data.birthDay).padStart(2, "0");
-    const monthIndex = monthsFull.indexOf(data.birthMonth);
-    const month = monthsShort[monthIndex] || null;
-    const year = Number(data.birthYear);
+  let birthDate = "-";
 
-    if (month !== null) {
-      birthDate = `${day} ${month} ${year}`;
-    }
+  const monthsFull = [
+    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน",
+    "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม",
+    "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+  ];
+
+  const monthsShort = [
+    "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.",
+    "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.",
+    "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+  ];
+
+  if (birthMonth !== "-") {
+    const monthIndex = monthsFull.indexOf(birthMonth);
+    const monthShort = monthsShort[monthIndex] || birthMonth;
+
+    birthDate = `${birthDay} ${monthShort} ${birthYear}`;
+  } else {
+    birthDate = `${birthDay} - ${birthYear}`;
   }
 
   return {
     birthDate,
-    birthDay: data.birthDay ? String(data.birthDay).padStart(2, "0") : null,
-    birthMonth: data.birthMonth,
-    birthYear: data.birthYear,
+    birthDay,
+    birthMonth,
+    birthYear,
   };
 }
 
@@ -236,11 +249,9 @@ router.get("/getall", async (req, res) => {
       firstName,
       lastName,
       status,
-      page = 1,
-      limit = 20,
     } = req.query;
 
-    let where = {}; // ✅ ต้องมีอันนี้ก่อน
+    let where = {};
 
     // 🔍 filter status
     if (status !== undefined && status !== "") {
@@ -249,7 +260,6 @@ router.get("/getall", async (req, res) => {
       if (!isNaN(statusNum)) {
         where.status = statusNum;
 
-        // ❗ ถ้าไม่ใช่ status 3 → ซ่อนของลบ
         if (statusNum !== 3) {
           where.deleteAt = null;
         }
@@ -266,7 +276,7 @@ router.get("/getall", async (req, res) => {
       ];
     }
 
-    // 🔍 ค้นแยกชื่อ
+    // 🔍 ค้นชื่อ
     if (firstName) {
       where.firstName = {
         contains: firstName,
@@ -274,7 +284,7 @@ router.get("/getall", async (req, res) => {
       };
     }
 
-    // 🔍 ค้นแยกนามสกุล
+    // 🔍 ค้นนามสกุล
     if (lastName) {
       where.lastName = {
         contains: lastName,
@@ -282,33 +292,17 @@ router.get("/getall", async (req, res) => {
       };
     }
 
-    // 🔍 filter status
-    if (status !== undefined && status !== "") {
-      const statusNum = Number(status);
-      if (!isNaN(statusNum)) {
-        where.status = statusNum;
-      }
-    }
-
-    const skip = (Number(page) - 1) * Number(limit);
-
-    const [persons, total] = await Promise.all([
-      prisma.person.findMany({
-        where,
-        skip,
-        take: Number(limit),
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.person.count({ where }),
-    ]);
+    const persons = await prisma.person.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
 
     res.json({
       success: true,
       data: persons,
-      total,
-      page: Number(page),
-      totalPages: Math.ceil(total / Number(limit)),
+      total: persons.length,
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
@@ -445,6 +439,7 @@ router.put("/:id", async (req, res) => {
           skinColor: data.skinColor ?? oldPerson.skinColor,
           behavior: data.behavior ?? oldPerson.behavior,
           distinguishingMarks: data.distinguishingMarks ?? oldPerson.distinguishingMarks,
+priority: data.priority ?? oldPerson.priority,
 
           address: data.address ?? oldPerson.address,
           occupation: data.occupation ?? oldPerson.occupation,
