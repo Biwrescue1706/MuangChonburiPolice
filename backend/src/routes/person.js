@@ -249,11 +249,9 @@ router.get("/getall", async (req, res) => {
       firstName,
       lastName,
       status,
-      page = 1,
-      limit = 20,
     } = req.query;
 
-    let where = {}; // ✅ ต้องมีอันนี้ก่อน
+    let where = {};
 
     // 🔍 filter status
     if (status !== undefined && status !== "") {
@@ -262,7 +260,6 @@ router.get("/getall", async (req, res) => {
       if (!isNaN(statusNum)) {
         where.status = statusNum;
 
-        // ❗ ถ้าไม่ใช่ status 3 → ซ่อนของลบ
         if (statusNum !== 3) {
           where.deleteAt = null;
         }
@@ -279,7 +276,7 @@ router.get("/getall", async (req, res) => {
       ];
     }
 
-    // 🔍 ค้นแยกชื่อ
+    // 🔍 ค้นชื่อ
     if (firstName) {
       where.firstName = {
         contains: firstName,
@@ -287,7 +284,7 @@ router.get("/getall", async (req, res) => {
       };
     }
 
-    // 🔍 ค้นแยกนามสกุล
+    // 🔍 ค้นนามสกุล
     if (lastName) {
       where.lastName = {
         contains: lastName,
@@ -295,33 +292,17 @@ router.get("/getall", async (req, res) => {
       };
     }
 
-    // 🔍 filter status
-    if (status !== undefined && status !== "") {
-      const statusNum = Number(status);
-      if (!isNaN(statusNum)) {
-        where.status = statusNum;
-      }
-    }
-
-    const skip = (Number(page) - 1) * Number(limit);
-
-    const [persons, total] = await Promise.all([
-      prisma.person.findMany({
-        where,
-        skip,
-        take: Number(limit),
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.person.count({ where }),
-    ]);
+    const persons = await prisma.person.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
 
     res.json({
       success: true,
       data: persons,
-      total,
-      page: Number(page),
-      totalPages: Math.ceil(total / Number(limit)),
+      total: persons.length,
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
