@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
-export default function usePersonHistory(statusParam: string | null, firstName: string, lastName: string) {
+export default function usePersonHistory(
+  statusParam: string | null,
+  firstName: string,
+  lastName: string
+) {
   const [persons, setPersons] = useState<any[]>([]);
+  const [allPersons, setAllPersons] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // ✅ debounce
   const [debounceFirstName, setDebounceFirstName] = useState("");
   const [debounceLastName, setDebounceLastName] = useState("");
 
@@ -21,14 +27,33 @@ export default function usePersonHistory(statusParam: string | null, firstName: 
     try {
       setLoading(true);
 
+      // ✅ โหลดทั้งหมดไว้ใช้ count
+      const allRes = await api.get("/person/getall");
+
+      setAllPersons(allRes.data.data || []);
+
+      // ✅ filter
       const params = new URLSearchParams();
 
-      if (statusParam !== null) params.append("status", statusParam);
-      if (debounceFirstName) params.append("firstName", debounceFirstName);
-      if (debounceLastName) params.append("lastName", debounceLastName);
+      if (statusParam !== null) {
+        params.append("status", statusParam);
+      }
 
-      const res = await api.get(`/person/getall?${params.toString()}`);
+      if (debounceFirstName) {
+        params.append("firstName", debounceFirstName);
+      }
+
+      if (debounceLastName) {
+        params.append("lastName", debounceLastName);
+      }
+
+      const res = await api.get(
+        `/person/getall?${params.toString()}`
+      );
+
       setPersons(res.data.data || []);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -38,5 +63,10 @@ export default function usePersonHistory(statusParam: string | null, firstName: 
     fetchPersons();
   }, [statusParam, debounceFirstName, debounceLastName]);
 
-  return { persons, loading, fetchPersons };
+  return {
+    persons,
+    allPersons,
+    loading,
+    fetchPersons,
+  };
 }
