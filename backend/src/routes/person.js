@@ -607,7 +607,7 @@ router.patch("/:id/status", async (req, res) => {
 
         deleteAt:
           statusNum === 3 // ✅ แก้ตรงนี้
-            ? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+            ? new Date(Date.now() + 45 * 24 * 60 * 60 * 1000)
             : null,
 
         returnDate:
