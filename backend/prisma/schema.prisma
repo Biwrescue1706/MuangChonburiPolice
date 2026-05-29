@@ -68,8 +68,8 @@ model Organization {
 }
 
 model Person {
-  personId            String        @id @default(uuid())
-  createdAt           DateTime      @default(now())
+  personId            String                @id @default(uuid())
+  createdAt           DateTime              @default(now())
   updatedAt           DateTime?
   prefix              String
   firstName           String
@@ -84,25 +84,25 @@ model Person {
   ethnicity           String?
   weight              Int?
   height              Int?
-  bodyType            String?       @default("สันทัด")
-  skinColor           String?       @default("ดำแดง")
-  behavior            String?       @default("ปกติ")
-  distinguishingMarks String?       @default("-")
+  bodyType            String?               @default("สันทัด")
+  skinColor           String?               @default("ดำแดง")
+  behavior            String?               @default("ปกติ")
+  distinguishingMarks String?               @default("-")
   address             String?
   occupation          String?
   workplaceAddress    String?
   father              String?
   mother              String?
-  spouse              String?       @default("-")
+  spouse              String?               @default("-")
   fingerprintDate     String?
   purpose             String?
   requestingAgency    String?
   receiptBookNo       String?
   receiptNo           String?
   receiptDate         String?
-  money               Int           @default(100)
+  money               Int                   @default(100)
   moneyText           String?
-  status              Int           @default(0)
+  status              Int                   @default(0)
   statusUpdatedAt     DateTime?
   deleteAt            DateTime?
   organizationId      String?
@@ -111,11 +111,29 @@ model Person {
   rank                String?
   position            String?
   fullNameWithRank    String?
-  priority            Int           @default(0)
+  priority            Int                   @default(0)
   returnDate          DateTime?
-  organization        Organization? @relation(fields: [organizationId], references: [organizationId])
+  organization        Organization?         @relation(fields: [organizationId], references: [organizationId])
   receipts            Receipt[]
   requestInfos        RequestInfo[]
+  statusHistories     PersonStatusHistory[]
+}
+
+model PersonStatusHistory {
+  historyId String @id @default(uuid())
+
+  personId String
+
+  oldStatus Int
+  newStatus Int
+
+  changedAt DateTime @default(now())
+
+  person Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
+
+  @@index([personId])
+  @@index([oldStatus, newStatus])
+  @@index([changedAt])
 }
 
 model RequestInfo {
@@ -148,5 +166,5 @@ model Receipt {
   createdAt        DateTime      @default(now())
   priority         Int           @default(0)
   organization     Organization? @relation(fields: [organizationId], references: [organizationId])
-  person           Person?       @relation(fields: [personId], references: [personId])
+  person           Person?       @relation(fields: [personId], references: [personId] ,onDelete: Cascade)
 }

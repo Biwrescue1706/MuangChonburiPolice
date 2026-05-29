@@ -44,9 +44,11 @@ import authRoute from "./routes/auth.js";
 import personRoutes from "./routes/person.js";
 import receiptRoutes from "./routes/receipt.js";
 import organizationRoutes from "./routes/organization.js";
+import personStatusHistoryRoutes from "./routes/personStatusHistory.js";
 
 app.use("/api/person", personRoutes);
 app.use("/api/auth", authRoute);
+app.use("/api/status-history", personStatusHistoryRoutes);
 app.use("/api/admin", adminRoute);
 app.use("/api/receipt", receiptRoutes);
 app.use("/api/organization", organizationRoutes);

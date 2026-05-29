@@ -51,21 +51,19 @@ async function createSnapshotIfChanged(tx, model, field, personId, value) {
 
 function formatBirthFields(data) {
   const birthDay =
-    data.birthDay && data.birthDay !== ""
-      ? String(data.birthDay).padStart(2, "0")
-      : "-";
+    !data.birthDay || data.birthDay === "-"
+      ? "-"
+      : String(data.birthDay).padStart(2, "0");
 
   const birthMonth =
-    data.birthMonth && data.birthMonth !== ""
-      ? data.birthMonth
-      : "-";
+    !data.birthMonth || data.birthMonth === "-"
+      ? "-"
+      : data.birthMonth;
 
   const birthYear =
-    data.birthYear && data.birthYear !== ""
-      ? data.birthYear
-      : "-";
-
-  let birthDate = "-";
+    !data.birthYear || data.birthYear === "-"
+      ? "-"
+      : data.birthYear;
 
   const monthsFull = [
     "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน",
@@ -79,7 +77,11 @@ function formatBirthFields(data) {
     "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
   ];
 
-  if (birthMonth !== "-") {
+  let birthDate = "-";
+
+  if (birthDay === "-" && birthMonth === "-" && birthYear === "-") {
+    birthDate = "-";
+  } else if (birthMonth !== "-") {
     const monthIndex = monthsFull.indexOf(birthMonth);
     const monthShort = monthsShort[monthIndex] || birthMonth;
 
@@ -167,7 +169,7 @@ router.post("/", async (req, res) => {
           behavior: data.behavior ?? "ปกติ",
           distinguishingMarks: data.distinguishingMarks ?? "-",
 
-priority : data.priority,
+          priority: data.priority,
 
           address: data.address,
           occupation: data.occupation,
@@ -439,7 +441,7 @@ router.put("/:id", async (req, res) => {
           skinColor: data.skinColor ?? oldPerson.skinColor,
           behavior: data.behavior ?? oldPerson.behavior,
           distinguishingMarks: data.distinguishingMarks ?? oldPerson.distinguishingMarks,
-priority: data.priority ?? oldPerson.priority,
+          priority: data.priority ?? oldPerson.priority,
 
           address: data.address ?? oldPerson.address,
           occupation: data.occupation ?? oldPerson.occupation,
@@ -534,6 +536,7 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: "ลบไม่สำเร็จ" });
   }
 });
+
 router.patch("/bulk/status", async (req, res) => {
   try {
     const { personIds, status } = req.body;
@@ -549,23 +552,35 @@ router.patch("/bulk/status", async (req, res) => {
 
     const now = new Date();
 
-    const result = await prisma.person.updateMany({
-      where: {
-        personId: { in: personIds },
-      },
-      data: {
-        status: statusNum,
-        statusUpdatedAt: now,
-        updatedAt: now,
+    const result =     await prisma.$transaction(async (tx) => {
+      await tx.person.update({
+        where: {
+          personId: req.params.id,
+        },
+        data: {
+          status: statusNum,
+          statusUpdatedAt: new Date(),
+          updatedAt: new Date(),
 
-        deleteAt:
-          statusNum === 3
-            ? new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000)
-            : null,
+          deleteAt:
+            statusNum === 3
+              ? new Date(Date.now() + 45 * 24 * 60 * 60 * 1000)
+              : null,
 
-        returnDate:
-          statusNum === 3 ? now : null,
-      },
+          returnDate:
+            statusNum === 3
+              ? (person.returnDate ?? new Date())
+              : null,
+        },
+      });
+
+      await tx.personStatusHistory.create({
+        data: {
+          personId: person.personId,
+          oldStatus: person.status,
+          newStatus: statusNum,
+        },
+      });
     });
 
     if (result.count === 0) {
@@ -599,24 +614,35 @@ router.patch("/:id/status", async (req, res) => {
       return res.status(404).json({ error: "ไม่พบข้อมูล" });
     }
 
-    await prisma.person.update({
-      where: { personId: req.params.id },
-      data: {
-        status: statusNum, // ✅ แก้ตรงนี้
-        statusUpdatedAt: new Date(),
+    await prisma.$transaction(async (tx) => {
+      await tx.person.update({
+        where: {
+          personId: req.params.id,
+        },
+        data: {
+          status: statusNum,
+          statusUpdatedAt: new Date(),
+          updatedAt: new Date(),
 
-        deleteAt:
-          statusNum === 3 // ✅ แก้ตรงนี้
-            ? new Date(Date.now() + 45 * 24 * 60 * 60 * 1000)
-            : null,
+          deleteAt:
+            statusNum === 3
+              ? new Date(Date.now() + 45 * 24 * 60 * 60 * 1000)
+              : null,
 
-        returnDate:
-          statusNum === 3
-            ? (person.returnDate ?? new Date())
-            : null,
+          returnDate:
+            statusNum === 3
+              ? (person.returnDate ?? new Date())
+              : null,
+        },
+      });
 
-        updatedAt: new Date(),
-      },
+      await tx.personStatusHistory.create({
+        data: {
+          personId: person.personId,
+          oldStatus: person.status,
+          newStatus: statusNum,
+        },
+      });
     });
 
     res.json({ success: true });
