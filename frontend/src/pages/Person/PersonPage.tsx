@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import usePersonForm from "../hooks/usePersonForm";
+import usePersonForm from "../../hooks/usePersonForm";
 
-import BasicInfo from "../components/person/BasicInfo";
-import AdditionalInfo from "../components/person/AdditionalInfo";
-import ReceiptInfo from "../components/person/ReceiptInfo";
+import BasicInfo from "../../components/person/BasicInfo";
+import AdditionalInfo from "../../components/person/AdditionalInfo";
+import ReceiptInfo from "../../components/person/ReceiptInfo";
 
 export default function PersonPage() {
   const navigate = useNavigate();

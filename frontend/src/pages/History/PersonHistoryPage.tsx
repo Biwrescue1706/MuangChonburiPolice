@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import usePersonHistory from "../hooks/usePersonHistory";
-import useSelection from "../hooks/useSelection";
-import usePersonActions from "../hooks/usePersonActions";
+import usePersonHistory from "../../hooks/usePersonHistory";
+import useSelection from "../../hooks/useSelection";
+import usePersonActions from "../../hooks/usePersonActions";
 
-import PersonCardList from "../components/PersonCardList";
-import PersonTable from "../components/PersonTable";
+import PersonCardList from "../../components/PersonCardList";
+import PersonTable from "../../components/PersonTable";
 
 export default function PersonHistoryPage() {
   const [searchParams, setSearchParams] = useSearchParams();

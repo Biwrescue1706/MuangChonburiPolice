@@ -12,17 +12,17 @@ import ForgotCheck from "./pages/Password/ForgotCheck";
 import ResetPassword from "./pages/Password/ResetPassword";
 import CreateAdmin from "./pages/CreateAdmin";
 import NotFound from "./pages/NotFound";
-import PersonPage from "./pages/PersonPage";
-import PersonDetailPage from "./pages/PersonDetailPage";
-import PersonHistoryPage from "./pages/PersonHistoryPage";
-import PersonEditPage from "./pages/PersonEditPage";
+import PersonPage from "./pages/Person/PersonPage";
+import PersonDetailPage from "./pages/Person/PersonDetailPage";
+import PersonHistoryPage from "./pages/History/PersonHistoryPage";
+import PersonEditPage from "./pages/Person/PersonEditPage";
 import OrganizationPage from "./pages/OrganizationPage";
-import ReceiptListPage from "./pages/ReceiptListPage";
-import ReceiptDetailPage from "./pages/ReceiptDetailPage";
-import StatusHistoryPage from "./pages/StatusHistoryPage";
-import ForensicSubmissionPage from "./pages/ForensicSubmissionPage";
-// import ForensicSubmissionListPage from "./pages/ForensicSubmissionListPage";
-// import ForensicSubmissionPdfPage from "./pages/ForensicSubmissionPdfPage";
+import ReceiptListPage from "./pages/Receipt/ReceiptListPage";
+import ReceiptDetailPage from "./pages/Receipt/ReceiptDetailPage";
+import StatusHistoryPage from "./pages/History/StatusHistoryPage";
+import ForensicSubmissionPage from "./pages/Forensic/ForensicSubmissionPage";
+import ForensicSubmissionListPage from "./pages/Forensic/ForensicSubmissionListPage";
+import ForensicSubmissionPdfPage from "./pages/Forensic/ForensicSubmissionPdfPage";
 
 function App() {
   return (
@@ -72,14 +72,14 @@ function App() {
             path="/forensic-submission"
             element={<ForensicSubmissionPage />}
           />
-          {/* <Route
+          <Route
             path="/forensic-submission/list"
             element={<ForensicSubmissionListPage />}
           />
           <Route
             path="/forensic-submission/pdf/:id"
             element={<ForensicSubmissionPdfPage />}
-          /> */}
+          />
         </Route>
 
         <Route path="*" element={<NotFound />} />

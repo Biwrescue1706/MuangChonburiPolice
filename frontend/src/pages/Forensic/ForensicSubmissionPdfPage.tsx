@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import api from "../api/axios";
-import { generateForensicPdf } from "../utils/generateForensicPdf";
+import api from "../../api/axios";
+import { generateForensicPdf } from "../../utils/generateForensicPdf";
 
 interface Person {
   personId: string;

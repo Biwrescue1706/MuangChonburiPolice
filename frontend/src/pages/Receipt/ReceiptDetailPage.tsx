@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../api/axios";
-import { toast } from "../utils/toast";
+import api from "../../api/axios";
+import { toast } from "../../utils/toast";
 
 export default function ReceiptDetailPage() {
   const { id } = useParams();

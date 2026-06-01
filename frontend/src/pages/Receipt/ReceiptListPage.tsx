@@ -1,8 +1,8 @@
 // src/pages/ReceiptListPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";
-import { toast } from "../utils/toast";
+import api from "../../api/axios";
+import { toast } from "../../utils/toast";
 
 interface Receipt {
   receiptId: string;

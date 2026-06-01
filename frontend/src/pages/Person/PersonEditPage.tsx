@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import api from "../api/axios";
-import { toast } from "../utils/toast";
+import api from "../../api/axios";
+import { toast } from "../../utils/toast";
 
 // ================= CONSTANT =================
 const currentYear = new Date().getFullYear();
