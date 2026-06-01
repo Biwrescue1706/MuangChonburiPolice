@@ -52,43 +52,51 @@ router.get("/today", async (req, res) => {
 });
 
 router.get("/date/:date", async (req, res) => {
-    try {
-        const { date } = req.params;
+  try {
+    const { date } = req.params;
 
-        const start = new Date(date);
-        start.setHours(0, 0, 0, 0);
+    const data = await prisma.personStatusHistory.findMany({
+      where: {
+        oldStatus: 0,
+        newStatus: 1,
+        changedAt: {
+          gte: new Date(`${date}T00:00:00.000Z`),
+          lt: new Date(`${date}T23:59:59.999Z`),
+        },
+      },
+      include: {
+        person: true,
+      },
+      orderBy: {
+        changedAt: "desc",
+      },
+    });
 
-        const end = new Date(date);
-        end.setHours(23, 59, 59, 999);
+    res.json({
+      date,
+      total: data.length,
+      data,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Server Error",
+    });
+  }
+});
 
-        const data = await prisma.personStatusHistory.findMany({
-            where: {
-                oldStatus: 0,
-                newStatus: 1,
-                changedAt: {
-                    gte: start,
-                    lte: end,
-                },
-            },
-            include: {
-                person: true,
-            },
-            orderBy: {
-                changedAt: "desc",
-            },
-        });
+router.get("/debug", async (req, res) => {
+  const data = await prisma.personStatusHistory.findMany({
+    include: {
+      person: true,
+    },
+    orderBy: {
+      changedAt: "desc",
+    },
+    take: 20,
+  });
 
-        res.json({
-            date,
-            total: data.length,
-            data,
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            message: "Server Error",
-        });
-    }
+  res.json(data);
 });
 
 export default router;

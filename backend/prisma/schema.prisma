@@ -3,9 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 model Admin {
@@ -68,55 +66,56 @@ model Organization {
 }
 
 model Person {
-  personId            String                @id @default(uuid())
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime?
-  prefix              String
-  firstName           String
-  lastName            String
-  fullName            String
-  citizenId           String
-  birthDate           String?
-  birthDay            String?
-  birthMonth          String?
-  birthYear           String?
-  nationality         String?
-  ethnicity           String?
-  weight              Int?
-  height              Int?
-  bodyType            String?               @default("สันทัด")
-  skinColor           String?               @default("ดำแดง")
-  behavior            String?               @default("ปกติ")
-  distinguishingMarks String?               @default("-")
-  address             String?
-  occupation          String?
-  workplaceAddress    String?
-  father              String?
-  mother              String?
-  spouse              String?               @default("-")
-  fingerprintDate     String?
-  purpose             String?
-  requestingAgency    String?
-  receiptBookNo       String?
-  receiptNo           String?
-  receiptDate         String?
-  money               Int                   @default(100)
-  moneyText           String?
-  status              Int                   @default(0)
-  statusUpdatedAt     DateTime?
-  deleteAt            DateTime?
-  organizationId      String?
-  organizationName    String?
-  fullNameOrg         String?
-  rank                String?
-  position            String?
-  fullNameWithRank    String?
-  priority            Int                   @default(0)
-  returnDate          DateTime?
-  organization        Organization?         @relation(fields: [organizationId], references: [organizationId])
-  receipts            Receipt[]
-  requestInfos        RequestInfo[]
-  statusHistories     PersonStatusHistory[]
+  personId                  String                     @id @default(uuid())
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime?
+  prefix                    String
+  firstName                 String
+  lastName                  String
+  fullName                  String
+  citizenId                 String
+  birthDate                 String?
+  birthDay                  String?
+  birthMonth                String?
+  birthYear                 String?
+  nationality               String?
+  ethnicity                 String?
+  weight                    Int?
+  height                    Int?
+  bodyType                  String?                    @default("สันทัด")
+  skinColor                 String?                    @default("ดำแดง")
+  behavior                  String?                    @default("ปกติ")
+  distinguishingMarks       String?                    @default("-")
+  address                   String?
+  occupation                String?
+  workplaceAddress          String?
+  father                    String?
+  mother                    String?
+  spouse                    String?                    @default("-")
+  fingerprintDate           String?
+  purpose                   String?
+  requestingAgency          String?
+  receiptBookNo             String?
+  receiptNo                 String?
+  receiptDate               String?
+  money                     Int                        @default(100)
+  moneyText                 String?
+  status                    Int                        @default(0)
+  statusUpdatedAt           DateTime?
+  deleteAt                  DateTime?
+  organizationId            String?
+  organizationName          String?
+  fullNameOrg               String?
+  rank                      String?
+  position                  String?
+  fullNameWithRank          String?
+  priority                  Int                        @default(0)
+  returnDate                DateTime?
+  organization              Organization?              @relation(fields: [organizationId], references: [organizationId])
+  receipts                  Receipt[]
+  requestInfos              RequestInfo[]
+  statusHistories           PersonStatusHistory[]
+  forensicSubmissionPersons ForensicSubmissionPerson[]
 }
 
 model PersonStatusHistory {
@@ -166,5 +165,28 @@ model Receipt {
   createdAt        DateTime      @default(now())
   priority         Int           @default(0)
   organization     Organization? @relation(fields: [organizationId], references: [organizationId])
-  person           Person?       @relation(fields: [personId], references: [personId] ,onDelete: Cascade)
+  person           Person?       @relation(fields: [personId], references: [personId], onDelete: Cascade)
+}
+
+model ForensicSubmission {
+  submissionId   String   @id @default(uuid())
+  submissionNo   String?
+  submissionDate DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  persons ForensicSubmissionPerson[]
+}
+
+model ForensicSubmissionPerson {
+  id String @id @default(uuid())
+
+  submissionId String
+  personId     String
+
+  submission ForensicSubmission @relation(fields: [submissionId], references: [submissionId], onDelete: Cascade)
+
+  person Person @relation(fields: [personId], references: [personId], onDelete: Cascade)
+
+  @@unique([submissionId, personId])
 }

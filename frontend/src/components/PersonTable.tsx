@@ -45,7 +45,7 @@ export default function PersonTable({
                     type="checkbox"
                     checked={
                       selectedIds.length ===
-                        persons.filter((p) => p.status < 3).length &&
+                        persons.filter((p) => p.status < 4).length &&
                       persons.length > 0
                     }
                     onChange={handleSelectAll}
@@ -61,12 +61,12 @@ export default function PersonTable({
 
               <th>สถานะ</th>
               <th>ความเร่งด่วน</th>
-              {persons.some((p) => p.status === 3) && <th>วันคืน</th>}
+              {persons.some((p) => p.status === 4) && <th>วันคืน</th>}
               <th>ดู</th>
               <th>PDF</th>
               <th>แก้ไข</th>
               <th>ลบ</th>
-              {persons.some((x) => x.status < 3) && <th>ส่ง</th>}
+              {persons.some((x) => x.status < 4) && <th>ส่ง</th>}
             </tr>
           </thead>
 
@@ -88,7 +88,7 @@ export default function PersonTable({
                 <tr key={p.personId}>
                   {selectMode && (
                     <td>
-                      {p.status < 3 && (
+                      {p.status < 4 && (
                         <input
                           type="checkbox"
                           checked={selectedIds.includes(p.personId)}
@@ -108,9 +108,9 @@ export default function PersonTable({
                   <td>{renderStatus(p.status)}</td>
                   <td>{renderPriority(p.priority ?? 0)}</td>
 
-                  {persons.some((x) => x.status === 3) && (
+                  {persons.some((x) => x.status === 4) && (
                     <td>
-                      {p.status === 3 ? formatThaiDate(p.returnDate) : "-"}
+                      {p.status === 4 ? formatThaiDate(p.returnDate) : "-"}
                     </td>
                   )}
 
@@ -133,7 +133,7 @@ export default function PersonTable({
                   </td>
 
                   <td>
-                    {p.status < 3 && (
+                    {p.status < 4 && (
                       <button
                         className="btn btn-warning btn-sm"
                         onClick={() => navigate(`/person/edit/${p.personId}`)}
@@ -152,9 +152,9 @@ export default function PersonTable({
                     </button>
                   </td>
 
-                  {persons.some((x) => x.status < 3) && (
+                  {persons.some((x) => x.status < 4) && (
                     <td>
-                      {p.status < 3 && (
+                      {p.status < 4 && (
                         <button
                           className={`btn btn-sm ${getStatusButtonStyle(p.status)}`}
                           onClick={() => handleUpdateStatus(p)}

@@ -33,7 +33,7 @@ export default function PersonCard({
   toggleSelect,
   handleUpdateStatus,
   handleDelete,
-handleExportPDF,
+  handleExportPDF,
 }: any) {
   const navigate = useNavigate();
 
@@ -68,12 +68,12 @@ handleExportPDF,
                 ดู
               </button>
 
-<button
-  className="btn btn-primary mt-2 w-100"
-  onClick={() => handleExportPDF(p)}
->
-  ออก PDF
-</button>
+              <button
+                className="btn btn-primary mt-2 w-100"
+                onClick={() => handleExportPDF(p)}
+              >
+                ออก PDF
+              </button>
 
               <button
                 className="btn btn-warning w-100"

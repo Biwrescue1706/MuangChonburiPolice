@@ -29,16 +29,11 @@ export default function PersonHistoryPage() {
   }, []);
 
   // ===== data =====
-  const {
-  persons,
-  allPersons,
-  loading,
-  fetchPersons,
-} = usePersonHistory(
-  statusParam,
-  firstName,
-  lastName,
-);
+  const { persons, allPersons, loading, fetchPersons } = usePersonHistory(
+    statusParam,
+    firstName,
+    lastName,
+  );
 
   // ===== selection =====
   const {
@@ -139,7 +134,7 @@ export default function PersonHistoryPage() {
               className="btn btn-outline-primary"
               onClick={handleSelectAll}
             >
-              {selectedIds.length === persons.filter((p) => p.status < 3).length
+              {selectedIds.length === persons.filter((p) => p.status < 4).length
                 ? "ยกเลิกเลือกทั้งหมด"
                 : "เลือกทั้งหมด"}
             </button>
@@ -153,49 +148,49 @@ export default function PersonHistoryPage() {
 
       {/* FILTER */}
       <div className="mb-3 d-flex gap-2 flex-wrap">
-  <button
-    className={`btn btn-sm ${active(null, "secondary")}`}
-    onClick={() => setSearchParams({})}
-  >
-    ทั้งหมด ({allPersons.length})
-  </button>
+        <button
+          className={`btn btn-sm ${active(null, "secondary")}`}
+          onClick={() => setSearchParams({})}
+        >
+          ทั้งหมด ({allPersons.length})
+        </button>
 
-  <button
-    className={`btn btn-sm ${active("0", "warning")}`}
-    onClick={() => setSearchParams({ status: "0" })}
-  >
-    รอส่ง ศพฐ (
-    {allPersons.filter((p) => p.status === 0).length}
-    )
-  </button>
+        <button
+          className={`btn btn-sm ${active("0", "warning")}`}
+          onClick={() => setSearchParams({ status: "0" })}
+        >
+          รอส่ง ศพฐ ({allPersons.filter((p) => p.status === 0).length})
+        </button>
 
-  <button
-    className={`btn btn-sm ${active("1", "info")}`}
-    onClick={() => setSearchParams({ status: "1" })}
-  >
-    ส่ง ศพฐ แล้ว (
-    {allPersons.filter((p) => p.status === 1).length}
-    )
-  </button>
+        <button
+          className={`btn btn-sm ${active("1", "info")}`}
+          onClick={() => setSearchParams({ status: "1" })}
+        >
+          เตรียมเอกสารส่ง พฐ แล้ว ({allPersons.filter((p) => p.status === 1).length})
+        </button>
 
-  <button
-    className={`btn btn-sm ${active("2", "primary")}`}
-    onClick={() => setSearchParams({ status: "2" })}
-  >
-    รับจาก ศพฐ แล้ว (
-    {allPersons.filter((p) => p.status === 2).length}
-    )
-  </button>
+        <button
+          className={`btn btn-sm ${active("2", "primary")}`}
+          onClick={() => setSearchParams({ status: "2" })}
+        >
+          ส่ง ศพฐ แล้ว ({allPersons.filter((p) => p.status === 2).length})
+        </button>
 
-  <button
-    className={`btn btn-sm ${active("3", "success")}`}
-    onClick={() => setSearchParams({ status: "3" })}
-  >
-    ส่งคืน ต้นสังกัด แล้ว (
-    {allPersons.filter((p) => p.status === 3).length}
-    )
-  </button>
-</div>
+        <button
+          className={`btn btn-sm ${active("3", "success")}`}
+          onClick={() => setSearchParams({ status: "3" })}
+        >
+          รับจาก ศพฐ แล้ว ({allPersons.filter((p) => p.status === 3).length})
+        </button>
+
+        <button
+          className={`btn btn-sm ${active("4", "danger")}`}
+          onClick={() => setSearchParams({ status: "4" })}
+        >
+          ส่งคืน ต้นสังกัด แล้ว (
+          {allPersons.filter((p) => p.status === 4).length})
+        </button>
+      </div>
 
       {/* CONTENT */}
       {isMobile ? (

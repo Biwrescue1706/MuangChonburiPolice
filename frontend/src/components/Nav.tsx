@@ -120,6 +120,39 @@ export default function Nav() {
 
           <button
             className={`btn text-start ${
+              isActive("/status-history")
+                ? "btn-warning fw-bold"
+                : "btn-warning"
+            }`}
+            onClick={() => go("/status-history")}
+          >
+            📊 รายงานการส่งตรวจ
+          </button>
+
+          <button
+            className={`btn text-start ${
+              isActive("/forensic-submission")
+                ? "btn-warning fw-bold"
+                : "btn-warning"
+            }`}
+            onClick={() => go("/forensic-submission")}
+          >
+            📑 ส่ง ศพฐ.
+          </button>
+
+          <button
+            className={`btn text-start ${
+              isActive("/forensic-submission/list")
+                ? "btn-warning fw-bold"
+                : "btn-warning"
+            }`}
+            onClick={() => go("/forensic-submission/list")}
+          >
+            📑 รายการหนังสือ ศพฐ.
+          </button>
+
+          <button
+            className={`btn text-start ${
               isActive("/receipt") ? "btn-warning fw-bold" : "btn-warning"
             }`}
             onClick={() => go("/receipt")}
@@ -202,6 +235,40 @@ export default function Nav() {
             >
               📄 ประวัติ
             </button>
+            <button
+              className={`btn text-start ${
+                isActive("/status-history")
+                  ? "btn-warning fw-bold"
+                  : "btn-warning"
+              }`}
+              onClick={() => go("/status-history")}
+            >
+              📊 รายงานการส่งตรวจ
+            </button>
+
+            <button
+              className={`btn text-start ${
+                isActive("/forensic-submission")
+                  ? "btn-warning fw-bold"
+                  : "btn-warning"
+              }`}
+              onClick={() => go("/forensic-submission")}
+            >
+              📑 ส่ง ศพฐ.
+            </button>
+
+
+              <button
+              className={`btn text-start ${
+                isActive("/forensic-submission/list")
+                  ? "btn-warning fw-bold"
+                  : "btn-warning"
+              }`}
+              onClick={() => go("/forensic-submission/list")}
+            >
+              📑 รายการหนังสือ ศพฐ.
+            </button>
+
             <button
               className="btn btn-warning text-start"
               onClick={() => go("/receipt")}

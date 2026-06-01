@@ -14,12 +14,14 @@
     "deploy": "npx prisma generate"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "engineType": "client"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.1.2",
     "@line/bot-sdk": "^10.2.0",
-    "@prisma/client": "^5.22.0",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "@supabase/supabase-js": "^2.105.1",
     "bcryptjs": "^3.0.3",
     "compression": "^1.7.4",
@@ -39,8 +41,9 @@
     "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
     "object-hash": "^3.0.0",
+    "pg": "^8.21.0",
     "pino": "^9.4.0",
-    "prisma": "^5.22.0",
+    "prisma": "^7.8.0",
     "prisma-pagination": "^0.2.3",
     "qrcode": "^1.5.4",
     "redis": "^4.7.0",

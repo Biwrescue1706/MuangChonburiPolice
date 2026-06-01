@@ -5,7 +5,7 @@ export default function useSelection(persons: any[]) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const toggleSelect = (id: string, status: number) => {
-    if (status >= 3) return;
+    if (status >= 4) return;
 
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
@@ -13,7 +13,7 @@ export default function useSelection(persons: any[]) {
   };
 
   const handleSelectAll = () => {
-    const valid = persons.filter((p) => p.status < 3);
+    const valid = persons.filter((p) => p.status < 4);
 
     if (selectedIds.length === valid.length) {
       setSelectedIds([]);

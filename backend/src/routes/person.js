@@ -297,6 +297,7 @@ router.get("/getall", async (req, res) => {
     const persons = await prisma.person.findMany({
       where,
       orderBy: { createdAt: "desc" },
+      take: 500,
     });
 
     res.json({
@@ -542,7 +543,7 @@ router.patch("/bulk/status", async (req, res) => {
     const { personIds, status } = req.body;
     const statusNum = Number(status);
 
-    if (![0, 1, 2, 3].includes(statusNum)) {
+    if (![0, 1, 2, 3, 4].includes(statusNum)) {
       return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
     }
 
@@ -552,45 +553,56 @@ router.patch("/bulk/status", async (req, res) => {
 
     const now = new Date();
 
-    const result =     await prisma.$transaction(async (tx) => {
-      await tx.person.update({
+    const persons = await prisma.person.findMany({
+      where: {
+        personId: {
+          in: personIds,
+        },
+      },
+      select: {
+        personId: true,
+        status: true,
+        returnDate: true,
+      },
+    });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.person.updateMany({
         where: {
-          personId: req.params.id,
+          personId: {
+            in: personIds,
+          },
         },
         data: {
           status: statusNum,
-          statusUpdatedAt: new Date(),
-          updatedAt: new Date(),
+          statusUpdatedAt: now,
+          updatedAt: now,
 
           deleteAt:
-            statusNum === 3
-              ? new Date(Date.now() + 45 * 24 * 60 * 60 * 1000)
-              : null,
-
-          returnDate:
-            statusNum === 3
-              ? (person.returnDate ?? new Date())
+            statusNum === 4
+              ? new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000)
               : null,
         },
       });
 
-      await tx.personStatusHistory.create({
-        data: {
+      await tx.personStatusHistory.createMany({
+        data: persons.map((person) => ({
           personId: person.personId,
           oldStatus: person.status,
           newStatus: statusNum,
-        },
+        })),
       });
     });
 
-    if (result.count === 0) {
-      return res.status(400).json({ error: "ไม่มีข้อมูลที่อัปเดตได้" });
-    }
-
-    res.json({ success: true, updated: result.count });
+    res.json({
+      success: true,
+      updated: persons.length,
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "อัปเดตหลายรายการไม่สำเร็จ" });
+    res.status(500).json({
+      error: "อัปเดตหลายรายการไม่สำเร็จ",
+    });
   }
 });
 
@@ -602,7 +614,7 @@ router.patch("/:id/status", async (req, res) => {
 
     const statusNum = Number(req.body.status);
 
-    if (![0, 1, 2, 3].includes(statusNum)) {
+    if (![0, 1, 2, 3, 4].includes(statusNum)) {
       return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
     }
 
@@ -625,12 +637,12 @@ router.patch("/:id/status", async (req, res) => {
           updatedAt: new Date(),
 
           deleteAt:
-            statusNum === 3
+            statusNum === 4
               ? new Date(Date.now() + 45 * 24 * 60 * 60 * 1000)
               : null,
 
           returnDate:
-            statusNum === 3
+            statusNum === 4
               ? (person.returnDate ?? new Date())
               : null,
         },

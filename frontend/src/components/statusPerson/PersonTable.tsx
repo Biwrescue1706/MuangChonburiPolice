@@ -34,7 +34,7 @@ export default function PersonTable({
   toggleSelectAll,
   handleUpdateStatus,
   handleDelete,
-handleExportPDF,
+  handleExportPDF,
 }: any) {
   const navigate = useNavigate();
 
@@ -115,14 +115,14 @@ handleExportPDF,
                     </button>
                   </td>
 
-<td>
-  <button
-    className="btn btn-primary btn-sm"
-    onClick={() => handleExportPDF(p)}
-  >
-    PDF
-  </button>
-</td>
+                  <td>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => handleExportPDF(p)}
+                    >
+                      PDF
+                    </button>
+                  </td>
 
                   <td>
                     <button

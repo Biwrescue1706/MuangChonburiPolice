@@ -45,6 +45,8 @@ import personRoutes from "./routes/person.js";
 import receiptRoutes from "./routes/receipt.js";
 import organizationRoutes from "./routes/organization.js";
 import personStatusHistoryRoutes from "./routes/personStatusHistory.js";
+import forensicSubmissionRoutes
+  from "./routes/forensicSubmission.js";
 
 app.use("/api/person", personRoutes);
 app.use("/api/auth", authRoute);
@@ -52,6 +54,10 @@ app.use("/api/status-history", personStatusHistoryRoutes);
 app.use("/api/admin", adminRoute);
 app.use("/api/receipt", receiptRoutes);
 app.use("/api/organization", organizationRoutes);
+app.use(
+  "/api/forensic-submission",
+  forensicSubmissionRoutes
+);
 
 /* ================= HEALTH (สำคัญมาก) ================= */
 
@@ -74,7 +80,7 @@ app.get("/health", async (_, res) => {
 /* ================= DEBUG ALIVE ================= */
 setInterval(() => {
   console.log("🟢 alive:", new Date().toISOString());
-}, 30000);
+}, 150000);
 
 /* ================= ERROR ================= */
 app.use((req, res) => {

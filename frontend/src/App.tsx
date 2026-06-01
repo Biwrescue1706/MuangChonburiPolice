@@ -19,6 +19,10 @@ import PersonEditPage from "./pages/PersonEditPage";
 import OrganizationPage from "./pages/OrganizationPage";
 import ReceiptListPage from "./pages/ReceiptListPage";
 import ReceiptDetailPage from "./pages/ReceiptDetailPage";
+import StatusHistoryPage from "./pages/StatusHistoryPage";
+import ForensicSubmissionPage from "./pages/ForensicSubmissionPage";
+import ForensicSubmissionListPage from "./pages/ForensicSubmissionListPage";
+import ForensicSubmissionPdfPage from "./pages/ForensicSubmissionPdfPage";
 
 function App() {
   return (
@@ -63,6 +67,19 @@ function App() {
 
           {/* DETAIL */}
           <Route path="/person/:id" element={<PersonDetailPage />} />
+          <Route path="/status-history" element={<StatusHistoryPage />} />
+          <Route
+            path="/forensic-submission"
+            element={<ForensicSubmissionPage />}
+          />
+          <Route
+            path="/forensic-submission/list"
+            element={<ForensicSubmissionListPage />}
+          />
+          <Route
+            path="/forensic-submission/pdf/:id"
+            element={<ForensicSubmissionPdfPage />}
+          />
         </Route>
 
         <Route path="*" element={<NotFound />} />

@@ -36,7 +36,7 @@ export default function PersonCardList({
 
       {sortedPersons.map((p: any) => (
         <div key={p.personId} className="card p-3">
-          {selectMode && p.status < 3 && (
+          {selectMode && p.status < 4 && (
             <div className="form-check mb-2">
               <input
                 type="checkbox"
@@ -70,7 +70,7 @@ export default function PersonCardList({
             ความเร่งด่วน : {renderPriority(p.priority ?? 0)}
           </div>
 
-          {p.status === 3 && (
+          {p.status === 4 && (
             <div className="mt-1 text-danger">
               📅 วันคืน : {formatThaiDate(p.returnDate)}
             </div>
@@ -96,7 +96,7 @@ export default function PersonCardList({
               </button>
             </div>
 
-            {p.status < 3 && (
+            {p.status < 4 && (
               <div className="col-6">
                 <button
                   className="btn btn-warning w-100"
@@ -116,7 +116,7 @@ export default function PersonCardList({
               </button>
             </div>
 
-            {p.status < 3 && (
+            {p.status < 4 && (
               <div className="col-12">
                 <button
                   className={`btn w-100 ${getStatusButtonStyle(p.status)}`}

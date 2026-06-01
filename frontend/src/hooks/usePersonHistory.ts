@@ -18,7 +18,7 @@ export default function usePersonHistory(
     const timer = setTimeout(() => {
       setDebounceFirstName(firstName);
       setDebounceLastName(lastName);
-    }, 300);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [firstName, lastName]);

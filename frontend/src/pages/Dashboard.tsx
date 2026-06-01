@@ -14,6 +14,7 @@ export default function Dashboard() {
     s1: 0,
     s2: 0,
     s3: 0,
+    s4: 0,
   });
 
   // ================= เวลาไทย =================
@@ -61,12 +62,11 @@ export default function Dashboard() {
         const raw = res.data;
         const list = Array.isArray(raw) ? raw : raw.data || [];
 
-        console.log("DATA:", list); // debug ดูได้
-
         const s0 = list.filter((p: any) => Number(p.status) === 0).length;
         const s1 = list.filter((p: any) => Number(p.status) === 1).length;
         const s2 = list.filter((p: any) => Number(p.status) === 2).length;
         const s3 = list.filter((p: any) => Number(p.status) === 3).length;
+        const s4 = list.filter((p: any) => Number(p.status) === 4).length;
 
         setSummary({
           all: list.length,
@@ -74,6 +74,7 @@ export default function Dashboard() {
           s1,
           s2,
           s3,
+          s4,
         });
       } catch (err) {
         console.error("โหลดข้อมูลไม่สำเร็จ:", err);
@@ -128,7 +129,7 @@ export default function Dashboard() {
               to="/person/history?status=1"
               className="card p-3 shadow-sm text-decoration-none"
             >
-              <h6 className="text-primary">ส่ง ศพฐ แล้ว</h6>
+              <h6 className="text-primary">เตรียมเอกสารส่ง ศพฐ. แล้ว</h6>
               <h3 className="fw-bold">{summary.s1}</h3>
             </Link>
           </div>
@@ -138,7 +139,7 @@ export default function Dashboard() {
               to="/person/history?status=2"
               className="card p-3 shadow-sm text-decoration-none"
             >
-              <h6 className="text-info">รับจาก ศพฐ แล้ว</h6>
+              <h6 className="text-info">ส่ง ศพฐ แล้ว</h6>
               <h3 className="fw-bold">{summary.s2}</h3>
             </Link>
           </div>
@@ -148,8 +149,18 @@ export default function Dashboard() {
               to="/person/history?status=3"
               className="card p-3 shadow-sm text-decoration-none"
             >
-              <h6 className="text-success">ส่งคืนต้นสังกัด</h6>
+              <h6 className="text-success">รับจาก ศพฐ แล้ว</h6>
               <h3 className="fw-bold">{summary.s3}</h3>
+            </Link>
+          </div>
+
+          <div className="col-md-3">
+            <Link
+              to="/person/history?status=4"
+              className="card p-3 shadow-sm text-decoration-none"
+            >
+              <h6 className="text-secondary">ส่งคืนต้นสังกัด</h6>
+              <h3 className="fw-bold">{summary.s4}</h3>
             </Link>
           </div>
         </div>
