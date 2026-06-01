@@ -262,7 +262,7 @@ router.get("/getall", async (req, res) => {
       if (!isNaN(statusNum)) {
         where.status = statusNum;
 
-        if (statusNum !== 3) {
+        if (statusNum !== 4) {
           where.deleteAt = null;
         }
       }

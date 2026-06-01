@@ -96,6 +96,7 @@ export default function StatusHistoryPage() {
 
   return (
     <div className="container py-4 main-content">
+      <div className="bg-white rounded-xl shadow border">
       <div className="card shadow-sm">
         <div className="card-header text-center">
           <h3 className="mb-0">รายงานการส่งตรวจลายนิ้วมือ</h3>
@@ -127,8 +128,8 @@ export default function StatusHistoryPage() {
           </div>
 
           <div className="table-responsive">
-            <table className="table table-bordered table-striped align-middle">
-              <thead className="table-dark text-center align-middle">
+            <table className="table table-bordered text-center">
+              <thead className="table-dark">
                 <tr>
                   <th rowSpan={2} style={{ width: "70px" }}>
                     ลำดับ
@@ -186,15 +187,15 @@ export default function StatusHistoryPage() {
                         {formatThaiShortDate(item.person?.receiptDate)}
                       </td>
 
-                      <td className="text-center">{item.person?.priority === 1 ? "*" : "-"}</td>
+                      <td className="text-center">
+                        {item.person?.priority === 1 ? "*" : "-"}
+                      </td>
 
                       <td className="text-center">
                         {new Date(item.changedAt).toLocaleString("th-TH", {
                           year: "numeric",
                           month: "long",
                           day: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
                         })}
                       </td>
                     </tr>
@@ -214,6 +215,7 @@ export default function StatusHistoryPage() {
             </table>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

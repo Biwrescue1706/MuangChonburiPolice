@@ -75,7 +75,7 @@ export default function Nav() {
             👤 {shortText(admin?.name || "", 10)}
           </div>
           <small
-            className="text-white"
+            className="text-white fw-bold"
             style={{ fontSize: "11px", lineHeight: 1.2 }}
           >
             ({shortText(admin?.position || "", 10)})
@@ -97,7 +97,9 @@ export default function Nav() {
         <div className="p-2 d-flex flex-column gap-2">
           <button
             className={`btn text-start ${
-              isActive("/dashboard") ? "btn-warning fw-bold" : "btn-warning"
+              isActive("/dashboard")
+                ? "btn-warning fw-bold"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => go("/dashboard")}
           >
@@ -105,14 +107,14 @@ export default function Nav() {
           </button>
 
           <button
-            className="btn btn-warning text-start"
+            className="btn btn-warning text-start fw-bold"
             onClick={() => go("/person/create")}
           >
             ➕ เพิ่มบุคคลตรวจ
           </button>
 
           <button
-            className="btn btn-warning text-start"
+            className="btn btn-warning text-start fw-bold"
             onClick={() => go("/person/history")}
           >
             📄 ประวัติ
@@ -122,7 +124,7 @@ export default function Nav() {
             className={`btn text-start ${
               isActive("/status-history")
                 ? "btn-warning fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => go("/status-history")}
           >
@@ -133,7 +135,7 @@ export default function Nav() {
             className={`btn text-start ${
               isActive("/forensic-submission")
                 ? "btn-warning fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => go("/forensic-submission")}
           >
@@ -144,7 +146,7 @@ export default function Nav() {
             className={`btn text-start ${
               isActive("/forensic-submission/list")
                 ? "btn-warning fw-bold"
-                : "btn-warning"
+                : "btn-warning fw-bold"
             }`}
             onClick={() => go("/forensic-submission/list")}
           >
@@ -183,7 +185,10 @@ export default function Nav() {
             ⚙️ โปรไฟล์
           </button>
 
-          <button className="btn btn-primary text-start" onClick={handleLogout}>
+          <button
+            className="btn btn-primary  text-start"
+            onClick={handleLogout}
+          >
             🚪 ออกจากระบบ
           </button>
         </div>
@@ -218,19 +223,19 @@ export default function Nav() {
 
           <div className="p-3 d-flex flex-column gap-2">
             <button
-              className="btn btn-warning text-start"
+              className="btn btn-warning text-start fw-bold"
               onClick={() => go("/dashboard")}
             >
               🏠 หน้าแรก
             </button>
             <button
-              className="btn btn-warning text-start"
+              className="btn btn-warning text-start fw-bold"
               onClick={() => go("/person/create")}
             >
               ➕ เพิ่มบุคคลตรวจ
             </button>
             <button
-              className="btn btn-warning text-start"
+              className="btn btn-warning text-start fw-bold"
               onClick={() => go("/person/history")}
             >
               📄 ประวัติ
@@ -239,7 +244,7 @@ export default function Nav() {
               className={`btn text-start ${
                 isActive("/status-history")
                   ? "btn-warning fw-bold"
-                  : "btn-warning"
+                  : "btn-warning fw-bold"
               }`}
               onClick={() => go("/status-history")}
             >
@@ -250,19 +255,18 @@ export default function Nav() {
               className={`btn text-start ${
                 isActive("/forensic-submission")
                   ? "btn-warning fw-bold"
-                  : "btn-warning"
+                  : "btn-warning fw-bold"
               }`}
               onClick={() => go("/forensic-submission")}
             >
               📑 ส่ง ศพฐ.
             </button>
 
-
-              <button
+            <button
               className={`btn text-start ${
                 isActive("/forensic-submission/list")
                   ? "btn-warning fw-bold"
-                  : "btn-warning"
+                  : "btn-warning  fw-bold"
               }`}
               onClick={() => go("/forensic-submission/list")}
             >
@@ -270,31 +274,31 @@ export default function Nav() {
             </button>
 
             <button
-              className="btn btn-warning text-start"
+              className="btn btn-warning text-start fw-bold"
               onClick={() => go("/receipt")}
             >
               🧾 ใบเสร็จ
             </button>
             <button
-              className="btn btn-warning text-start"
+              className="btn btn-warning text-start fw-bold"
               onClick={() => go("/admin/create")}
             >
               ➕ Admin
             </button>
             <button
-              className="btn btn-warning text-start"
+              className="btn btn-warning text-start fw-bold"
               onClick={() => go("/organization")}
             >
               🏢 หน่วยงาน
             </button>
             <button
-              className="btn btn-warning text-start"
+              className="btn btn-warning text-start fw-bold"
               onClick={() => go("/profile")}
             >
               ⚙️ โปรไฟล์
             </button>
             <button
-              className="btn btn-primary text-start"
+              className="btn btn-primary text-start fw-bold"
               onClick={handleLogout}
             >
               🚪 ออกจากระบบ

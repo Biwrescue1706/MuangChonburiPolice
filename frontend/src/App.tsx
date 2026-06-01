@@ -21,8 +21,8 @@ import ReceiptListPage from "./pages/ReceiptListPage";
 import ReceiptDetailPage from "./pages/ReceiptDetailPage";
 import StatusHistoryPage from "./pages/StatusHistoryPage";
 import ForensicSubmissionPage from "./pages/ForensicSubmissionPage";
-import ForensicSubmissionListPage from "./pages/ForensicSubmissionListPage";
-import ForensicSubmissionPdfPage from "./pages/ForensicSubmissionPdfPage";
+// import ForensicSubmissionListPage from "./pages/ForensicSubmissionListPage";
+// import ForensicSubmissionPdfPage from "./pages/ForensicSubmissionPdfPage";
 
 function App() {
   return (
@@ -72,14 +72,14 @@ function App() {
             path="/forensic-submission"
             element={<ForensicSubmissionPage />}
           />
-          <Route
+          {/* <Route
             path="/forensic-submission/list"
             element={<ForensicSubmissionListPage />}
           />
           <Route
             path="/forensic-submission/pdf/:id"
             element={<ForensicSubmissionPdfPage />}
-          />
+          /> */}
         </Route>
 
         <Route path="*" element={<NotFound />} />

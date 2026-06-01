@@ -104,7 +104,7 @@ export default function PersonTable({
                   <td>{p.receiptBookNo || "-"}</td>
                   <td>{p.receiptNo || "-"}</td>
                   <td>{formatThaiDate(p.receiptDate)}</td>
-                  
+
                   <td>{renderStatus(p.status)}</td>
                   <td>{renderPriority(p.priority ?? 0)}</td>
 
@@ -131,18 +131,20 @@ export default function PersonTable({
                       PDF แบบพิมพ์มือ
                     </button>
                   </td>
-
-                  <td>
-                    {p.status < 4 && (
+                  
+                    <td>
+                      {p.status < 4 ? (
                       <button
                         className="btn btn-warning btn-sm"
                         onClick={() => navigate(`/person/edit/${p.personId}`)}
                       >
                         ✏️
                       </button>
-                    )}
-                  </td>
-
+                      ) : (
+                        "-"
+                      )}
+                    </td>
+                  
                   <td>
                     <button
                       className="btn btn-danger btn-sm"

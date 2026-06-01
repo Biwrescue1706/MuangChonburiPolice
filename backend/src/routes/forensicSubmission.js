@@ -7,7 +7,7 @@ const router = Router();
 
 router.post("/create", async (req, res) => {
   try {
-    const { personIds } = req.body;
+    const { personIds, submissionNo } = req.body;
 
     if (!Array.isArray(personIds) || personIds.length === 0) {
       return res.status(400).json({
@@ -15,42 +15,28 @@ router.post("/create", async (req, res) => {
       });
     }
 
-    const now = new Date();
-
-    // ปี พ.ศ.
-    const thaiYear = now.getFullYear() + 543;
-
-    // หาเลขล่าสุดของปีนี้
-    const lastSubmission =
-      await prisma.forensicSubmission.findFirst({
-        where: {
-          submissionNo: {
-            endsWith: `/${thaiYear}`,
-          },
-        },
-
-        orderBy: {
-          createdAt: "desc",
-        },
+    if (!submissionNo?.trim()) {
+      return res.status(400).json({
+        error: "กรุณาระบุเลขที่ส่งตรวจ",
       });
-
-    let runningNo = 1;
-
-    if (lastSubmission?.submissionNo) {
-      const currentNo = parseInt(
-        lastSubmission.submissionNo.split("/")[0]
-      );
-
-      runningNo = currentNo + 1;
     }
 
-    const submissionNo =
-      `${String(runningNo).padStart(4, "0")}/${thaiYear}`;
+    const exists = await prisma.forensicSubmission.findFirst({
+      where: {
+        submissionNo: submissionNo.trim(),
+      },
+    });
 
-    const submission =
-      await prisma.forensicSubmission.create({
+    if (exists) {
+      return res.status(400).json({
+        error: "เลขที่ส่งตรวจนี้มีอยู่แล้ว",
+      });
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const submission = await tx.forensicSubmission.create({
         data: {
-          submissionNo,
+          submissionNo: submissionNo.trim(),
 
           persons: {
             create: personIds.map((personId) => ({
@@ -68,9 +54,27 @@ router.post("/create", async (req, res) => {
         },
       });
 
+      // เปลี่ยนสถานะจาก 1 -> 2 เท่านั้น
+      await tx.person.updateMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+          status: 1,
+        },
+        data: {
+          status: 2,
+          statusUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
+
+      return submission;
+    });
+
     res.json({
       success: true,
-      data: submission,
+      data: result,
     });
   } catch (err) {
     console.error(err);
@@ -89,7 +93,7 @@ router.get("/", async (_, res) => {
         persons: {
           include: {
             person: true,
-            
+
           },
         },
       },

@@ -19,13 +19,13 @@ export const renderStatus = (status: number): ReactNode => {
     case 0:
       return <span className="badge bg-warning text-dark">รอส่ง ศพฐ.</span>;
     case 1:
-      return <span className="badge bg-primary">เตรียมเอกสารส่ง ศพฐ. แล้ว</span>;
+      return <span className="badge bg-info text-dark">เตรียมเอกสารส่ง ศพฐ. แล้ว</span>;
     case 2:
-      return <span className="badge bg-success">ส่ง ศพฐ. แล้ว</span>;
+      return <span className="badge bg-primary text-white">ส่ง ศพฐ. แล้ว</span>;
     case 3:
-      return <span className="badge bg-danger">รับจาก ศพฐ. แล้ว</span>;
+      return <span className="badge bg-success text-white">รับจาก ศพฐ. แล้ว</span>;
     case 4:
-      return <span className="badge bg-secondary">ส่งคืน ต้นสังกัด แล้ว</span>;
+      return <span className="badge bg-danger text-white">ส่งคืน ต้นสังกัด แล้ว</span>;
     default:
       return "-";
   }
@@ -50,7 +50,7 @@ export const getStatusButtonStyle = (status: number) => {
     case 3:
       return "btn-success";
     case 4:
-      return "btn-secondary";
+      return "btn-danger";
     default:
       return "btn-secondary";
   }
