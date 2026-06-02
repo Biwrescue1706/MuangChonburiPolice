@@ -64,6 +64,10 @@ export default function PersonCardList({
             <strong>เรื่องที่ขออนุญาต </strong> : {p.purpose || "-"}
           </div>
 
+<div className="mt-1 mb-1">
+            <strong>หน่วงาน </strong> : {p.requestingAgency || "-"}
+          </div>
+
           <div className="mt-2">สถานะ : {renderStatus(p.status)}</div>
 
           <div className="mt-1">
