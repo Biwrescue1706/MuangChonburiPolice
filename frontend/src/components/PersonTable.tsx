@@ -55,6 +55,7 @@ export default function PersonTable({
               <th>#</th>
               <th>ชื่อ และชื่อสกุล</th>
               <th>เรื่องที่ขออนุญาต</th>
+              <th>หน่วยงาน</th>
               <th>เล่มที่</th>
               <th>เลขที่</th>
               <th>ลงวันที่</th>
@@ -101,6 +102,7 @@ export default function PersonTable({
                   <td>{i + 1}</td>
                   <td>{p.fullName}</td>
                   <td>{p.purpose}</td>
+                  <td>{p.requestingAgency}</td>
                   <td>{p.receiptBookNo || "-"}</td>
                   <td>{p.receiptNo || "-"}</td>
                   <td>{formatThaiDate(p.receiptDate)}</td>
