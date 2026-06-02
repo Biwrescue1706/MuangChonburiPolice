@@ -7,10 +7,7 @@ export default function ReceiptInfo({
   years,
 }: any) {
   const statusOptions = [
-    { value: 0, label: "รอส่ง ศพฐ" },
-    { value: 1, label: "ส่ง ศพฐ แล้ว" },
-    { value: 2, label: "รับจาก ศพฐ แล้ว" },
-    { value: 3, label: "ส่งคืน" },
+    { value: 0, label: "รอส่ง ศพฐ" }
   ];
 
   return (
