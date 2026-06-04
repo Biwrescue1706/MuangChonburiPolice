@@ -40,6 +40,7 @@ function formatThaiMonthYear(dateString?: string): string {
   return dateString;
 }
 
+
 export async function generateForensicPdfs(data: ForensicPdfData) {
   try {
     const response = await fetch("/forensic-template2.pdf");
@@ -92,6 +93,7 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       font,
       color: black,
     });
+
 
     // จนท.พิมพ์มือ
     page.drawText(org?.rank || "-", {
@@ -156,7 +158,6 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       font,
       color: black,
     });
-
 
     // จนท.ผู้รับผิดชอบ
     page.drawText(org?.rank || "-", {
