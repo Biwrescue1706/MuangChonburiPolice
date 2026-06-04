@@ -19,6 +19,13 @@ export interface ForensicPdfData {
   persons: ForensicPerson[];
 }
 
+export interface commander {
+  fullRank: string;
+  name: string;
+  fullPosition: string;
+  signatureImage?: string;
+}
+
 function formatShortThaiDate(dateString?: string): string {
   if (!dateString) return "-";
 
@@ -69,6 +76,14 @@ function formatThaiMonthYear(dateString?: string): string {
   return dateString;
 }
 
+function formatThaiDate(dateString?: string): string {
+  if (!dateString) return "";
+
+  const parts = dateString.trim().split(" ");
+
+  return parts[0] || "";
+}
+
 export async function generateForensicPdf(data: ForensicPdfData) {
   try {
     const response = await fetch("/forensic-template.pdf");
@@ -102,10 +117,34 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     const org = orgData[0];
 
-    console.log("signature =", org?.commander?.signatureImage);
+    const boldFontResponse = await fetch("/fonts/THSarabunIT9-Bold.ttf");
+
+    if (!boldFontResponse.ok) {
+      throw new Error("ไม่พบไฟล์ THSarabunIT9-Bold.ttf");
+    }
+
+    const boldFontBytes = await boldFontResponse.arrayBuffer();
+
+    const boldFont = await pdfDoc.embedFont(boldFontBytes);
+
+    page.drawText(data.submissionNo || "-", {
+      x: 173,
+      y: 732,
+      size: 16,
+      font,
+      color: rgb(0 / 255, 0 / 255, 255 / 255),
+    });
+
+    page.drawText(formatThaiDate(data.submissionDate), {
+      x: 316,
+      y: 732,
+      size: 16,
+      font,
+      color: rgb(0 / 255, 0 / 255, 255 / 255),
+    });
 
     page.drawText(formatThaiMonthYear(data.submissionDate), {
-      x: 330,
+      x: 335,
       y: 731,
       size: 16,
       font,
@@ -126,6 +165,30 @@ export async function generateForensicPdf(data: ForensicPdfData) {
         height: 25,
       });
     }
+
+    page.drawText(org?.commander?.fullRank || "-", {
+      x: 251,
+      y: 569,
+      size: 16,
+      font,
+      color: black,
+    });
+
+    page.drawText(`( ${org?.commander?.fullName || "-"} )`, {
+      x: 318,
+      y: 551,
+      size: 16,
+      font,
+      color: black,
+    });
+
+    page.drawText(org?.commander?.fullPosition || "-", {
+      x: 276,
+      y: 533,
+      size: 16,
+      font,
+      color: black,
+    });
 
     // หัวตาราง
 
@@ -159,7 +222,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
     });
 
     page.drawLine({
-      start: { x: 378, y: headerTop + 20 },
+      start: { x: 375, y: headerTop + 20 },
       end: { x: 540, y: headerTop + 20 },
       thickness: 1,
     });
@@ -168,60 +231,58 @@ export async function generateForensicPdf(data: ForensicPdfData) {
       x: 15,
       y: headerTop + 16,
       size: 15,
-      font,
+      font: boldFont,
     });
 
     page.drawText("ชื่อ และ ชื่อสกุล", {
       x: 70,
       y: headerTop + 16,
       size: 15,
-      font,
+      font: boldFont,
     });
 
     page.drawText("เรื่องที่ขออนุญาต", {
       x: 255,
       y: headerTop + 16,
       size: 15,
-      font,
+      font: boldFont,
     });
 
     page.drawText("ใบเสร็จรับเงิน", {
       x: 435,
       y: headerTop + 25,
       size: 15,
-      font,
+      font: boldFont,
     });
 
     page.drawText("หมายเหตุ", {
-      x: 543,
+      x: 545,
       y: headerTop + 12,
       size: 15,
-      font,
+      font: boldFont,
     });
 
-    // ====================
     // หัวข้อย่อย
-    // ====================
 
     page.drawText("เล่มที่", {
-      x: 390,
+      x: 392,
       y: headerTop + 4,
       size: 15,
-      font,
+      font: boldFont,
     });
 
     page.drawText("เลขที่", {
-      x: 435,
+      x: 440,
       y: headerTop + 4,
       size: 15,
-      font,
+      font: boldFont,
     });
 
     page.drawText("ลงวันที่", {
-      x: 490,
+      x: 495,
       y: headerTop + 4,
       size: 15,
-      font,
+      font: boldFont,
     });
 
     // ======================================================
@@ -262,14 +323,14 @@ export async function generateForensicPdf(data: ForensicPdfData) {
       });
 
       page.drawText(String(index + 1), {
-        x: 20,
+        x: 22,
         y,
-        size: 13,
+        size: 16,
         font,
       });
 
       page.drawText(person.fullName || "", {
-        x: 47,
+        x: 51,
         y,
         size: 13,
         font,
@@ -285,29 +346,29 @@ export async function generateForensicPdf(data: ForensicPdfData) {
       page.drawText(person.receiptBookNo || "-", {
         x: 385,
         y,
-        size: 13,
+        size: 16,
         font,
       });
 
       page.drawText(person.receiptNo || "-", {
-        x: 440,
+        x: 444,
         y,
-        size: 13,
+        size: 16,
         font,
       });
 
       page.drawText(formatShortThaiDate(person.receiptDate), {
         x: 480,
         y,
-        size: 13,
+        size: 16,
         font,
       });
 
       page.drawText(person.priority === 1 ? "*" : "", {
-        x: 565,
+        x: 560,
         y,
-        size: 13,
-        font,
+        size: 16,
+        font : boldFont,
       });
 
       y -= rowHeight;

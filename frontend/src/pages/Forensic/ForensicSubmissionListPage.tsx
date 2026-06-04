@@ -1,13 +1,13 @@
+//src/pages/Forensic/ForensicSubmissionListPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
+import swal from "sweetalert2";
 
 export default function ForensicSubmissionListPage() {
   const navigate = useNavigate();
   const [data, setData] = useState<any[]>([]);
-  const [isDesktop, setIsDesktop] = useState(
-    window.innerWidth >= 1280
-  );
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1280);
 
   useEffect(() => {
     fetchData();
@@ -42,17 +42,49 @@ export default function ForensicSubmissionListPage() {
     });
   };
 
+  const handleDelete = async (id: string) => {
+    swal
+      .fire({
+        title: "ต้องการลบรายการนี้ใช่หรือไม่ ?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "ใช่",
+        cancelButtonText: "ไม่ใช่",
+      })
+      .then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await api.delete(`/forensic-submission/${id}`);
+            setData((prev) => prev.filter((item) => item.submissionId !== id));
+            swal.fire({
+              title: "ลบข้อมูลสำเร็จ",
+              text: "ข้อมูลถูกลบเรียบร้อยแล้ว",
+              icon: "success",
+              showConfirmButton: false,
+              timer: 2000,
+            });
+          } catch (error) {
+            console.error(error);
+            swal.fire({
+              title: "ลบข้อมูลไม่สำเร็จ",
+              text: "เกิดข้อผิดพลาดขณะลบข้อมูล",
+              icon: "error",
+              showConfirmButton: false,
+              timer: 2000,
+            });
+          }
+        }
+      });
+  };
+
   return (
     <div className="container py-4 main-content">
       <div className="bg-white rounded-xl shadow border">
         <div className="p-4 border-b">
-          <h1 className="text-xl font-bold">
-            รายการหนังสือ ศพฐ.
-          </h1>
+          <h1 className="text-xl font-bold">รายการหนังสือ ศพฐ.</h1>
         </div>
 
         <div className="p-4">
-
           {/* Desktop */}
           {isDesktop ? (
             <table className="table table-bordered text-center">
@@ -63,6 +95,7 @@ export default function ForensicSubmissionListPage() {
                   <th>วันที่สร้าง</th>
                   <th>จำนวนรายชื่อ</th>
                   <th>จัดการ</th>
+                  <th>ลบ</th>
                 </tr>
               </thead>
 
@@ -71,28 +104,30 @@ export default function ForensicSubmissionListPage() {
                   <tr key={item.submissionId}>
                     <td>{index + 1}</td>
 
-                    <td>
-                      {item.submissionNo || "-"}
-                    </td>
+                    <td>{item.submissionNo || "-"}</td>
 
-                    <td>
-                      {formatThaiDate(item.submissionDate)}
-                    </td>
+                    <td>{formatThaiDate(item.submissionDate)}</td>
 
-                    <td>
-                      {item.persons?.length || 0}
-                    </td>
+                    <td>{item.persons?.length || 0}</td>
 
                     <td>
                       <button
                         className="btn btn-primary btn-sm"
                         onClick={() =>
                           navigate(
-                            `/forensic-submission/pdf/${item.submissionId}`
+                            `/forensic-submission/pdf/${item.submissionId}`,
                           )
                         }
                       >
                         ดู PDF
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDelete(item.submissionId)}
+                      >
+                        ลบ
                       </button>
                     </td>
                   </tr>
@@ -108,9 +143,7 @@ export default function ForensicSubmissionListPage() {
                   className="border rounded-lg shadow-sm p-4"
                 >
                   <div className="flex justify-between mb-2 text-center">
-                    <h3 className="font-semibold ">
-                      ลำดับ {index + 1}
-                    </h3>
+                    <h3 className="font-semibold ">ลำดับ {index + 1}</h3>
                   </div>
 
                   <div className="mb-2">
@@ -129,14 +162,18 @@ export default function ForensicSubmissionListPage() {
                   </div>
 
                   <button
-                    className="btn btn-primary w-full"
+                    className="btn btn-primary w-100 mb-2 m-1 mt-2"
                     onClick={() =>
-                      navigate(
-                        `/forensic-submission/pdf/${item.submissionId}`
-                      )
+                      navigate(`/forensic-submission/pdf/${item.submissionId}`)
                     }
                   >
                     ดู PDF
+                  </button>
+                  <button
+                    className="btn btn-danger  w-100 mb-2 m-1 mt-2"
+                    onClick={() => handleDelete(item.submissionId)}
+                  >
+                    ลบ
                   </button>
                 </div>
               ))}

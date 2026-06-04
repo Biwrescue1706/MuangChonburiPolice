@@ -20,9 +20,9 @@ import OrganizationPage from "./pages/OrganizationPage";
 import ReceiptListPage from "./pages/Receipt/ReceiptListPage";
 import ReceiptDetailPage from "./pages/Receipt/ReceiptDetailPage";
 import StatusHistoryPage from "./pages/History/StatusHistoryPage";
-// import ForensicSubmissionPage from "./pages/Forensic/ForensicSubmissionPage";
-// import ForensicSubmissionListPage from "./pages/Forensic/ForensicSubmissionListPage";
-// import ForensicSubmissionPdfPage from "./pages/Forensic/ForensicSubmissionPdfPage";
+import ForensicSubmissionPage from "./pages/Forensic/ForensicSubmissionPage";
+import ForensicSubmissionListPage from "./pages/Forensic/ForensicSubmissionListPage";
+import ForensicSubmissionPdfPage from "./pages/Forensic/ForensicSubmissionPdfPage";
 
 function App() {
   return (
@@ -68,18 +68,18 @@ function App() {
           {/* DETAIL */}
           <Route path="/person/:id" element={<PersonDetailPage />} />
           <Route path="/status-history" element={<StatusHistoryPage />} />
-          {/* <Route
+          <Route
             path="/forensic-submission"
             element={<ForensicSubmissionPage />}
           />
           <Route
             path="/forensic-submission/list"
             element={<ForensicSubmissionListPage />}
-          /> */}
-          {/* <Route
+          />
+          <Route
             path="/forensic-submission/pdf/:id"
             element={<ForensicSubmissionPdfPage />}
-          /> */}
+          />
         </Route>
 
         <Route path="*" element={<NotFound />} />

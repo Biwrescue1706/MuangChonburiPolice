@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../api/axios";
 import { generateForensicPdf } from "../../utils/generateForensicPdf";
+import { generateForensicPdfs } from "../../utils/generateForensicPdfS";
 
 interface Person {
   personId: string;
@@ -77,6 +78,25 @@ export default function ForensicSubmissionPdfPage() {
     });
   };
 
+  const handleGeneratePdf2 = async () => {
+    if (!data) return;
+
+    await generateForensicPdfs({
+      submissionNo: data.submissionNo,
+
+      submissionDate: data.submissionDate,
+
+      persons: data.persons.map((item) => ({
+        fullName: item.person.fullName,
+        purpose: item.person.purpose,
+        receiptBookNo: item.person.receiptBookNo,
+        receiptNo: item.person.receiptNo,
+        receiptDate: item.person.receiptDate,
+        priority: item.person.priority,
+      })),
+    });
+  };
+
   const formatShortThaiDate = (dateString?: string) => {
     if (!dateString) return "-";
 
@@ -124,9 +144,14 @@ export default function ForensicSubmissionPdfPage() {
             <strong>จำนวนรายชื่อ :</strong> {data.persons.length} คน
           </div>
 
-          <button className="btn btn-danger" onClick={handleGeneratePdf}>
-            ดาวน์โหลด PDF
+          <button className="btn btn-danger w-100" onClick={handleGeneratePdf}>
+            ดาวน์โหลด PDF ส่ง ศพฐ
           </button>
+          {/* <div className="my-3">
+            <button className="btn btn-primary w-100" onClick={handleGeneratePdf2}>
+              ดาวน์โหลด PDF ส่งเงิน
+            </button>
+          </div> */}
 
           {/* Desktop */}
           <div className="d-none d-xl-block">
