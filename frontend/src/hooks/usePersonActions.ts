@@ -32,7 +32,7 @@ export default function usePersonActions({
 
   // ===== UPDATE STATUS =====
   const handleUpdateStatus = async (p: any) => {
-    if (p.status === 3) return;
+    if (p.status === 4) return;
 
     const nextStatus = p.status + 1;
 
@@ -77,7 +77,7 @@ export default function usePersonActions({
       await Promise.all(
         selectedIds.map(async (id: string) => {
           const p = persons.find((x: any) => x.personId === id);
-          if (!p || p.status >= 3) return;
+          if (!p || p.status >= 4) return;
 
           await api.patch(`/person/${id}/status`, {
             status: p.status + 1,
