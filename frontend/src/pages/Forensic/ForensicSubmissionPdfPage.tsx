@@ -147,11 +147,11 @@ export default function ForensicSubmissionPdfPage() {
           <button className="btn btn-danger w-100" onClick={handleGeneratePdf}>
             ดาวน์โหลด PDF ส่ง ศพฐ
           </button>
-          {/* <div className="my-3">
+          <div className="my-3">
             <button className="btn btn-primary w-100" onClick={handleGeneratePdf2}>
               ดาวน์โหลด PDF ส่งเงิน
             </button>
-          </div> */}
+          </div>
 
           {/* Desktop */}
           <div className="d-none d-xl-block">

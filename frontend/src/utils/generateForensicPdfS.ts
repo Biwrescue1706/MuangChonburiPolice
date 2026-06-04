@@ -40,14 +40,6 @@ function formatThaiMonthYear(dateString?: string): string {
   return dateString;
 }
 
-function formatThaiDate(dateString?: string): string {
-  if (!dateString) return "";
-
-  const parts = dateString.trim().split(" ");
-
-  return parts[0] || "";
-}
-
 export async function generateForensicPdfs(data: ForensicPdfData) {
   try {
     const response = await fetch("/forensic-template2.pdf");
@@ -81,16 +73,6 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
 
     const org = orgData[0];
 
-    const boldFontResponse = await fetch("/fonts/THSarabunIT9-Bold.ttf");
-
-    if (!boldFontResponse.ok) {
-      throw new Error("ไม่พบไฟล์ THSarabunIT9-Bold.ttf");
-    }
-
-    const boldFontBytes = await boldFontResponse.arrayBuffer();
-
-    const boldFont = await pdfDoc.embedFont(boldFontBytes);
-
     const day = data.submissionDate
       ? new Date(data.submissionDate).getDate().toString()
       : "";
@@ -111,6 +93,31 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       color: black,
     });
 
+    // จนท.พิมพ์มือ
+    page.drawText(org?.rank || "-", {
+      x: 322,
+      y: 479.5,
+      size: 16,
+      font,
+      color: black,
+    });
+
+    page.drawText(`( ${org?.fullName || "-"} )`, {
+      x: 349,
+      y: 458.5,
+      size: 16,
+      font,
+      color: black,
+    });
+    page.drawText(org?.position || "-", {
+      x: 325.5,
+      y: 437.5,
+      size: 16,
+      font,
+      color: black,
+    });
+
+    // ผู้บังคับบัญชา
     if (org?.commander?.signatureImage) {
       const imageResponse = await fetch(org.commander.signatureImage);
 
@@ -150,52 +157,30 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       color: black,
     });
 
-    // จนท.พิมพ์มือ
-    page.drawText(org?.rank || "-", {
-      x: 322,
-      y: 479.5,
-      size: 16,
-      font,
-      color: rgb(0 / 255, 0 / 255, 255 / 255),
-    });
 
-    page.drawText(org?.fullName || "-", {
-      x: 300.5,
-      y: 449.5,
-      size: 16,
-      font,
-      color: rgb(0 / 255, 0 / 255, 255 / 255),
-    });
-        page.drawText(org?.position || "-", {
-      x: 300.5,
-      y: 429.5,
-      size: 16,
-      font,
-      color: rgb(0 / 255, 0 / 255, 255 / 255),
-    });
-
+    // จนท.ผู้รับผิดชอบ
     page.drawText(org?.rank || "-", {
       x: 292.5,
       y: 196.5,
       size: 16,
       font,
-      color: rgb(0 / 255, 0 / 255, 255 / 255),
+      color: black,
     });
 
-    page.drawText(org?.fullName || "-", {
-      x: 300.5,
-      y: 180.5,
+    page.drawText(`( ${org?.fullName || "-"} )`, {
+      x: 335,
+      y: 175.5,
       size: 16,
       font,
-      color: rgb(0 / 255, 0 / 255, 255 / 255),
+      color: black,
     });
 
     page.drawText(org?.position || "-", {
-      x: 292.5,
-      y: 155.5,
+      x: 311.5,
+      y: 154.5,
       size: 16,
       font,
-      color: rgb(0 / 255, 0 / 255, 255 / 255),
+      color: black,
     });
 
     // จนท.การเงิน
@@ -204,7 +189,23 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       y: 113,
       size: 16,
       font,
-      color: rgb(0 / 255, 0 / 255, 255 / 255),
+      color: black,
+    });
+
+    page.drawText(`( ${org?.finance?.fullName || "-"} )`, {
+      x: 335,
+      y: 92,
+      size: 16,
+      font,
+      color: black,
+    });
+
+    page.drawText(org?.finance?.position || "-", {
+      x: 321.5,
+      y: 71,
+      size: 16,
+      font,
+      color: black,
     });
 
     const pdfBytes = await pdfDoc.save();
