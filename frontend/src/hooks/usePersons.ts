@@ -46,7 +46,7 @@ export default function usePersons(statusParam: string | null, firstName: string
     await Promise.all(
       ids.map(async (id) => {
         const p = persons.find((x) => x.personId === id);
-        if (!p || p.status >= 3) return;
+        if (!p || p.status >= 4) return;
 
         await api.patch(`/person/${id}/status`, {
           status: p.status + 1,
