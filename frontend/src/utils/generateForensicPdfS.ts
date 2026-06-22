@@ -131,7 +131,7 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
         x: 185,
         y: 375,
         width: 40,
-        height: 20,
+        height: 40,
       });
     }
 

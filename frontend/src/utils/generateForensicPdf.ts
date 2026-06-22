@@ -162,7 +162,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
         x: 330,
         y: 570,
         width: 55,
-        height: 25,
+        height: 40,
       });
     }
 
