@@ -130,8 +130,8 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       page.drawImage(signatureImage, {
         x: 185,
         y: 375,
-        width: 55,
-        height: 55,
+        width: 65,
+        height: 40,
       });
     }
 
