@@ -64,7 +64,7 @@ export default function PersonCardList({
             <strong>เรื่องที่ขออนุญาต </strong> : {p.purpose || "-"}
           </div>
 
-<div className="mt-1 mb-1">
+          <div className="mt-1 mb-1">
             <strong>หน่วยงาน </strong> : {p.requestingAgency || "-"}
           </div>
 
@@ -77,6 +77,12 @@ export default function PersonCardList({
           {p.status === 4 && (
             <div className="mt-1 text-danger">
               📅 วันคืน : {formatThaiDate(p.returnDate)}
+            </div>
+          )}
+
+          {p.status === 4 && p.deleteAt && (
+            <div className="mt-1 text-danger">
+              📅 วันหมดอายุเอกสาร : {formatThaiDate(p.deleteAt)}
             </div>
           )}
 

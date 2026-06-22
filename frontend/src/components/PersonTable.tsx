@@ -7,6 +7,7 @@ import {
   getStatusButton,
   getStatusButtonStyle,
 } from "../utils/personHelper";
+import Swal from "sweetalert2";
 
 interface Props {
   persons: any[];
@@ -63,6 +64,9 @@ export default function PersonTable({
               <th>สถานะ</th>
               <th>ความเร่งด่วน</th>
               {persons.some((p) => p.status === 4) && <th>วันคืน</th>}
+              {persons.some((p) => p.status === 4 && p.deleteAt) && (
+                <th>วันหมดอายุเอกสาร</th>
+              )}
               <th>ดู</th>
               <th>PDF</th>
               <th>แก้ไข</th>
@@ -116,6 +120,14 @@ export default function PersonTable({
                     </td>
                   )}
 
+                  {persons.some((x) => x.status === 4 && x.deleteAt) && (
+                    <td>
+                      {p.status === 4 && p.deleteAt
+                        ? formatThaiDate(p.deleteAt)
+                        : "-"}
+                    </td>
+                  )}
+
                   <td>
                     <button
                       className="btn btn-info btn-sm"
@@ -128,25 +140,37 @@ export default function PersonTable({
                   <td>
                     <button
                       className="btn btn-primary btn-sm"
-                      onClick={() => handleExportPDF(p)}
+                      onClick={() => {
+                        if (p.status !== 2) {
+                          Swal.fire({
+                            icon: "warning",
+                            title: "ไม่สามารถดำเนินการได้",
+                            text: "กรุณากดปุ่ม 'เตรียมเอกสารส่ง พฐ' ก่อน",
+                            confirmButtonText: "ตกลง",
+                          });
+                          return;
+                        }
+
+                        handleExportPDF(p);
+                      }}
                     >
                       PDF แบบพิมพ์มือ
                     </button>
                   </td>
-                  
-                    <td>
-                      {p.status < 4 ? (
+
+                  <td>
+                    {p.status < 4 ? (
                       <button
                         className="btn btn-warning btn-sm"
                         onClick={() => navigate(`/person/edit/${p.personId}`)}
                       >
                         ✏️
                       </button>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                  
+                    ) : (
+                      "-"
+                    )}
+                  </td>
+
                   <td>
                     <button
                       className="btn btn-danger btn-sm"
