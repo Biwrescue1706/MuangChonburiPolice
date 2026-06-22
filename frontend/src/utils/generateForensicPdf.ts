@@ -364,11 +364,21 @@ export async function generateForensicPdf(data: ForensicPdfData) {
         font,
       });
 
-      page.drawText(person.priority === 1 ? "*" : "", {
+      let priorityText = "";
+
+      if (person.priority === 1) {
+        priorityText = "*";
+      } else if (person.priority === 2) {
+        priorityText = "คืน";
+      } else if (person.priority === 3) {
+        priorityText = "คืน*";
+      }
+
+      page.drawText(priorityText, {
         x: 560,
         y,
         size: 16,
-        font : boldFont,
+        font: boldFont,
       });
 
       y -= rowHeight;
