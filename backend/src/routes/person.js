@@ -442,6 +442,10 @@ router.put("/:id", async (req, res) => {
           skinColor: data.skinColor ?? oldPerson.skinColor,
           behavior: data.behavior ?? oldPerson.behavior,
           distinguishingMarks: data.distinguishingMarks ?? oldPerson.distinguishingMarks,
+
+// เพิ่มตรงนี้
+    status: data.status ?? oldPerson.status,
+
           priority: data.priority ?? oldPerson.priority,
 
           address: data.address ?? oldPerson.address,
