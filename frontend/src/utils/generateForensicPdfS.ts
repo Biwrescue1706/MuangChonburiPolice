@@ -128,10 +128,10 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       const signatureImage = await pdfDoc.embedPng(imageBytes);
 
       page.drawImage(signatureImage, {
-        x: 185,
+        x: 175,
         y: 375,
         width: 100,
-        height: 60,
+        height: 50,
       });
     }
 
