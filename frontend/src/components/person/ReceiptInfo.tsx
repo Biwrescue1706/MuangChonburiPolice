@@ -9,9 +9,9 @@ export default function ReceiptInfo({
   const statusOptions = [
     { value: 0, label: "รอส่ง ศพฐ" },
     { value: 1, label: "เตรียมเอกสาร ส่ง พฐ" },
-{ value: 2, label: "ส่ง ศพฐ แล้ว" },
-{ value: 3, label: "รับจาก ศพฐ แล้ว" },
-{ value: 4, label: "ส่งคืนต้นสังกัด" }
+    { value: 2, label: "ส่ง ศพฐ แล้ว" },
+    { value: 3, label: "รับจาก ศพฐ แล้ว" },
+    { value: 4, label: "ส่งคืนต้นสังกัด" },
   ];
 
   return (
@@ -160,8 +160,10 @@ export default function ReceiptInfo({
               }))
             }
           >
-            <option value={1}>ด่วน</option>
             <option value={0}>ไม่ด่วน</option>
+            <option value={1}>ด่วน</option>
+            <option value={2}>คืนปกติ</option>
+            <option value={3}>คืนด่วน</option>
           </select>
         </div>
       </div>

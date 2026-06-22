@@ -443,8 +443,8 @@ router.put("/:id", async (req, res) => {
           behavior: data.behavior ?? oldPerson.behavior,
           distinguishingMarks: data.distinguishingMarks ?? oldPerson.distinguishingMarks,
 
-// เพิ่มตรงนี้
-    status: data.status ?? oldPerson.status,
+          // เพิ่มตรงนี้
+          status: data.status ?? oldPerson.status,
 
           priority: data.priority ?? oldPerson.priority,
 
