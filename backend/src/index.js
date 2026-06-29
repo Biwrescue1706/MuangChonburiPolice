@@ -158,20 +158,35 @@ async function deleteExpiredPersons() {
   }
 }
 
-// ตรวจทุกวันเวลา 00:00
-cron.schedule("0 0 * * *", async () => {
-  console.log("🕛 Running Auto Delete...");
-  await deleteExpiredPersons();
+/* ================= AUTO DELETE CRON ================= */
+
+[
+  { cron: "0 0 * * *", time: "00:00" },
+  { cron: "0 8 * * *", time: "08:00" },
+  { cron: "30 16 * * *", time: "16:30" },
+].forEach(({ cron: schedule, time }) => {
+  cron.schedule(
+    schedule,
+    async () => {
+      console.log(`🗑️ Auto Delete เวลา ${time}`);
+      await deleteExpiredPersons();
+    },
+    {
+      timezone: "Asia/Bangkok",
+    }
+  );
 });
+
 
 
 /* ================= SERVER ================= */
 const PORT = process.env.PORT || 10000;
 
-await deleteExpiredPersons();
-
-const server = app.listen(PORT, "0.0.0.0", () => {
+const server = app.listen(PORT, "0.0.0.0", async () => {
   console.log("🚀 Server running on port", PORT);
+
+  // ตรวจลบเมื่อ Server เริ่มทำงาน
+  await deleteExpiredPersons();
 });
 
 /* ================= SHUTDOWN ================= */
