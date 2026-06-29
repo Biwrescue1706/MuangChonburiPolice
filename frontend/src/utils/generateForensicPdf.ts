@@ -86,7 +86,7 @@ function formatThaiDate(dateString?: string): string {
 
 export async function generateForensicPdf(data: ForensicPdfData) {
   try {
-    const response = await fetch("/forensic-template.pdf");
+    const response = await fetch("/ปะหน้าส่งตรวจลายนิ้วมือ พฐ.pdf");
 
     if (!response.ok) {
       throw new Error(`โหลด Template PDF ไม่สำเร็จ (${response.status})`);

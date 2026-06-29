@@ -141,7 +141,7 @@ export default function PersonTable({
                     <button
                       className="btn btn-primary btn-sm"
                       onClick={() => {
-                        if (p.status <=1) {
+                        if (p.status <1) {
                           Swal.fire({
                             icon: "warning",
                             title: "ไม่สามารถดำเนินการได้",

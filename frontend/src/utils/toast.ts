@@ -11,7 +11,7 @@ export const toast = (
     title,
     text,
     showConfirmButton: false,
-    timer: 1800,
+    timer: 500,
     timerProgressBar: true,
     didOpen: (el) => {
       el.onmouseenter = Swal.stopTimer;

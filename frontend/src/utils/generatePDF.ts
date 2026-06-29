@@ -3,7 +3,7 @@ import { PDFDocument } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
 export const generatePDF = async (p: any) => {
-  const templateBytes = await fetch("/template.pdf").then((r) =>
+  const templateBytes = await fetch("/แบบพิมพ์มือ.pdf").then((r) =>
     r.arrayBuffer()
   );
 
