@@ -79,7 +79,7 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       : "";
 
     page.drawText(day, {
-      x: 312,
+      x: 315,
       y: 732,
       size: 16,
       font,
@@ -87,7 +87,7 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
     });
 
     page.drawText(formatThaiMonthYear(data.submissionDate), {
-      x: 327,
+      x: 337,
       y: 732,
       size: 16,
       font,
@@ -128,7 +128,7 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       const signatureImage = await pdfDoc.embedPng(imageBytes);
 
       page.drawImage(signatureImage, {
-        x: 175,
+        x: 170,
         y: 375,
         width: 100,
         height: 50,
@@ -221,7 +221,7 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
 
     link.href = url;
 
-    link.download = `forensic-${data.submissionNo || "document"}.pdf`;
+    link.download = `ปะหน้าส่งการเงิน-${data.submissionNo || "document"}.pdf`;
 
     document.body.appendChild(link);
 

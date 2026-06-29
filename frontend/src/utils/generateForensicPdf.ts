@@ -137,7 +137,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     page.drawText(formatThaiDate(data.submissionDate), {
       x: 316,
-      y: 732,
+      y: 728,
       size: 16,
       font,
       color: rgb(0 / 255, 0 / 255, 255 / 255),
@@ -145,7 +145,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     page.drawText(formatThaiMonthYear(data.submissionDate), {
       x: 335,
-      y: 731,
+      y: 728,
       size: 16,
       font,
       color: black,
