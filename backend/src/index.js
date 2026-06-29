@@ -92,8 +92,82 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: "Internal Server Error" });
 });
 
+/* ================= AUTO DELETE ================= */
+
+async function deleteExpiredPersons() {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const personIds = (
+      await prisma.person.findMany({
+        where: {
+          deleteAt: {
+            lte: today,
+          },
+        },
+        select: {
+          personId: true,
+        },
+      })
+    ).map((p) => p.personId);
+
+    if (!personIds.length) {
+      console.log("✅ ไม่มีข้อมูลที่ต้องลบ");
+      return;
+    }
+
+    await prisma.$transaction([
+      prisma.receipt.deleteMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+        },
+      }),
+
+      prisma.requestInfo.deleteMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+        },
+      }),
+
+      prisma.personStatusHistory.deleteMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+        },
+      }),
+
+      prisma.person.deleteMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+        },
+      }),
+    ]);
+
+    console.log(`🗑️ ลบข้อมูล ${personIds.length} รายการ`);
+  } catch (err) {
+    console.error("❌ Auto Delete Error:", err);
+  }
+}
+
+// ตรวจทุกวันเวลา 00:00
+cron.schedule("0 0 * * *", async () => {
+  console.log("🕛 Running Auto Delete...");
+  await deleteExpiredPersons();
+});
+
+
 /* ================= SERVER ================= */
 const PORT = process.env.PORT || 10000;
+
+await deleteExpiredPersons();
 
 const server = app.listen(PORT, "0.0.0.0", () => {
   console.log("🚀 Server running on port", PORT);
