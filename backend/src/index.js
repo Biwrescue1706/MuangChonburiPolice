@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import prisma from "./prisma.js";
+import cron from "node-cron";
 
 dotenv.config();
 
@@ -92,11 +93,100 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: "Internal Server Error" });
 });
 
+/* ================= AUTO DELETE ================= */
+
+async function deleteExpiredPersons() {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const personIds = (
+      await prisma.person.findMany({
+        where: {
+          deleteAt: {
+            lte: today,
+          },
+        },
+        select: {
+          personId: true,
+        },
+      })
+    ).map((p) => p.personId);
+
+    if (!personIds.length) {
+      console.log("✅ ไม่มีข้อมูลที่ต้องลบ");
+      return;
+    }
+
+    await prisma.$transaction([
+      prisma.receipt.deleteMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+        },
+      }),
+
+      prisma.requestInfo.deleteMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+        },
+      }),
+
+      prisma.personStatusHistory.deleteMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+        },
+      }),
+
+      prisma.person.deleteMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+        },
+      }),
+    ]);
+
+    console.log(`🗑️ ลบข้อมูล ${personIds.length} รายการ`);
+  } catch (err) {
+    console.error("❌ Auto Delete Error:", err);
+  }
+}
+
+/* ================= AUTO DELETE CRON ================= */
+
+[
+  { cron: "0 0 * * *", time: "00:00" },
+  { cron: "0 8 * * *", time: "08:00" },
+  { cron: "30 16 * * *", time: "16:30" },
+].forEach(({ cron: schedule, time }) => {
+  cron.schedule(
+    schedule,
+    async () => {
+      console.log(`🗑️ Auto Delete เวลา ${time}`);
+      await deleteExpiredPersons();
+    },
+    {
+      timezone: "Asia/Bangkok",
+    }
+  );
+});
+
+
+
 /* ================= SERVER ================= */
 const PORT = process.env.PORT || 10000;
 
-const server = app.listen(PORT, "0.0.0.0", () => {
+const server = app.listen(PORT, "0.0.0.0", async () => {
   console.log("🚀 Server running on port", PORT);
+
+  // ตรวจลบเมื่อ Server เริ่มทำงาน
+  await deleteExpiredPersons();
 });
 
 /* ================= SHUTDOWN ================= */
