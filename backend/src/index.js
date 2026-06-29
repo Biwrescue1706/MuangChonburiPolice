@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import prisma from "./prisma.js";
+import cron from "node-cron";
 
 dotenv.config();
 
