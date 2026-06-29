@@ -40,7 +40,6 @@ function formatThaiMonthYear(dateString?: string): string {
   return dateString;
 }
 
-
 export async function generateForensicPdfs(data: ForensicPdfData) {
   try {
     const response = await fetch("/forensic-template2.pdf");
@@ -73,6 +72,15 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
     const orgData = await orgRes.json();
 
     const org = orgData[0];
+    const boldFontResponse = await fetch("/fonts/THSarabunIT9-Bold.ttf");
+
+    if (!boldFontResponse.ok) {
+      throw new Error("ไม่พบไฟล์ THSarabunIT9-Bold.ttf");
+    }
+
+    const boldFontBytes = await boldFontResponse.arrayBuffer();
+
+    const boldFont = await pdfDoc.embedFont(boldFontBytes);
 
     const day = data.submissionDate
       ? new Date(data.submissionDate).getDate().toString()
@@ -82,7 +90,7 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       x: 315,
       y: 732,
       size: 16,
-      font,
+      font: boldFont,
       color: rgb(0 / 255, 0 / 255, 255 / 255),
     });
 
@@ -90,10 +98,9 @@ export async function generateForensicPdfs(data: ForensicPdfData) {
       x: 337,
       y: 732,
       size: 16,
-      font,
+      font ,
       color: black,
     });
-
 
     // จนท.พิมพ์มือ
     page.drawText(org?.rank || "-", {

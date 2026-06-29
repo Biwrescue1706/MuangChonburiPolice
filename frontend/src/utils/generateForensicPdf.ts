@@ -129,22 +129,22 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     page.drawText(data.submissionNo || "-", {
       x: 173,
-      y: 732,
+      y: 728,
       size: 16,
-      font,
+      font : boldFont,
       color: rgb(0 / 255, 0 / 255, 255 / 255),
     });
 
     page.drawText(formatThaiDate(data.submissionDate), {
-      x: 316,
+      x: 315,
       y: 728,
       size: 16,
-      font,
+      font : boldFont,
       color: rgb(0 / 255, 0 / 255, 255 / 255),
     });
 
     page.drawText(formatThaiMonthYear(data.submissionDate), {
-      x: 335,
+      x: 337,
       y: 728,
       size: 16,
       font,
@@ -159,7 +159,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
       const signatureImage = await pdfDoc.embedPng(imageBytes);
 
       page.drawImage(signatureImage, {
-        x: 320,
+        x: 315,
         y: 570,
         width: 100,
         height: 50,
