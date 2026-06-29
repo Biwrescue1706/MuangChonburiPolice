@@ -16,7 +16,6 @@ export interface ForensicPerson {
 export interface ForensicPdfData {
   submissionNo?: string;
   submissionDate?: string;
-  submissionBookNo: string;
   persons: ForensicPerson[];
 }
 
@@ -286,9 +285,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
       font: boldFont,
     });
 
-    // ======================================================
     // ข้อมูล
-    // ======================================================
 
     let y = 457;
 
@@ -409,7 +406,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     link.href = url;
 
-    link.download = `ปะหน้าส่งตรวจลายนิ้วมือ พฐ-${data.submissionNo || "document"}-${data.submissionBookNo || "book"}.pdf`;
+    link.download = `ปะหน้าส่งตรวจลายนิ้วมือ พฐ-${data.submissionNo || "document"}.pdf`;
 
     document.body.appendChild(link);
 
