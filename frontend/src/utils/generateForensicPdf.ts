@@ -16,6 +16,7 @@ export interface ForensicPerson {
 export interface ForensicPdfData {
   submissionNo?: string;
   submissionDate?: string;
+  submissionBookNo: string;
   persons: ForensicPerson[];
 }
 
@@ -408,7 +409,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     link.href = url;
 
-    link.download = `forensic-${data.submissionNo || "document"}.pdf`;
+    link.download = `ปะหน้าส่งตรวจลายนิ้วมือ พฐ-${data.submissionNo || "document"}-${data.submissionBookNo || "book"}.pdf`;
 
     document.body.appendChild(link);
 
