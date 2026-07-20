@@ -85,7 +85,7 @@ router.post("/create", async (req, res) => {
   }
 });
 
-//  ดูรายการทั้งหมด
+//ดูทั้งหมด
 router.get("/", async (_, res) => {
   try {
     const data = await prisma.forensicSubmission.findMany({
@@ -93,13 +93,25 @@ router.get("/", async (_, res) => {
         persons: {
           include: {
             person: true,
-
           },
         },
       },
       orderBy: {
         submissionDate: "desc",
       },
+    });
+
+    data.forEach((submission) => {
+      console.log("==========");
+      console.log("Submission:", submission.submissionNo);
+
+      submission.persons.forEach((item) => {
+        console.log({
+          personId: item.personId,
+          receiptBookNo: item.receiptBookNo,
+          receiptNo: item.receiptNo,
+        });
+      });
     });
 
     res.json(data);
@@ -113,29 +125,36 @@ router.get("/", async (_, res) => {
 });
 
 //ดูรายการรายฉบับ
-
 router.get("/:id", async (req, res) => {
   try {
-    const data =
-      await prisma.forensicSubmission.findUnique({
-        where: {
-          submissionId: req.params.id,
-        },
-
-        include: {
-          persons: {
-            include: {
-              person: true,
-            },
+    const data = await prisma.forensicSubmission.findUnique({
+      where: {
+        submissionId: req.params.id,
+      },
+      include: {
+        persons: {
+          include: {
+            person: true,
           },
         },
-      });
+      },
+    });
 
     if (!data) {
       return res.status(404).json({
         error: "ไม่พบข้อมูล",
       });
     }
+
+    console.log("Submission:", data.submissionNo);
+
+    data.persons.forEach((item) => {
+      console.log({
+        personId: item.personId,
+        receiptBookNo: item.receiptBookNo,
+        receiptNo: item.receiptNo,
+      });
+    });
 
     res.json(data);
   } catch (err) {
