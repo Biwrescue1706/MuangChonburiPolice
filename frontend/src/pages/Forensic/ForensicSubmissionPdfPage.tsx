@@ -36,16 +36,33 @@ export default function ForensicSubmissionPdfPage() {
   }, []);
 
   const fetchData = async () => {
-    try {
-      const res = await api.get(`/forensic-submission/${id}`);
+  try {
+    const res = await api.get(`/forensic-submission/${id}`);
 
-      setData(res.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const persons = [...res.data.persons].sort((a, b) => {
+      const bookA = Number(a.person.receiptBookNo || 0);
+      const bookB = Number(b.person.receiptBookNo || 0);
+
+      if (bookA !== bookB) {
+        return bookA - bookB;
+      }
+
+      const receiptA = Number(a.person.receiptNo || 0);
+      const receiptB = Number(b.person.receiptNo || 0);
+
+      return receiptA - receiptB;
+    });
+
+    setData({
+      ...res.data,
+      persons,
+    });
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleGeneratePdf = async () => {
     if (!data) return;
