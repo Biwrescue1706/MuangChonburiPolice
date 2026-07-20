@@ -102,15 +102,18 @@ router.get("/", async (_, res) => {
     });
 
     data.forEach((submission) => {
-      console.log("==========");
-      console.log("Submission:", submission.submissionNo);
+      submission.persons.sort((a, b) => {
+        const bookA = Number(a.receiptBookNo || 0);
+        const bookB = Number(b.receiptBookNo || 0);
 
-      submission.persons.forEach((item) => {
-        console.log({
-          personId: item.personId,
-          receiptBookNo: item.receiptBookNo,
-          receiptNo: item.receiptNo,
-        });
+        if (bookA !== bookB) {
+          return bookA - bookB;
+        }
+
+        const noA = Number(a.receiptNo || 0);
+        const noB = Number(b.receiptNo || 0);
+
+        return noA - noB;
       });
     });
 
@@ -146,14 +149,18 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    console.log("Submission:", data.submissionNo);
+    data.persons.sort((a, b) => {
+      const bookA = Number(a.receiptBookNo || 0);
+      const bookB = Number(b.receiptBookNo || 0);
 
-    data.persons.forEach((item) => {
-      console.log({
-        personId: item.personId,
-        receiptBookNo: item.receiptBookNo,
-        receiptNo: item.receiptNo,
-      });
+      if (bookA !== bookB) {
+        return bookA - bookB;
+      }
+
+      const noA = Number(a.receiptNo || 0);
+      const noB = Number(b.receiptNo || 0);
+
+      return noA - noB;
     });
 
     res.json(data);
