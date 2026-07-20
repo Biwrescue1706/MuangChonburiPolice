@@ -116,21 +116,20 @@ router.get("/", async (_, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const data = await prisma.forensicSubmission.findUnique({
-      where: {
-        submissionId: req.params.id,
-      },
-      include: {
-        persons: {
-          include: {
-            person: true,
-          },
-          orderBy: {
-            createdAt: "asc",
+    const data =
+      await prisma.forensicSubmission.findUnique({
+        where: {
+          submissionId: req.params.id,
+        },
+
+        include: {
+          persons: {
+            include: {
+              person: true,
+            },
           },
         },
-      },
-    });
+      });
 
     if (!data) {
       return res.status(404).json({
@@ -138,26 +137,7 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    const startBookNo = 100; // เล่มเริ่มต้น
-
-    const persons = data.persons.map((item, index) => {
-      const receiptBookNo =
-        startBookNo + Math.floor(index / 50);
-
-      const receiptNo =
-        (index % 50) + 1;
-
-      return {
-        ...item,
-        receiptBookNo,
-        receiptNo,
-      };
-    });
-
-    res.json({
-      ...data,
-      persons,
-    });
+    res.json(data);
   } catch (err) {
     console.error(err);
 
