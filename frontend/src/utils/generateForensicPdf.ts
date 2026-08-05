@@ -204,7 +204,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
       color: rgb(1, 1, 1), // พื้นขาว
     });
 
-    [43, 195 , 375, 540].forEach((x) => {
+    [43, 180 , 375, 540].forEach((x) => {
       page.drawLine({
         start: { x, y: headerTop },
         end: { x, y: headerTop + 40 },
@@ -291,7 +291,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     const rowHeight = 22;
 
-    const borders = [10, 43, 195, 375, 430, 475, 540, 590];
+    const borders = [10, 43, 180, 375, 430, 475, 540, 590];
 
     data.persons.forEach((person, index) => {
       page.drawLine({
@@ -335,7 +335,7 @@ export async function generateForensicPdf(data: ForensicPdfData) {
       });
 
       page.drawText(person.purpose || "-", {
-        x: 205,
+        x: 190,
         y,
         size: 13,
         font,
