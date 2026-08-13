@@ -1,10 +1,6 @@
 @import "tailwindcss";
 
-/* ==================== Base Reset ==================== */
-
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
@@ -12,12 +8,11 @@ html,
 body,
 #root {
   min-height: 100%;
-  margin: 0;
-  padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
+html,
+body {
+  margin: 0;
 }
 
 body {
