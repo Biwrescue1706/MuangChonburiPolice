@@ -12,7 +12,9 @@ export default function ForgotCheck() {
   const checkUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!username.trim()) {
+    const value = username.trim();
+
+    if (!value) {
       Swal.fire({
         icon: "warning",
         title: "กรุณากรอก Username",
@@ -25,7 +27,7 @@ export default function ForgotCheck() {
       setLoading(true);
 
       const res = await api.post("/auth/forgot/check", {
-        username: username.trim(),
+        username: value,
       });
 
       await Swal.fire({
@@ -37,7 +39,7 @@ export default function ForgotCheck() {
 
       nav("/reset-password", {
         state: {
-          username: username.trim(),
+          username: value,
         },
       });
     } catch {
@@ -53,43 +55,63 @@ export default function ForgotCheck() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#250008] via-[#5c0017] to-[#800020]">
-
-      {/* Background Decoration */}
-      <div className="pointer-events-none absolute -left-32 -top-32 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
-
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-pink-500/10 blur-3xl" />
+    <div className="min-h-screen bg-gradient-to-br from-[#250008] via-[#5c0017] to-[#800020]">
 
       {/* =====================================================
-          NAVBAR
+          TOP BAR
       ===================================================== */}
-      <header className="fixed left-0 top-0 z-50 w-full border-b border-white/10 bg-[#650018]/90 shadow-lg backdrop-blur-md">
+      <header className="
+        fixed
+        left-0
+        top-0
+        z-50
+        h-[80px]
+        w-full
+        border-b
+        border-white/10
+        bg-[#650018]
+        shadow-lg
+      ">
 
-        <div className="mx-auto flex h-[64px] w-full max-w-[1200px] items-center px-4">
+        <div className="
+          relative
+          mx-auto
+          flex
+          h-full
+          w-full
+          max-w-[1200px]
+          items-center
+          px-5
+
+          min-[768px]:px-8
+          min-[1200px]:px-10
+        ">
 
           {/* Back */}
           <button
             type="button"
             onClick={() => nav("/")}
+            aria-label="กลับหน้าเข้าสู่ระบบ"
             className="
               flex
-              h-10
-              w-10
+              h-12
+              w-12
               items-center
               justify-center
               rounded-xl
               border
-              border-white/20
-              bg-white/10
+              border-white/30
+              bg-white/5
               text-white
               transition
-              hover:bg-white/20
+
+              hover:bg-white/15
               active:scale-95
             "
           >
             <svg
-              width="20"
-              height="20"
+              width="27"
+              height="27"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -102,194 +124,362 @@ export default function ForgotCheck() {
             </svg>
           </button>
 
-          {/* Brand */}
-          <div className="absolute left-1/2 flex -translate-x-1/2 items-center">
+          {/* Center Logo */}
+          <div className="
+            absolute
+            left-1/2
+            flex
+            -translate-x-1/2
+            items-center
+          ">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-md">
+            <div className="
+              flex
+              h-12
+              w-12
+              items-center
+              justify-center
+              rounded-full
+              bg-white
+              shadow-lg
+            ">
               <img
                 src="/muangchonburi.webp"
                 alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
-                className="h-8 w-8 object-contain"
+                className="h-10 w-10 object-contain"
               />
             </div>
 
-            <div className="ml-2 hidden min-[480px]:block">
-              <p className="whitespace-nowrap text-sm font-bold leading-tight text-white">
+            <div className="ml-3 hidden min-[600px]:block">
+              <p className="text-sm font-bold text-white">
                 งานพิมพ์มือตรวจประวัติ
               </p>
 
-              <p className="mt-0.5 text-[10px] leading-tight text-white/70">
+              <p className="text-[10px] text-white/60">
                 งานนโยบายและแผน
               </p>
             </div>
 
           </div>
+
         </div>
       </header>
 
       {/* =====================================================
-          CONTENT
+          PAGE
       ===================================================== */}
-      <main className="flex min-h-screen items-center justify-center px-4 pb-8 pt-[88px] min-[768px]:px-8 min-[768px]:pt-[96px] min-[1200px]:px-10">
+      <main className="
+        min-h-screen
+        px-4
+        pb-10
+        pt-[100px]
 
-        {/* Card */}
-        <section
-          className="
+        min-[480px]:px-6
+
+        min-[768px]:px-8
+        min-[768px]:pt-[110px]
+
+        min-[1200px]:px-10
+      ">
+
+        {/* ===================================================
+            MAIN CARD
+        =================================================== */}
+        <div className="
+          relative
+          mx-auto
+          w-full
+          max-w-[605px]
+          overflow-hidden
+          rounded-[32px]
+          border
+          border-white/30
+          bg-[#800020]
+          shadow-[0_25px_80px_rgba(0,0,0,0.35)]
+
+          min-[768px]:max-w-[650px]
+
+          min-[1200px]:max-w-[700px]
+        ">
+
+          {/* =================================================
+              HERO
+          ================================================= */}
+          <section className="
             relative
-            w-full
-            max-w-[440px]
+            min-h-[560px]
             overflow-hidden
-            rounded-[28px]
-            border
-            border-white/70
-            bg-white
-            shadow-[0_25px_70px_rgba(0,0,0,0.30)]
+            px-6
+            pb-[150px]
+            pt-12
+            text-center
+            text-white
 
-            min-[480px]:max-w-[470px]
-            min-[480px]:rounded-[32px]
+            min-[480px]:px-8
 
-            min-[768px]:max-w-[500px]
+            min-[768px]:min-h-[570px]
+            min-[768px]:px-12
 
-            min-[1200px]:max-w-[540px]
-          "
-        >
+            min-[1200px]:min-h-[600px]
+            min-[1200px]:px-16
+          ">
 
-          {/* Top Burgundy Section */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#800020] to-[#500011] px-6 pb-14 pt-8 text-center min-[480px]:px-10">
+            {/* Decorative circle top right */}
+            <div className="
+              pointer-events-none
+              absolute
+              -right-[120px]
+              -top-[130px]
+              h-[370px]
+              w-[370px]
+              rounded-full
+              border
+              border-white/30
+            " />
 
-            {/* Decorative circles */}
-            <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full border border-white/10" />
-
-            <div className="pointer-events-none absolute -left-20 -bottom-28 h-56 w-56 rounded-full border border-white/10" />
+            {/* Decorative circle bottom left */}
+            <div className="
+              pointer-events-none
+              absolute
+              -bottom-[190px]
+              -left-[130px]
+              h-[380px]
+              w-[380px]
+              rounded-full
+              border
+              border-white/30
+            " />
 
             {/* Logo */}
-            <div className="relative mx-auto flex h-[100px] w-[100px] items-center justify-center rounded-full bg-white shadow-xl ring-8 ring-white/10 min-[480px]:h-[112px] min-[480px]:w-[112px]">
+            <div className="
+              relative
+              mx-auto
+              flex
+              h-[170px]
+              w-[170px]
+              items-center
+              justify-center
+              rounded-full
+              bg-white
+              shadow-xl
+              ring-8
+              ring-white/10
+
+              min-[480px]:h-[185px]
+              min-[480px]:w-[185px]
+
+              min-[768px]:h-[195px]
+              min-[768px]:w-[195px]
+            ">
 
               <img
                 src="/muangchonburi.webp"
                 alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
-                className="block h-[78px] w-[78px] object-contain min-[480px]:h-[88px] min-[480px]:w-[88px]"
+                className="
+                  h-[135px]
+                  w-[135px]
+                  object-contain
+
+                  min-[480px]:h-[145px]
+                  min-[480px]:w-[145px]
+
+                  min-[768px]:h-[155px]
+                  min-[768px]:w-[155px]
+                "
               />
 
             </div>
 
-            <p className="relative mt-5 text-xs font-bold uppercase tracking-[0.2em] text-white/70">
-              Forgot Password
-            </p>
+            {/* Title */}
+            <div className="
+              relative
+              mt-16
+              text-center
+            ">
 
-            <h1 className="relative mt-2 text-2xl font-bold text-white min-[480px]:text-3xl">
-              ตรวจสอบบัญชีผู้ใช้
-            </h1>
+              <p className="
+                text-xs
+                font-bold
+                tracking-[0.22em]
+                text-white/75
 
-            <p className="relative mx-auto mt-2 max-w-[360px] text-sm leading-6 text-white/75">
-              กรอก Username เพื่อค้นหาบัญชี
-              <br className="min-[480px]:hidden" />
-              {" "}และดำเนินการตั้งรหัสผ่านใหม่
-            </p>
+                min-[480px]:text-sm
+              ">
+                FORGOT PASSWORD
+              </p>
 
-          </div>
+              <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-white/80" />
 
-          {/* White Form Area */}
-          <div className="relative -mt-7 rounded-t-[28px] bg-white px-6 pb-8 pt-7 min-[480px]:rounded-t-[32px] min-[480px]:px-10 min-[480px]:pb-10">
+              <h1 className="
+                mt-6
+                text-[30px]
+                font-bold
+                leading-tight
+                text-white
+
+                min-[480px]:text-[34px]
+
+                min-[768px]:text-[40px]
+              ">
+                ตรวจสอบบัญชีผู้ใช้
+              </h1>
+
+              <p className="
+                mx-auto
+                mt-5
+                max-w-[430px]
+                text-sm
+                leading-7
+                text-white/75
+
+                min-[480px]:text-base
+
+                min-[768px]:text-lg
+              ">
+                กรอก Username เพื่อค้นหาบัญชี
+                <br />
+                และดำเนินการตั้งรหัสผ่านใหม่
+              </p>
+
+            </div>
+
+          </section>
+
+          {/* =================================================
+              FORM CARD
+          ================================================= */}
+          <section className="
+            relative
+            -mt-[105px]
+            rounded-t-[42px]
+            bg-white
+            px-6
+            pb-10
+            pt-9
+            shadow-[0_-10px_40px_rgba(0,0,0,0.08)]
+
+            min-[480px]:px-8
+
+            min-[768px]:px-12
+            min-[768px]:pt-10
+
+            min-[1200px]:px-16
+          ">
 
             <form onSubmit={checkUser}>
 
-              {/* Username */}
-              <div>
+              {/* Username Label */}
+              <label
+                htmlFor="username"
+                className="
+                  mb-3
+                  block
+                  text-base
+                  font-bold
+                  text-gray-700
 
-                <label
-                  htmlFor="username"
-                  className="mb-2.5 block text-sm font-bold text-gray-700"
-                >
-                  Username
-                </label>
+                  min-[480px]:text-lg
+                "
+              >
+                Username
+              </label>
 
-                <div className="relative">
+              {/* Input */}
+              <div className="relative w-full">
 
-                  {/* Icon */}
-                  <div className="pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-[#800020]">
+                {/* Icon */}
+                <div className="
+                  pointer-events-none
+                  absolute
+                  left-5
+                  top-1/2
+                  z-10
+                  flex
+                  h-5
+                  w-5
+                  -translate-y-1/2
+                  items-center
+                  justify-center
+                  text-[#800020]
+                ">
 
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="8" r="3.5" />
-                      <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
-                    </svg>
-
-                  </div>
-
-                  <input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="กรอก Username"
-                    autoComplete="username"
-                    required
-                    className="
-                      h-[54px]
-                      w-full
-                      rounded-2xl
-                      border
-                      border-gray-200
-                      bg-gray-50
-                      pl-12
-                      pr-4
-                      text-base
-                      text-gray-900
-                      outline-none
-                      transition
-
-                      placeholder:text-gray-400
-
-                      hover:border-gray-300
-
-                      focus:border-[#800020]
-                      focus:bg-white
-                      focus:ring-4
-                      focus:ring-[#800020]/10
-                    "
-                  />
+                  <svg
+                    width="23"
+                    height="23"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="8" r="3.5" />
+                    <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
+                  </svg>
 
                 </div>
+
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="กรอก Username"
+                  autoComplete="username"
+                  required
+                  className="
+                    block
+                    h-[60px]
+                    w-full
+                    rounded-2xl
+                    border
+                    border-gray-200
+                    bg-gray-50
+                    !pl-[60px]
+                    !pr-5
+                    text-base
+                    text-gray-900
+                    outline-none
+                    transition
+
+                    placeholder:text-gray-400
+
+                    hover:border-gray-300
+
+                    focus:border-[#800020]
+                    focus:bg-white
+                    focus:ring-4
+                    focus:ring-[#800020]/10
+                  "
+                />
+
               </div>
 
-              {/* Button */}
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
                 className="
-                  mt-6
+                  mt-5
                   flex
-                  h-[54px]
+                  h-[60px]
                   w-full
                   items-center
                   justify-center
-                  gap-2
-                  rounded-2xl
+                  gap-3
+                  rounded-none
                   bg-gradient-to-r
-                  from-[#800020]
-                  to-[#5c0017]
+                  from-[#9b0027]
+                  to-[#730019]
                   text-base
                   font-bold
                   text-white
                   shadow-lg
                   shadow-[#800020]/20
-                  transition-all
-                  duration-300
+                  transition
 
-                  hover:-translate-y-0.5
-                  hover:shadow-xl
-                  hover:shadow-[#800020]/30
-
-                  active:translate-y-0
+                  hover:brightness-110
+                  active:scale-[0.99]
 
                   disabled:cursor-not-allowed
                   disabled:opacity-60
@@ -298,7 +488,16 @@ export default function ForgotCheck() {
 
                 {loading ? (
                   <>
-                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    <span className="
+                      h-5
+                      w-5
+                      animate-spin
+                      rounded-full
+                      border-2
+                      border-white/30
+                      border-t-white
+                    " />
+
                     กำลังตรวจสอบ...
                   </>
                 ) : (
@@ -306,8 +505,8 @@ export default function ForgotCheck() {
                     ตรวจสอบบัญชี
 
                     <svg
-                      width="20"
-                      height="20"
+                      width="22"
+                      height="22"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -334,8 +533,9 @@ export default function ForgotCheck() {
                 mt-6
                 flex
                 items-center
+                justify-center
                 gap-2
-                text-sm
+                text-base
                 font-semibold
                 text-gray-500
                 transition
@@ -343,9 +543,10 @@ export default function ForgotCheck() {
                 hover:text-[#800020]
               "
             >
+
               <svg
-                width="17"
-                height="17"
+                width="21"
+                height="21"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -358,10 +559,17 @@ export default function ForgotCheck() {
               </svg>
 
               กลับหน้าเข้าสู่ระบบ
+
             </button>
 
-            {/* Footer */}
-            <div className="mt-7 border-t border-gray-100 pt-5 text-center">
+            {/* Divider */}
+            <div className="
+              mt-8
+              border-t
+              border-gray-100
+              pt-6
+              text-center
+            ">
 
               <p className="text-xs leading-6 text-gray-400">
                 ระบบงานนโยบายและแผน
@@ -371,8 +579,9 @@ export default function ForgotCheck() {
 
             </div>
 
-          </div>
-        </section>
+          </section>
+
+        </div>
       </main>
     </div>
   );
