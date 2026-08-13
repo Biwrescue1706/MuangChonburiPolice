@@ -5,102 +5,372 @@ import Swal from "sweetalert2";
 
 export default function ForgotCheck() {
   const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const nav = useNavigate();
 
-  const checkUser = async (e: React.FormEvent) => {
+  const checkUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    try {
-      const res = await api.post("/auth/forgot/check", { username });
-
+    if (!username.trim()) {
       Swal.fire({
+        icon: "warning",
+        title: "กรุณากรอก Username",
+        confirmButtonColor: "#800020",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await api.post("/auth/forgot/check", {
+        username: username.trim(),
+      });
+
+      await Swal.fire({
         icon: "success",
         title: `พบผู้ใช้ ${res.data.admin.name}`,
         timer: 1500,
         showConfirmButton: false,
       });
 
-      nav("/reset-password", { state: { username } });
+      nav("/reset-password", {
+        state: {
+          username: username.trim(),
+        },
+      });
     } catch {
       Swal.fire({
         icon: "error",
         title: "ไม่พบผู้ใช้งาน",
+        text: "กรุณาตรวจสอบ Username อีกครั้ง",
+        confirmButtonColor: "#800020",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <>
-      {/* ================= TOP NAV ================= */}
-      <nav
-        className="navbar navbar-dark shadow position-fixed top-0 start-0 w-100"
-        style={{
-          backgroundColor: "#800020",
-          height: 60,
-          zIndex: 999,
-        }}
-      >
-        <div className="container-fluid">
-          {/* ===== BACK BUTTON ===== */}
-          <button className="btn btn-warning fw-bold" onClick={() => nav("/")}>
-            ← 
+    <div className="min-h-screen bg-gradient-to-br from-[#f8f8f8] via-[#f4f6f9] to-[#eeeeee]">
+
+      {/* =====================================================
+          TOP NAVBAR
+          ===================================================== */}
+      <nav className="fixed left-0 top-0 z-50 h-[64px] w-full border-b border-white/10 bg-gradient-to-r from-[#800020] via-[#6b0019] to-[#4d0012] shadow-lg">
+
+        <div className="relative flex h-full w-full items-center px-4">
+
+          {/* Back Button */}
+          <button
+            type="button"
+            onClick={() => nav("/")}
+            aria-label="กลับหน้าเข้าสู่ระบบ"
+            className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-xl
+              border
+              border-white/20
+              bg-white/10
+              text-xl
+              font-bold
+              text-white
+              backdrop-blur
+              transition
+              hover:bg-white/20
+              active:scale-95
+            "
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
           </button>
 
-          {/* ========= CENTER ========= */}
-          <div
-            className="position-absolute start-50 translate-middle-x text-center"
-          >
-            <div className="d-flex align-items-center">
+          {/* Center Brand */}
+          <div className="absolute left-1/2 flex -translate-x-1/2 items-center">
+
+            <div className="
+              flex
+              h-10
+              w-10
+              items-center
+              justify-center
+              rounded-full
+              bg-white
+              shadow-md
+            ">
               <img
                 src="/muangchonburi.webp"
-                width={30}
-                height={30}
-                style={{ borderRadius: 1 }}
+                alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
+                className="h-8 w-8 object-contain"
               />
-
-                <div className="fw-bold text-warning small h5 mb-0">
-                  🏠 งานพิมพ์มือตรวจประวัติ
-
-                <small className="text-white d-block small">
-                  งานนโยบายและแผน
-                </small>
-              </div>
             </div>
+
+            <div className="ml-2 hidden text-left min-[480px]:block">
+
+              <p className="m-0 text-sm font-bold leading-tight text-white">
+                งานพิมพ์มือตรวจประวัติ
+              </p>
+
+              <p className="m-0 mt-0.5 text-[10px] leading-tight text-white/70">
+                งานนโยบายและแผน
+              </p>
+
+            </div>
+
           </div>
+
         </div>
       </nav>
 
-      {/* ================= CONTENT ================= */}
-      <div
-        className="vh-100 d-flex justify-content-center align-items-center"
-        style={{
-          background: "#f4f6f9",
-          paddingTop: 60,
-        }}
-      >
-        <div className="card shadow border-0 p-4 col-11 col-md-4">
-          <h4 className="fw-bold text-center mb-4" style={{ color: "#800020" }}>
-            ตรวจสอบบัญชีผู้ใช้
-          </h4>
+      {/* =====================================================
+          CONTENT
+          ===================================================== */}
+      <main className="flex min-h-screen items-center justify-center px-4 pb-8 pt-[88px] min-[768px]:px-8 min-[768px]:pt-[96px]">
 
+        {/* Card */}
+        <div
+          className="
+            w-full
+            max-w-[460px]
+            rounded-3xl
+            border
+            border-white
+            bg-white
+            p-6
+            shadow-xl
+
+            min-[480px]:p-8
+            min-[768px]:max-w-[500px]
+            min-[768px]:p-10
+          "
+        >
+
+          {/* Icon */}
+          <div className="mb-6 flex justify-center">
+
+            <div className="
+              flex
+              h-20
+              w-20
+              items-center
+              justify-center
+              rounded-full
+              bg-[#800020]/5
+              ring-8
+              ring-[#800020]/5
+            ">
+
+              <svg
+                width="36"
+                height="36"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#800020"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="8" r="3.5" />
+                <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
+              </svg>
+
+            </div>
+
+          </div>
+
+          {/* Heading */}
+          <div className="mb-7 text-center">
+
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#800020]">
+              Forgot Password
+            </p>
+
+            <h1 className="text-2xl font-bold text-gray-900 min-[480px]:text-3xl">
+              ตรวจสอบบัญชีผู้ใช้
+            </h1>
+
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-gray-500">
+              กรุณากรอก Username เพื่อค้นหาบัญชี
+              และดำเนินการตั้งรหัสผ่านใหม่
+            </p>
+
+          </div>
+
+          {/* Form */}
           <form onSubmit={checkUser}>
-            <input
-              className="form-control mb-3"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
 
-            <button
-              className="btn text-white w-100 fw-bold"
-              style={{ background: "#800020" }}
+            <label
+              htmlFor="username"
+              className="mb-2 block text-sm font-semibold text-gray-700"
             >
-              ตรวจสอบ
+              Username
+            </label>
+
+            <div className="relative">
+
+              {/* User Icon */}
+              <div className="pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-gray-400">
+
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="8" r="3.5" />
+                  <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
+                </svg>
+
+              </div>
+
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="กรอก Username"
+                autoComplete="username"
+                required
+                className="
+                  h-[52px]
+                  w-full
+                  rounded-xl
+                  border
+                  border-gray-200
+                  bg-gray-50
+                  pl-12
+                  pr-4
+                  text-sm
+                  text-gray-900
+                  outline-none
+                  transition
+
+                  placeholder:text-gray-400
+
+                  focus:border-[#800020]
+                  focus:bg-white
+                  focus:ring-4
+                  focus:ring-[#800020]/10
+                "
+              />
+
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="
+                mt-5
+                flex
+                h-[52px]
+                w-full
+                items-center
+                justify-center
+                gap-2
+                rounded-xl
+                bg-gradient-to-r
+                from-[#800020]
+                to-[#5d0018]
+                text-sm
+                font-bold
+                text-white
+                shadow-lg
+                shadow-[#800020]/20
+                transition
+                duration-300
+
+                hover:-translate-y-0.5
+                hover:shadow-xl
+                hover:shadow-[#800020]/30
+
+                active:translate-y-0
+
+                disabled:cursor-not-allowed
+                disabled:opacity-70
+              "
+            >
+
+              {loading ? (
+                <>
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  กำลังตรวจสอบ...
+                </>
+              ) : (
+                <>
+                  ตรวจสอบบัญชี
+
+                  <svg
+                    width="19"
+                    height="19"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12h13" />
+                    <path d="m13 6 6 6-6 6" />
+                  </svg>
+                </>
+              )}
+
             </button>
+
           </form>
+
+          {/* Back */}
+          <button
+            type="button"
+            onClick={() => nav("/")}
+            className="
+              mt-5
+              w-full
+              text-center
+              text-sm
+              font-semibold
+              text-gray-500
+              transition
+              hover:text-[#800020]
+            "
+          >
+            ← กลับหน้าเข้าสู่ระบบ
+          </button>
+
+          {/* Footer */}
+          <div className="mt-7 border-t border-gray-100 pt-5 text-center">
+
+            <p className="text-xs leading-6 text-gray-400">
+              ระบบงานนโยบายและแผน
+              <br />
+              สถานีตำรวจภูธรเมืองชลบุรี
+            </p>
+
+          </div>
+
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }
