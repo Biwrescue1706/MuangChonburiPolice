@@ -9,7 +9,7 @@ import {
   renderPriority,
   getStatusButton,
   getStatusButtonStyle,
-} from "../utils/personHelper";
+} from "../../utils/personHelper";
 
 interface Props {
   persons: any[];
