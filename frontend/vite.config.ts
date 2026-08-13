@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   plugins: [
@@ -11,15 +12,16 @@ export default defineConfig({
       registerType: "autoUpdate",
 
       manifest: {
-        name: "ระบบบันทึกรายรับรายจ่าย",
-        short_name: "รายรับรายจ่าย",
-        description: "ระบบบันทึกรายรับรายจ่าย",
+        name: "งานพิมพ์มือตรวจประวัติ",
+        short_name: "พิมพ์มือตรวจประวัติ",
+        description:
+          "ระบบงานพิมพ์มือตรวจประวัติ งานนโยบายและแผน",
 
         start_url: "/",
         scope: "/",
         display: "standalone",
 
-        theme_color: "#4CAF50",
+        theme_color: "#800020",
         background_color: "#ffffff",
 
         icons: [
