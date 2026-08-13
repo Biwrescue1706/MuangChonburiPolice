@@ -1,6 +1,7 @@
 @import "tailwindcss";
-/*  src/index.css */
+
 /* ==================== Base Reset ==================== */
+
 * {
   margin: 0;
   padding: 0;
@@ -8,17 +9,22 @@
 }
 
 html,
-body {
+body,
+#root {
+  min-height: 100%;
   margin: 0;
   padding: 0;
-  min-height: 100%;
-  background: #ffffff;
-  color: #000000;
-  font-family:  "Mitr", "Segoe UI", sans-serif ;
+}
+
+html {
   scroll-behavior: smooth;
+}
+
+body {
+  color: #000000;
+  font-family: "Mitr", "Segoe UI", sans-serif;
   overflow-x: hidden;
 
-  /* 🔥 เพิ่มให้ฟอนต์เนียน */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -30,10 +36,11 @@ h4,
 h5,
 h6 {
   font-weight: bold;
-  font-family:  "Mitr", "Segoe UI", sans-serif ;
+  font-family: "Mitr", "Segoe UI", sans-serif;
 }
 
 /* ==================== Theme ==================== */
+
 .bg-teal {
   background-color: #20c997 !important;
 }
@@ -44,19 +51,17 @@ h6 {
 }
 
 .bg-teal-gradient {
-  background: linear-gradient(90deg, #20c997, #0dcaf0) !important;
+  background: linear-gradient(
+    90deg,
+    #20c997,
+    #0dcaf0
+  ) !important;
+
   color: white !important;
 }
 
-.btn:hover {
-  filter: brightness(1.05);
-}
-
-.btn:active {
-  filter: brightness(0.95);
-}
-
 /* ==================== Layout ==================== */
+
 .main-content {
   background-color: #ffffff;
   min-height: 100vh;
@@ -65,7 +70,7 @@ h6 {
   padding: 15px;
   color: #000000;
   transition: margin-left 0.3s ease;
-  overflow-x: hidden; /* ป้องกันตารางล้นขอบ */
+  overflow-x: hidden;
 }
 
 .container-max {
@@ -75,6 +80,7 @@ h6 {
 }
 
 /* ==================== Responsive Table ==================== */
+
 .responsive-table {
   display: block;
   width: 100%;
@@ -84,28 +90,12 @@ h6 {
   margin: 10px 20px 10px 10px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  background: #fff;
+  background: #ffffff;
   border-radius: 10px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   padding: 5px;
 }
 
-/* ==================== Input ==================== */
-.responsive-input {
-  width: 350px !important;
-  display: block;
-  margin: 10px auto 10px auto;
-  text-align: center;
-  transition: width 0.3s ease;
-}
-
-/* เฉพาะหน้า Login */
-body.login-page {
-  background: linear-gradient(135deg, #2d006b, #4e2a8e, #200046);
-  color: #ffffff;
-}
-
-/* Scrollbar style */
 .responsive-table::-webkit-scrollbar {
   height: 8px;
 }
@@ -119,7 +109,8 @@ body.login-page {
   background: rgba(0, 0, 0, 0.08);
 }
 
-/* Table core */
+/* ==================== Table ==================== */
+
 .responsive-table table {
   width: 100%;
   border-collapse: collapse;
@@ -128,7 +119,7 @@ body.login-page {
 .responsive-table th,
 .responsive-table td {
   border: 1px solid #000000;
-  padding: 5px !important; /* 🔥 ลบซ้ำแล้ว เหลืออันเดียว */
+  padding: 5px !important;
   font-size: 16px !important;
   line-height: 1.25 !important;
   overflow-wrap: anywhere !important;
@@ -137,44 +128,34 @@ body.login-page {
   text-align: center;
 }
 
-/* Header */
 .responsive-table thead th {
   background: #ff0000 !important;
   color: #ffffff !important;
   text-align: center;
-  white-space: wrap !important;
+  white-space: normal !important;
   vertical-align: middle !important;
   padding: 5px !important;
   font-size: 20px !important;
-
-  /* 🔥 เพิ่ม UX */
   position: sticky;
   top: 0;
   z-index: 2;
 }
 
-.responsive-table tbody tr:hover {
-  background-color: rgba(32, 201, 151, 0.08);
-  transition: background-color 0.2s ease;
-}
-
-/* แถวล่างสุด = เขียว */
 .responsive-table tbody tr:nth-last-child(even) {
   background-color: #d1f5e0;
 }
 
-/* แถวถัดไป = ขาว */
 .responsive-table tbody tr:nth-last-child(odd) {
   background-color: #ffffff;
 }
 
-/* Hover */
 .responsive-table tbody tr:hover {
   background-color: #20c99755 !important;
   transition: 0.2s;
 }
 
-/* Word-break safety */
+/* ==================== Table Word Break ==================== */
+
 table th,
 table td {
   word-break: break-word !important;
@@ -183,20 +164,8 @@ table td {
   text-overflow: ellipsis !important;
 }
 
-/* ==================== Buttons ==================== */
-.btn-gradient {
-  background: linear-gradient(90deg, #00b09b, #96c93d);
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  transition: 0.3s;
-}
-
-.btn-gradient:hover {
-  background: linear-gradient(90deg, #96c93d, #00b09b);
-}
-
 /* ==================== Input ==================== */
+
 .responsive-input {
   width: 350px !important;
   display: block;
@@ -205,11 +174,47 @@ table td {
   transition: width 0.3s ease;
 }
 
+/* ==================== Login ==================== */
+
+body.login-page {
+  background: linear-gradient(
+    135deg,
+    #2d006b,
+    #4e2a8e,
+    #200046
+  );
+  color: #ffffff;
+}
+
+/* ==================== Buttons ==================== */
+
+.btn-gradient {
+  background: linear-gradient(
+    90deg,
+    #00b09b,
+    #96c93d
+  );
+
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(
+    90deg,
+    #96c93d,
+    #00b09b
+  );
+}
+
 /* ==================== Dialog ==================== */
+
 .dialog-box {
   border-radius: 1rem;
   padding: 1.5rem;
-  background: #fff;
+  background: #ffffff;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   animation: zoomIn 0.3s ease;
 }
@@ -218,12 +223,21 @@ table td {
   font-size: 1.5rem;
   font-weight: 800;
   text-align: center;
-  background: linear-gradient(90deg, #ff512f, #dd2476);
+  background: linear-gradient(
+    90deg,
+    #ff512f,
+    #dd2476
+  );
+
+  -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+
   margin-bottom: 1.5rem;
 }
 
 /* ==================== Scrollbar ==================== */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -239,9 +253,18 @@ table td {
 }
 
 /* ==================== Utilities ==================== */
+
 .text-gradient {
-  background: linear-gradient(90deg, #0dcaf0, #20c997);
+  background: linear-gradient(
+    90deg,
+    #0dcaf0,
+    #20c997
+  );
+
+  -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+
   font-weight: 700;
 }
 
@@ -250,6 +273,7 @@ table td {
 }
 
 /* ==================== Message Marquee ==================== */
+
 .marquee-container {
   position: relative;
   width: 100%;
@@ -263,18 +287,16 @@ table td {
   animation: marquee-scroll 10.5s linear infinite;
 }
 
-body.login-page .form-control::placeholder {
-  color: #ffffff !important;
-  opacity: 1 !important;
-}
+/* ==================== Modal ==================== */
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
+
   background: rgba(0, 0, 0, 0.5);
+
   z-index: 9999;
 
   display: flex;
@@ -285,7 +307,7 @@ body.login-page .form-control::placeholder {
 }
 
 .modal-box {
-  background: white;
+  background: #ffffff;
   padding: 20px;
   border-radius: 16px;
   width: 100%;
@@ -296,11 +318,12 @@ body.login-page .form-control::placeholder {
 }
 
 /* ==================== Responsive ==================== */
+
 @media (max-width: 480px) {
   .main-content {
     background-color: #f8f9fa;
-    margin-left: 0px;
-    margin-right: 0px;
+    margin-left: 0;
+    margin-right: 0;
     margin-top: 20px;
   }
 
@@ -317,7 +340,8 @@ body.login-page .form-control::placeholder {
   .responsive-input {
     width: 300px !important;
   }
-    .modal-overlay {
+
+  .modal-overlay {
     align-items: flex-start;
     padding: 0;
   }
@@ -333,8 +357,8 @@ body.login-page .form-control::placeholder {
 
 @media (min-width: 481px) and (max-width: 768px) {
   .main-content {
-    margin-left: 0px;
-    margin-right: 0px;
+    margin-left: 0;
+    margin-right: 0;
     margin-top: 20px;
   }
 
@@ -355,7 +379,7 @@ body.login-page .form-control::placeholder {
 
 @media (min-width: 769px) and (max-width: 1279px) {
   .main-content {
-    margin-left: 0px;
+    margin-left: 0;
     margin-right: 15px;
     margin-top: 20px;
   }
