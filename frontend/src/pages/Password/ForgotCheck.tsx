@@ -7,7 +7,7 @@ export default function ForgotCheck() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const nav = useNavigate();
+  const navigate = useNavigate();
 
   const checkUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,6 +20,7 @@ export default function ForgotCheck() {
         title: "กรุณากรอก Username",
         confirmButtonColor: "#800020",
       });
+
       return;
     }
 
@@ -37,7 +38,7 @@ export default function ForgotCheck() {
         showConfirmButton: false,
       });
 
-      nav("/reset-password", {
+      navigate("/reset-password", {
         state: {
           username: value,
         },
@@ -55,63 +56,39 @@ export default function ForgotCheck() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#250008] via-[#5c0017] to-[#800020]">
+    <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#250008] via-[#5c0017] to-[#800020]">
 
       {/* =====================================================
-          TOP BAR
+          TOP HEADER
       ===================================================== */}
-      <header className="
-        fixed
-        left-0
-        top-0
-        z-50
-        h-[80px]
-        w-full
-        border-b
-        border-white/10
-        bg-[#650018]
-        shadow-lg
-      ">
+      <header className="fixed left-0 top-0 z-50 w-full border-b border-white/10 bg-[#700019] shadow-lg">
 
-        <div className="
-          relative
-          mx-auto
-          flex
-          h-full
-          w-full
-          max-w-[1200px]
-          items-center
-          px-5
-
-          min-[768px]:px-8
-          min-[1200px]:px-10
-        ">
+        <div className="relative mx-auto flex h-[64px] w-full max-w-[1200px] items-center px-4">
 
           {/* Back */}
           <button
             type="button"
-            onClick={() => nav("/")}
+            onClick={() => navigate("/")}
             aria-label="กลับหน้าเข้าสู่ระบบ"
             className="
               flex
-              h-12
-              w-12
+              h-10
+              w-10
               items-center
               justify-center
               rounded-xl
               border
-              border-white/30
-              bg-white/5
+              border-white/20
+              bg-white/10
               text-white
               transition
-
-              hover:bg-white/15
+              hover:bg-white/20
               active:scale-95
             "
           >
             <svg
-              width="27"
-              height="27"
+              width="22"
+              height="22"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -125,39 +102,36 @@ export default function ForgotCheck() {
           </button>
 
           {/* Center Logo */}
-          <div className="
-            absolute
-            left-1/2
-            flex
-            -translate-x-1/2
-            items-center
-          ">
+          <div className="absolute left-1/2 flex -translate-x-1/2 items-center">
 
             <div className="
               flex
-              h-12
-              w-12
+              h-10
+              w-10
               items-center
               justify-center
               rounded-full
               bg-white
-              shadow-lg
+              shadow-md
             ">
               <img
                 src="/muangchonburi.webp"
                 alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
-                className="h-10 w-10 object-contain"
+                className="h-8 w-8 object-contain"
               />
             </div>
 
-            <div className="ml-3 hidden min-[600px]:block">
-              <p className="text-sm font-bold text-white">
+            {/* Header Text */}
+            <div className="ml-2 hidden min-[480px]:block">
+
+              <p className="whitespace-nowrap text-sm font-bold leading-tight text-white">
                 งานพิมพ์มือตรวจประวัติ
               </p>
 
-              <p className="text-[10px] text-white/60">
+              <p className="mt-0.5 text-[10px] text-white/70">
                 งานนโยบายและแผน
               </p>
+
             </div>
 
           </div>
@@ -166,88 +140,82 @@ export default function ForgotCheck() {
       </header>
 
       {/* =====================================================
-          PAGE
+          MAIN
       ===================================================== */}
       <main className="
+        flex
         min-h-screen
+        items-center
+        justify-center
         px-4
-        pb-10
-        pt-[100px]
+        pb-8
+        pt-[88px]
 
         min-[480px]:px-6
-
         min-[768px]:px-8
-        min-[768px]:pt-[110px]
-
         min-[1200px]:px-10
       ">
 
-        {/* ===================================================
-            MAIN CARD
-        =================================================== */}
-        <div className="
-          relative
-          mx-auto
+        {/* =================================================
+            CARD
+        ================================================= */}
+        <section className="
           w-full
-          max-w-[605px]
+          max-w-[440px]
           overflow-hidden
-          rounded-[32px]
-          border
-          border-white/30
-          bg-[#800020]
-          shadow-[0_25px_80px_rgba(0,0,0,0.35)]
+          rounded-[30px]
+          bg-white
+          shadow-[0_25px_70px_rgba(0,0,0,0.35)]
 
-          min-[768px]:max-w-[650px]
+          min-[480px]:max-w-[470px]
 
-          min-[1200px]:max-w-[700px]
+          min-[768px]:max-w-[500px]
+
+          min-[1200px]:max-w-[540px]
         ">
 
           {/* =================================================
-              HERO
+              TOP BURGUNDY
           ================================================= */}
-          <section className="
+          <div className="
             relative
-            min-h-[560px]
             overflow-hidden
+            bg-gradient-to-br
+            from-[#800020]
+            via-[#680018]
+            to-[#42000f]
             px-6
-            pb-[150px]
-            pt-12
+            pb-14
+            pt-8
             text-center
-            text-white
 
-            min-[480px]:px-8
-
-            min-[768px]:min-h-[570px]
-            min-[768px]:px-12
-
-            min-[1200px]:min-h-[600px]
-            min-[1200px]:px-16
+            min-[480px]:px-10
+            min-[768px]:pb-16
           ">
 
-            {/* Decorative circle top right */}
+            {/* Decoration */}
             <div className="
               pointer-events-none
               absolute
-              -right-[120px]
-              -top-[130px]
-              h-[370px]
-              w-[370px]
+              -right-24
+              -top-24
+              h-64
+              w-64
               rounded-full
               border
-              border-white/30
+              border-white/10
             " />
 
-            {/* Decorative circle bottom left */}
             <div className="
               pointer-events-none
               absolute
-              -bottom-[190px]
-              -left-[130px]
-              h-[380px]
-              w-[380px]
+              -bottom-36
+              -left-32
+              h-72
+              w-72
               rounded-full
               border
-              border-white/30
+              border-white/10
             " />
 
             {/* Logo */}
@@ -255,115 +223,103 @@ export default function ForgotCheck() {
               relative
               mx-auto
               flex
-              h-[170px]
-              w-[170px]
+              h-[105px]
+              w-[105px]
               items-center
               justify-center
               rounded-full
               bg-white
-              shadow-xl
+              shadow-2xl
               ring-8
               ring-white/10
 
-              min-[480px]:h-[185px]
-              min-[480px]:w-[185px]
+              min-[480px]:h-[115px]
+              min-[480px]:w-[115px]
 
-              min-[768px]:h-[195px]
-              min-[768px]:w-[195px]
+              min-[768px]:h-[125px]
+              min-[768px]:w-[125px]
             ">
 
               <img
                 src="/muangchonburi.webp"
                 alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
                 className="
-                  h-[135px]
-                  w-[135px]
+                  h-[82px]
+                  w-[82px]
                   object-contain
 
-                  min-[480px]:h-[145px]
-                  min-[480px]:w-[145px]
+                  min-[480px]:h-[90px]
+                  min-[480px]:w-[90px]
 
-                  min-[768px]:h-[155px]
-                  min-[768px]:w-[155px]
+                  min-[768px]:h-[98px]
+                  min-[768px]:w-[98px]
                 "
               />
 
             </div>
 
-            {/* Title */}
-            <div className="
+            {/* Small Title */}
+            <p className="
               relative
-              mt-16
-              text-center
+              mt-7
+              text-xs
+              font-bold
+              uppercase
+              tracking-[0.2em]
+              text-white/70
             ">
+              Forgot Password
+            </p>
 
-              <p className="
-                text-xs
-                font-bold
-                tracking-[0.22em]
-                text-white/75
+            {/* Main Title */}
+            <h1 className="
+              relative
+              mt-3
+              text-2xl
+              font-bold
+              text-white
 
-                min-[480px]:text-sm
-              ">
-                FORGOT PASSWORD
-              </p>
+              min-[480px]:text-3xl
+              min-[768px]:text-4xl
+            ">
+              ตรวจสอบบัญชีผู้ใช้
+            </h1>
 
-              <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-white/80" />
+            {/* Description */}
+            <p className="
+              relative
+              mx-auto
+              mt-3
+              max-w-[390px]
+              text-sm
+              leading-7
+              text-white/75
 
-              <h1 className="
-                mt-6
-                text-[30px]
-                font-bold
-                leading-tight
-                text-white
+              min-[480px]:text-base
+            ">
+              กรุณากรอก Username เพื่อค้นหาบัญชี
+              <br />
+              และดำเนินการตั้งรหัสผ่านใหม่
+            </p>
 
-                min-[480px]:text-[34px]
-
-                min-[768px]:text-[40px]
-              ">
-                ตรวจสอบบัญชีผู้ใช้
-              </h1>
-
-              <p className="
-                mx-auto
-                mt-5
-                max-w-[430px]
-                text-sm
-                leading-7
-                text-white/75
-
-                min-[480px]:text-base
-
-                min-[768px]:text-lg
-              ">
-                กรอก Username เพื่อค้นหาบัญชี
-                <br />
-                และดำเนินการตั้งรหัสผ่านใหม่
-              </p>
-
-            </div>
-
-          </section>
+          </div>
 
           {/* =================================================
-              FORM CARD
+              FORM AREA
           ================================================= */}
-          <section className="
+          <div className="
             relative
-            -mt-[105px]
-            rounded-t-[42px]
+            -mt-7
+            rounded-t-[30px]
             bg-white
             px-6
-            pb-10
-            pt-9
-            shadow-[0_-10px_40px_rgba(0,0,0,0.08)]
+            pb-8
+            pt-8
 
             min-[480px]:px-8
+            min-[480px]:pb-10
 
-            min-[768px]:px-12
-            min-[768px]:pt-10
-
-            min-[1200px]:px-16
+            min-[768px]:px-10
           ">
 
             <form onSubmit={checkUser}>
@@ -372,13 +328,13 @@ export default function ForgotCheck() {
               <label
                 htmlFor="username"
                 className="
-                  mb-3
+                  mb-2
                   block
-                  text-base
+                  text-sm
                   font-bold
                   text-gray-700
 
-                  min-[480px]:text-lg
+                  min-[480px]:text-base
                 "
               >
                 Username
@@ -391,7 +347,7 @@ export default function ForgotCheck() {
                 <div className="
                   pointer-events-none
                   absolute
-                  left-5
+                  left-4
                   top-1/2
                   z-10
                   flex
@@ -404,8 +360,8 @@ export default function ForgotCheck() {
                 ">
 
                   <svg
-                    width="23"
-                    height="23"
+                    width="21"
+                    height="21"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -428,15 +384,16 @@ export default function ForgotCheck() {
                   autoComplete="username"
                   required
                   className="
-                    block
-                    h-[60px]
+                    h-[54px]
                     w-full
                     rounded-2xl
                     border
                     border-gray-200
                     bg-gray-50
-                    !pl-[60px]
-                    !pr-5
+
+                    !pl-[52px]
+                    !pr-4
+
                     text-base
                     text-gray-900
                     outline-none
@@ -462,24 +419,27 @@ export default function ForgotCheck() {
                 className="
                   mt-5
                   flex
-                  h-[60px]
+                  h-[54px]
                   w-full
                   items-center
                   justify-center
-                  gap-3
-                  rounded-none
+                  gap-2
+                  rounded-2xl
                   bg-gradient-to-r
-                  from-[#9b0027]
-                  to-[#730019]
+                  from-[#800020]
+                  to-[#5c0017]
                   text-base
                   font-bold
                   text-white
                   shadow-lg
                   shadow-[#800020]/20
-                  transition
+                  transition-all
+                  duration-300
 
-                  hover:brightness-110
-                  active:scale-[0.99]
+                  hover:-translate-y-0.5
+                  hover:shadow-xl
+
+                  active:translate-y-0
 
                   disabled:cursor-not-allowed
                   disabled:opacity-60
@@ -505,8 +465,8 @@ export default function ForgotCheck() {
                     ตรวจสอบบัญชี
 
                     <svg
-                      width="22"
-                      height="22"
+                      width="20"
+                      height="20"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -527,26 +487,28 @@ export default function ForgotCheck() {
             {/* Back Login */}
             <button
               type="button"
-              onClick={() => nav("/")}
+              onClick={() => navigate("/")}
               className="
                 mx-auto
-                mt-6
+                mt-5
                 flex
                 items-center
                 justify-center
                 gap-2
-                text-base
+                text-sm
                 font-semibold
                 text-gray-500
                 transition
 
                 hover:text-[#800020]
+
+                min-[480px]:text-base
               "
             >
 
               <svg
-                width="21"
-                height="21"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -561,27 +523,10 @@ export default function ForgotCheck() {
               กลับหน้าเข้าสู่ระบบ
 
             </button>
+          </div>
 
-            {/* Divider */}
-            <div className="
-              mt-8
-              border-t
-              border-gray-100
-              pt-6
-              text-center
-            ">
+        </section>
 
-              <p className="text-xs leading-6 text-gray-400">
-                ระบบงานนโยบายและแผน
-                <br />
-                สถานีตำรวจภูธรเมืองชลบุรี
-              </p>
-
-            </div>
-
-          </section>
-
-        </div>
       </main>
     </div>
   );
