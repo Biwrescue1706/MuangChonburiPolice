@@ -28,7 +28,7 @@ export default function Login() {
 
     try {
       setLoading(true);
-      await login(username, password);
+      await login(username.trim(), password);
     } catch (err: any) {
       toast(
         "error",
@@ -40,65 +40,73 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#250008] via-[#5b0017] to-[#800020]">
+    <div className="min-h-screen bg-gradient-to-br from-[#280009] via-[#620019] to-[#800020]">
 
-      {/* Background Glow */}
-      <div className="pointer-events-none absolute -left-40 -top-40 h-[450px] w-[450px] rounded-full bg-white/5 blur-3xl" />
+      {/* Background Decoration */}
+      <div className="pointer-events-none fixed -left-32 -top-32 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
 
-      <div className="pointer-events-none absolute -bottom-48 -right-48 h-[550px] w-[550px] rounded-full bg-red-400/10 blur-3xl" />
+      <div className="pointer-events-none fixed -bottom-40 -right-40 h-96 w-96 rounded-full bg-red-400/10 blur-3xl" />
 
-      {/* Main Container */}
-      <div className="relative flex min-h-screen items-center justify-center p-4 min-[768px]:p-8 min-[1200px]:p-10">
+      {/* Main */}
+      <main className="relative flex min-h-screen items-center justify-center p-4 min-[480px]:p-6 min-[768px]:p-8 min-[1200px]:p-10">
 
-        {/* Main Card */}
-        <div
-          className="
+        {/* Card */}
+        <div className="
+          w-full
+          max-w-[430px]
+          overflow-hidden
+          rounded-[28px]
+          bg-white
+          shadow-[0_25px_70px_rgba(0,0,0,0.35)]
+
+          min-[768px]:max-w-[500px]
+
+          min-[1200px]:grid
+          min-[1200px]:max-w-[1050px]
+          min-[1200px]:grid-cols-2
+        ">
+
+          {/* =================================================
+              DESKTOP LEFT
+          ================================================= */}
+          <div className="
             relative
-            w-full
-            max-w-[500px]
+            hidden
+            min-h-[650px]
             overflow-hidden
-            rounded-3xl
-            bg-white
-            shadow-2xl
+            bg-gradient-to-br
+            from-[#800020]
+            via-[#650018]
+            to-[#35000b]
+            p-12
+            text-center
+            text-white
 
-            min-[1200px]:grid
-            min-[1200px]:max-w-[1050px]
-            min-[1200px]:grid-cols-2
-          "
-        >
+            min-[1200px]:flex
+            min-[1200px]:flex-col
+            min-[1200px]:items-center
+            min-[1200px]:justify-center
+          ">
 
-          {/* =====================================================
-              LEFT - DESKTOP ONLY
-              แสดงเฉพาะ 1200px ขึ้นไป
-          ====================================================== */}
-          <div
-            className="
-              relative
-              hidden
-              min-h-[650px]
-              overflow-hidden
-              bg-gradient-to-br
-              from-[#800020]
-              via-[#690019]
-              to-[#35000b]
-              p-12
-              text-white
-
-              min-[1200px]:flex
-              min-[1200px]:flex-col
-              min-[1200px]:items-center
-              min-[1200px]:justify-center
-              min-[1200px]:text-center
-            "
-          >
-
-            {/* Decorative Circle */}
-            <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full border border-white/10" />
+            {/* Decoration */}
+            <div className="pointer-events-none absolute -left-28 -top-28 h-72 w-72 rounded-full border border-white/10" />
 
             <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full border border-white/10" />
 
             {/* Logo */}
-            <div className="relative mb-8 flex h-36 w-36 items-center justify-center rounded-full bg-white shadow-2xl ring-8 ring-white/5">
+            <div className="
+              relative
+              flex
+              h-36
+              w-36
+              items-center
+              justify-center
+              rounded-full
+              bg-white
+              shadow-2xl
+              ring-8
+              ring-white/10
+            ">
               <img
                 src="/muangchonburi.webp"
                 alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
@@ -106,14 +114,13 @@ export default function Login() {
               />
             </div>
 
-            {/* Title */}
-            <h1 className="relative text-3xl font-bold">
+            <h1 className="mt-8 text-3xl font-bold">
               งานพิมพ์มือตรวจประวัติ
             </h1>
 
-            <div className="my-6 h-1 w-16 rounded-full bg-white/80" />
+            <div className="my-5 h-1 w-16 rounded-full bg-white/80" />
 
-            <p className="relative max-w-md text-base leading-8 text-white/80">
+            <p className="text-sm leading-8 text-white/75">
               ระบบบริหารจัดการงานพิมพ์มือตรวจประวัติ
               <br />
               งานนโยบายและแผน
@@ -121,88 +128,84 @@ export default function Login() {
               สถานีตำรวจภูธรเมืองชลบุรี
             </p>
 
-            <div className="relative mt-10 rounded-full border border-white/20 bg-white/10 px-6 py-2.5 text-sm text-white/80 backdrop-blur">
+            <div className="
+              mt-10
+              rounded-full
+              border
+              border-white/15
+              bg-white/10
+              px-6
+              py-2.5
+              text-xs
+              text-white/70
+            ">
               Muang Chonburi Police Station
             </div>
+
           </div>
 
-          {/* =====================================================
-              RIGHT - LOGIN
-              Desktop + Mobile + Tablet + iPad
-          ====================================================== */}
-          <div
-            className="
-              flex
-              min-h-[620px]
-              w-full
-              flex-col
-              justify-center
-              bg-white
+          {/* =================================================
+              LOGIN AREA
+          ================================================= */}
+          <div className="
+            flex
+            min-h-[620px]
+            flex-col
+            justify-center
+            bg-white
 
-              p-6
-              min-[480px]:p-8
-              min-[768px]:p-10
-              min-[1200px]:min-h-[650px]
-              min-[1200px]:p-12
-            "
-          >
+            p-6
 
-            {/* =================================================
-                MOBILE / TABLET / IPAD LOGO
-                แสดงเฉพาะต่ำกว่า 1200px
-            ================================================== */}
-            <div className="mb-7 text-center min-[480px]:mb-8 min-[1200px]:hidden">
+            min-[480px]:p-8
+            min-[768px]:p-10
+            min-[1200px]:min-h-[650px]
+            min-[1200px]:p-12
+          ">
 
-              <div
-                className="
-                  mx-auto
-                  mb-4
-                  flex
-                  h-24
-                  w-24
-                  items-center
-                  justify-center
-                  rounded-full
-                  border
-                  border-gray-100
-                  bg-white
-                  shadow-lg
-                  ring-8
-                  ring-[#800020]/5
+            {/* Mobile Logo */}
+            <div className="mb-8 text-center min-[1200px]:hidden">
 
-                  min-[480px]:h-28
-                  min-[480px]:w-28
-                  min-[768px]:h-32
-                  min-[768px]:w-32
-                "
-              >
+              <div className="
+                mx-auto
+                flex
+                h-24
+                w-24
+                items-center
+                justify-center
+                rounded-full
+                bg-white
+                shadow-lg
+                ring-8
+                ring-[#800020]/5
+
+                min-[480px]:h-28
+                min-[480px]:w-28
+                min-[768px]:h-32
+                min-[768px]:w-32
+              ">
                 <img
                   src="/muangchonburi.webp"
                   alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
                   className="
-                    h-18
-                    w-18
+                    h-20
+                    w-20
                     object-contain
 
-                    min-[480px]:h-22
-                    min-[480px]:w-22
-
-                    min-[768px]:h-24
-                    min-[768px]:w-24
+                    min-[480px]:h-24
+                    min-[480px]:w-24
                   "
                 />
               </div>
 
-              <h1
-                className="
-                  text-xl
-                  font-bold
-                  text-gray-900
+              <h1 className="
+                mt-5
+                text-xl
+                font-bold
+                text-gray-900
 
-                  min-[480px]:text-2xl
-                  min-[768px]:text-3xl
-                "
-              >
+                min-[480px]:text-2xl
+                min-[768px]:text-3xl
+              ">
                 งานพิมพ์มือตรวจประวัติ
               </h1>
 
@@ -211,38 +214,33 @@ export default function Login() {
               </p>
 
               <div className="mx-auto mt-4 h-1 w-12 rounded-full bg-[#800020]" />
+
             </div>
 
-            {/* =================================================
-                LOGIN HEADER
-            ================================================== */}
-            <div className="mb-7 min-[480px]:mb-8">
+            {/* Login Heading */}
+            <div className="mb-7">
 
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-[#800020]">
                 Welcome Back
               </p>
 
-              <h2
-                className="
-                  text-2xl
-                  font-bold
-                  text-gray-900
+              <h2 className="
+                text-2xl
+                font-bold
+                text-gray-900
 
-                  min-[480px]:text-3xl
-                  min-[768px]:text-3xl
-                "
-              >
+                min-[480px]:text-3xl
+              ">
                 เข้าสู่ระบบ
               </h2>
 
               <p className="mt-2 text-sm text-gray-500">
                 กรุณากรอกข้อมูลเพื่อเข้าสู่ระบบ
               </p>
+
             </div>
 
-            {/* =================================================
-                FORM
-            ================================================== */}
+            {/* Form */}
             <form onSubmit={submit} className="space-y-5">
 
               {/* Username */}
@@ -250,16 +248,26 @@ export default function Login() {
 
                 <label
                   htmlFor="username"
-                  className="mb-2 block text-sm font-semibold text-gray-700"
+                  className="mb-2 block text-sm font-bold text-gray-700"
                 >
                   Username
                 </label>
 
                 <div className="relative">
 
-                  {/* User Icon */}
-                  <div className="pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-gray-400">
-
+                  <div className="
+                    pointer-events-none
+                    absolute
+                    left-4
+                    top-1/2
+                    flex
+                    h-5
+                    w-5
+                    -translate-y-1/2
+                    items-center
+                    justify-center
+                    text-[#800020]
+                  ">
                     <svg
                       width="20"
                       height="20"
@@ -273,7 +281,6 @@ export default function Login() {
                       <circle cx="12" cy="8" r="3.5" />
                       <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
                     </svg>
-
                   </div>
 
                   <input
@@ -314,16 +321,26 @@ export default function Login() {
 
                 <label
                   htmlFor="password"
-                  className="mb-2 block text-sm font-semibold text-gray-700"
+                  className="mb-2 block text-sm font-bold text-gray-700"
                 >
                   Password
                 </label>
 
                 <div className="relative">
 
-                  {/* Lock Icon */}
-                  <div className="pointer-events-none absolute left-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-gray-400">
-
+                  <div className="
+                    pointer-events-none
+                    absolute
+                    left-4
+                    top-1/2
+                    flex
+                    h-5
+                    w-5
+                    -translate-y-1/2
+                    items-center
+                    justify-center
+                    text-[#800020]
+                  ">
                     <svg
                       width="20"
                       height="20"
@@ -341,10 +358,8 @@ export default function Login() {
                         height="10"
                         rx="2"
                       />
-
                       <path d="M8 10V7a4 4 0 0 1 8 0v3" />
                     </svg>
-
                   </div>
 
                   <input
@@ -377,15 +392,9 @@ export default function Login() {
                     "
                   />
 
-                  {/* Show Password */}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    aria-label={
-                      showPassword
-                        ? "ซ่อนรหัสผ่าน"
-                        : "แสดงรหัสผ่าน"
-                    }
                     className="
                       absolute
                       right-3
@@ -398,7 +407,6 @@ export default function Login() {
                       justify-center
                       rounded-lg
                       text-gray-400
-                      transition
                       hover:bg-gray-100
                       hover:text-[#800020]
                     "
@@ -439,7 +447,7 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Forgot Password */}
+              {/* Forgot */}
               <div className="flex justify-end">
 
                 <button
@@ -447,11 +455,8 @@ export default function Login() {
                   onClick={() => navigate("/forgot")}
                   className="
                     text-sm
-                    font-semibold
+                    font-bold
                     text-[#800020]
-                    transition
-
-                    hover:text-[#5c0017]
                     hover:underline
                   "
                 >
@@ -460,12 +465,11 @@ export default function Login() {
 
               </div>
 
-              {/* Login Button */}
+              {/* Login */}
               <button
                 type="submit"
                 disabled={loading}
                 className="
-                  group
                   flex
                   h-[52px]
                   w-full
@@ -482,17 +486,12 @@ export default function Login() {
                   shadow-lg
                   shadow-[#800020]/20
                   transition
-                  duration-300
 
                   hover:-translate-y-0.5
                   hover:shadow-xl
-                  hover:shadow-[#800020]/30
-
-                  active:translate-y-0
 
                   disabled:cursor-not-allowed
-                  disabled:opacity-70
-                  disabled:hover:translate-y-0
+                  disabled:opacity-60
                 "
               >
 
@@ -514,7 +513,6 @@ export default function Login() {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="transition-transform duration-300 group-hover:translate-x-1"
                     >
                       <path d="M5 12h13" />
                       <path d="m13 6 6 6-6 6" />
@@ -525,23 +523,9 @@ export default function Login() {
               </button>
 
             </form>
-
-            {/* Footer */}
-            <div className="mt-8 border-t border-gray-100 pt-5 text-center">
-
-              <p className="text-xs leading-6 text-gray-400">
-                ระบบงานนโยบายและแผน
-                <br />
-                สถานีตำรวจภูธรเมืองชลบุรี
-                <br />
-                © 2569 งานพิมพ์มือตรวจประวัติ
-              </p>
-
-            </div>
-
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
