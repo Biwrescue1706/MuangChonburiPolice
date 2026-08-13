@@ -7,8 +7,9 @@ import usePersonHistory from "../../hooks/usePersonHistory";
 import useSelection from "../../hooks/useSelection";
 import usePersonActions from "../../hooks/usePersonActions";
 
-import PersonCardList from "../../components/PersonCardList";
-import PersonTable from "../../components/PersonTable";
+// ถูก
+import PersonCard from "../../components/statusPerson/PersonCard";
+import PersonTable from "../../components/statusPerson/PersonTable";
 
 export default function PersonHistoryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1056,7 +1057,7 @@ export default function PersonHistoryPage() {
 
             {isMobile ? (
               <div className="p-3 min-[480px]:p-4">
-                <PersonCardList
+                <PersonCard
                   persons={sortedPersons}
                   loading={loading}
                   selectMode={selectMode}
