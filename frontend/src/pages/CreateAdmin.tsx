@@ -1,4 +1,5 @@
 // src/pages/CreateAdmin.tsx
+
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import Swal from "sweetalert2";
@@ -21,67 +22,95 @@ export default function CreateAdmin() {
   });
 
   const isEdit = !!editing;
-  const isTable = screenWidth > 1280;
+  const isTable = screenWidth >= 1280;
 
-  /* ================= CARD RESPONSIVE ================= */
-  const getCardCol = () => {
-    if (screenWidth < 480) return "col-6"; // 2 ใบ
-    if (screenWidth < 768) return "col-3"; // 4 ใบ
-    if (screenWidth < 1280) return "col-2"; // 6 ใบ
-    return "col-2";
-  };
+  // =========================================================
+  // RESPONSIVE
+  // =========================================================
 
-  /* ================= SCREEN ================= */
   useEffect(() => {
-    const resize = () => setScreenWidth(window.innerWidth);
+    const resize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
     window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+    };
   }, []);
 
-  /* ================= THAI TIME ================= */
+  // =========================================================
+  // THAI TIME
+  // =========================================================
+
   useEffect(() => {
     const update = () => {
       const now = new Date();
+
       setThaiTime(
         now.toLocaleString("th-TH", {
           timeZone: "Asia/Bangkok",
           year: "numeric",
-          month: "short",
+          month: "long",
           day: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-          second: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
         }),
       );
     };
 
     update();
+
     const timer = setInterval(update, 1000);
+
     return () => clearInterval(timer);
   }, []);
 
-  /* ================= LOAD ADMINS ================= */
+  // =========================================================
+  // LOAD ADMINS
+  // =========================================================
+
   const loadAdmins = async () => {
-    const res = await api.get("/admin/getall");
-    const data = res.data;
+    try {
+      const res = await api.get("/admin/getall");
 
-    // ✅ เรียง username ไทย + อังกฤษ + ตัวเลข
-    const sorted = [...data].sort((a, b) =>
-      (a.username || "").localeCompare(b.username || "", "th", {
-        sensitivity: "base",
-        numeric: true,
-      }),
-    );
+      const data = Array.isArray(res.data) ? res.data : [];
 
-    setAdmins(sorted);
+      const sorted = [...data].sort((a, b) =>
+        (a.username || "").localeCompare(
+          b.username || "",
+          "th",
+          {
+            sensitivity: "base",
+            numeric: true,
+          },
+        ),
+      );
 
-    if (sorted.length) {
-      const first = [...sorted].sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      )[0];
+      setAdmins(sorted);
 
-      setFirstAdminId(first.adminId);
+      if (sorted.length > 0) {
+        const first = [...sorted].sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() -
+            new Date(b.createdAt).getTime(),
+        )[0];
+
+        setFirstAdminId(first.adminId);
+      } else {
+        setFirstAdminId(null);
+      }
+    } catch (error) {
+      console.error(error);
+
+      Swal.fire({
+        icon: "error",
+        title: "โหลดข้อมูลไม่สำเร็จ",
+        text: "ไม่สามารถโหลดรายชื่อผู้ดูแลระบบได้",
+      });
     }
   };
 
@@ -89,34 +118,77 @@ export default function CreateAdmin() {
     loadAdmins();
   }, []);
 
-  /* ================= CREATE ================= */
+  // =========================================================
+  // CREATE
+  // =========================================================
+
   const openCreate = () => {
     setEditing(null);
+
     setForm({
       username: "",
       password: "",
       name: "",
       position: "",
     });
+
     setShowModal(true);
   };
 
-  const handleChange = (e: any) => {
+  // =========================================================
+  // EDIT
+  // =========================================================
+
+  const openEdit = (admin: any) => {
+    setEditing(admin);
+
     setForm({
-      ...form,
-      [e.target.name]: e.target.value,
+      username: admin.username || "",
+      password: "",
+      name: admin.name || "",
+      position: admin.position || "",
     });
+
+    setShowModal(true);
   };
 
-  /* ================= SAVE ================= */
-  const submit = async (e: any) => {
+  // =========================================================
+  // CHANGE
+  // =========================================================
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  // =========================================================
+  // SAVE
+  // =========================================================
+
+  const submit = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
     e.preventDefault();
 
     try {
-      if (isEdit) await api.put(`/admin/${editing.adminId}`, form);
-      else await api.post("/admin/register", form);
+      if (isEdit) {
+        await api.put(
+          `/admin/${editing.adminId}`,
+          {
+            username: form.username,
+            name: form.name,
+            position: form.position,
+          },
+        );
+      } else {
+        await api.post("/admin/register", form);
+      }
 
-      Swal.fire({
+      await Swal.fire({
         icon: "success",
         title: "บันทึกสำเร็จ",
         timer: 1200,
@@ -124,232 +196,638 @@ export default function CreateAdmin() {
       });
 
       setShowModal(false);
-      loadAdmins();
+      setEditing(null);
+
+      await loadAdmins();
     } catch (err: any) {
-      Swal.fire("ผิดพลาด", err.response?.data?.error || "", "error");
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text:
+          err.response?.data?.error ||
+          "ไม่สามารถบันทึกข้อมูลได้",
+      });
     }
   };
 
-  /* ================= DELETE ================= */
+  // =========================================================
+  // DELETE
+  // =========================================================
+
   const removeAdmin = async (adminId: string) => {
     const confirm = await Swal.fire({
       title: "ลบ Admin ?",
+      text: "เมื่อลบแล้วจะไม่สามารถเรียกคืนข้อมูลได้",
       icon: "warning",
       showCancelButton: true,
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
     });
 
     if (!confirm.isConfirmed) return;
 
-    await api.delete(`/admin/${adminId}`);
+    try {
+      await api.delete(`/admin/${adminId}`);
 
-    Swal.fire("ลบสำเร็จ", "", "success");
-    loadAdmins();
+      await Swal.fire({
+        icon: "success",
+        title: "ลบสำเร็จ",
+        text: "ลบ Admin เรียบร้อยแล้ว",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      await loadAdmins();
+    } catch (error) {
+      console.error(error);
+
+      Swal.fire({
+        icon: "error",
+        title: "ลบไม่สำเร็จ",
+        text: "เกิดข้อผิดพลาดขณะลบข้อมูล",
+      });
+    }
   };
 
+  // =========================================================
+  // CLOSE MODAL
+  // =========================================================
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditing(null);
+  };
+
+  // =========================================================
+  // RENDER
+  // =========================================================
+
   return (
-    <div className="main-content">
-      {/* ===== HEADER ===== */}
-      <div className="text-center mb-3">
-        <h1 className="fw-bold mb-2">👥 สมาชิกผู้ดูแลระบบ</h1>
+    <div className="main-content min-h-screen bg-gray-50 px-3 py-4 sm:px-5 lg:px-6">
 
-        <h4 className="fw-semibold mb-4">{thaiTime} น.</h4>
+      <div className="mx-auto w-full max-w-[1500px]">
 
-        <button
-          type="button"
-          className="btn btn-danger btn-lg"
-          style={{ background: "#ff0000" }}
-          onClick={openCreate}
-        >
-          ➕ เพิ่ม Admin
-        </button>
-      </div>
-      {/* ===== MAIN CARD ===== */}
-      <div className="card shadow flex-grow-1 d-flex flex-column">
-        <div className="card-body p-2">
-          {/* ================= TABLE ================= */}
-          {isTable && (
-            <div className="responsive-table" style={{ overflowX: "auto" }}>
-              <table
-                className="table table-sm align-middle text-center"
-                style={{ tableLayout: "fixed", width: "100%" }}
-              >
-                <thead className="table-dark">
-                  <tr>
-                    <th>#</th>
-                    <th>Username</th>
-                    <th>ชื่อ</th>
-                    <th>ตำแหน่ง</th>
-                    <th>ลบ</th>
+        {/* ===================================================
+            HEADER
+        =================================================== */}
+
+        <div className="mb-5 overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] shadow-lg">
+
+          <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+
+            <div className="flex items-center gap-3">
+
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 text-2xl">
+                👥
+              </div>
+
+              <div>
+
+                <h1 className="text-lg font-bold text-white sm:text-xl">
+                  สมาชิกผู้ดูแลระบบ
+                </h1>
+
+                <p className="mt-1 text-xs text-white/70 sm:text-sm">
+                  จัดการบัญชีผู้ดูแลระบบ
+                </p>
+
+              </div>
+
+            </div>
+
+            <div className="text-left sm:text-right">
+
+              <p className="text-xs text-white/60">
+                เวลาปัจจุบัน
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-white">
+                {thaiTime}
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ===================================================
+            SUMMARY
+        =================================================== */}
+
+        <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+
+            <div className="flex items-center gap-3">
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl">
+                👤
+              </div>
+
+              <div>
+
+                <p className="text-xs text-gray-400">
+                  ผู้ดูแลระบบทั้งหมด
+                </p>
+
+                <p className="text-xl font-bold text-gray-800">
+                  {admins.length}
+                  <span className="ml-1 text-sm font-medium text-gray-400">
+                    คน
+                  </span>
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+
+            <div className="flex items-center gap-3">
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-xl">
+                👑
+              </div>
+
+              <div>
+
+                <p className="text-xs text-gray-400">
+                  Super Admin
+                </p>
+
+                <p className="text-base font-bold text-red-600">
+                  {firstAdminId ? "กำหนดแล้ว" : "ยังไม่มี"}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ===================================================
+            ACTION
+        =================================================== */}
+
+        <div className="mb-5 flex justify-end">
+
+          <button
+            type="button"
+            onClick={openCreate}
+            className="flex min-h-[46px] items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 active:scale-95"
+          >
+            <span className="text-lg">＋</span>
+            เพิ่ม Admin
+          </button>
+
+        </div>
+
+        {/* ===================================================
+            MAIN CARD
+        =================================================== */}
+
+        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+
+          {/* =================================================
+              DESKTOP TABLE
+          ================================================= */}
+
+          {isTable ? (
+
+            <div className="overflow-x-auto">
+
+              <table className="w-full border-collapse text-sm">
+
+                <thead>
+
+                  <tr className="bg-gray-800 text-white">
+
+                    <th className="w-[80px] border border-gray-700 px-4 py-3 text-center">
+                      #
+                    </th>
+
+                    <th className="border border-gray-700 px-4 py-3 text-left">
+                      Username
+                    </th>
+
+                    <th className="border border-gray-700 px-4 py-3 text-left">
+                      ชื่อ
+                    </th>
+
+                    <th className="border border-gray-700 px-4 py-3 text-left">
+                      ตำแหน่ง
+                    </th>
+
+                    <th className="w-[100px] border border-gray-700 px-4 py-3 text-center">
+                      แก้ไข
+                    </th>
+
+                    <th className="w-[100px] border border-gray-700 px-4 py-3 text-center">
+                      ลบ
+                    </th>
+
                   </tr>
+
                 </thead>
 
                 <tbody>
+
                   {admins.length === 0 ? (
+
                     <tr>
-                      <td colSpan={6} className="text-muted py-4">
+
+                      <td
+                        colSpan={6}
+                        className="px-4 py-10 text-center text-gray-400"
+                      >
                         ไม่พบ Admin
                       </td>
+
                     </tr>
+
                   ) : (
+
                     admins.map((a, i) => (
-                      <tr key={a.adminId}>
-                        <td className="text-truncate" style={{ maxWidth: 200 }}>
+
+                      <tr
+                        key={a.adminId}
+                        className="transition hover:bg-gray-50"
+                      >
+
+                        <td className="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-500">
                           {i + 1}
                         </td>
 
-                        <td className="text-truncate" style={{ maxWidth: 200 }}>
-                          {a.username}
-                          {a.adminId === firstAdminId && (
-                            <span className="badge bg-danger ms-2">SUPER</span>
-                          )}
+                        <td className="border border-gray-200 px-4 py-3">
+
+                          <div className="flex items-center gap-2">
+
+                            <span className="font-semibold text-gray-800">
+                              {a.username}
+                            </span>
+
+                            {a.adminId === firstAdminId && (
+                              <span className="rounded-full bg-red-100 px-2 py-1 text-[10px] font-bold text-red-700">
+                                SUPER
+                              </span>
+                            )}
+
+                          </div>
+
                         </td>
-                        <td className="text-truncate" style={{ maxWidth: 250 }}>
+
+                        <td className="border border-gray-200 px-4 py-3 text-gray-700">
                           {a.name || "-"}
                         </td>
 
-                        <td className="text-truncate" style={{ maxWidth: 200 }}>
+                        <td className="border border-gray-200 px-4 py-3 text-gray-700">
                           {a.position || "-"}
                         </td>
 
-                        <td className="text-truncate" style={{ maxWidth: 200 }}>
-                          {a.adminId !== firstAdminId && (
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => removeAdmin(a.adminId)}
-                            >
-                              <i className="bi bi-trash-fill" />
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
+                        <td className="border border-gray-200 px-4 py-3 text-center">
 
-          {/* ================= CARD MODE ================= */}
-          {!isTable && (
-            <div className="row g-3">
-              {admins.map((a) => (
-                <div key={a.adminId} className={getCardCol()}>
-                  <div className="card shadow h-100">
-                    <div className="card-body text-center">
-                      <h6 className="fw-bold">
-                        {a.username}
-                        {a.adminId === firstAdminId && (
-                          <span className="badge bg-danger ms-2">SUPER</span>
-                        )}
-                      </h6>
-
-                      <p className="mb-1">
-                        <b>ชื่อ:</b> {a.name || "-"}
-                      </p>
-
-                      <p>
-                        <b>ตำแหน่ง:</b> {a.position || "-"}
-                      </p>
-
-                      <div className="d-flex justify-content-center gap-2">
-                        {a.adminId !== firstAdminId && (
                           <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => removeAdmin(a.adminId)}
+                            type="button"
+                            onClick={() => openEdit(a)}
+                            className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white transition hover:bg-amber-600 active:scale-95"
                           >
-                            <i className="bi bi-trash-fill" />
+                            ✏️
                           </button>
+
+                        </td>
+
+                        <td className="border border-gray-200 px-4 py-3 text-center">
+
+                          {a.adminId !== firstAdminId ? (
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                removeAdmin(a.adminId)
+                              }
+                              className="rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-700 active:scale-95"
+                            >
+                              🗑️
+                            </button>
+
+                          ) : (
+
+                            <span className="text-xs text-gray-300">
+                              -
+                            </span>
+
+                          )}
+
+                        </td>
+
+                      </tr>
+
+                    ))
+
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          ) : (
+
+            /* =================================================
+               MOBILE / TABLET CARD
+            ================================================= */
+
+            <div className="p-3 sm:p-5">
+
+              {admins.length === 0 ? (
+
+                <div className="py-10 text-center text-gray-400">
+                  ไม่พบ Admin
+                </div>
+
+              ) : (
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+
+                  {admins.map((a, index) => (
+
+                    <div
+                      key={a.adminId}
+                      className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    >
+
+                      {/* CARD HEADER */}
+
+                      <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-3">
+
+                        <div className="flex items-center gap-2">
+
+                          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#800020]/10 text-xs font-bold text-[#800020]">
+                            {index + 1}
+                          </span>
+
+                          <span className="text-xs font-semibold text-gray-400">
+                            Admin
+                          </span>
+
+                        </div>
+
+                        {a.adminId === firstAdminId && (
+
+                          <span className="rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-bold text-red-700">
+                            SUPER
+                          </span>
+
                         )}
+
                       </div>
+
+                      {/* CARD BODY */}
+
+                      <div className="p-4">
+
+                        <div className="mb-4">
+
+                          <p className="mb-1 text-[10px] font-semibold text-gray-400">
+                            USERNAME
+                          </p>
+
+                          <p className="break-all text-base font-bold text-gray-800">
+                            {a.username}
+                          </p>
+
+                        </div>
+
+                        <div className="mb-3 rounded-xl bg-gray-50 p-3">
+
+                          <p className="text-[10px] font-semibold text-gray-400">
+                            ชื่อ
+                          </p>
+
+                          <p className="mt-1 text-sm font-semibold text-gray-700">
+                            {a.name || "-"}
+                          </p>
+
+                        </div>
+
+                        <div className="mb-4 rounded-xl bg-gray-50 p-3">
+
+                          <p className="text-[10px] font-semibold text-gray-400">
+                            ตำแหน่ง
+                          </p>
+
+                          <p className="mt-1 text-sm font-semibold text-gray-700">
+                            {a.position || "-"}
+                          </p>
+
+                        </div>
+
+                        <div className="flex gap-2">
+
+                          <button
+                            type="button"
+                            onClick={() => openEdit(a)}
+                            className="flex min-h-[44px] flex-1 items-center justify-center rounded-xl bg-amber-500 text-sm font-bold text-white transition hover:bg-amber-600 active:scale-95"
+                          >
+                            ✏️ แก้ไข
+                          </button>
+
+                          {a.adminId !== firstAdminId && (
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                removeAdmin(a.adminId)
+                              }
+                              className="flex min-h-[44px] flex-1 items-center justify-center rounded-xl bg-red-600 text-sm font-bold text-white transition hover:bg-red-700 active:scale-95"
+                            >
+                              🗑️ ลบ
+                            </button>
+
+                          )}
+
+                        </div>
+
+                      </div>
+
                     </div>
-                  </div>
+
+                  ))}
+
                 </div>
-              ))}
+
+              )}
+
             </div>
+
           )}
+
         </div>
-        {showModal && (
-          <>
-            <div className="modal fade show d-block">
-              <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                  <div
-                    className="modal-header text-white"
-                    style={{ background: "#800020" }}
-                  >
-                    <h5>{isEdit ? "แก้ไข Admin" : "เพิ่ม Admin"}</h5>
 
-                    <button
-                      className="btn-close btn-close-white"
-                      onClick={() => setShowModal(false)}
-                    />
-                  </div>
+      </div>
 
-                  <form onSubmit={submit}>
-                    <div className="modal-body">
-                      <input
-                        name="username"
-                        className="form-control mb-2"
-                        placeholder="Username"
-                        value={form.username}
-                        onChange={handleChange}
-                        required
-                      />
+      {/* =====================================================
+          MODAL
+      ===================================================== */}
 
-                      {!isEdit && (
-                        <input
-                          type="password"
-                          name="password"
-                          className="form-control mb-2"
-                          placeholder="Password"
-                          value={form.password}
-                          onChange={handleChange}
-                          required
-                        />
-                      )}
+      {showModal && (
 
-                      <input
-                        name="name"
-                        className="form-control mb-2"
-                        placeholder="ชื่อ"
-                        value={form.name}
-                        onChange={handleChange}
-                      />
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 px-3 py-5">
 
-                      <input
-                        name="position"
-                        className="form-control"
-                        placeholder="ตำแหน่ง"
-                        value={form.position}
-                        onChange={handleChange}
-                      />
-                    </div>
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-2xl">
 
-                    <div className="modal-footer">
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={() => setShowModal(false)}
-                      >
-                        ยกเลิก
-                      </button>
+            {/* MODAL HEADER */}
 
-                      <button
-                        className="btn text-white"
-                        style={{ background: "#800020" }}
-                      >
-                        บันทึก
-                      </button>
-                    </div>
-                  </form>
-                </div>
+            <div className="flex items-center justify-between bg-[#800020] px-5 py-4">
+
+              <div>
+
+                <h2 className="text-lg font-bold text-white">
+                  {isEdit ? "แก้ไข Admin" : "เพิ่ม Admin"}
+                </h2>
+
+                <p className="mt-0.5 text-xs text-white/70">
+                  {isEdit
+                    ? "แก้ไขข้อมูลผู้ดูแลระบบ"
+                    : "สร้างบัญชีผู้ดูแลระบบใหม่"}
+                </p>
+
               </div>
+
+              <button
+                type="button"
+                onClick={closeModal}
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-lg text-white transition hover:bg-white/20"
+              >
+                ×
+              </button>
+
             </div>
 
-            <div className="modal-backdrop fade show" />
-          </>
-        )}
-      </div>
+            {/* FORM */}
+
+            <form onSubmit={submit}>
+
+              <div className="space-y-4 p-5">
+
+                {/* USERNAME */}
+
+                <div>
+
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    Username
+                  </label>
+
+                  <input
+                    name="username"
+                    value={form.username}
+                    onChange={handleChange}
+                    placeholder="กรอก Username"
+                    required
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10"
+                  />
+
+                </div>
+
+                {/* PASSWORD */}
+
+                {!isEdit && (
+
+                  <div>
+
+                    <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                      Password
+                    </label>
+
+                    <input
+                      type="password"
+                      name="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      placeholder="กรอก Password"
+                      required
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10"
+                    />
+
+                  </div>
+
+                )}
+
+                {/* NAME */}
+
+                <div>
+
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    ชื่อ
+                  </label>
+
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    placeholder="กรอกชื่อ"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10"
+                  />
+
+                </div>
+
+                {/* POSITION */}
+
+                <div>
+
+                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    ตำแหน่ง
+                  </label>
+
+                  <input
+                    name="position"
+                    value={form.position}
+                    onChange={handleChange}
+                    placeholder="กรอกตำแหน่ง"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10"
+                  />
+
+                </div>
+
+              </div>
+
+              {/* MODAL FOOTER */}
+
+              <div className="flex gap-2 border-t border-gray-100 bg-gray-50 px-5 py-4">
+
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="min-h-[46px] flex-1 rounded-xl bg-gray-200 px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-300 active:scale-95"
+                >
+                  ยกเลิก
+                </button>
+
+                <button
+                  type="submit"
+                  className="min-h-[46px] flex-1 rounded-xl bg-[#800020] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#650017] active:scale-95"
+                >
+                  {isEdit ? "บันทึกการแก้ไข" : "บันทึก"}
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      )}
+
     </div>
   );
 }
