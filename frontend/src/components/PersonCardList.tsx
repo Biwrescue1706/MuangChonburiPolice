@@ -7,7 +7,6 @@ import {
   renderStatus,
   renderPriority,
   getStatusButton,
-  getStatusButtonStyle,
 } from "../utils/personHelper";
 
 export default function PersonCardList({
