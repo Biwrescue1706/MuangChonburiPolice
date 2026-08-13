@@ -1085,27 +1085,6 @@ export default function PersonHistoryPage() {
 
           </section>
 
-          {/* =================================================
-              FOOTER
-          ================================================= */}
-          <div className="
-            mt-6
-            border-t
-            border-gray-200
-            pt-4
-            text-center
-          ">
-
-            <p className="text-[10px] text-gray-400">
-              ระบบงานพิมพ์มือตรวจประวัติ
-            </p>
-
-            <p className="mt-1 text-[10px] text-gray-400">
-              งานนโยบายและแผน • สถานีตำรวจภูธรเมืองชลบุรี
-            </p>
-
-          </div>
-
         </div>
       </main>
 
