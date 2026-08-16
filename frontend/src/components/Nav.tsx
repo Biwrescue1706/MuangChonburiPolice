@@ -6,53 +6,35 @@ import { useState } from "react";
 
 export default function Nav() {
   const { admin, logout } = useAuth();
-
   const navigate = useNavigate();
   const location = useLocation();
-
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // =========================================================
   // LOGOUT
-  // =========================================================
   const handleLogout = async () => {
     await logout();
     navigate("/");
   };
 
-  // =========================================================
   // SHORT TEXT
-  // =========================================================
   const shortText = (text: string = "", max: number = 16) => {
     if (!text) return "-";
 
-    return text.length > max
-      ? `${text.substring(0, max)}...`
-      : text;
+    return text.length > max ? `${text.substring(0, max)}...` : text;
   };
 
-  // =========================================================
   // ACTIVE
-  // =========================================================
   const isActive = (path: string) => {
-    if (path === "/dashboard") {
-      return location.pathname === "/dashboard";
-    }
-
-    return location.pathname.startsWith(path);
+    return location.pathname === path;
   };
 
-  // =========================================================
   // NAVIGATE
-  // =========================================================
   const go = (path: string) => {
     navigate(path);
     setMenuOpen(false);
   };
 
-  // =========================================================
   // MENU DATA
-  // =========================================================
   const menuItems = [
     {
       path: "/dashboard",
@@ -116,16 +98,8 @@ export default function Nav() {
     },
   ];
 
-  // =========================================================
   // ICON
-  // =========================================================
-  const MenuIcon = ({
-    type,
-    size = 21,
-  }: {
-    type: string;
-    size?: number;
-  }) => {
+  const MenuIcon = ({ type, size = 21 }: { type: string; size?: number }) => {
     if (type === "home") {
       return (
         <svg
@@ -317,15 +291,12 @@ export default function Nav() {
         strokeLinejoin="round"
       >
         <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V20h-2.5v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1A1.7 1.7 0 0 0 8.1 15a1.7 1.7 0 0 0-1.5-1H6.5v-2.5h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.8-1.8.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V5h2.5v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1V14h-.1a1.7 1.7 0 0 0-1.5 1Z"
-        />
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V20h-2.5v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1A1.7 1.7 0 0 0 8.1 15a1.7 1.7 0 0 0-1.5-1H6.5v-2.5h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.8-1.8.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V5h2.5v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1V14h-.1a1.7 1.7 0 0 0-1.5 1Z" />
       </svg>
     );
   };
 
-  // =========================================================
   // LOGOUT ICON
-  // =========================================================
   const LogoutIcon = ({ size = 21 }: { size?: number }) => (
     <svg
       width={size}
@@ -345,9 +316,7 @@ export default function Nav() {
 
   return (
     <>
-      {/* =====================================================
-          TOPBAR
-      ===================================================== */}
+      {/* TOPBAR */}
       <header
         className="
           fixed
@@ -365,7 +334,8 @@ export default function Nav() {
           shadow-lg
         "
       >
-        <div className="
+        <div
+          className="
           relative
           mx-auto
           flex
@@ -380,11 +350,9 @@ export default function Nav() {
 
           min-[1200px]:pl-[120px]
           min-[1200px]:pr-6
-        ">
-
-          {/* =================================================
-              MOBILE MENU BUTTON
-          ================================================= */}
+        "
+        >
+          {/* MOBILE MENU BUTTON*/}
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
@@ -404,7 +372,6 @@ export default function Nav() {
 
               hover:bg-white/20
               active:scale-95
-
               min-[1200px]:hidden
             "
           >
@@ -423,9 +390,7 @@ export default function Nav() {
             </svg>
           </button>
 
-          {/* =================================================
-              BRAND
-          ================================================= */}
+          {/* BRAND*/}
           <button
             type="button"
             onClick={() => go("/dashboard")}
@@ -445,8 +410,8 @@ export default function Nav() {
               min-[1200px]:translate-x-0
             "
           >
-
-            <div className="
+            <div
+              className="
               flex
               h-9
               w-9
@@ -456,7 +421,8 @@ export default function Nav() {
               rounded-full
               bg-white
               shadow-md
-            ">
+            "
+            >
               <img
                 src="/muangchonburi.webp"
                 alt="โลโก้"
@@ -464,74 +430,35 @@ export default function Nav() {
               />
             </div>
 
-            <div className="hidden min-[480px]:block">
-
-              <p className="
-                whitespace-nowrap
-                text-xs
-                font-bold
-                leading-tight
-                text-white
-              ">
+            <div className="hidden min-[480px]:block leading-none">
+              <p className="m-0 whitespace-nowrap text-xs font-bold leading-tight text-white">
                 งานพิมพ์มือตรวจประวัติ
               </p>
-
-              <p className="
-                mt-0.5
-                text-[10px]
-                leading-tight
-                text-white/65
-              ">
+              <p className="m-0 mt-0.5 whitespace-nowrap text-[14px] font-semibold leading-tight text-white/65">
                 งานนโยบายและแผน
               </p>
-
             </div>
-
           </button>
 
           {/* =================================================
               USER
           ================================================= */}
-          <div className="
-            ml-auto
-            flex
-            items-center
-            gap-2
-          ">
-
-            <div className="
-              hidden
-              text-right
-
-              min-[480px]:block
-            ">
-
-              <p className="text-xs font-bold text-white">
-                {shortText(admin?.name || "", 18)}
-              </p>
-
-              <p className="
-                mt-0.5
-                max-w-[160px]
-                truncate
-                text-[10px]
-                text-white/60
-              ">
-                {admin?.position || "-"}
-              </p>
-
-            </div>
-
-            <div className="
-              flex
-              h-9
-              w-9
-              items-center
-              justify-center
-              rounded-full
-              bg-white/10
-              text-white
-            ">
+          <div className="ml-auto flex items-center gap-3">
+            <div
+              className="
+                flex
+                h-9
+                w-9
+                shrink-0
+                items-center
+                justify-center
+                rounded-full
+                bg-white/10
+                text-white
+                ring-1
+                ring-white/10
+              "
+            >
               <svg
                 width="19"
                 height="19"
@@ -547,8 +474,16 @@ export default function Nav() {
               </svg>
             </div>
 
-          </div>
+            <div className="hidden min-[480px]:block leading-none text-right">
+              <p className="m-0 text-xs font-bold leading-tight text-white">
+                {shortText(admin?.name || "", 18)}
+              </p>
 
+              <p className="m-0 mt-1 text-[10px] leading-tight text-white/60">
+                {admin?.position || "-"}
+              </p>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -556,7 +491,8 @@ export default function Nav() {
           DESKTOP SIDEBAR
           >= 1200px
       ===================================================== */}
-      <aside className="
+      <aside
+        className="
         fixed
         left-0
         top-0
@@ -573,10 +509,11 @@ export default function Nav() {
         min-[1200px]:w-[100px]
 
         min-[1350px]:w-[220px]
-      ">
-
+      "
+      >
         {/* Sidebar Logo */}
-        <div className="
+        <div
+          className="
           flex
           h-[58px]
           shrink-0
@@ -584,9 +521,10 @@ export default function Nav() {
           justify-center
           border-b
           border-white/10
-        ">
-
-          <div className="
+        "
+        >
+          <div
+            className="
             flex
             h-9
             w-9
@@ -595,7 +533,8 @@ export default function Nav() {
             rounded-full
             bg-white
             shadow-md
-          ">
+          "
+          >
             <img
               src="/muangchonburi.webp"
               alt="โลโก้"
@@ -603,25 +542,23 @@ export default function Nav() {
             />
           </div>
 
-          <div className="
+          <div
+            className="
             ml-2
             hidden
 
             min-[1350px]:block
-          ">
-            <p className="text-xs font-bold">
-              งานพิมพ์มือตรวจประวัติ
-            </p>
+          "
+          >
+            <p className="text-xs font-bold">งานพิมพ์มือตรวจประวัติ</p>
 
-            <p className="text-[9px] text-white/50">
-              งานนโยบายและแผน
-            </p>
+            <p className="text-[9px] text-white/50">งานนโยบายและแผน</p>
           </div>
-
         </div>
 
         {/* Sidebar Menu */}
-        <div className="
+        <div
+          className="
           flex
           flex-1
           flex-col
@@ -630,8 +567,8 @@ export default function Nav() {
           p-2
 
           min-[1350px]:p-3
-        ">
-
+        "
+        >
           {menuItems.map((item) => {
             const active = isActive(item.path);
 
@@ -667,10 +604,10 @@ export default function Nav() {
                   }
                 `}
               >
-
                 {/* Active Line */}
                 {active && (
-                  <span className="
+                  <span
+                    className="
                     absolute
                     left-0
                     top-1/2
@@ -681,58 +618,56 @@ export default function Nav() {
                     bg-[#800020]
 
                     min-[1350px]:-left-[1px]
-                  " />
+                  "
+                  />
                 )}
 
                 <span className="shrink-0">
                   <MenuIcon type={item.icon} size={20} />
                 </span>
 
-                <span className="
+                <span
+                  className="
                   hidden
                   min-w-0
                   flex-1
 
                   min-[1350px]:block
-                ">
-
+                "
+                >
                   <span className="block truncate text-xs font-bold">
                     {item.label}
                   </span>
 
-                  <span className={`
+                  <span
+                    className={`
                     mt-0.5
                     block
                     truncate
                     text-[9px]
 
-                    ${
-                      active
-                        ? "text-[#800020]/50"
-                        : "text-white/40"
-                    }
-                  `}>
+                    ${active ? "text-[#800020]/50" : "text-white/40"}
+                  `}
+                  >
                     {item.description}
                   </span>
-
                 </span>
-
               </button>
             );
           })}
-
         </div>
 
         {/* Desktop Logout */}
-        <div className="
+        <div
+          className="
           shrink-0
           border-t
           border-white/10
           p-2
 
           min-[1350px]:p-3
-        ">
-
+        "
+        >
           <button
             type="button"
             onClick={handleLogout}
@@ -756,23 +691,21 @@ export default function Nav() {
               min-[1350px]:px-3
             "
           >
-
             <LogoutIcon />
 
-            <span className="
+            <span
+              className="
               hidden
               text-xs
               font-bold
 
               min-[1350px]:block
-            ">
+            "
+            >
               ออกจากระบบ
             </span>
-
           </button>
-
         </div>
-
       </aside>
 
       {/* =====================================================
@@ -820,16 +753,12 @@ export default function Nav() {
 
           min-[1200px]:hidden
 
-          ${
-            menuOpen
-              ? "translate-x-0"
-              : "-translate-x-full"
-          }
+          ${menuOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-
         {/* Drawer Header */}
-        <div className="
+        <div
+          className="
           flex
           h-[76px]
           shrink-0
@@ -840,11 +769,11 @@ export default function Nav() {
           to-[#800020]
           px-4
           text-white
-        ">
-
+        "
+        >
           <div className="flex items-center gap-3">
-
-            <div className="
+            <div
+              className="
               flex
               h-11
               w-11
@@ -853,7 +782,8 @@ export default function Nav() {
               rounded-full
               bg-white
               shadow-md
-            ">
+            "
+            >
               <img
                 src="/muangchonburi.webp"
                 alt="โลโก้"
@@ -861,18 +791,13 @@ export default function Nav() {
               />
             </div>
 
-            <div>
+            <div className="leading-none">
+              <p className="m-0 text-sm font-bold leading-tight">เมนูหลัก</p>
 
-              <p className="text-sm font-bold">
-                เมนูหลัก
-              </p>
-
-              <p className="text-[10px] text-white/60">
+              <p className="m-0 mt-1 text-[10px] text-white/60 leading-tight">
                 งานพิมพ์มือตรวจประวัติ
               </p>
-
             </div>
-
           </div>
 
           <button
@@ -907,21 +832,21 @@ export default function Nav() {
               <path d="M18 6 6 18" />
             </svg>
           </button>
-
         </div>
 
         {/* User Info */}
-        <div className="
+        <div
+          className="
           border-b
           border-gray-100
           bg-gray-50
           px-4
           py-4
-        ">
-
+        "
+        >
           <div className="flex items-center gap-3">
-
-            <div className="
+            <div
+              className="
               flex
               h-10
               w-10
@@ -931,7 +856,8 @@ export default function Nav() {
               rounded-full
               bg-[#800020]/10
               text-[#800020]
-            ">
+            "
+            >
               <svg
                 width="20"
                 height="20"
@@ -947,30 +873,28 @@ export default function Nav() {
               </svg>
             </div>
 
-            <div className="min-w-0">
-
-              <p className="truncate text-sm font-bold text-gray-900">
+            <div className="min-w-0 leading-none">
+              <p className="m-0 truncate text-sm font-bold leading-tight text-gray-900">
                 {admin?.name || "-"}
               </p>
 
-              <p className="truncate text-[10px] text-gray-400">
+              <p className="m-0 mt-1 truncate text-[10px] leading-tight text-gray-400">
                 {admin?.position || "-"}
               </p>
-
             </div>
-
           </div>
-
         </div>
 
         {/* Mobile Menu */}
-        <div className="
+        <div
+          className="
           flex-1
           overflow-y-auto
           p-3
-        ">
-
-          <p className="
+        "
+        >
+          <p
+            className="
             mb-2
             px-2
             text-[10px]
@@ -978,12 +902,12 @@ export default function Nav() {
             uppercase
             tracking-widest
             text-gray-400
-          ">
+          "
+          >
             เมนูระบบ
           </p>
 
           <div className="space-y-1">
-
             {menuItems.map((item) => {
               const active = isActive(item.path);
 
@@ -1011,7 +935,6 @@ export default function Nav() {
                     }
                   `}
                 >
-
                   <span
                     className={`
                       flex
@@ -1033,54 +956,50 @@ export default function Nav() {
                   </span>
 
                   <span className="min-w-0 flex-1">
-
                     <span className="block text-sm font-bold">
                       {item.label}
                     </span>
 
-                    <span className={`
+                    <span
+                      className={`
                       mt-0.5
                       block
                       truncate
                       text-[10px]
 
-                      ${
-                        active
-                          ? "text-[#800020]/60"
-                          : "text-gray-400"
-                      }
-                    `}>
+                      ${active ? "text-[#800020]/60" : "text-gray-400"}
+                    `}
+                    >
                       {item.description}
                     </span>
-
                   </span>
 
                   {active && (
-                    <span className="
+                    <span
+                      className="
                       h-2
                       w-2
                       shrink-0
                       rounded-full
                       bg-[#800020]
-                    " />
+                    "
+                    />
                   )}
-
                 </button>
               );
             })}
-
           </div>
-
         </div>
 
         {/* Mobile Logout */}
-        <div className="
+        <div
+          className="
           shrink-0
           border-t
           border-gray-100
           p-3
-        ">
-
+        "
+        >
           <button
             type="button"
             onClick={handleLogout}
@@ -1102,28 +1021,25 @@ export default function Nav() {
               hover:bg-red-100
             "
           >
-
             <LogoutIcon size={19} />
-
             ออกจากระบบ
-
           </button>
-
         </div>
-
       </aside>
 
       {/* =====================================================
           CONTENT
       ===================================================== */}
-      <div className="
+      <div
+        className="
         min-h-screen
         pt-[58px]
 
         min-[1200px]:ml-[100px]
 
         min-[1350px]:ml-[220px]
-      ">
+      "
+      >
         <Outlet />
       </div>
     </>
