@@ -8,31 +8,34 @@ export default function BasicInfo({
   years,
 }: any) {
   const inputClass =
-    "h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 outline-none transition-all duration-200 placeholder:text-gray-400 hover:border-[#800020]/30 focus:border-[#800020] focus:bg-white focus:ring-4 focus:ring-[#800020]/10";
+    "h-11 w-full rounded-xl border border-white/20 bg-white px-3 text-sm font-medium text-gray-800 outline-none transition-all duration-200 placeholder:text-gray-400 hover:border-white/50 focus:border-white focus:ring-4 focus:ring-white/20";
 
   const labelClass =
-    "mb-1.5 block text-xs font-bold text-gray-700";
+    "mb-1.5 block text-xs font-bold text-white";
 
   const cardClass =
-    "overflow-hidden rounded-2xl border border-[#800020]/15 bg-white shadow-sm transition-all duration-300 hover:border-[#800020]/25 hover:shadow-md";
+    "overflow-hidden rounded-2xl border border-[#800020] bg-[#800020] shadow-lg shadow-[#800020]/15";
 
   const headerClass =
-    "flex items-center gap-3 border-b border-[#800020]/10 bg-[#800020]/5 px-5 py-4";
+    "flex items-center gap-3 border-b border-white/10 bg-[#70001c] px-5 py-4";
+
+  const iconClass =
+    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white shadow-sm";
 
   return (
     <div className="space-y-5">
       {/* ข้อมูลบุคคล */}
       <section className={cardClass}>
         <div className={headerClass}>
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#800020] text-white shadow-md shadow-[#800020]/20">
+          <div className={iconClass}>
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="8" r="3.5" />
               <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
             </svg>
           </div>
           <div>
-            <h3 className="text-base font-bold text-[#800020]">ข้อมูลบุคคล</h3>
-            <p className="mt-0.5 text-[11px] text-gray-500">ข้อมูลเกี่ยวกับบุคคล</p>
+            <h3 className="text-base font-bold text-white">ข้อมูลบุคคล</h3>
+            <p className="mt-0.5 text-[11px] text-white/60">ข้อมูลเกี่ยวกับบุคคล</p>
           </div>
         </div>
 
@@ -59,7 +62,7 @@ export default function BasicInfo({
 
             <div className="lg:col-span-5">
               <label htmlFor="firstName" className={labelClass}>
-                ชื่อ <span className="ml-1 text-red-500">*</span>
+                ชื่อ <span className="text-red-300">*</span>
               </label>
               <input
                 id="firstName"
@@ -74,7 +77,7 @@ export default function BasicInfo({
 
             <div className="lg:col-span-5">
               <label htmlFor="lastName" className={labelClass}>
-                นามสกุล <span className="ml-1 text-red-500">*</span>
+                นามสกุล <span className="text-red-300">*</span>
               </label>
               <input
                 id="lastName"
@@ -93,7 +96,7 @@ export default function BasicInfo({
       {/* วันเดือนปีเกิด */}
       <section className={cardClass}>
         <div className={headerClass}>
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#800020] text-white shadow-md shadow-[#800020]/20">
+          <div className={iconClass}>
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="5" width="16" height="15" rx="2" />
               <path d="M8 3v4" />
@@ -102,8 +105,8 @@ export default function BasicInfo({
             </svg>
           </div>
           <div>
-            <h3 className="text-base font-bold text-[#800020]">วันเดือนปีเกิด</h3>
-            <p className="mt-0.5 text-[11px] text-gray-500">ข้อมูลวันเกิดของบุคคล</p>
+            <h3 className="text-base font-bold text-white">วันเดือนปีเกิด</h3>
+            <p className="mt-0.5 text-[11px] text-white/60">ข้อมูลวันเกิดของบุคคล</p>
           </div>
         </div>
 
@@ -172,7 +175,7 @@ export default function BasicInfo({
       {/* วันพิมพ์ลายนิ้วมือ */}
       <section className={cardClass}>
         <div className={headerClass}>
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#800020] text-white shadow-md shadow-[#800020]/20">
+          <div className={iconClass}>
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 3a7 7 0 0 0-7 7" />
               <path d="M12 6a4 4 0 0 0-4 4" />
@@ -184,15 +187,17 @@ export default function BasicInfo({
             </svg>
           </div>
           <div>
-            <h3 className="text-base font-bold text-[#800020]">วันพิมพ์ลายนิ้วมือ</h3>
-            <p className="mt-0.5 text-[11px] text-gray-500">ข้อมูลวันที่พิมพ์ลายนิ้วมือ</p>
+            <h3 className="text-base font-bold text-white">วันพิมพ์ลายนิ้วมือ</h3>
+            <p className="mt-0.5 text-[11px] text-white/60">ข้อมูลวันที่พิมพ์ลายนิ้วมือ</p>
           </div>
         </div>
 
         <div className="p-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <label htmlFor="fingerprintDay" className={labelClass}>วันพิมพ์ลายนิ้วมือ</label>
+              <label htmlFor="fingerprintDay" className={labelClass}>
+                วันพิมพ์ลายนิ้วมือ
+              </label>
               <input
                 id="fingerprintDay"
                 list="fp-day-list"
@@ -211,7 +216,9 @@ export default function BasicInfo({
             </div>
 
             <div>
-              <label htmlFor="fingerprintMonth" className={labelClass}>เดือนพิมพ์ลายนิ้วมือ</label>
+              <label htmlFor="fingerprintMonth" className={labelClass}>
+                เดือนพิมพ์ลายนิ้วมือ
+              </label>
               <input
                 id="fingerprintMonth"
                 list="fp-month-list"
@@ -230,7 +237,9 @@ export default function BasicInfo({
             </div>
 
             <div>
-              <label htmlFor="fingerprintYear" className={labelClass}>ปีพิมพ์ลายนิ้วมือ</label>
+              <label htmlFor="fingerprintYear" className={labelClass}>
+                ปีพิมพ์ลายนิ้วมือ
+              </label>
               <input
                 id="fingerprintYear"
                 list="fp-year-list"
