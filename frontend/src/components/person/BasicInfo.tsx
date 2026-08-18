@@ -1,5 +1,4 @@
 // src/components/person/BasicInfo.tsx
-
 export default function BasicInfo({
   form,
   handleChange,
@@ -9,41 +8,20 @@ export default function BasicInfo({
 }: any) {
   const inputClass =
     "h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10";
-
-  const labelClass =
-    "mb-1.5 block text-xs font-semibold text-gray-600";
+  const labelClass = "mb-1.5 block text-xs font-semibold text-gray-600";
 
   return (
     <div className="space-y-6">
-
-      {/* =====================================================
-          ข้อมูลชื่อ
-      ===================================================== */}
-
+      {/* ข้อมูลบุคคล */}
       <div>
         <div className="mb-3 flex items-center gap-2">
-
           <div className="h-1 w-1 rounded-full bg-[#800020]" />
-
-          <h3 className="text-sm font-bold text-gray-800">
-            ข้อมูลบุคคล
-          </h3>
-
+          <h3 className="text-sm font-bold text-gray-800">ข้อมูลบุคคล</h3>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12">
-
-          {/* คำนำหน้า */}
-
           <div className="lg:col-span-2">
-
-            <label
-              htmlFor="prefix"
-              className={labelClass}
-            >
-              คำนำหน้า
-            </label>
-
+            <label htmlFor="prefix" className={labelClass}>คำนำหน้า</label>
             <input
               id="prefix"
               list="prefix-list"
@@ -54,27 +32,17 @@ export default function BasicInfo({
               placeholder="เช่น นาย"
               autoComplete="off"
             />
-
             <datalist id="prefix-list">
               <option value="นาย" />
               <option value="นางสาว" />
               <option value="นาง" />
             </datalist>
-
           </div>
 
-          {/* ชื่อ */}
-
           <div className="lg:col-span-5">
-
-            <label
-              htmlFor="firstName"
-              className={labelClass}
-            >
-              ชื่อ
-              <span className="ml-1 text-red-500">*</span>
+            <label htmlFor="firstName" className={labelClass}>
+              ชื่อ<span className="ml-1 text-red-500">*</span>
             </label>
-
             <input
               id="firstName"
               name="firstName"
@@ -84,21 +52,12 @@ export default function BasicInfo({
               placeholder="กรอกชื่อ"
               required
             />
-
           </div>
 
-          {/* นามสกุล */}
-
           <div className="lg:col-span-5">
-
-            <label
-              htmlFor="lastName"
-              className={labelClass}
-            >
-              นามสกุล
-              <span className="ml-1 text-red-500">*</span>
+            <label htmlFor="lastName" className={labelClass}>
+              นามสกุล<span className="ml-1 text-red-500">*</span>
             </label>
-
             <input
               id="lastName"
               name="lastName"
@@ -108,41 +67,20 @@ export default function BasicInfo({
               placeholder="กรอกนามสกุล"
               required
             />
-
           </div>
-
         </div>
       </div>
 
-      {/* =====================================================
-          วันเกิด
-      ===================================================== */}
-
+      {/* วันเดือนปีเกิด */}
       <div className="border-t border-gray-100 pt-5">
-
         <div className="mb-3 flex items-center gap-2">
-
           <div className="h-1 w-1 rounded-full bg-blue-500" />
-
-          <h3 className="text-sm font-bold text-gray-800">
-            วันเดือนปีเกิด
-          </h3>
-
+          <h3 className="text-sm font-bold text-gray-800">วันเดือนปีเกิด</h3>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-
-          {/* วัน */}
-
           <div>
-
-            <label
-              htmlFor="birthDay"
-              className={labelClass}
-            >
-              วันเกิด
-            </label>
-
+            <label htmlFor="birthDay" className={labelClass}>วันเกิด</label>
             <input
               id="birthDay"
               list="day-list"
@@ -153,31 +91,13 @@ export default function BasicInfo({
               placeholder="วัน"
               autoComplete="off"
             />
-
             <datalist id="day-list">
-              {filteredDays.map(
-                (d: any) => (
-                  <option
-                    key={d}
-                    value={d}
-                  />
-                ),
-              )}
+              {filteredDays.map((d: any) => <option key={d} value={d} />)}
             </datalist>
-
           </div>
 
-          {/* เดือน */}
-
           <div>
-
-            <label
-              htmlFor="birthMonth"
-              className={labelClass}
-            >
-              เดือนเกิด
-            </label>
-
+            <label htmlFor="birthMonth" className={labelClass}>เดือนเกิด</label>
             <input
               id="birthMonth"
               list="month-list"
@@ -188,31 +108,13 @@ export default function BasicInfo({
               placeholder="เดือน"
               autoComplete="off"
             />
-
             <datalist id="month-list">
-              {months.map(
-                (m: any) => (
-                  <option
-                    key={m}
-                    value={m}
-                  />
-                ),
-              )}
+              {months.map((m: any) => <option key={m} value={m} />)}
             </datalist>
-
           </div>
 
-          {/* ปี */}
-
           <div>
-
-            <label
-              htmlFor="birthYear"
-              className={labelClass}
-            >
-              ปีเกิด
-            </label>
-
+            <label htmlFor="birthYear" className={labelClass}>ปีเกิด</label>
             <input
               id="birthYear"
               list="year-list"
@@ -223,158 +125,79 @@ export default function BasicInfo({
               placeholder="พ.ศ."
               autoComplete="off"
             />
-
             <datalist id="year-list">
-              {years.map(
-                (y: any) => (
-                  <option
-                    key={y}
-                    value={y}
-                  />
-                ),
-              )}
+              {years.map((y: any) => <option key={y} value={y} />)}
             </datalist>
-
           </div>
-
         </div>
       </div>
 
-      {/* =====================================================
-          พิมพ์ลายนิ้วมือ
-      ===================================================== */}
-
+      {/* วันพิมพ์ลายนิ้วมือ */}
       <div className="border-t border-gray-100 pt-5">
-
         <div className="mb-3 flex items-center gap-2">
-
           <div className="h-1 w-1 rounded-full bg-emerald-500" />
-
-          <h3 className="text-sm font-bold text-gray-800">
-            วันพิมพ์ลายนิ้วมือ
-          </h3>
-
+          <h3 className="text-sm font-bold text-gray-800">วันพิมพ์ลายนิ้วมือ</h3>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-
-          {/* วันพิมพ์ */}
-
           <div>
-
-            <label
-              htmlFor="fingerprintDay"
-              className={labelClass}
-            >
+            <label htmlFor="fingerprintDay" className={labelClass}>
               วันพิมพ์ลายนิ้วมือ
             </label>
-
             <input
               id="fingerprintDay"
               list="fp-day-list"
               name="fingerprintDay"
               className={inputClass}
-              value={
-                form.fingerprintDay ||
-                ""
-              }
+              value={form.fingerprintDay || ""}
               onChange={handleChange}
               placeholder="วัน"
               autoComplete="off"
             />
-
             <datalist id="fp-day-list">
-              {filteredDays.map(
-                (d: any) => (
-                  <option
-                    key={d}
-                    value={d}
-                  />
-                ),
-              )}
+              {filteredDays.map((d: any) => <option key={d} value={d} />)}
             </datalist>
-
           </div>
 
-          {/* เดือนพิมพ์ */}
-
           <div>
-
-            <label
-              htmlFor="fingerprintMonth"
-              className={labelClass}
-            >
+            <label htmlFor="fingerprintMonth" className={labelClass}>
               เดือนพิมพ์ลายนิ้วมือ
             </label>
-
             <input
               id="fingerprintMonth"
               list="fp-month-list"
               name="fingerprintMonth"
               className={inputClass}
-              value={
-                form.fingerprintMonth ||
-                ""
-              }
+              value={form.fingerprintMonth || ""}
               onChange={handleChange}
               placeholder="เดือน"
               autoComplete="off"
             />
-
             <datalist id="fp-month-list">
-              {months.map(
-                (m: any) => (
-                  <option
-                    key={m}
-                    value={m}
-                  />
-                ),
-              )}
+              {months.map((m: any) => <option key={m} value={m} />)}
             </datalist>
-
           </div>
 
-          {/* ปีพิมพ์ */}
-
           <div>
-
-            <label
-              htmlFor="fingerprintYear"
-              className={labelClass}
-            >
+            <label htmlFor="fingerprintYear" className={labelClass}>
               ปีพิมพ์ลายนิ้วมือ
             </label>
-
             <input
               id="fingerprintYear"
               list="fp-year-list"
               name="fingerprintYear"
               className={inputClass}
-              value={
-                form.fingerprintYear ||
-                ""
-              }
+              value={form.fingerprintYear || ""}
               onChange={handleChange}
               placeholder="พ.ศ."
               autoComplete="off"
             />
-
             <datalist id="fp-year-list">
-              {years.map(
-                (y: any) => (
-                  <option
-                    key={y}
-                    value={y}
-                  />
-                ),
-              )}
+              {years.map((y: any) => <option key={y} value={y} />)}
             </datalist>
-
           </div>
-
         </div>
       </div>
-
     </div>
   );
 }
