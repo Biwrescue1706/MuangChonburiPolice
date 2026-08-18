@@ -1,4 +1,5 @@
 // src/components/person/BasicInfo.tsx
+
 export default function BasicInfo({
   form,
   handleChange,
