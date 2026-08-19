@@ -1,16 +1,13 @@
+// src/pages/Forensic/ForensicQrScanner.tsx
+
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Html5Qrcode } from "html5-qrcode";
 import Swal from "sweetalert2";
 
-interface ForensicQrScannerProps {
-  onScan: (text: string) => void;
-  onClose?: () => void;
-}
+export default function ForensicQrScanner() {
+  const navigate = useNavigate();
 
-export default function ForensicQrScanner({
-  onScan,
-  onClose,
-}: ForensicQrScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scannedRef = useRef(false);
 
@@ -21,26 +18,24 @@ export default function ForensicQrScanner({
   ====================================================== */
 
   const stopScanner = async () => {
+    const scanner = scannerRef.current;
+
+    if (!scanner) {
+      return;
+    }
+
+    scannerRef.current = null;
+
     try {
-      if (scannerRef.current) {
-        const scanner = scannerRef.current;
-
-        scannerRef.current = null;
-
-        try {
-          await scanner.stop();
-        } catch (error) {
-          console.warn("Stop camera:", error);
-        }
-
-        try {
-          await scanner.clear();
-        } catch (error) {
-          console.warn("Clear scanner:", error);
-        }
-      }
+      await scanner.stop();
     } catch (error) {
-      console.error("Stop scanner error:", error);
+      console.log("Stop scanner:", error);
+    }
+
+    try {
+      await scanner.clear();
+    } catch (error) {
+      console.log("Clear scanner:", error);
     }
   };
 
@@ -51,6 +46,7 @@ export default function ForensicQrScanner({
   const startScanner = async () => {
     try {
       setStarting(true);
+
       scannedRef.current = false;
 
       await new Promise((resolve) => setTimeout(resolve, 150));
@@ -72,16 +68,8 @@ export default function ForensicQrScanner({
           },
         },
         {
-          /*
-           * เพิ่ม FPS เพื่อให้จับ QR ได้เร็วขึ้น
-           */
           fps: 20,
 
-          /*
-           * ให้กรอบใหญ่ตามขนาดหน้าจอ
-           * เพื่อให้สแกน QR จากกระดาษหรือหน้าจอ
-           * ได้โดยไม่จำเป็นต้องซูม
-           */
           qrbox: (viewfinderWidth, viewfinderHeight) => {
             const size = Math.min(
               Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.8),
@@ -94,20 +82,10 @@ export default function ForensicQrScanner({
             };
           },
 
-          /*
-           * กล้องมือถือส่วนใหญ่ใช้ 1:1
-           * เพื่อช่วยให้ QR อยู่ในกรอบง่าย
-           */
           aspectRatio: 1,
 
-          /*
-           * ไม่บังคับกลับภาพ
-           */
           disableFlip: false,
 
-          /*
-           * ใช้ความละเอียดสูงเมื่อ browser รองรับ
-           */
           videoConstraints: {
             facingMode: {
               ideal: "environment",
@@ -120,11 +98,15 @@ export default function ForensicQrScanner({
             height: {
               ideal: 1080,
             },
+
+            frameRate: {
+              ideal: 30,
+            },
           },
         },
 
         /* ==================================================
-           QR SUCCESS
+           SCAN SUCCESS
         ================================================== */
 
         async (decodedText) => {
@@ -142,20 +124,42 @@ export default function ForensicQrScanner({
 
           await stopScanner();
 
-          onScan(decodedText);
+          /*
+           * QR ตอนนี้เก็บแค่ submissionId
+           *
+           * เช่น
+           * 15ab6ebf-3098-444e-88d3-e3229afd216c
+           */
+
+          const submissionId = decodedText.trim();
+
+          if (!submissionId) {
+            scannedRef.current = false;
+
+            await Swal.fire({
+              icon: "error",
+              title: "QR Code ไม่ถูกต้อง",
+              text: "ไม่พบ Submission ID",
+              confirmButtonText: "ตกลง",
+              confirmButtonColor: "#800020",
+            });
+
+            return;
+          }
+
+          /*
+           * เปิดหน้า Status
+           */
+
+          navigate(`/forensic-status/${encodeURIComponent(submissionId)}`);
         },
 
         /* ==================================================
-           QR ERROR
+           SCAN ERROR
         ================================================== */
 
         () => {
-          /*
-           * html5-qrcode จะเรียก callback นี้
-           * ทุกครั้งที่ยังจับ QR ไม่ได้
-           *
-           * ไม่ต้องแสดง Swal
-           */
+          // ไม่แสดง error ทุก frame
         },
       );
 
@@ -165,55 +169,49 @@ export default function ForensicQrScanner({
          AUTO FOCUS
       ==================================================== */
 
-      try {
-        const video = document.querySelector(
-          "#forensic-qr-reader video",
-        ) as HTMLVideoElement | null;
+      setTimeout(async () => {
+        try {
+          const video = document.querySelector(
+            "#forensic-qr-reader video",
+          ) as HTMLVideoElement | null;
 
-        if (!video?.srcObject) {
-          return;
+          if (!video?.srcObject) {
+            return;
+          }
+
+          const stream = video.srcObject as MediaStream;
+
+          const track = stream.getVideoTracks()[0];
+
+          if (!track) {
+            return;
+          }
+
+          const capabilities =
+            track.getCapabilities() as MediaTrackCapabilities & {
+              focusMode?: string[];
+            };
+
+          console.log("Camera capabilities:", capabilities);
+
+          if (
+            Array.isArray(capabilities.focusMode) &&
+            capabilities.focusMode.includes("continuous")
+          ) {
+            await track.applyConstraints({
+              advanced: [
+                {
+                  focusMode: "continuous",
+                } as any,
+              ],
+            });
+
+            console.log("Continuous autofocus enabled");
+          }
+        } catch (error) {
+          console.log("Autofocus ไม่รองรับ:", error);
         }
-
-        const stream = video.srcObject as MediaStream;
-
-        const track = stream.getVideoTracks()[0];
-
-        if (!track) {
-          return;
-        }
-
-        /*
-         * getCapabilities() บาง browser
-         * อาจไม่มี focusMode
-         */
-        const capabilities =
-          track.getCapabilities() as MediaTrackCapabilities & {
-            focusMode?: string[];
-          };
-
-        console.log("Camera capabilities:", capabilities);
-
-        /*
-         * เปิด continuous autofocus
-         * เฉพาะกล้องที่รองรับ
-         */
-        if (
-          Array.isArray(capabilities.focusMode) &&
-          capabilities.focusMode.includes("continuous")
-        ) {
-          await track.applyConstraints({
-            advanced: [
-              {
-                focusMode: "continuous",
-              } as unknown as MediaTrackConstraintSet,
-            ],
-          });
-
-          console.log("เปิด Continuous Autofocus แล้ว");
-        }
-      } catch (focusError) {
-        console.warn("ไม่สามารถตั้ง autofocus:", focusError);
-      }
+      }, 700);
     } catch (error) {
       console.error("Start scanner error:", error);
 
@@ -224,12 +222,12 @@ export default function ForensicQrScanner({
       await Swal.fire({
         icon: "error",
         title: "เปิดกล้องไม่ได้",
-        text: "กรุณาอนุญาตให้เว็บไซต์ใช้กล้อง และตรวจสอบว่าเว็บไซต์ใช้ HTTPS",
+        text: "กรุณาอนุญาตให้เว็บไซต์ใช้กล้อง",
         confirmButtonText: "ตกลง",
         confirmButtonColor: "#800020",
       });
 
-      onClose?.();
+      navigate(-1);
     }
   };
 
@@ -250,50 +248,60 @@ export default function ForensicQrScanner({
   ====================================================== */
 
   return (
-    <div className="w-full">
-      {/* Header */}
+    <div className="main-content min-h-screen bg-gray-50 px-4 py-6">
+      <div className="mx-auto w-full max-w-2xl">
+        {/* Header */}
 
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <h2 className="font-bold text-gray-800">กำลังสแกน</h2>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-lg font-bold text-gray-800">สแกน QR Code</h1>
 
-          <p className="text-sm text-gray-500">นำ QR Code ให้อยู่ในกรอบ</p>
+            <p className="mt-1 text-sm text-gray-500">
+              สแกน QR จากเอกสารหรือหน้าจอ
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={async () => {
+              await stopScanner();
+              navigate(-1);
+            }}
+            className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100"
+          >
+            ปิด
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={async () => {
-            await stopScanner();
-            onClose?.();
-          }}
-          className="rounded-xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
-        >
-          ปิดกล้อง
-        </button>
-      </div>
+        {/* Camera */}
 
-      {/* Camera */}
+        <div className="overflow-hidden rounded-2xl bg-black shadow-lg">
+          <div id="forensic-qr-reader" className="w-full" />
+        </div>
 
-      <div className="mx-auto w-full max-w-md overflow-hidden rounded-2xl bg-black">
-        <div id="forensic-qr-reader" className="w-full" />
-      </div>
+        {/* Status */}
 
-      {/* Status */}
+        <div className="mt-4 rounded-2xl bg-white p-5 text-center shadow-sm">
+          {starting ? (
+            <p className="text-sm font-semibold text-gray-600">
+              กำลังเปิดกล้อง...
+            </p>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-gray-700">
+                นำ QR Code ให้อยู่ในกรอบ
+              </p>
 
-      <div className="mt-4 text-center">
-        {starting ? (
-          <p className="text-sm text-gray-500">กำลังเปิดกล้อง...</p>
-        ) : (
-          <p className="text-sm text-gray-500">
-            กรุณาให้ QR Code อยู่ตรงกลางกรอบ
-          </p>
-        )}
+              <p className="mt-2 text-xs text-gray-400">
+                รองรับ QR จากกระดาษและหน้าจอ
+              </p>
 
-        <p className="mt-1 text-xs text-gray-400">
-          รองรับ QR Code จากหน้าจอและกระดาษ
-        </p>
-
-        <p className="text-xs text-gray-400">แนะนำระยะประมาณ 10 ซม. ขึ้นไป</p>
+              <p className="mt-1 text-xs text-gray-400">
+                แนะนำระยะประมาณ 10 ซม. ขึ้นไป
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
