@@ -6,6 +6,10 @@ import QRCode from "qrcode";
 import Swal from "sweetalert2";
 import api from "../api/axios";
 
+/* ======================================================
+   TYPES
+====================================================== */
+
 export interface ForensicPerson {
   fullName: string;
   purpose?: string;
@@ -21,6 +25,10 @@ export interface ForensicPdfData {
   submissionDate?: string;
   persons: ForensicPerson[];
 }
+
+/* ======================================================
+   DATE FORMAT
+====================================================== */
 
 function formatShortThaiDate(dateString?: string): string {
   if (!dateString) return "-";
@@ -80,9 +88,9 @@ function formatThaiDate(dateString?: string): string {
   return parts[0] || "";
 }
 
-// ======================================================
-// วาด PDF 1 หน้า
-// ======================================================
+/* ======================================================
+   DRAW FORENSIC PAGE
+====================================================== */
 
 async function drawForensicPage(
   pdfDoc: PDFDocument,
@@ -94,16 +102,16 @@ async function drawForensicPage(
 ) {
   const black = rgb(0, 0, 0);
 
-  // ====================================================
-  // เลขที่ส่งตรวจ
-  // ====================================================
+  /* ====================================================
+     เลขที่ส่งตรวจ
+  ==================================================== */
 
   page.drawText(data.submissionNo || "-", {
     x: 173,
     y: 728,
     size: 16,
     font: boldFont,
-    color: rgb(0 / 255, 0 / 255, 255 / 255),
+    color: rgb(0, 0, 1),
   });
 
   page.drawText(formatThaiDate(data.submissionDate), {
@@ -111,7 +119,7 @@ async function drawForensicPage(
     y: 728,
     size: 16,
     font: boldFont,
-    color: rgb(0 / 255, 0 / 255, 255 / 255),
+    color: rgb(0, 0, 1),
   });
 
   page.drawText(formatThaiMonthYear(data.submissionDate), {
@@ -122,9 +130,9 @@ async function drawForensicPage(
     color: black,
   });
 
-  // ====================================================
-  // ลายเซ็น
-  // ====================================================
+  /* ====================================================
+     ลายเซ็น
+  ==================================================== */
 
   if (org?.commander?.signatureImage) {
     try {
@@ -171,9 +179,9 @@ async function drawForensicPage(
     color: black,
   });
 
-  // ====================================================
-  // หัวตาราง
-  // ====================================================
+  /* ====================================================
+     HEADER TABLE
+  ==================================================== */
 
   const headerTop = 475;
 
@@ -183,7 +191,7 @@ async function drawForensicPage(
     width: 580,
     height: 40,
     borderWidth: 1,
-    borderColor: rgb(0, 0, 0),
+    borderColor: black,
     color: rgb(1, 1, 1),
   });
 
@@ -201,7 +209,6 @@ async function drawForensicPage(
     });
   });
 
-  // เส้นย่อยใบเสร็จ
   [430, 475].forEach((x) => {
     page.drawLine({
       start: {
@@ -228,9 +235,9 @@ async function drawForensicPage(
     thickness: 1,
   });
 
-  // ====================================================
-  // ชื่อหัวตาราง
-  // ====================================================
+  /* ====================================================
+     HEADER TEXT
+  ==================================================== */
 
   page.drawText("ลำดับ", {
     x: 15,
@@ -288,9 +295,9 @@ async function drawForensicPage(
     font: boldFont,
   });
 
-  // ====================================================
-  // รายการบุคคล
-  // ====================================================
+  /* ====================================================
+     PERSONS
+  ==================================================== */
 
   let y = 457;
 
@@ -387,9 +394,9 @@ async function drawForensicPage(
     y -= rowHeight;
   });
 
-  // ====================================================
-  // เส้นปิดท้าย
-  // ====================================================
+  /* ====================================================
+     เส้นปิดท้าย
+  ==================================================== */
 
   page.drawLine({
     start: {
@@ -404,13 +411,15 @@ async function drawForensicPage(
   });
 }
 
-// ======================================================
-// สร้าง PDF
-// ======================================================
+/* ======================================================
+   GENERATE PDF
+====================================================== */
 
 export async function generateForensicPdf(data: ForensicPdfData) {
   try {
-    //onDelete : Cascade    // ตรวจ submissionId
+    /* ====================================================
+       CHECK SUBMISSION ID
+    ==================================================== */
 
     if (!data.submissionId) {
       await Swal.fire({
@@ -424,8 +433,10 @@ export async function generateForensicPdf(data: ForensicPdfData) {
       return;
     }
 
-    // โหลด Template
-    //onDelete : Cascade
+    /* ====================================================
+       LOAD TEMPLATE
+    ==================================================== */
+
     const response = await fetch("/ปะหน้าส่งตรวจลายนิ้วมือ พฐ.pdf");
 
     if (!response.ok) {
@@ -434,8 +445,10 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     const templateBytes = await response.arrayBuffer();
 
-    // Font ปกติ
-    //onDelete : Cascade
+    /* ====================================================
+       NORMAL FONT
+    ==================================================== */
+
     const fontResponse = await fetch("/fonts/THSarabunIT9.ttf");
 
     if (!fontResponse.ok) {
@@ -444,8 +457,10 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     const fontBytes = await fontResponse.arrayBuffer();
 
-    // Font Bold
-    //onDelete : Cascade
+    /* ====================================================
+       BOLD FONT
+    ==================================================== */
+
     const boldFontResponse = await fetch("/fonts/THSarabunIT9-Bold.ttf");
 
     if (!boldFontResponse.ok) {
@@ -454,8 +469,10 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     const boldFontBytes = await boldFontResponse.arrayBuffer();
 
-    // PDF
-    //onDelete : Cascade
+    /* ====================================================
+       PDF
+    ==================================================== */
+
     const pdfDoc = await PDFDocument.load(templateBytes);
 
     pdfDoc.registerFontkit(fontkit);
@@ -464,8 +481,10 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     const boldFont = await pdfDoc.embedFont(boldFontBytes);
 
-    // Organization
-    //onDelete : Cascade
+    /* ====================================================
+       ORGANIZATION
+    ==================================================== */
+
     const orgRes = await fetch(`${api.defaults.baseURL}/organization`);
 
     if (!orgRes.ok) {
@@ -476,68 +495,156 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     const org = orgData[0];
 
-    // หน้า 1
-    //onDelete : Cascade
-    const page1 = pdfDoc.getPages()[0];
+    /* ====================================================
+       แบ่งคน 20 คน / หน้า
+    ==================================================== */
 
-    // Copy หน้า Template เป็นหน้า 2 และ 3
-    //onDelete : Cascade
-    const [page2, page3] = await pdfDoc.copyPages(pdfDoc, [0, 0]);
+    const PERSONS_PER_PAGE = 20;
 
-    pdfDoc.addPage(page2);
-    pdfDoc.addPage(page3);
+    const personPages: ForensicPerson[][] = [];
 
-    //     // วาดหน้า 1
-    ////onDelete : Cascade
-    await drawForensicPage(pdfDoc, page1, data, font, boldFont, org);
+    for (let i = 0; i < data.persons.length; i += PERSONS_PER_PAGE) {
+      personPages.push(data.persons.slice(i, i + PERSONS_PER_PAGE));
+    }
 
-    // วาดหน้า 2
-    //onDelete : Cascade
-    await drawForensicPage(pdfDoc, page2, data, font, boldFont, org);
+    if (personPages.length === 0) {
+      personPages.push([]);
+    }
 
-    // วาดหน้า 3
-    //onDelete : Cascade
-    await drawForensicPage(pdfDoc, page3, data, font, boldFont, org);
+    /* ====================================================
+       ทำซ้ำ 3 รอบ
+    ==================================================== */
 
-    // QR CODE เฉพาะหน้า 3
-    //onDelete : Cascade
-    const statusUrl = `https://policy-muangchonburi.smartdorm-biwboong.shop/forensic-status/${data.submissionId}`;
+    const TOTAL_ROUNDS = 3;
 
-    console.log("Forensic Status URL:", statusUrl);
+    let qrPage: PDFPage | null = null;
 
-    const qrDataUrl = await QRCode.toDataURL(statusUrl, {
-      errorCorrectionLevel: "M",
-      margin: 1,
-      width: 300,
-    });
+    for (let round = 1; round <= TOTAL_ROUNDS; round++) {
+      for (let pageIndex = 0; pageIndex < personPages.length; pageIndex++) {
+        let page: PDFPage;
 
-    const qrResponse = await fetch(qrDataUrl);
+        /* ==================================================
+           หน้าแรกของรอบแรก
+        ================================================== */
 
-    const qrBytes = await qrResponse.arrayBuffer();
+        if (round === 1 && pageIndex === 0) {
+          page = pdfDoc.getPages()[0];
+        } else {
+          /* ==================================================
+             Copy Template
+          ================================================== */
 
-    const qrImage = await pdfDoc.embedPng(qrBytes);
+          const [newPage] = await pdfDoc.copyPages(pdfDoc, [0]);
 
-    //onDelete : Cascade    // QR หน้า 3
+          page = newPage;
 
-    page3.drawImage(qrImage, {
-      x: 500,
-      y: 720,
-      width: 75,
-      height: 75,
-    });
+          pdfDoc.addPage(page);
+        }
 
-    page3.drawText("สแกนเพื่อตรวจสอบสถานะ", {
-      x: 490,
-      y: 710,
-      size: 10,
-      font,
-      color: rgb(0, 0, 0),
-    });
+        /* ==================================================
+           ข้อมูลของหน้าปัจจุบัน
+        ================================================== */
 
-    //onDelete : Cascade    // Save
+        const pageData: ForensicPdfData = {
+          ...data,
+          persons: personPages[pageIndex],
+        };
+
+        /* ==================================================
+           วาดหน้า
+        ================================================== */
+
+        await drawForensicPage(pdfDoc, page, pageData, font, boldFont, org);
+
+        /* ==================================================
+           QR:
+           รอบ 3 หน้าแรกเท่านั้น
+        ================================================== */
+
+        if (round === 3 && pageIndex === 0) {
+          qrPage = page;
+        }
+      }
+    }
+
+    /* ====================================================
+       CREATE QR CODE
+       เก็บเฉพาะ submissionId
+    ==================================================== */
+
+    if (qrPage) {
+      const qrData = data.submissionId;
+
+      console.log("QR Data:", qrData);
+
+      const qrDataUrl = await QRCode.toDataURL(qrData, {
+        errorCorrectionLevel: "H",
+        type: "image/png",
+        margin: 4,
+        width: 800,
+        color: {
+          dark: "#000000",
+          light: "#FFFFFF",
+        },
+      });
+
+      /* ==================================================
+         Data URL -> Uint8Array
+      ================================================== */
+
+      const base64 = qrDataUrl.split(",")[1];
+
+      if (!base64) {
+        throw new Error("สร้าง QR Code ไม่สำเร็จ");
+      }
+
+      const binary = atob(base64);
+
+      const qrBytes = new Uint8Array(binary.length);
+
+      for (let i = 0; i < binary.length; i++) {
+        qrBytes[i] = binary.charCodeAt(i);
+      }
+
+      /* ==================================================
+         Embed QR
+      ================================================== */
+
+      const qrImage = await pdfDoc.embedPng(qrBytes);
+
+      /* ==================================================
+         วาง QR
+      ================================================== */
+
+      qrPage.drawImage(qrImage, {
+        x: 480,
+        y: 695,
+        width: 105,
+        height: 105,
+      });
+
+      qrPage.drawText("สแกนเพื่อตรวจสอบสถานะ", {
+        x: 475,
+        y: 683,
+        size: 10,
+        font,
+        color: rgb(0, 0, 0),
+      });
+    }
+
+    /* ====================================================
+       SAVE PDF
+    ==================================================== */
+
     const pdfBytes = await pdfDoc.save();
 
-    const blob = new Blob([pdfBytes.buffer as ArrayBuffer], {
+    /*
+     * ใช้ Uint8Array ใหม่
+     * ป้องกัน TypeScript แจ้ง error
+     * ตรง Blob
+     */
+
+    const blob = new Blob([new Uint8Array(pdfBytes)], {
       type: "application/pdf",
     });
 
@@ -559,14 +666,19 @@ export async function generateForensicPdf(data: ForensicPdfData) {
 
     URL.revokeObjectURL(url);
 
-    //onDelete : Cascade    // SweetAlert สำเร็จ
+    /* ====================================================
+       SUCCESS
+    ==================================================== */
+
+    const totalPages = personPages.length * TOTAL_ROUNDS;
 
     await Swal.fire({
       icon: "success",
       title: "สร้าง PDF สำเร็จ",
-      text: "สร้างเอกสาร 3 หน้า พร้อม QR Code เรียบร้อยแล้ว",
+      text: `สร้างเอกสาร ${totalPages} หน้า พร้อม QR Code`,
       confirmButtonColor: "#800020",
       timer: 2000,
+      showConfirmButton: false,
     });
   } catch (error) {
     console.error("PDF Error:", error);
@@ -576,8 +688,8 @@ export async function generateForensicPdf(data: ForensicPdfData) {
       title: "สร้าง PDF ไม่สำเร็จ",
       text:
         error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการสร้าง PDF",
+      confirmButtonText: "ตกลง",
       confirmButtonColor: "#800020",
-      timer: 2000,
     });
   }
 }

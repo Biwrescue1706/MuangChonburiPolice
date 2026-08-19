@@ -1,5 +1,4 @@
 // src/pages/Forensic/ForensicSubmissionPage.tsx
-
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
@@ -21,49 +20,31 @@ interface StatusHistoryItem {
 
 export default function ForensicSubmissionPage() {
   const today = new Date().toISOString().split("T")[0];
-
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
-
   const navigate = useNavigate();
-
   const [loading, setLoading] = useState(false);
   const [persons, setPersons] = useState<Person[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [submissionNo, setSubmissionNo] = useState("");
-
-  // ต่ำกว่า 1280px = Card
-  // ตั้งแต่ 1280px = Table
   const [isCardView, setIsCardView] = useState(window.innerWidth < 1280);
 
-  // RESPONSIVE
-
+  // Responsive
   useEffect(() => {
-    const handleResize = () => {
-      setIsCardView(window.innerWidth < 1280);
-    };
-
+    const handleResize = () => setIsCardView(window.innerWidth < 1280);
     window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // FETCH DATA
-
+  // Fetch data
   const fetchData = async (
     selectedStartDate: string,
     selectedEndDate: string,
   ) => {
     try {
       setLoading(true);
-
       const res = await api.get("/status-history/range", {
-        params: {
-          startDate: selectedStartDate,
-          endDate: selectedEndDate,
-        },
+        params: { startDate: selectedStartDate, endDate: selectedEndDate },
       });
 
       const data = (res.data.data || [])
@@ -77,25 +58,15 @@ export default function ForensicSubmissionPage() {
 
       uniquePersons.sort((a: Person, b: Person) => {
         const bookA = Number(a.receiptBookNo || 0);
-
         const bookB = Number(b.receiptBookNo || 0);
-
-        if (bookA !== bookB) {
-          return bookA - bookB;
-        }
-
-        const noA = Number(a.receiptNo || 0);
-
-        const noB = Number(b.receiptNo || 0);
-
-        return noA - noB;
+        if (bookA !== bookB) return bookA - bookB;
+        return Number(a.receiptNo || 0) - Number(b.receiptNo || 0);
       });
 
       setPersons(uniquePersons);
       setSelectedIds([]);
     } catch (err) {
       console.error("โหลดข้อมูลไม่สำเร็จ:", err);
-
       setPersons([]);
       setSelectedIds([]);
     } finally {
@@ -103,14 +74,12 @@ export default function ForensicSubmissionPage() {
     }
   };
 
-  // INITIAL LOAD
-
+  // Initial load
   useEffect(() => {
     fetchData(startDate, endDate);
   }, []);
 
-  // SELECT PERSON
-
+  // Select person
   const togglePerson = (personId: string) => {
     setSelectedIds((prev) =>
       prev.includes(personId)
@@ -119,8 +88,7 @@ export default function ForensicSubmissionPage() {
     );
   };
 
-  // SELECT ALL
-
+  // Select all
   const toggleAll = () => {
     if (selectedIds.length === persons.length) {
       setSelectedIds([]);
@@ -129,8 +97,7 @@ export default function ForensicSubmissionPage() {
     }
   };
 
-  // GENERATE PDF
-
+  // Generate PDF
   const handleGenerate = async () => {
     try {
       if (selectedIds.length === 0) {
@@ -141,7 +108,6 @@ export default function ForensicSubmissionPage() {
           confirmButtonText: "ตกลง",
           confirmButtonColor: "#800020",
         });
-
         return;
       }
 
@@ -153,7 +119,6 @@ export default function ForensicSubmissionPage() {
           confirmButtonText: "ตกลง",
           confirmButtonColor: "#800020",
         });
-
         return;
       }
 
@@ -173,7 +138,6 @@ export default function ForensicSubmissionPage() {
       navigate("/forensic-submission/list");
     } catch (err: any) {
       console.error(err);
-
       await Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
@@ -184,20 +148,17 @@ export default function ForensicSubmissionPage() {
     }
   };
 
-  // LOADING
-
+  // Loading
   const LoadingView = () => (
     <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white">
       <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-[#800020]" />
-
       <p className="mt-4 text-sm font-semibold text-gray-500">
         กำลังโหลดข้อมูล...
       </p>
     </div>
   );
 
-  // EMPTY
-
+  // Empty
   const EmptyView = () => (
     <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-gray-300 shadow-sm">
@@ -217,22 +178,17 @@ export default function ForensicSubmissionPage() {
           <path d="M9 15.5h4" />
         </svg>
       </div>
-
       <p className="mt-4 text-base font-bold text-gray-700">ไม่พบข้อมูล</p>
-
       <p className="mt-1 text-xs text-gray-400">
         ไม่พบรายการบุคคลในช่วงวันที่ที่เลือก
       </p>
     </div>
   );
 
-  // PAGE
-
   return (
     <div className="main-content min-h-screen bg-gray-50 px-3 py-4 sm:px-4 lg:px-6">
-      <div className=" px-4 w-full max-w-[1400px]">
-        {/*HEADER */}
-
+      <div className="w-full max-w-[1400px] px-4">
+        {/* Header */}
         <div className="mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] px-5 py-5 text-white shadow-lg sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -253,32 +209,24 @@ export default function ForensicSubmissionPage() {
                   <path d="M9 15.5h6" />
                 </svg>
               </div>
-
               <div>
                 <h1 className="text-lg font-bold sm:text-xl">
                   ออกหนังสือส่ง ศพฐ.
                 </h1>
-
                 <p className="mt-1 text-xs text-white/70">
                   จัดทำรายการบุคคลเพื่อออกหนังสือนำส่ง
                 </p>
               </div>
             </div>
-
             <div className="rounded-xl bg-white/10 px-5 py-2 text-center">
               <p className="text-[10px] text-white/60">เลือกแล้ว</p>
-
               <p className="text-2xl font-bold">{selectedIds.length}</p>
-
               <p className="text-[10px] text-white/60">คน</p>
             </div>
           </div>
         </div>
 
-        {/* =====================================================
-            CONTROL PANEL
-        ===================================================== */}
-
+        {/* Control */}
         <div className="mb-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#800020]/10 text-[#800020]">
@@ -298,12 +246,10 @@ export default function ForensicSubmissionPage() {
                 <path d="M3 9h18" />
               </svg>
             </div>
-
             <div>
               <h2 className="text-sm font-bold text-gray-800">
                 ค้นหาและสร้างหนังสือ
               </h2>
-
               <p className="text-[10px] text-gray-400">
                 เลือกช่วงวันที่และกรอกเลขหนังสือนำส่ง
               </p>
@@ -311,13 +257,10 @@ export default function ForensicSubmissionPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 lg:items-end">
-            {/* START DATE */}
-
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-gray-600">
                 วันที่เริ่มต้น
               </label>
-
               <input
                 type="date"
                 value={startDate}
@@ -326,13 +269,10 @@ export default function ForensicSubmissionPage() {
               />
             </div>
 
-            {/* END DATE */}
-
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-gray-600">
                 วันที่สิ้นสุด
               </label>
-
               <input
                 type="date"
                 value={endDate}
@@ -340,8 +280,6 @@ export default function ForensicSubmissionPage() {
                 className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 outline-none transition focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10"
               />
             </div>
-
-            {/* SEARCH */}
 
             <button
               type="button"
@@ -374,8 +312,6 @@ export default function ForensicSubmissionPage() {
               )}
             </button>
 
-            {/* GENERATE */}
-
             <button
               type="button"
               onClick={handleGenerate}
@@ -401,13 +337,10 @@ export default function ForensicSubmissionPage() {
             </button>
           </div>
 
-          {/* SUBMISSION NUMBER */}
-
           <div className="mt-4">
             <label className="mb-1.5 block text-xs font-semibold text-gray-600">
               เลขหนังสือนำส่ง
             </label>
-
             <input
               type="text"
               value={submissionNo}
@@ -418,10 +351,7 @@ export default function ForensicSubmissionPage() {
           </div>
         </div>
 
-        {/* =====================================================
-            SELECT SUMMARY
-        ===================================================== */}
-
+        {/* Select summary */}
         <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
@@ -439,33 +369,26 @@ export default function ForensicSubmissionPage() {
                 <path d="M4 12a8 8 0 1 0 16 0" />
               </svg>
             </div>
-
             <div>
               <p className="text-[10px] font-semibold text-blue-500">
                 รายการที่เลือก
               </p>
-
               <p className="text-sm font-bold text-gray-800">
                 เลือกบุคคลเพื่อออกหนังสือ
               </p>
             </div>
           </div>
-
           <div className="text-left sm:text-right">
             <span className="text-2xl font-bold text-blue-700">
               {selectedIds.length}
             </span>
-
             <span className="ml-1 text-xs font-semibold text-blue-500">
               / {persons.length} คน
             </span>
           </div>
         </div>
 
-        {/* =====================================================
-            SELECT BUTTONS
-        ===================================================== */}
-
+        {/* Select buttons */}
         <div className="mb-3 flex flex-wrap gap-2">
           <button
             type="button"
@@ -486,7 +409,6 @@ export default function ForensicSubmissionPage() {
               <path d="M9 11l3 3L20 6" />
               <path d="M4 12a8 8 0 1 0 16 0" />
             </svg>
-
             {selectedIds.length === persons.length
               ? "ยกเลิกเลือกทั้งหมด"
               : "เลือกทั้งหมด"}
@@ -503,19 +425,12 @@ export default function ForensicSubmissionPage() {
           )}
         </div>
 
-        {/* =====================================================
-            CONTENT
-        ===================================================== */}
-
+        {/* Content */}
         {loading ? (
           <LoadingView />
         ) : persons.length === 0 ? (
           <EmptyView />
         ) : isCardView ? (
-          /* ===================================================
-             CARD VIEW
-          =================================================== */
-
           <div className="flex flex-col gap-3">
             {persons.map((person, index) => {
               const selected = selectedIds.includes(person.personId);
@@ -538,8 +453,6 @@ export default function ForensicSubmissionPage() {
 
                   <div className="p-4 pl-5 sm:p-5 sm:pl-6">
                     <div className="flex items-start gap-3">
-                      {/* CHECKBOX */}
-
                       <div className="pt-1">
                         <input
                           type="checkbox"
@@ -550,25 +463,18 @@ export default function ForensicSubmissionPage() {
                         />
                       </div>
 
-                      {/* NUMBER */}
-
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-xs font-bold text-gray-500">
                         {index + 1}
                       </div>
-
-                      {/* NAME */}
 
                       <div className="min-w-0 flex-1">
                         <h3 className="break-words text-base font-bold text-gray-900">
                           {person.fullName}
                         </h3>
-
                         <p className="mt-1 text-[10px] text-gray-400">
                           ID: {person.personId}
                         </p>
                       </div>
-
-                      {/* SELECTED */}
 
                       {selected && (
                         <span className="shrink-0 rounded-full bg-[#800020]/10 px-3 py-1 text-[10px] font-bold text-[#800020]">
@@ -577,14 +483,11 @@ export default function ForensicSubmissionPage() {
                       )}
                     </div>
 
-                    {/* DETAILS */}
-
                     <div className="mt-4 ml-[84px] space-y-3">
                       <div>
                         <p className="text-[10px] font-semibold text-gray-400">
                           เรื่องที่ขออนุญาต
                         </p>
-
                         <p className="mt-1 break-words text-sm font-semibold leading-5 text-gray-800">
                           {person.purpose || "-"}
                         </p>
@@ -593,7 +496,6 @@ export default function ForensicSubmissionPage() {
                       <div className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-3">
                         <div className="rounded-xl bg-gray-50 p-3">
                           <p className="text-[9px] text-gray-400">เล่มที่</p>
-
                           <p className="mt-1 text-sm font-bold text-gray-800">
                             {person.receiptBookNo || "-"}
                           </p>
@@ -601,7 +503,6 @@ export default function ForensicSubmissionPage() {
 
                         <div className="rounded-xl bg-gray-50 p-3">
                           <p className="text-[9px] text-gray-400">เลขที่</p>
-
                           <p className="mt-1 text-sm font-bold text-gray-800">
                             {person.receiptNo || "-"}
                           </p>
@@ -609,7 +510,6 @@ export default function ForensicSubmissionPage() {
 
                         <div className="rounded-xl bg-gray-50 p-3">
                           <p className="text-[9px] text-gray-400">ลงวันที่</p>
-
                           <p className="mt-1 text-xs font-bold text-gray-800">
                             {person.receiptDate || "-"}
                           </p>
@@ -622,10 +522,6 @@ export default function ForensicSubmissionPage() {
             })}
           </div>
         ) : (
-          /* ===================================================
-             TABLE VIEW
-          =================================================== */
-
           <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
             <div className="w-full overflow-x-auto">
               <table className="w-full min-w-[1000px] border-collapse text-sm">
@@ -642,27 +538,21 @@ export default function ForensicSubmissionPage() {
                         className="h-4 w-4 cursor-pointer accent-[#800020]"
                       />
                     </th>
-
                     <th className="w-[70px] px-3 py-4 text-center text-xs font-bold">
                       ลำดับ
                     </th>
-
                     <th className="min-w-[190px] px-4 py-4 text-left text-xs font-bold">
                       ชื่อ และ ชื่อสกุล
                     </th>
-
                     <th className="min-w-[280px] px-4 py-4 text-left text-xs font-bold">
                       เรื่องที่ขออนุญาต
                     </th>
-
                     <th className="w-[100px] px-3 py-4 text-center text-xs font-bold">
                       เล่มที่
                     </th>
-
                     <th className="w-[100px] px-3 py-4 text-center text-xs font-bold">
                       เลขที่
                     </th>
-
                     <th className="w-[130px] px-3 py-4 text-center text-xs font-bold">
                       ลงวันที่
                     </th>
@@ -701,7 +591,6 @@ export default function ForensicSubmissionPage() {
                           <p className="break-words text-sm font-bold text-gray-900">
                             {person.fullName}
                           </p>
-
                           <p className="mt-1 text-[9px] text-gray-400">
                             ID: {person.personId}
                           </p>
