@@ -16,6 +16,13 @@ interface Person {
   purpose?: string;
 }
 
+interface SubmissionPerson {
+  id: string;
+  submissionId: string;
+  personId: string;
+  person: Person;
+}
+
 interface StatusHistory {
   historyId: string;
   oldStatus: number;
@@ -29,9 +36,10 @@ interface SubmissionData {
   submissionId: string;
   submissionNo?: string;
   submissionDate?: string;
+  createdAt?: string;
   status: number;
   statusUpdatedAt?: string;
-  persons?: Person[];
+  persons?: SubmissionPerson[];
   statusHistories?: StatusHistory[];
 }
 
@@ -168,38 +176,20 @@ export default function ForensicStatusPage() {
       return;
     }
 
-    /*
-     * สิทธิ์ทั่วไป
-     */
     const globalAuthorized = sessionStorage.getItem("forensic_scan_authorized");
 
-    /*
-     * ID ที่ Scanner สแกนล่าสุด
-     */
     const scannedId = sessionStorage.getItem("forensic_scan_id");
 
-    /*
-     * สิทธิ์เฉพาะ Submission
-     */
     const perIdAuthorized = sessionStorage.getItem(`forensic-scan-${id}`);
 
     console.log("================================");
-
     console.log("FORENSIC STATUS AUTH CHECK");
-
     console.log("URL ID:", id);
-
     console.log("Global Authorized:", globalAuthorized);
-
     console.log("Scanned ID:", scannedId);
-
     console.log("Per ID Authorized:", perIdAuthorized);
-
     console.log("================================");
 
-    /*
-     * ต้องตรงทั้ง 3 ค่า
-     */
     if (
       globalAuthorized === "true" &&
       scannedId === id &&
@@ -227,21 +217,13 @@ export default function ForensicStatusPage() {
 
         const response = await api.get(`/forensic-status/${id}`);
 
-        /*
-         * รองรับทั้ง
-         *
-         * response.data
-         *
-         * และ
-         *
-         * response.data.data
-         */
-
         const result = response?.data?.data ?? response?.data;
 
         if (!result) {
           throw new Error("ไม่พบข้อมูล");
         }
+
+        console.log("FORENSIC DATA:", result);
 
         setData(result);
       } catch (error: any) {
@@ -293,13 +275,9 @@ export default function ForensicStatusPage() {
       <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
         <div className="mx-auto flex min-h-[70vh] max-w-lg items-center justify-center">
           <div className="w-full rounded-3xl bg-white p-8 text-center shadow-lg">
-            {/* ICON */}
-
             <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
               <span className="text-4xl font-bold text-red-500">!</span>
             </div>
-
-            {/* TITLE */}
 
             <h1 className="text-xl font-bold text-gray-800">
               ไม่สามารถเข้าหน้านี้ได้
@@ -313,8 +291,6 @@ export default function ForensicStatusPage() {
               ผ่านระบบก่อน
             </p>
 
-            {/* SCAN */}
-
             <button
               type="button"
               onClick={() => navigate("/forensic-scan")}
@@ -322,8 +298,6 @@ export default function ForensicStatusPage() {
             >
               ไปหน้าสแกน QR Code
             </button>
-
-            {/* BACK */}
 
             <button
               type="button"
@@ -385,9 +359,6 @@ export default function ForensicStatusPage() {
   ==================================================== */
 
   const updateStatus = async (newStatus: number) => {
-    /*
-     * Status 4 ห้ามเปลี่ยน
-     */
     if (data.status === 4) {
       await Swal.fire({
         icon: "info",
@@ -400,39 +371,28 @@ export default function ForensicStatusPage() {
       return;
     }
 
-    /*
-     * เลือกสถานะ
-     */
     const selected = STATUS_LIST.find((item) => item.value === newStatus);
 
     if (!selected) {
       return;
     }
 
-    /*
-     * ถ้าเลือกสถานะเดิม
-     */
     if (newStatus === data.status) {
       return;
     }
 
-    /*
-     * Confirm
-     */
     const result = await Swal.fire({
       icon: "question",
       title: "ยืนยันการเปลี่ยนสถานะ",
       html: `
-            <div style="font-size:16px">
-              ต้องการเปลี่ยนสถานะเป็น
-              <br/>
-              <strong>
-                ${selected.label}
-              </strong>
-              <br/>
-              ใช่หรือไม่?
-            </div>
-          `,
+        <div style="font-size:16px">
+          ต้องการเปลี่ยนสถานะเป็น
+          <br/>
+          <strong>${selected.label}</strong>
+          <br/>
+          ใช่หรือไม่?
+        </div>
+      `,
       showCancelButton: true,
       confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
@@ -447,9 +407,6 @@ export default function ForensicStatusPage() {
     try {
       setUpdating(true);
 
-      /*
-       * ใช้ Endpoint เดิม
-       */
       const response = await api.patch(`/forensic-status/${id}`, {
         status: newStatus,
       });
@@ -526,8 +483,6 @@ export default function ForensicStatusPage() {
 
         <div className="rounded-2xl bg-white p-5 shadow">
           <div className="grid gap-4 md:grid-cols-3">
-            {/* Submission No */}
-
             <div>
               <p className="text-sm text-gray-500">เลขที่ส่งตรวจ</p>
 
@@ -536,8 +491,6 @@ export default function ForensicStatusPage() {
               </p>
             </div>
 
-            {/* Date */}
-
             <div>
               <p className="text-sm text-gray-500">วันที่ส่งตรวจ</p>
 
@@ -545,8 +498,6 @@ export default function ForensicStatusPage() {
                 {formatDate(data.submissionDate)}
               </p>
             </div>
-
-            {/* ID */}
 
             <div>
               <p className="text-sm text-gray-500">Submission ID</p>
@@ -590,7 +541,6 @@ export default function ForensicStatusPage() {
 
         {/* =================================================
             STATUS CHANGE
-            STATUS 4 จะไม่แสดง
         ================================================= */}
 
         {data.status !== 4 && (
@@ -664,17 +614,25 @@ export default function ForensicStatusPage() {
 
               <tbody>
                 {data.persons && data.persons.length > 0 ? (
-                  data.persons.map((person, index) => (
-                    <tr key={person.personId} className="text-sm">
-                      <td className="border p-3 text-center">{index + 1}</td>
+                  data.persons.map((item, index) => {
+                    const person = item.person;
 
-                      <td className="border p-3">{person.fullName}</td>
+                    return (
+                      <tr key={item.id} className="text-sm">
+                        <td className="border p-3 text-center">{index + 1}</td>
 
-                      <td className="border p-3">{person.citizenId || "-"}</td>
+                        <td className="border p-3">
+                          {person?.fullName || "-"}
+                        </td>
 
-                      <td className="border p-3">{person.purpose || "-"}</td>
-                    </tr>
-                  ))
+                        <td className="border p-3">
+                          {person?.citizenId || "-"}
+                        </td>
+
+                        <td className="border p-3">{person?.purpose || "-"}</td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td

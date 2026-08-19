@@ -11,23 +11,26 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const submission = await prisma.forensicSubmission.findUnique({
-      where: {
-        submissionId: id,
-      },
-      include: {
-        persons: {
-          include: {
-            person: true,
+    const submission =
+      await prisma.forensicSubmission.findUnique({
+        where: {
+          submissionId: id,
+        },
+
+        include: {
+          persons: {
+            include: {
+              person: true,
+            },
+          },
+
+          statusHistories: {
+            orderBy: {
+              changedAt: "desc",
+            },
           },
         },
-        statusHistories: {
-          orderBy: {
-            changedAt: "desc",
-          },
-        },
-      },
-    });
+      });
 
     if (!submission) {
       return res.status(404).json({
@@ -41,7 +44,10 @@ router.get("/:id", async (req, res) => {
       data: submission,
     });
   } catch (err) {
-    console.error("GET FORENSIC STATUS ERROR:", err);
+    console.error(
+      "GET FORENSIC STATUS ERROR:",
+      err,
+    );
 
     res.status(500).json({
       success: false,
@@ -53,13 +59,28 @@ router.get("/:id", async (req, res) => {
 /**
  * PATCH /api/forensic-status/:id
  * เปลี่ยนสถานะรายการส่ง ศพฐ.
+ *
+ * ForensicSubmission.status
+ * และ
+ * Person.status
+ *
+ * จะเปลี่ยนพร้อมกัน
  */
 router.patch("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, remark, changedBy } = req.body;
+
+    const {
+      status,
+      remark,
+      changedBy,
+    } = req.body;
 
     const statusNum = Number(status);
+
+    /* ====================================================
+       ตรวจสอบสถานะ
+    ==================================================== */
 
     if (![0, 1, 2, 3, 4].includes(statusNum)) {
       return res.status(400).json({
@@ -68,11 +89,24 @@ router.patch("/:id", async (req, res) => {
       });
     }
 
-    const submission = await prisma.forensicSubmission.findUnique({
-      where: {
-        submissionId: id,
-      },
-    });
+    /* ====================================================
+       ค้นหา Submission
+    ==================================================== */
+
+    const submission =
+      await prisma.forensicSubmission.findUnique({
+        where: {
+          submissionId: id,
+        },
+
+        include: {
+          persons: {
+            select: {
+              personId: true,
+            },
+          },
+        },
+      });
 
     if (!submission) {
       return res.status(404).json({
@@ -81,45 +115,137 @@ router.patch("/:id", async (req, res) => {
       });
     }
 
+    /* ====================================================
+       ถ้าเดิมเป็น Status 4 แล้ว
+       ห้ามเปลี่ยนกลับ
+    ==================================================== */
+
+    if (submission.status === 4) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "รายการนี้ส่งคืนต้นสังกัดแล้ว ไม่สามารถเปลี่ยนสถานะได้อีก",
+      });
+    }
+
+    /* ====================================================
+       ถ้าเป็นสถานะเดิม
+    ==================================================== */
+
+    if (submission.status === statusNum) {
+      return res.status(400).json({
+        success: false,
+        error: "สถานะนี้เป็นสถานะปัจจุบันอยู่แล้ว",
+      });
+    }
+
     const now = new Date();
 
-    const result = await prisma.$transaction(async (tx) => {
-      const updated = await tx.forensicSubmission.update({
-        where: {
-          submissionId: id,
-        },
-        data: {
-          status: statusNum,
-          statusUpdatedAt: now,
-        },
-        include: {
-          persons: {
-            include: {
-              person: true,
+    /* ====================================================
+       ID ของบุคคลทั้งหมดใน Submission
+    ==================================================== */
+
+    const personIds = submission.persons.map(
+      (item) => item.personId,
+    );
+
+    /* ====================================================
+       TRANSACTION
+    ==================================================== */
+
+    const result =
+      await prisma.$transaction(async (tx) => {
+        /* ================================================
+           1. Update ForensicSubmission
+        ================================================ */
+
+        const updatedSubmission =
+          await tx.forensicSubmission.update({
+            where: {
+              submissionId: id,
             },
+
+            data: {
+              status: statusNum,
+              statusUpdatedAt: now,
+            },
+          });
+
+        /* ================================================
+           2. Update Person ทุกคนใน Submission
+        ================================================ */
+
+        if (personIds.length > 0) {
+          await tx.person.updateMany({
+            where: {
+              personId: {
+                in: personIds,
+              },
+            },
+
+            data: {
+              status: statusNum,
+              statusUpdatedAt: now,
+              updatedAt: now,
+            },
+          });
+        }
+
+        /* ================================================
+           3. บันทึกประวัติสถานะ
+        ================================================ */
+
+        await tx.forensicSubmissionStatusHistory.create({
+          data: {
+            submissionId: id,
+            oldStatus: submission.status,
+            newStatus: statusNum,
+            remark: remark || null,
+            changedBy: changedBy || null,
           },
-        },
+        });
+
+        /* ================================================
+           4. ดึงข้อมูลใหม่ทั้งหมด
+        ================================================ */
+
+        const finalData =
+          await tx.forensicSubmission.findUnique({
+            where: {
+              submissionId: id,
+            },
+
+            include: {
+              persons: {
+                include: {
+                  person: true,
+                },
+              },
+
+              statusHistories: {
+                orderBy: {
+                  changedAt: "desc",
+                },
+              },
+            },
+          });
+
+        return finalData;
       });
 
-      await tx.forensicSubmissionStatusHistory.create({
-        data: {
-          submissionId: id,
-          oldStatus: submission.status,
-          newStatus: statusNum,
-          remark: remark || null,
-          changedBy: changedBy || null,
-        },
-      });
-
-      return updated;
-    });
+    /* ====================================================
+       RESPONSE
+    ==================================================== */
 
     res.json({
       success: true,
       data: result,
     });
   } catch (err) {
-    console.error("PATCH FORENSIC STATUS ERROR:", err);
+    console.error(
+      "PATCH FORENSIC STATUS ERROR:",
+      err,
+    );
 
     res.status(500).json({
       success: false,
@@ -141,6 +267,7 @@ router.get("/:id/history", async (req, res) => {
         where: {
           submissionId: id,
         },
+
         orderBy: {
           changedAt: "desc",
         },
@@ -151,7 +278,10 @@ router.get("/:id/history", async (req, res) => {
       data: history,
     });
   } catch (err) {
-    console.error("GET FORENSIC STATUS HISTORY ERROR:", err);
+    console.error(
+      "GET FORENSIC STATUS HISTORY ERROR:",
+      err,
+    );
 
     res.status(500).json({
       success: false,
