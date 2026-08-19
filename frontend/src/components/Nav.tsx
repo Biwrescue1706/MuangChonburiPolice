@@ -66,12 +66,12 @@ export default function Nav() {
       description: "รายการหนังสือส่งตรวจ กับ ศพฐ.",
       icon: "document",
     },
-{
-  path: "/forensic-scan",
-  label: "สแกนเอกสาร",
-  description: "สแกน QR Code เอกสาร ศพฐ.",
-  icon: "scan",
-},
+    {
+      path: "/forensic-scan",
+      label: "สแกนเอกสาร",
+      description: "สแกน QR Code เอกสาร ศพฐ.",
+      icon: "scan",
+    },
     {
       path: "/receipt",
       label: "ใบเสร็จ",

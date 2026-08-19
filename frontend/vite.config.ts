@@ -11,6 +11,10 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
 
+      workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      },
+
       manifest: {
         name: "งานพิมพ์มือตรวจประวัติ",
         short_name: "พิมพ์มือตรวจประวัติ",
