@@ -3,6 +3,7 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
+import path from "path";
 
 export default function Nav() {
   const { admin, logout } = useAuth();
@@ -66,6 +67,12 @@ export default function Nav() {
       description: "รายการหนังสือส่งตรวจ กับ ศพฐ.",
       icon: "document",
     },
+{
+  path: "/forensic-scan",
+  label: "สแกนเอกสาร",
+  description: "สแกน QR Code เอกสาร ศพฐ.",
+  icon: "scan",
+},
     {
       path: "/receipt",
       label: "ใบเสร็จ",

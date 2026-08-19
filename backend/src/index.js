@@ -48,6 +48,8 @@ import organizationRoutes from "./routes/organization.js";
 import personStatusHistoryRoutes from "./routes/personStatusHistory.js";
 import forensicSubmissionRoutes
   from "./routes/forensicSubmission.js";
+import forensicStatusRoutes from "./routes/forensicStatus.js";
+
 
 app.use("/api/person", personRoutes);
 app.use("/api/auth", authRoute);
@@ -58,6 +60,11 @@ app.use("/api/organization", organizationRoutes);
 app.use(
   "/api/forensic-submission",
   forensicSubmissionRoutes
+);
+
+app.use(
+  "/api/forensic-status",
+  forensicStatusRoutes
 );
 
 /* ================= HEALTH (สำคัญมาก) ================= */

@@ -23,6 +23,8 @@ import StatusHistoryPage from "./pages/History/StatusHistoryPage";
 import ForensicSubmissionPage from "./pages/Forensic/ForensicSubmissionPage";
 import ForensicSubmissionListPage from "./pages/Forensic/ForensicSubmissionListPage";
 import ForensicSubmissionPdfPage from "./pages/Forensic/ForensicSubmissionPdfPage";
+import ForensicStatusPage from "./pages/Forensic/ForensicStatusPage";
+import ForensicScanPage from "./pages/Forensic/ForensicQrScanner";
 
 function App() {
   return (
@@ -56,6 +58,9 @@ function App() {
           <Route path="/person/create" element={<PersonPage />} />
           <Route path="/organization" element={<OrganizationPage />} />
 
+          <Route path="/forensic-scan" element={<ForensicScanPage />} />
+          <Route path="/forensic-status/:id" element={<ForensicStatusPage />} />
+          
           <Route path="/receipt" element={<ReceiptListPage />} />
           <Route path="/receipt/:id" element={<ReceiptDetailPage />} />
 

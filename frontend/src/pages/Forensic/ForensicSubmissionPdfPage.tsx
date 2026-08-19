@@ -75,8 +75,8 @@ export default function ForensicSubmissionPdfPage() {
     if (!data) return;
 
     await generateForensicPdf({
+      submissionId: data.submissionId,
       submissionNo: data.submissionNo,
-
       submissionDate: new Date(
         data.submissionDate,
       ).toLocaleDateString("th-TH", {
