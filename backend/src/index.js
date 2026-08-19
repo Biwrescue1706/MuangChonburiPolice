@@ -102,6 +102,10 @@ async function deleteExpiredPersons() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    /* ====================================================
+       1. หา Person ที่ถึงกำหนดลบ
+    ==================================================== */
+
     const personIds = (
       await prisma.person.findMany({
         where: {
@@ -119,6 +123,32 @@ async function deleteExpiredPersons() {
       console.log("✅ ไม่มีข้อมูลที่ต้องลบ");
       return;
     }
+
+    /* ====================================================
+       2. หา submissionId ที่เกี่ยวข้องกับ Person ที่จะลบ
+    ==================================================== */
+
+    const submissionPersons =
+      await prisma.forensicSubmissionPerson.findMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+        },
+        select: {
+          submissionId: true,
+        },
+      });
+
+    const submissionIds = [
+      ...new Set(
+        submissionPersons.map((item) => item.submissionId)
+      ),
+    ];
+
+    /* ====================================================
+       3. ลบข้อมูล Person
+    ==================================================== */
 
     await prisma.$transaction([
       prisma.receipt.deleteMany({
@@ -154,7 +184,54 @@ async function deleteExpiredPersons() {
       }),
     ]);
 
-    console.log(`🗑️ ลบข้อมูล ${personIds.length} รายการ`);
+    /* ====================================================
+       4. ตรวจสอบ ForensicSubmission
+          ว่ายังมี ForensicSubmissionPerson เหลือหรือไม่
+    ==================================================== */
+
+    if (submissionIds.length > 0) {
+      const emptySubmissions =
+        await prisma.forensicSubmission.findMany({
+          where: {
+            submissionId: {
+              in: submissionIds,
+            },
+
+            persons: {
+              none: {},
+            },
+          },
+
+          select: {
+            submissionId: true,
+            submissionNo: true,
+          },
+        });
+
+      /* ====================================================
+         5. ถ้าไม่มี Person เหลือ → ลบ Submission
+      ==================================================== */
+
+      if (emptySubmissions.length > 0) {
+        await prisma.forensicSubmission.deleteMany({
+          where: {
+            submissionId: {
+              in: emptySubmissions.map(
+                (item) => item.submissionId
+              ),
+            },
+          },
+        });
+
+        console.log(
+          `🗑️ ลบ ForensicSubmission ${emptySubmissions.length} รายการ`
+        );
+      }
+    }
+
+    console.log(
+      `🗑️ ลบ Person ${personIds.length} รายการ`
+    );
   } catch (err) {
     console.error("❌ Auto Delete Error:", err);
   }

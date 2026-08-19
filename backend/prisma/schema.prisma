@@ -221,9 +221,12 @@ model ForensicSubmission {
   status          Int       @default(0)
   statusUpdatedAt DateTime?
 
+
+
   persons ForensicSubmissionPerson[]
 
   statusHistories ForensicSubmissionStatusHistory[]
+
 }
 
 model ForensicSubmissionPerson {
@@ -252,7 +255,7 @@ model ForensicSubmissionStatusHistory {
 
   changedAt DateTime @default(now())
 
-  submission ForensicSubmission @relation(fields: [submissionId],references: [submissionId],onDelete : Cascade)
+    submission ForensicSubmission @relation(fields: [submissionId],references: [submissionId],onDelete: Cascade)
 
   @@index([submissionId])
   @@index([changedAt])
