@@ -3,7 +3,6 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
-import path from "path";
 
 export default function Nav() {
   const { admin, logout } = useAuth();
