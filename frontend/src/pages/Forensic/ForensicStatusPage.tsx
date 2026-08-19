@@ -5,6 +5,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../../api/axios";
 
+/* ======================================================
+   TYPES
+====================================================== */
+
 interface Person {
   personId: string;
   fullName: string;
@@ -31,6 +35,10 @@ interface SubmissionData {
   statusHistories?: StatusHistory[];
 }
 
+/* ======================================================
+   STATUS
+====================================================== */
+
 const STATUS_LIST = [
   {
     value: 0,
@@ -54,8 +62,14 @@ const STATUS_LIST = [
   },
 ];
 
+/* ======================================================
+   DATE
+====================================================== */
+
 function formatDate(date?: string) {
-  if (!date) return "-";
+  if (!date) {
+    return "-";
+  }
 
   const d = new Date(date);
 
@@ -71,7 +85,9 @@ function formatDate(date?: string) {
 }
 
 function formatDateTime(date?: string) {
-  if (!date) return "-";
+  if (!date) {
+    return "-";
+  }
 
   const d = new Date(date);
 
@@ -85,9 +101,17 @@ function formatDateTime(date?: string) {
   });
 }
 
+/* ======================================================
+   STATUS LABEL
+====================================================== */
+
 function getStatusLabel(status: number) {
   return STATUS_LIST.find((item) => item.value === status)?.label || "-";
 }
+
+/* ======================================================
+   STATUS CLASS
+====================================================== */
 
 function getStatusClass(status: number) {
   switch (status) {
@@ -111,8 +135,15 @@ function getStatusClass(status: number) {
   }
 }
 
+/* ======================================================
+   PAGE
+====================================================== */
+
 export default function ForensicStatusPage() {
-  const { id } = useParams();
+  const { id } = useParams<{
+    id: string;
+  }>();
+
   const navigate = useNavigate();
 
   const [data, setData] = useState<SubmissionData | null>(null);
@@ -123,20 +154,57 @@ export default function ForensicStatusPage() {
 
   const [authorized, setAuthorized] = useState(false);
 
-  /* =====================================================
-     ตรวจสอบว่ามาจาก Scanner ของระบบหรือไม่
-  ===================================================== */
+  /* ====================================================
+     ตรวจสอบสิทธิ์จาก Scanner
+  ==================================================== */
 
   useEffect(() => {
     if (!id) {
+      console.log("ไม่มี Submission ID");
+
       setAuthorized(false);
       setLoading(false);
+
       return;
     }
 
-    const scanAuthorized = sessionStorage.getItem(`forensic-scan-${id}`);
+    /*
+     * สิทธิ์ทั่วไป
+     */
+    const globalAuthorized = sessionStorage.getItem("forensic_scan_authorized");
 
-    if (scanAuthorized === "true") {
+    /*
+     * ID ที่ Scanner สแกนล่าสุด
+     */
+    const scannedId = sessionStorage.getItem("forensic_scan_id");
+
+    /*
+     * สิทธิ์เฉพาะ Submission
+     */
+    const perIdAuthorized = sessionStorage.getItem(`forensic-scan-${id}`);
+
+    console.log("================================");
+
+    console.log("FORENSIC STATUS AUTH CHECK");
+
+    console.log("URL ID:", id);
+
+    console.log("Global Authorized:", globalAuthorized);
+
+    console.log("Scanned ID:", scannedId);
+
+    console.log("Per ID Authorized:", perIdAuthorized);
+
+    console.log("================================");
+
+    /*
+     * ต้องตรงทั้ง 3 ค่า
+     */
+    if (
+      globalAuthorized === "true" &&
+      scannedId === id &&
+      perIdAuthorized === "true"
+    ) {
       setAuthorized(true);
     } else {
       setAuthorized(false);
@@ -144,9 +212,9 @@ export default function ForensicStatusPage() {
     }
   }, [id]);
 
-  /* =====================================================
-     โหลดข้อมูล
-  ===================================================== */
+  /* ====================================================
+     LOAD DATA
+  ==================================================== */
 
   useEffect(() => {
     if (!authorized || !id) {
@@ -159,7 +227,23 @@ export default function ForensicStatusPage() {
 
         const response = await api.get(`/forensic-status/${id}`);
 
-        setData(response.data);
+        /*
+         * รองรับทั้ง
+         *
+         * response.data
+         *
+         * และ
+         *
+         * response.data.data
+         */
+
+        const result = response?.data?.data ?? response?.data;
+
+        if (!result) {
+          throw new Error("ไม่พบข้อมูล");
+        }
+
+        setData(result);
       } catch (error: any) {
         console.error("Load forensic status error:", error);
 
@@ -185,7 +269,7 @@ export default function ForensicStatusPage() {
           await Swal.fire({
             icon: "error",
             title: "เกิดข้อผิดพลาด",
-            text: "ไม่สามารถโหลดข้อมูลได้",
+            text: error?.response?.data?.error || "ไม่สามารถโหลดข้อมูลได้",
             confirmButtonText: "ตกลง",
             confirmButtonColor: "#800020",
           });
@@ -200,22 +284,22 @@ export default function ForensicStatusPage() {
     loadData();
   }, [authorized, id]);
 
-  /* =====================================================
-     ไม่ได้เข้ามาจาก Scanner
-  ===================================================== */
+  /* ====================================================
+     NOT AUTHORIZED
+  ==================================================== */
 
   if (!authorized) {
     return (
       <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
         <div className="mx-auto flex min-h-[70vh] max-w-lg items-center justify-center">
           <div className="w-full rounded-3xl bg-white p-8 text-center shadow-lg">
-            {/* Icon */}
+            {/* ICON */}
 
             <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
               <span className="text-4xl font-bold text-red-500">!</span>
             </div>
 
-            {/* Title */}
+            {/* TITLE */}
 
             <h1 className="text-xl font-bold text-gray-800">
               ไม่สามารถเข้าหน้านี้ได้
@@ -229,7 +313,7 @@ export default function ForensicStatusPage() {
               ผ่านระบบก่อน
             </p>
 
-            {/* Scan Button */}
+            {/* SCAN */}
 
             <button
               type="button"
@@ -239,7 +323,7 @@ export default function ForensicStatusPage() {
               ไปหน้าสแกน QR Code
             </button>
 
-            {/* Back */}
+            {/* BACK */}
 
             <button
               type="button"
@@ -254,9 +338,9 @@ export default function ForensicStatusPage() {
     );
   }
 
-  /* =====================================================
-     Loading
-  ===================================================== */
+  /* ====================================================
+     LOADING
+  ==================================================== */
 
   if (loading) {
     return (
@@ -272,9 +356,9 @@ export default function ForensicStatusPage() {
     );
   }
 
-  /* =====================================================
-     ไม่พบข้อมูล
-  ===================================================== */
+  /* ====================================================
+     NO DATA
+  ==================================================== */
 
   if (!data) {
     return (
@@ -296,34 +380,64 @@ export default function ForensicStatusPage() {
     );
   }
 
-  /* =====================================================
-     เปลี่ยนสถานะ
-  ===================================================== */
+  /* ====================================================
+     UPDATE STATUS
+  ==================================================== */
 
   const updateStatus = async (newStatus: number) => {
     /*
-     * ถ้าสถานะเป็น 4 แล้ว
-     * ห้ามเปลี่ยนสถานะอีก
+     * Status 4 ห้ามเปลี่ยน
      */
-
     if (data.status === 4) {
+      await Swal.fire({
+        icon: "info",
+        title: "รายการเสร็จสิ้นแล้ว",
+        text: "รายการนี้ส่งคืนต้นสังกัดแล้ว ไม่สามารถเปลี่ยนสถานะได้อีก",
+        confirmButtonText: "ตกลง",
+        confirmButtonColor: "#800020",
+      });
+
       return;
     }
 
+    /*
+     * เลือกสถานะ
+     */
     const selected = STATUS_LIST.find((item) => item.value === newStatus);
 
     if (!selected) {
       return;
     }
 
+    /*
+     * ถ้าเลือกสถานะเดิม
+     */
+    if (newStatus === data.status) {
+      return;
+    }
+
+    /*
+     * Confirm
+     */
     const result = await Swal.fire({
       icon: "question",
-      title: "เปลี่ยนสถานะ?",
-      text: `ต้องการเปลี่ยนเป็น "${selected.label}" หรือไม่`,
+      title: "ยืนยันการเปลี่ยนสถานะ",
+      html: `
+            <div style="font-size:16px">
+              ต้องการเปลี่ยนสถานะเป็น
+              <br/>
+              <strong>
+                ${selected.label}
+              </strong>
+              <br/>
+              ใช่หรือไม่?
+            </div>
+          `,
       showCancelButton: true,
       confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
       confirmButtonColor: "#800020",
+      cancelButtonColor: "#6b7280",
     });
 
     if (!result.isConfirmed) {
@@ -333,11 +447,16 @@ export default function ForensicStatusPage() {
     try {
       setUpdating(true);
 
+      /*
+       * ใช้ Endpoint เดิม
+       */
       const response = await api.patch(`/forensic-status/${id}`, {
         status: newStatus,
       });
 
-      setData(response.data);
+      const resultData = response?.data?.data ?? response?.data;
+
+      setData(resultData);
 
       await Swal.fire({
         icon: "success",
@@ -345,13 +464,27 @@ export default function ForensicStatusPage() {
         timer: 1500,
         showConfirmButton: false,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Update status error:", error);
+
+      if (error?.response?.status === 401) {
+        await Swal.fire({
+          icon: "warning",
+          title: "กรุณาเข้าสู่ระบบ",
+          text: "หน้านี้สำหรับเจ้าหน้าที่ที่ดูแลเท่านั้น",
+          confirmButtonText: "เข้าสู่ระบบ",
+          confirmButtonColor: "#800020",
+        });
+
+        navigate("/");
+
+        return;
+      }
 
       await Swal.fire({
         icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: "ไม่สามารถเปลี่ยนสถานะได้",
+        title: "ไม่สามารถเปลี่ยนสถานะได้",
+        text: error?.response?.data?.error || "เกิดข้อผิดพลาด",
         confirmButtonText: "ตกลง",
         confirmButtonColor: "#800020",
       });
@@ -360,9 +493,9 @@ export default function ForensicStatusPage() {
     }
   };
 
-  /* =====================================================
+  /* ====================================================
      UI
-  ===================================================== */
+  ==================================================== */
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
@@ -393,6 +526,8 @@ export default function ForensicStatusPage() {
 
         <div className="rounded-2xl bg-white p-5 shadow">
           <div className="grid gap-4 md:grid-cols-3">
+            {/* Submission No */}
+
             <div>
               <p className="text-sm text-gray-500">เลขที่ส่งตรวจ</p>
 
@@ -401,6 +536,8 @@ export default function ForensicStatusPage() {
               </p>
             </div>
 
+            {/* Date */}
+
             <div>
               <p className="text-sm text-gray-500">วันที่ส่งตรวจ</p>
 
@@ -408,6 +545,8 @@ export default function ForensicStatusPage() {
                 {formatDate(data.submissionDate)}
               </p>
             </div>
+
+            {/* ID */}
 
             <div>
               <p className="text-sm text-gray-500">Submission ID</p>
@@ -451,7 +590,7 @@ export default function ForensicStatusPage() {
 
         {/* =================================================
             STATUS CHANGE
-            สถานะ 4 จะไม่แสดงส่วนนี้
+            STATUS 4 จะไม่แสดง
         ================================================= */}
 
         {data.status !== 4 && (
@@ -474,6 +613,30 @@ export default function ForensicStatusPage() {
                   {item.label}
                 </button>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* =================================================
+            STATUS 4
+        ================================================= */}
+
+        {data.status === 4 && (
+          <div className="mt-5 rounded-2xl bg-white p-5 shadow">
+            <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <span className="text-3xl text-green-600">✓</span>
+              </div>
+
+              <h2 className="text-xl font-bold text-green-700">
+                ดำเนินการเสร็จสิ้น
+              </h2>
+
+              <p className="mt-2 text-gray-600">รายการนี้ส่งคืนต้นสังกัดแล้ว</p>
+
+              <p className="mt-1 text-sm text-gray-500">
+                ไม่สามารถเปลี่ยนสถานะของรายการนี้ได้อีก
+              </p>
             </div>
           </div>
         )}
@@ -544,7 +707,10 @@ export default function ForensicStatusPage() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="font-semibold text-gray-800">
-                        {getStatusLabel(history.oldStatus)} →{" "}
+                        {getStatusLabel(history.oldStatus)}
+
+                        {" → "}
+
                         {getStatusLabel(history.newStatus)}
                       </p>
 
