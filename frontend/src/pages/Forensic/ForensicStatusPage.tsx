@@ -112,10 +112,7 @@ function getStatusClass(status: number) {
 }
 
 export default function ForensicStatusPage() {
-  const { id } = useParams<{
-    id: string;
-  }>();
-
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [data, setData] = useState<SubmissionData | null>(null);
@@ -127,11 +124,17 @@ export default function ForensicStatusPage() {
   const [authorized, setAuthorized] = useState(false);
 
   /* =====================================================
-     ตรวจสอบว่ามาจาก Scanner หรือไม่
+     ตรวจสอบว่ามาจาก Scanner ของระบบหรือไม่
   ===================================================== */
 
   useEffect(() => {
-    const scanAuthorized = sessionStorage.getItem("forensic_scan_authorized");
+    if (!id) {
+      setAuthorized(false);
+      setLoading(false);
+      return;
+    }
+
+    const scanAuthorized = sessionStorage.getItem(`forensic-scan-${id}`);
 
     if (scanAuthorized === "true") {
       setAuthorized(true);
@@ -139,7 +142,7 @@ export default function ForensicStatusPage() {
       setAuthorized(false);
       setLoading(false);
     }
-  }, []);
+  }, [id]);
 
   /* =====================================================
      โหลดข้อมูล
@@ -206,9 +209,13 @@ export default function ForensicStatusPage() {
       <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
         <div className="mx-auto flex min-h-[70vh] max-w-lg items-center justify-center">
           <div className="w-full rounded-3xl bg-white p-8 text-center shadow-lg">
+            {/* Icon */}
+
             <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-              <span className="text-4xl">!</span>
+              <span className="text-4xl font-bold text-red-500">!</span>
             </div>
+
+            {/* Title */}
 
             <h1 className="text-xl font-bold text-gray-800">
               ไม่สามารถเข้าหน้านี้ได้
@@ -222,13 +229,17 @@ export default function ForensicStatusPage() {
               ผ่านระบบก่อน
             </p>
 
+            {/* Scan Button */}
+
             <button
               type="button"
               onClick={() => navigate("/forensic-scan")}
-              className="mt-6 rounded-xl bg-[#800020] px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-[#660019]"
+              className="mt-6 w-full rounded-xl bg-[#800020] px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-[#660019]"
             >
               ไปหน้าสแกน QR Code
             </button>
+
+            {/* Back */}
 
             <button
               type="button"
@@ -290,6 +301,11 @@ export default function ForensicStatusPage() {
   ===================================================== */
 
   const updateStatus = async (newStatus: number) => {
+    /*
+     * ถ้าสถานะเป็น 4 แล้ว
+     * ห้ามเปลี่ยนสถานะอีก
+     */
+
     if (data.status === 4) {
       return;
     }
@@ -435,6 +451,7 @@ export default function ForensicStatusPage() {
 
         {/* =================================================
             STATUS CHANGE
+            สถานะ 4 จะไม่แสดงส่วนนี้
         ================================================= */}
 
         {data.status !== 4 && (

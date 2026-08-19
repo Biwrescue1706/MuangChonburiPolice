@@ -148,9 +148,14 @@ export default function ForensicQrScanner() {
           }
 
           /*
-           * เปิดหน้า Status
+           * บันทึกว่า ID นี้ถูกสแกน
+           * ผ่านระบบ Scanner ของเว็บไซต์
            */
+          sessionStorage.setItem(`forensic-scan-${submissionId}`, "true");
 
+          /*
+           * เข้า Status
+           */
           navigate(`/forensic-status/${encodeURIComponent(submissionId)}`);
         },
 
