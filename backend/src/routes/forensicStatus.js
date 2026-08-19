@@ -3,10 +3,7 @@ import prisma from "../prisma.js";
 
 const router = Router();
 
-/**
- * GET /api/forensic-status/:id
- * ดูข้อมูลรายการส่ง ศพฐ.
- */
+// GET /api/forensic-status/:id
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -16,14 +13,12 @@ router.get("/:id", async (req, res) => {
         where: {
           submissionId: id,
         },
-
         include: {
           persons: {
             include: {
               person: true,
             },
           },
-
           statusHistories: {
             orderBy: {
               changedAt: "desc",
@@ -39,48 +34,27 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: submission,
     });
   } catch (err) {
-    console.error(
-      "GET FORENSIC STATUS ERROR:",
-      err,
-    );
+    console.error("GET FORENSIC STATUS ERROR:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: "ไม่สามารถโหลดข้อมูลได้",
     });
   }
 });
 
-/**
- * PATCH /api/forensic-status/:id
- * เปลี่ยนสถานะรายการส่ง ศพฐ.
- *
- * ForensicSubmission.status
- * และ
- * Person.status
- *
- * จะเปลี่ยนพร้อมกัน
- */
+// PATCH /api/forensic-status/:id
 router.patch("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
-    const {
-      status,
-      remark,
-      changedBy,
-    } = req.body;
+    const { status, remark, changedBy } = req.body;
 
     const statusNum = Number(status);
-
-    /* ====================================================
-       ตรวจสอบสถานะ
-    ==================================================== */
 
     if (![0, 1, 2, 3, 4].includes(statusNum)) {
       return res.status(400).json({
@@ -89,16 +63,11 @@ router.patch("/:id", async (req, res) => {
       });
     }
 
-    /* ====================================================
-       ค้นหา Submission
-    ==================================================== */
-
     const submission =
       await prisma.forensicSubmission.findUnique({
         where: {
           submissionId: id,
         },
-
         include: {
           persons: {
             select: {
@@ -115,11 +84,6 @@ router.patch("/:id", async (req, res) => {
       });
     }
 
-    /* ====================================================
-       ถ้าเดิมเป็น Status 4 แล้ว
-       ห้ามเปลี่ยนกลับ
-    ==================================================== */
-
     if (submission.status === 4) {
       return res.status(400).json({
         success: false,
@@ -127,10 +91,6 @@ router.patch("/:id", async (req, res) => {
           "รายการนี้ส่งคืนต้นสังกัดแล้ว ไม่สามารถเปลี่ยนสถานะได้อีก",
       });
     }
-
-    /* ====================================================
-       ถ้าเป็นสถานะเดิม
-    ==================================================== */
 
     if (submission.status === statusNum) {
       return res.status(400).json({
@@ -141,39 +101,21 @@ router.patch("/:id", async (req, res) => {
 
     const now = new Date();
 
-    /* ====================================================
-       ID ของบุคคลทั้งหมดใน Submission
-    ==================================================== */
-
     const personIds = submission.persons.map(
-      (item) => item.personId,
+      (item) => item.personId
     );
-
-    /* ====================================================
-       TRANSACTION
-    ==================================================== */
 
     const result =
       await prisma.$transaction(async (tx) => {
-        /* ================================================
-           1. Update ForensicSubmission
-        ================================================ */
-
-        const updatedSubmission =
-          await tx.forensicSubmission.update({
-            where: {
-              submissionId: id,
-            },
-
-            data: {
-              status: statusNum,
-              statusUpdatedAt: now,
-            },
-          });
-
-        /* ================================================
-           2. Update Person ทุกคนใน Submission
-        ================================================ */
+        await tx.forensicSubmission.update({
+          where: {
+            submissionId: id,
+          },
+          data: {
+            status: statusNum,
+            statusUpdatedAt: now,
+          },
+        });
 
         if (personIds.length > 0) {
           await tx.person.updateMany({
@@ -182,7 +124,6 @@ router.patch("/:id", async (req, res) => {
                 in: personIds,
               },
             },
-
             data: {
               status: statusNum,
               statusUpdatedAt: now,
@@ -190,10 +131,6 @@ router.patch("/:id", async (req, res) => {
             },
           });
         }
-
-        /* ================================================
-           3. บันทึกประวัติสถานะ
-        ================================================ */
 
         await tx.forensicSubmissionStatusHistory.create({
           data: {
@@ -205,59 +142,40 @@ router.patch("/:id", async (req, res) => {
           },
         });
 
-        /* ================================================
-           4. ดึงข้อมูลใหม่ทั้งหมด
-        ================================================ */
-
-        const finalData =
-          await tx.forensicSubmission.findUnique({
-            where: {
-              submissionId: id,
-            },
-
-            include: {
-              persons: {
-                include: {
-                  person: true,
-                },
-              },
-
-              statusHistories: {
-                orderBy: {
-                  changedAt: "desc",
-                },
+        return await tx.forensicSubmission.findUnique({
+          where: {
+            submissionId: id,
+          },
+          include: {
+            persons: {
+              include: {
+                person: true,
               },
             },
-          });
-
-        return finalData;
+            statusHistories: {
+              orderBy: {
+                changedAt: "desc",
+              },
+            },
+          },
+        });
       });
 
-    /* ====================================================
-       RESPONSE
-    ==================================================== */
-
-    res.json({
+    return res.json({
       success: true,
       data: result,
     });
   } catch (err) {
-    console.error(
-      "PATCH FORENSIC STATUS ERROR:",
-      err,
-    );
+    console.error("PATCH FORENSIC STATUS ERROR:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: "เปลี่ยนสถานะไม่สำเร็จ",
     });
   }
 });
 
-/**
- * GET /api/forensic-status/:id/history
- * ประวัติการเปลี่ยนสถานะ
- */
+// GET /api/forensic-status/:id/history
 router.get("/:id/history", async (req, res) => {
   try {
     const { id } = req.params;
@@ -267,23 +185,22 @@ router.get("/:id/history", async (req, res) => {
         where: {
           submissionId: id,
         },
-
         orderBy: {
           changedAt: "desc",
         },
       });
 
-    res.json({
+    return res.json({
       success: true,
       data: history,
     });
   } catch (err) {
     console.error(
       "GET FORENSIC STATUS HISTORY ERROR:",
-      err,
+      err
     );
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: "ไม่สามารถโหลดประวัติได้",
     });
