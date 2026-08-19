@@ -81,20 +81,14 @@ export default function ForensicStatusPage() {
   const navigate = useNavigate();
 
   const [data, setData] = useState<Submission | null>(null);
-
   const [loading, setLoading] = useState(true);
-
   const [changing, setChanging] = useState(false);
-
   const [error, setError] = useState("");
-
   const [remark, setRemark] = useState("");
 
-  /*
-  |--------------------------------------------------------------------------
-  | LOAD DATA
-  |--------------------------------------------------------------------------
-  */
+  /* =========================================================
+      LOAD DATA
+  ========================================================= */
 
   async function loadData() {
     if (!id) return;
@@ -109,13 +103,8 @@ export default function ForensicStatusPage() {
     } catch (err: any) {
       console.error("FORENSIC STATUS ERROR:", err);
 
-      /*
-       * 401 = ยังไม่ได้ Login
-       */
-
       if (err?.response?.status === 401) {
         setError("หน้านี้สำหรับเจ้าหน้าที่ที่ดูแลเท่านั้น");
-
         return;
       }
 
@@ -129,22 +118,31 @@ export default function ForensicStatusPage() {
     loadData();
   }, [id]);
 
-  /*
-  |--------------------------------------------------------------------------
-  | CHANGE STATUS
-  |--------------------------------------------------------------------------
-  */
+  /* =========================================================
+      CHANGE STATUS
+  ========================================================= */
 
   async function changeStatus(status: number) {
     if (!data) return;
+
+    // ถ้าสถานะ 4 แล้ว ห้ามเปลี่ยนอีก
+    if (data.status === 4) {
+      await Swal.fire({
+        icon: "info",
+        title: "รายการเสร็จสิ้นแล้ว",
+        text: "รายการนี้ส่งคืนต้นสังกัดแล้ว ไม่สามารถเปลี่ยนสถานะได้อีก",
+        confirmButtonText: "ตกลง",
+        confirmButtonColor: "#800020",
+      });
+
+      return;
+    }
 
     if (status === data.status) return;
 
     const confirm = await Swal.fire({
       icon: "question",
-
       title: "ยืนยันการเปลี่ยนสถานะ",
-
       html: `
         <div style="font-size:16px">
           ต้องการเปลี่ยนสถานะเป็น
@@ -153,15 +151,10 @@ export default function ForensicStatusPage() {
           ใช่หรือไม่?
         </div>
       `,
-
       showCancelButton: true,
-
       confirmButtonText: "ยืนยัน",
-
       cancelButtonText: "ยกเลิก",
-
       confirmButtonColor: "#800020",
-
       cancelButtonColor: "#6b7280",
     });
 
@@ -169,12 +162,6 @@ export default function ForensicStatusPage() {
 
     try {
       setChanging(true);
-
-      /*
-       * ไม่ต้องส่ง changedBy จาก Frontend
-       *
-       * Backend จะเอาชื่อจาก req.admin
-       */
 
       const response = await axios.patch(
         `/forensic-status/${data.submissionId}/status`,
@@ -189,11 +176,8 @@ export default function ForensicStatusPage() {
 
         return {
           ...prev,
-
           status: response.data.data.status,
-
           statusName: response.data.data.statusName,
-
           statusUpdatedAt: response.data.data.statusUpdatedAt,
         };
       });
@@ -204,30 +188,19 @@ export default function ForensicStatusPage() {
 
       await Swal.fire({
         icon: "success",
-
         title: "เปลี่ยนสถานะสำเร็จ",
-
         text: response.data?.message || "",
-
         confirmButtonColor: "#800020",
       });
     } catch (err: any) {
       console.error("CHANGE STATUS ERROR:", err);
 
-      /*
-       * Session หมดอายุ / ไม่ได้ Login
-       */
-
       if (err?.response?.status === 401) {
         await Swal.fire({
           icon: "warning",
-
           title: "กรุณาเข้าสู่ระบบ",
-
           text: "หน้านี้สำหรับเจ้าหน้าที่ที่ดูแลเท่านั้น",
-
           confirmButtonText: "เข้าสู่ระบบ",
-
           confirmButtonColor: "#800020",
         });
 
@@ -238,11 +211,8 @@ export default function ForensicStatusPage() {
 
       await Swal.fire({
         icon: "error",
-
         title: "ไม่สามารถเปลี่ยนสถานะได้",
-
         text: err?.response?.data?.error || "เกิดข้อผิดพลาด",
-
         confirmButtonColor: "#800020",
       });
     } finally {
@@ -250,11 +220,9 @@ export default function ForensicStatusPage() {
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | LOADING
-  |--------------------------------------------------------------------------
-  */
+  /* =========================================================
+      LOADING
+  ========================================================= */
 
   if (loading) {
     return (
@@ -268,11 +236,9 @@ export default function ForensicStatusPage() {
     );
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | NO LOGIN / NO DATA
-  |--------------------------------------------------------------------------
-  */
+  /* =========================================================
+      NO LOGIN / NO DATA
+  ========================================================= */
 
   if (error || !data) {
     return (
@@ -302,18 +268,46 @@ export default function ForensicStatusPage() {
     );
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | PAGE
-  |--------------------------------------------------------------------------
-  */
+  /* =========================================================
+      PAGE
+  ========================================================= */
 
   return (
     <div className="min-h-screen bg-gray-100 py-6 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* =========================================================
+        {/* =====================================================
+            BACK BUTTON
+        ===================================================== */}
+
+        <div>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="
+              inline-flex
+              items-center
+              gap-2
+              rounded-xl
+              bg-white
+              px-5
+              py-3
+              text-sm
+              font-semibold
+              text-gray-700
+              shadow-sm
+              transition
+              hover:bg-gray-100
+              hover:text-[#800020]
+            "
+          >
+            <span className="text-lg">←</span>
+            กลับ
+          </button>
+        </div>
+
+        {/* =====================================================
             HEADER
-        ========================================================= */}
+        ===================================================== */}
 
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="bg-[#800020] px-6 py-6 text-white">
@@ -351,9 +345,9 @@ export default function ForensicStatusPage() {
           </div>
         </div>
 
-        {/* =========================================================
+        {/* =====================================================
             STATUS TIMELINE
-        ========================================================= */}
+        ===================================================== */}
 
         <div className="bg-white rounded-2xl shadow-sm p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-6">
@@ -419,66 +413,98 @@ export default function ForensicStatusPage() {
           )}
         </div>
 
-        {/* =========================================================
+        {/* =====================================================
             CHANGE STATUS
-        ========================================================= */}
+        ===================================================== */}
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold text-gray-800">เปลี่ยนสถานะ</h2>
+        {data.status === 4 ? (
+          /* ================= STATUS 4 ================= */
 
-            <span className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full">
-              เจ้าหน้าที่
-            </span>
+          <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                <span className="text-3xl text-green-600">✓</span>
+              </div>
+
+              <h2 className="text-xl font-bold text-green-700">
+                ดำเนินการเสร็จสิ้น
+              </h2>
+
+              <p className="mt-2 text-gray-600">รายการนี้ส่งคืนต้นสังกัดแล้ว</p>
+
+              <p className="mt-1 text-sm text-gray-500">
+                ไม่สามารถเปลี่ยนสถานะของรายการนี้ได้อีก
+              </p>
+            </div>
           </div>
+        ) : (
+          /* ================= STATUS 0–3 ================= */
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              หมายเหตุ
-            </label>
+          <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-bold text-gray-800">เปลี่ยนสถานะ</h2>
 
-            <textarea
-              value={remark}
-              onChange={(e) => setRemark(e.target.value)}
-              rows={3}
-              placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#800020]"
-            />
+              <span className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                เจ้าหน้าที่
+              </span>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                หมายเหตุ
+              </label>
+
+              <textarea
+                value={remark}
+                onChange={(e) => setRemark(e.target.value)}
+                rows={3}
+                placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"
+                className="
+                  w-full
+                  border border-gray-300
+                  rounded-xl
+                  px-4 py-3
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-[#800020]
+                "
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              {STATUS_LIST.map((item) => {
+                const active = item.status === data.status;
+
+                return (
+                  <button
+                    key={item.status}
+                    type="button"
+                    disabled={changing || active}
+                    onClick={() => changeStatus(item.status)}
+                    className={`
+                      rounded-xl px-4 py-3
+                      text-sm font-semibold
+                      transition
+                      ${
+                        active
+                          ? "bg-[#800020] text-white cursor-default"
+                          : "bg-gray-100 text-gray-700 hover:bg-[#800020] hover:text-white"
+                      }
+
+                      ${changing ? "opacity-50 cursor-not-allowed" : ""}
+                    `}
+                  >
+                    {changing && !active ? "กำลังดำเนินการ..." : item.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
+        )}
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-            {STATUS_LIST.map((item) => {
-              const active = item.status === data.status;
-
-              return (
-                <button
-                  key={item.status}
-                  type="button"
-                  disabled={changing || active}
-                  onClick={() => changeStatus(item.status)}
-                  className={`
-                    rounded-xl px-4 py-3
-                    text-sm font-semibold
-                    transition
-                    ${
-                      active
-                        ? "bg-[#800020] text-white cursor-default"
-                        : "bg-gray-100 text-gray-700 hover:bg-[#800020] hover:text-white"
-                    }
-
-                    ${changing ? "opacity-50 cursor-not-allowed" : ""}
-                  `}
-                >
-                  {changing && !active ? "กำลังดำเนินการ..." : item.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* =========================================================
+        {/* =====================================================
             PERSONS
-        ========================================================= */}
+        ===================================================== */}
 
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="p-6 border-b">
@@ -520,9 +546,9 @@ export default function ForensicStatusPage() {
           </div>
         </div>
 
-        {/* =========================================================
+        {/* =====================================================
             HISTORY
-        ========================================================= */}
+        ===================================================== */}
 
         {data.statusHistories.length > 0 && (
           <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -537,7 +563,10 @@ export default function ForensicStatusPage() {
                   className="border-l-4 border-[#800020] pl-4"
                 >
                   <p className="font-semibold text-gray-800">
-                    {getStatusName(history.oldStatus)} →{" "}
+                    {getStatusName(history.oldStatus)}
+
+                    {" → "}
+
                     {getStatusName(history.newStatus)}
                   </p>
 
@@ -561,6 +590,33 @@ export default function ForensicStatusPage() {
             </div>
           </div>
         )}
+
+        {/* =====================================================
+            BACK BUTTON BOTTOM
+        ===================================================== */}
+
+        <div className="pb-6">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="
+              w-full
+              rounded-xl
+              bg-white
+              px-5
+              py-3
+              text-sm
+              font-semibold
+              text-gray-700
+              shadow-sm
+              transition
+              hover:bg-gray-100
+              hover:text-[#800020]
+            "
+          >
+            ← กลับหน้าก่อนหน้า
+          </button>
+        </div>
       </div>
     </div>
   );

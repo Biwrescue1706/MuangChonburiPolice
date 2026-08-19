@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import api from "../../api/axios";
 
 export default function ForensicQrScanner() {
   const navigate = useNavigate();
@@ -81,7 +82,6 @@ export default function ForensicQrScanner() {
           },
 
           aspectRatio: 1,
-
           disableFlip: false,
         },
 
@@ -98,13 +98,6 @@ export default function ForensicQrScanner() {
 
           await stopScanner();
 
-          /*
-           * รองรับ QR ที่เป็น URL
-           *
-           * เช่น
-           * https://policy-muangchonburi.smartdorm-biwboong.shop/forensic-status/xxxx
-           */
-
           try {
             const url = new URL(decodedText);
 
@@ -119,26 +112,74 @@ export default function ForensicQrScanner() {
                 confirmButtonColor: "#800020",
               });
 
-              startScanner();
+              await startScanner();
               return;
             }
 
             const submissionId = match[1];
 
-            // ไปหน้าแสดงข้อมูล
-            navigate(`/forensic-status/${submissionId}`);
+            /* ================= ดึงข้อมูล ================= */
+
+            const response = await api.get(`/forensic-status/${submissionId}`);
+
+            const submission = response.data;
+
+            const status = Number(submission?.status);
+
+            console.log("Submission ID:", submissionId);
+            console.log("Submission Status:", status);
+
+            /*
+             * STATUS
+             *
+             * 0 = รอส่ง ศพฐ.
+             * 1 = เตรียมเอกสารส่ง ศพฐ. แล้ว
+             * 2 = ส่ง ศพฐ. แล้ว
+             * 3 = รับจาก ศพฐ. แล้ว
+             * 4 = ส่งคืนต้นสังกัดแล้ว
+             */
+
+            /* ================= STATUS 4 ================= */
+
+            if (status === 4) {
+              await Swal.fire({
+                icon: "info",
+                title: "เอกสารดำเนินการเสร็จสิ้น",
+                text: "รายการนี้ส่งคืนต้นสังกัดแล้ว",
+                confirmButtonText: "ดูข้อมูล",
+                confirmButtonColor: "#800020",
+              });
+
+              navigate(`/forensic-status/${submissionId}`, {
+                state: {
+                  status: 4,
+                  completed: true,
+                },
+              });
+
+              return;
+            }
+
+            /* ================= STATUS อื่น ================= */
+
+            navigate(`/forensic-status/${submissionId}`, {
+              state: {
+                status,
+                completed: false,
+              },
+            });
           } catch (error) {
-            console.error("QR URL Error:", error);
+            console.error("QR Error:", error);
 
             await Swal.fire({
               icon: "error",
-              title: "QR Code ไม่ถูกต้อง",
-              text: "ไม่สามารถอ่านข้อมูลจาก QR Code นี้ได้",
+              title: "ไม่พบข้อมูล",
+              text: "ไม่สามารถโหลดข้อมูลเอกสารนี้ได้",
               confirmButtonText: "ตกลง",
               confirmButtonColor: "#800020",
             });
 
-            startScanner();
+            await startScanner();
           }
         },
 
@@ -173,11 +214,6 @@ export default function ForensicQrScanner() {
         const capabilities = track.getCapabilities();
 
         console.log("Camera capabilities:", capabilities);
-
-        /*
-         * focusMode ไม่มีใน TypeScript บางเวอร์ชัน
-         * จึงอ่านแบบ dynamic
-         */
 
         const cameraCapabilities = capabilities as MediaTrackCapabilities & {
           focusMode?: string[];
@@ -230,7 +266,7 @@ export default function ForensicQrScanner() {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="mx-auto w-full max-w-2xl">
-        {/* Header */}
+        {/* ================= HEADER ================= */}
 
         <div className="mb-6 rounded-3xl bg-[#800020] p-6 text-white shadow-lg">
           <h1 className="text-3xl font-bold">สแกนเอกสารส่งตรวจ ศพฐ.</h1>
@@ -240,7 +276,7 @@ export default function ForensicQrScanner() {
           </p>
         </div>
 
-        {/* Scanner Card */}
+        {/* ================= CAMERA CARD ================= */}
 
         <div className="overflow-hidden rounded-3xl bg-white p-5 shadow-lg">
           <div className="mb-4 flex items-center justify-between">
@@ -266,34 +302,27 @@ export default function ForensicQrScanner() {
             </button>
           </div>
 
-          {/* Camera */}
+          {/* ================= CAMERA ================= */}
 
           <div className="relative overflow-hidden rounded-3xl bg-black">
             <div id="forensic-qr-reader" className="w-full" />
-
-            {/* Scanner Overlay */}
 
             {!cameraError && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <div className="relative h-64 w-64 sm:h-72 sm:w-72">
                   {/* มุมซ้ายบน */}
-
                   <div className="absolute left-0 top-0 h-12 w-12 border-l-4 border-t-4 border-white" />
 
                   {/* มุมขวาบน */}
-
                   <div className="absolute right-0 top-0 h-12 w-12 border-r-4 border-t-4 border-white" />
 
                   {/* มุมซ้ายล่าง */}
-
                   <div className="absolute bottom-0 left-0 h-12 w-12 border-b-4 border-l-4 border-white" />
 
                   {/* มุมขวาล่าง */}
-
                   <div className="absolute bottom-0 right-0 h-12 w-12 border-b-4 border-r-4 border-white" />
 
                   {/* เส้นสแกน */}
-
                   {!starting && (
                     <div className="absolute left-3 right-3 top-1/2 h-0.5 animate-pulse bg-red-500" />
                   )}
@@ -302,7 +331,7 @@ export default function ForensicQrScanner() {
             )}
           </div>
 
-          {/* Status */}
+          {/* ================= STATUS ================= */}
 
           <div className="mt-5 text-center">
             {starting ? (
@@ -320,7 +349,7 @@ export default function ForensicQrScanner() {
             </p>
           </div>
 
-          {/* Retry */}
+          {/* ================= RETRY ================= */}
 
           {cameraError && (
             <button
