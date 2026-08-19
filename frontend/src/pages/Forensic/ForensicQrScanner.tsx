@@ -66,22 +66,23 @@ export default function ForensicQrScanner() {
           facingMode: "environment",
         },
         {
-          fps: 10,
+          fps: 20,
 
           qrbox: (viewfinderWidth, viewfinderHeight) => {
-            const size = Math.min(
-              viewfinderWidth * 0.75,
-              viewfinderHeight * 0.75,
-              320,
-            );
+            /*
+             * กรอบใหญ่ขึ้น เพื่อให้ QR ที่อยู่ใกล้ประมาณ 10 ซม.
+             * หรือ QR ที่แสดงบนหน้าจอ/กระดาษอยู่ในพื้นที่ตรวจจับได้ง่าย
+             */
+            const width = Math.floor(viewfinderWidth * 0.9);
+            const height = Math.floor(viewfinderHeight * 0.75);
 
             return {
-              width: Math.floor(size),
-              height: Math.floor(size),
+              width,
+              height,
             };
           },
 
-          aspectRatio: 1,
+          aspectRatio: 1.7777778,
           disableFlip: false,
         },
 
@@ -224,11 +225,28 @@ export default function ForensicQrScanner() {
             advanced: [
               {
                 focusMode: "continuous",
-              } as MediaTrackConstraintSet,
+              } as any,
             ],
           });
 
           console.log("เปิด Continuous Autofocus แล้ว");
+
+          // กระตุ้น autofocus ซ้ำหลังเปิดกล้อง
+          setTimeout(async () => {
+            try {
+              await track.applyConstraints({
+                advanced: [
+                  {
+                    focusMode: "continuous",
+                  } as any,
+                ],
+              });
+
+              console.log("Refresh autofocus แล้ว");
+            } catch (error) {
+              console.log("Refresh autofocus:", error);
+            }
+          }, 500);
         }
       } catch (focusError) {
         console.log("ไม่สามารถตั้ง autofocus:", focusError);
@@ -345,7 +363,7 @@ export default function ForensicQrScanner() {
             )}
 
             <p className="mt-2 text-xs text-gray-400">
-              แนะนำให้ถือโทรศัพท์ห่างจาก QR Code ประมาณ 15–30 ซม.
+              รองรับการสแกนตั้งแต่ประมาณ 10 ซม. ขึ้นไป • ไม่จำเป็นต้องซูม
             </p>
           </div>
 
