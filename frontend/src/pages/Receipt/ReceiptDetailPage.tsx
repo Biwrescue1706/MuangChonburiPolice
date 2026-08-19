@@ -63,7 +63,7 @@ export default function ReceiptDetailPage() {
   const { day, month, year } = splitDate(data.receiptDate);
 
   return (
-    <div className="container py-4 main-content">
+    <div className="container px-5 py-4 main-content">
       <button
         className="btn btn-secondary mb-3"
         onClick={() => navigate("/receipt")}
@@ -91,7 +91,7 @@ export default function ReceiptDetailPage() {
         </div>
 
         {/* LOGO */}
-        <div className="text-center mb-2">
+        <div className="text-center justify-content-center  mb-2">
           <img src="/images.png" width={40} alt="logo" />
         </div>
 

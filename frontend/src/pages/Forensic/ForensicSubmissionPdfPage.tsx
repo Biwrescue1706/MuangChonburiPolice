@@ -69,9 +69,7 @@ export default function ForensicSubmissionPdfPage() {
     }
   };
 
-  // =========================================================
   // PDF ส่ง ศพฐ.
-  // =========================================================
 
   const handleGeneratePdf = async () => {
     if (!data) return;
@@ -98,9 +96,7 @@ export default function ForensicSubmissionPdfPage() {
     });
   };
 
-  // =========================================================
   // PDF ส่งเงิน
-  // =========================================================
 
   const handleGeneratePdf2 = async () => {
     if (!data) return;
@@ -121,9 +117,7 @@ export default function ForensicSubmissionPdfPage() {
     });
   };
 
-  // =========================================================
   // วันที่ไทยแบบย่อ
-  // =========================================================
 
   const formatShortThaiDate = (
     dateString?: string,
@@ -156,9 +150,7 @@ export default function ForensicSubmissionPdfPage() {
     return `${day} ${months[month] || month} ${year.slice(-2)}`;
   };
 
-  // =========================================================
   // Loading
-  // =========================================================
 
   if (loading) {
     return (
@@ -176,14 +168,12 @@ export default function ForensicSubmissionPdfPage() {
     );
   }
 
-  // =========================================================
   // ไม่พบข้อมูล
-  // =========================================================
 
   if (!data) {
     return (
       <div className="main-content min-h-screen bg-gray-50 px-3 py-6 sm:px-4 lg:px-6">
-        <div className="mx-auto max-w-[1400px]">
+        <div className="mx-auto px-8 max-w-[1200px]">
           <div className="rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm">
 
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">

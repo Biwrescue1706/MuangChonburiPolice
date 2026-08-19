@@ -26,9 +26,7 @@ export default function ReceiptListPage() {
     window.innerWidth >= 1200,
   );
 
-  // =========================================================
   // RESPONSIVE
-  // =========================================================
 
   useEffect(() => {
     const handleResize = () => {
@@ -42,9 +40,7 @@ export default function ReceiptListPage() {
     };
   }, []);
 
-  // =========================================================
   // FETCH
-  // =========================================================
 
   const fetchData = async () => {
     try {
@@ -65,9 +61,7 @@ export default function ReceiptListPage() {
     fetchData();
   }, []);
 
-  // =========================================================
   // PARSE THAI DATE
-  // =========================================================
 
   const parseThaiDate = (dateStr?: string) => {
     if (!dateStr) return 0;
@@ -106,9 +100,7 @@ export default function ReceiptListPage() {
     return new Date(year, month, day).getTime();
   };
 
-  // =========================================================
   // SEARCH
-  // =========================================================
 
   const filtered = data.filter((item) =>
     `${item.fullName} ${item.receiptNo} ${item.receiptBookNo}`
@@ -116,9 +108,7 @@ export default function ReceiptListPage() {
       .includes(search.toLowerCase()),
   );
 
-  // =========================================================
   // SORT
-  // =========================================================
 
   const sorted = [...filtered].sort((a, b) => {
     const dateA = a.receiptDate
@@ -132,9 +122,7 @@ export default function ReceiptListPage() {
     return dateB - dateA;
   });
 
-  // =========================================================
   // FORMAT DATE
-  // =========================================================
 
   const formatDate = (date?: string) => {
     if (!date) return "-";
@@ -156,18 +144,14 @@ export default function ReceiptListPage() {
     });
   };
 
-  // =========================================================
   // TOTAL MONEY
-  // =========================================================
 
   const totalMoney = sorted.reduce(
     (sum, item) => sum + Number(item.money || 0),
     0,
   );
 
-  // =========================================================
   // LOADING
-  // =========================================================
 
   if (loading) {
     return (
@@ -189,7 +173,7 @@ export default function ReceiptListPage() {
 
   return (
     <div className="main-content min-h-screen bg-gray-50 px-3 py-4 sm:px-4 lg:px-6">
-      <div className="mx-auto w-full max-w-[1400px]">
+      <div className="mx-auto px-4 w-full max-w-[1400px]">
 
         {/* ===================================================
             HEADER

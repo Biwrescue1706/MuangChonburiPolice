@@ -78,11 +78,6 @@ app.get("/health", async (_, res) => {
   }
 });
 
-/* ================= DEBUG ALIVE ================= */
-setInterval(() => {
-  console.log("🟢 alive:", new Date().toISOString());
-}, 150000);
-
 /* ================= ERROR ================= */
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });

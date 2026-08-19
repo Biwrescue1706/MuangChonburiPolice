@@ -50,26 +50,20 @@ export default function Nav() {
     },
     {
       path: "/person/history",
-      label: "ประวัติ",
-      description: "ข้อมูลประวัติบุคคล",
+      label: "ประวัติทั้งหมดแต่ละบุคคล",
+      description: "ข้อมูลประวัติทั้งหมดแต่ละบุคคล",
       icon: "history",
     },
     {
-      path: "/status-history",
-      label: "รายงานการส่งตรวจ",
-      description: "ติดตามสถานะการส่งตรวจ",
-      icon: "chart",
-    },
-    {
       path: "/forensic-submission",
-      label: "ส่ง ศพฐ.",
-      description: "จัดการการส่งตรวจ",
+      label: "ออกเลขหนังสือ ส่ง ศพฐ.",
+      description: "จัดการ การออกเลขหนังสือ ส่ง ศพฐ.",
       icon: "send",
     },
     {
       path: "/forensic-submission/list",
-      label: "รายการหนังสือ ศพฐ.",
-      description: "รายการหนังสือส่งตรวจ",
+      label: "รายการหนังสือ ที่ส่ง ศพฐ",
+      description: "รายการหนังสือส่งตรวจ กับ ศพฐ.",
       icon: "document",
     },
     {
@@ -86,13 +80,13 @@ export default function Nav() {
     },
     {
       path: "/organization",
-      label: "หน่วยงาน",
+      label: "ข้อมูลหน่วยงาน",
       description: "ข้อมูลหน่วยงาน",
       icon: "building",
     },
     {
       path: "/profile",
-      label: "โปรไฟล์",
+      label: "โปรไฟล์บุคคล",
       description: "ข้อมูลบัญชีของฉัน",
       icon: "settings",
     },
@@ -317,23 +311,7 @@ export default function Nav() {
   return (
     <>
       {/* TOPBAR */}
-      <header
-        className="
-          fixed
-          left-0
-          top-0
-          z-40
-          h-[58px]
-          w-full
-          border-b
-          border-white/10
-          bg-gradient-to-r
-          from-[#720019]
-          to-[#800020]
-          text-white
-          shadow-lg
-        "
-      >
+      <header className="fixed left-0 top-0 z-40 h-[58px] w-full border-b border-white/10 bg-gradient-to-r from-[#720019] to-[#800020] text-white shadow-lg">
         <div
           className="
           relative
@@ -343,13 +321,12 @@ export default function Nav() {
           w-full
           items-center
           px-3
+          min-[480px]:px-2
 
-          min-[480px]:px-4
-
-          min-[768px]:px-6
+          min-[768px]:px-2
 
           min-[1200px]:pl-[120px]
-          min-[1200px]:pr-6
+          min-[1200px]:pr-2
         "
         >
           {/* MOBILE MENU BUTTON*/}
@@ -360,7 +337,7 @@ export default function Nav() {
             className="
               flex
               h-10
-              w-10
+              w-20
               items-center
               justify-center
               rounded-xl
@@ -508,7 +485,7 @@ export default function Nav() {
         min-[1200px]:flex
         min-[1200px]:w-[100px]
 
-        min-[1350px]:w-[220px]
+        min-[1200px]:w-[240px]
       "
       >
         {/* Sidebar Logo */}
@@ -547,7 +524,7 @@ export default function Nav() {
             ml-2
             hidden
 
-            min-[1350px]:block
+            min-[1200px]:block
           "
           >
             <p className="text-xs font-bold">งานพิมพ์มือตรวจประวัติ</p>
@@ -566,7 +543,7 @@ export default function Nav() {
           overflow-y-auto
           p-2
 
-          min-[1350px]:p-3
+          min-[1200px]:p-3
         "
         >
           {menuItems.map((item) => {
@@ -593,9 +570,9 @@ export default function Nav() {
                   transition-all
                   duration-200
 
-                  min-[1350px]:justify-start
-                  min-[1350px]:gap-3
-                  min-[1350px]:px-3
+                  min-[1200px]:justify-start
+                  min-[1200px]:gap-3
+                  min-[1200px]:px-2
 
                   ${
                     active
@@ -617,7 +594,7 @@ export default function Nav() {
                     rounded-r-full
                     bg-[#800020]
 
-                    min-[1350px]:-left-[1px]
+                    min-[1200px]:-left-[1px]
                   "
                   />
                 )}
@@ -632,7 +609,7 @@ export default function Nav() {
                   min-w-0
                   flex-1
 
-                  min-[1350px]:block
+                  min-[1200px]:block
                 "
                 >
                   <span className="block truncate text-xs font-bold">
@@ -665,7 +642,7 @@ export default function Nav() {
           border-white/10
           p-2
 
-          min-[1350px]:p-3
+          min-[1200px]:p-3
         "
         >
           <button
@@ -686,9 +663,9 @@ export default function Nav() {
 
               hover:bg-red-600
 
-              min-[1350px]:justify-start
-              min-[1350px]:gap-3
-              min-[1350px]:px-3
+              min-[1200px]:justify-start
+              min-[1200px]:gap-3
+              min-[1200px]:px-3
             "
           >
             <LogoutIcon />
@@ -699,7 +676,7 @@ export default function Nav() {
               text-xs
               font-bold
 
-              min-[1350px]:block
+              min-[1200px]:block
             "
             >
               ออกจากระบบ
@@ -1037,7 +1014,7 @@ export default function Nav() {
 
         min-[1200px]:ml-[100px]
 
-        min-[1350px]:ml-[220px]
+        min-[1200px]:ml-[260px]
       "
       >
         <Outlet />

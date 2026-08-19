@@ -158,7 +158,7 @@ export default function OrganizationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-7xl">
+      <div className="mx-auto px-3 w-full max-w-7xl">
         {/* HEADER */}
         <div className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-[#800020] via-[#6d001b] to-[#3d000e] p-6 text-white shadow-xl sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">

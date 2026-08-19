@@ -15,10 +15,7 @@ export default function ForensicSubmissionListPage() {
     window.innerWidth >= 1200,
   );
 
-  // =========================================================
   // LOAD DATA
-  // =========================================================
-
   useEffect(() => {
     fetchData();
 
@@ -48,10 +45,7 @@ export default function ForensicSubmissionListPage() {
     }
   };
 
-  // =========================================================
   // DATE
-  // =========================================================
-
   const formatThaiDate = (dateString: string) => {
     if (!dateString) return "-";
 
@@ -68,10 +62,7 @@ export default function ForensicSubmissionListPage() {
     });
   };
 
-  // =========================================================
   // DELETE
-  // =========================================================
-
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
       title: "ต้องการลบรายการนี้ใช่หรือไม่?",
@@ -118,10 +109,7 @@ export default function ForensicSubmissionListPage() {
     }
   };
 
-  // =========================================================
   // LOADING
-  // =========================================================
-
   if (loading) {
     return (
       <div className="main-content min-h-screen bg-gray-50 px-3 py-5 sm:px-4 lg:px-6">
@@ -142,14 +130,10 @@ export default function ForensicSubmissionListPage() {
 
   return (
     <div className="main-content min-h-screen bg-gray-50 px-3 py-4 sm:px-4 lg:px-6">
-      <div className="mx-auto w-full max-w-[1400px]">
+      <div className="mx-auto px-4 w-full max-w-[1400px]">
 
-        {/* ===================================================
-            HEADER
-        =================================================== */}
-
+        {/* HEADER */}
         <div className="mb-5 overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] shadow-lg">
-
           <div className="px-5 py-5 sm:px-7">
 
             <div className="flex items-center gap-3">
