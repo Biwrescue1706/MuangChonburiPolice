@@ -60,7 +60,7 @@ function App() {
 
           <Route path="/forensic-scan" element={<ForensicScanPage />} />
           <Route path="/forensic-status/:id" element={<ForensicStatusPage />} />
-          
+
           <Route path="/receipt" element={<ReceiptListPage />} />
           <Route path="/receipt/:id" element={<ReceiptDetailPage />} />
 
