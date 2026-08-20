@@ -35,68 +35,85 @@ export default function Nav() {
   };
 
   // MENU DATA
-  const menuItems = [
-    {
-      path: "/dashboard",
-      label: "หน้าแรก",
-      description: "ภาพรวมระบบ",
-      icon: "home",
-    },
-    {
-      path: "/person/create",
-      label: "เพิ่มบุคคลตรวจ",
-      description: "บันทึกข้อมูลบุคคล",
-      icon: "personAdd",
-    },
-    {
-      path: "/person/history",
-      label: "ประวัติทั้งหมดแต่ละบุคคล",
-      description: "ข้อมูลประวัติทั้งหมดแต่ละบุคคล",
-      icon: "history",
-    },
-    {
-      path: "/forensic-submission",
-      label: "ออกเลขหนังสือ ส่ง ศพฐ.",
-      description: "จัดการ การออกเลขหนังสือ ส่ง ศพฐ.",
-      icon: "send",
-    },
-    {
-      path: "/forensic-submission/list",
-      label: "รายการหนังสือ ที่ส่ง ศพฐ",
-      description: "รายการหนังสือส่งตรวจ กับ ศพฐ.",
-      icon: "document",
-    },
-    {
-      path: "/forensic-scan",
-      label: "สแกนเอกสาร",
-      description: "สแกน QR Code เอกสาร ศพฐ.",
-      icon: "scan",
-    },
-    {
-      path: "/receipt",
-      label: "ใบเสร็จ",
-      description: "จัดการข้อมูลใบเสร็จ",
-      icon: "receipt",
-    },
-    {
-      path: "/admin/create",
-      label: "Admin",
-      description: "จัดการผู้ดูแลระบบ",
-      icon: "admin",
-    },
-    {
-      path: "/organization",
-      label: "ข้อมูลหน่วยงาน",
-      description: "ข้อมูลหน่วยงาน",
-      icon: "building",
-    },
-    {
-      path: "/profile",
-      label: "โปรไฟล์บุคคล",
-      description: "ข้อมูลบัญชีของฉัน",
-      icon: "settings",
-    },
-  ];
+  // MENU DATA
+const menuItems = [
+  {
+    path: "/dashboard",
+    label: "หน้าแรก",
+    description: "ภาพรวมระบบ",
+    icon: "home",
+  },
+
+  {
+    label: "บุคคลตรวจ",
+    icon: "person",
+    children: [
+      {
+        path: "/person/create",
+        label: "เพิ่มบุคคลตรวจ",
+        description: "บันทึกข้อมูลบุคคล",
+        icon: "personAdd",
+      },
+      {
+        path: "/person/history",
+        label: "ประวัติทั้งหมดแต่ละบุคคล",
+        description: "ข้อมูลประวัติทั้งหมดแต่ละบุคคล",
+        icon: "history",
+      },
+    ],
+  },
+
+  {
+    label: "ส่ง ศพฐ.",
+    icon: "send",
+    children: [
+      {
+        path: "/forensic-submission",
+        label: "ออกเลขหนังสือ ส่ง ศพฐ.",
+        description: "จัดการการออกเลขหนังสือ ส่ง ศพฐ.",
+        icon: "send",
+      },
+      {
+        path: "/forensic-submission/list",
+        label: "รายการหนังสือ ที่ส่ง ศพฐ.",
+        description: "รายการหนังสือส่งตรวจ กับ ศพฐ.",
+        icon: "document",
+      },
+    ],
+  },
+
+  {
+    path: "/forensic-scan",
+    label: "สแกนเอกสาร",
+    description: "สแกน QR Code เอกสาร ศพฐ.",
+    icon: "scan",
+  },
+
+  {
+    label: "ตั้งค่า",
+    icon: "settings",
+    children: [
+      {
+        path: "/admin/create",
+        label: "จัดการ Admin",
+        description: "จัดการผู้ดูแลระบบ",
+        icon: "admin",
+      },
+      {
+        path: "/organization",
+        label: "ข้อมูลหน่วยงาน",
+        description: "ข้อมูลหน่วยงาน",
+        icon: "building",
+      },
+      {
+        path: "/profile",
+        label: "โปรไฟล์บุคคล",
+        description: "ข้อมูลบัญชีของฉัน",
+        icon: "settings",
+      },
+    ],
+  },
+];
 
   // ICON
   const MenuIcon = ({ type, size = 21 }: { type: string; size?: number }) => {
