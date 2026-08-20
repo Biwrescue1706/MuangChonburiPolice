@@ -17,8 +17,7 @@ import PersonDetailPage from "./pages/Person/PersonDetailPage";
 import PersonHistoryPage from "./pages/History/PersonHistoryPage";
 import PersonEditPage from "./pages/Person/PersonEditPage";
 import OrganizationPage from "./pages/OrganizationPage";
-import ReceiptListPage from "./pages/Receipt/ReceiptListPage";
-import ReceiptDetailPage from "./pages/Receipt/ReceiptDetailPage";
+
 import StatusHistoryPage from "./pages/History/StatusHistoryPage";
 import ForensicSubmissionPage from "./pages/Forensic/ForensicSubmissionPage";
 import ForensicSubmissionListPage from "./pages/Forensic/ForensicSubmissionListPage";
@@ -60,9 +59,6 @@ function App() {
 
           <Route path="/forensic-scan" element={<ForensicScanPage />} />
           <Route path="/forensic-status/:id" element={<ForensicStatusPage />} />
-
-          <Route path="/receipt" element={<ReceiptListPage />} />
-          <Route path="/receipt/:id" element={<ReceiptDetailPage />} />
 
           {/* ⭐ STATUS FLOW */}
           <Route path="/person/edit/:id" element={<PersonEditPage />} />
