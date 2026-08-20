@@ -153,30 +153,12 @@ export default function Nav() {
     },
 
     {
-      label: "ตั้งค่า",
-      icon: "settings",
-      children: [
-        {
-          path: "/admin/create",
-          label: "จัดการ Admin",
-          description: "จัดการผู้ดูแลระบบ",
-          icon: "admin",
-        },
-        {
-          path: "/organization",
-          label: "ข้อมูลหน่วยงาน",
-          description: "ข้อมูลหน่วยงาน",
-          icon: "building",
-        },
-        {
-          path: "/profile",
-          label: "โปรไฟล์บุคคล",
-          description: "ข้อมูลบัญชีของฉัน",
-          icon: "settings",
-        },
-      ],
-    },
-  ];
+    path: "/settings",
+    label: "ตั้งค่า",
+    description: "จัดการการตั้งค่าระบบ",
+    icon: "settings",
+  },
+];
 
   // ============================================================
   // MENU ICON
