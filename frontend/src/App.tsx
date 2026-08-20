@@ -18,6 +18,8 @@ import PersonHistoryPage from "./pages/History/PersonHistoryPage";
 import PersonEditPage from "./pages/Person/PersonEditPage";
 import OrganizationPage from "./pages/OrganizationPage";
 
+import Settings from "./pages/Settings";
+
 import StatusHistoryPage from "./pages/History/StatusHistoryPage";
 import ForensicSubmissionPage from "./pages/Forensic/ForensicSubmissionPage";
 import ForensicSubmissionListPage from "./pages/Forensic/ForensicSubmissionListPage";
@@ -65,6 +67,8 @@ function App() {
 
           {/* ⭐ HISTORY */}
           <Route path="/person/history" element={<PersonHistoryPage />} />
+
+<Route path="/settings" element={<Settings />} />
 
           {/* DETAIL */}
           <Route path="/person/:id" element={<PersonDetailPage />} />
