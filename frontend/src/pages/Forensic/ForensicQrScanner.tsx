@@ -1,4 +1,5 @@
 // src/pages/Forensic/ForensicQrScanner.tsx
+
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from "react-router-dom";
@@ -10,39 +11,43 @@ export default function ForensicQrScanner() {
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanningRef = useRef(false);
+  const mountedRef = useRef(true);
 
   const [starting, setStarting] = useState(true);
   const [cameraError, setCameraError] = useState(false);
+
+  /* ======================================================
+     UUID
+  ====================================================== */
+
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
   /* ======================================================
      STOP CAMERA
   ====================================================== */
 
   const stopScanner = async () => {
+    scanningRef.current = false;
+
+    const scanner = scannerRef.current;
+
+    if (!scanner) {
+      return;
+    }
+
+    scannerRef.current = null;
+
     try {
-      scanningRef.current = false;
-
-      if (!scannerRef.current) {
-        return;
-      }
-
-      const scanner = scannerRef.current;
-
-      scannerRef.current = null;
-
-      try {
-        await scanner.stop();
-      } catch (error) {
-        console.log("Scanner stop:", error);
-      }
-
-      try {
-        await scanner.clear();
-      } catch (error) {
-        console.log("Scanner clear:", error);
-      }
+      await scanner.stop();
     } catch (error) {
-      console.error("Stop scanner error:", error);
+      console.log("Scanner stop:", error);
+    }
+
+    try {
+      await scanner.clear();
+    } catch (error) {
+      console.log("Scanner clear:", error);
     }
   };
 
@@ -50,51 +55,142 @@ export default function ForensicQrScanner() {
      GET SUBMISSION ID FROM QR
   ====================================================== */
 
-  const getSubmissionIdFromQr = (decodedText: string): string | null => {
+  const getSubmissionIdFromQr = (
+    decodedText: string,
+  ): string | null => {
     const value = decodedText.trim();
+
+    console.log("================================");
+    console.log("QR RAW VALUE:");
+    console.log(value);
+    console.log("================================");
 
     if (!value) {
       return null;
     }
 
-    /*
-     * ==================================================
-     * แบบใหม่
-     *
-     * QR เก็บแค่
-     * 15ab6ebf-3098-444e-88d3-e3229afd216c
-     * ==================================================
-     */
+    /* ====================================================
+       1. QR เป็น UUID ตรง ๆ
 
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+       เช่น
+       15ab6ebf-3098-444e-88d3-e3229afd216c
+    ==================================================== */
 
     if (uuidRegex.test(value)) {
+      console.log("QR TYPE: UUID");
+
       return value;
     }
 
-    /*
-     * ==================================================
-     * รองรับ QR แบบเก่า
-     *
-     * https://.../forensic-status/:id
-     * ==================================================
-     */
+    /* ====================================================
+       2. QR เป็น URL
+
+       เช่น
+       https://xxx.com/forensic-status/UUID
+
+       หรือ
+       https://xxx.com/forensic-status/UUID?xxx=xxx
+    ==================================================== */
 
     try {
       const url = new URL(value);
 
-      const match = url.pathname.match(/^\/forensic-status\/([^/]+)$/);
+      console.log("QR URL:", url.href);
+      console.log("QR PATH:", url.pathname);
 
-      if (match?.[1]) {
-        const oldId = decodeURIComponent(match[1]);
+      /* -----------------------------------------------
+         /forensic-status/:id
+      ------------------------------------------------ */
 
-        if (uuidRegex.test(oldId)) {
-          return oldId;
+      const pathMatch =
+        url.pathname.match(
+          /\/forensic-status\/([^/]+)$/i,
+        );
+
+      if (pathMatch?.[1]) {
+        const id = decodeURIComponent(
+          pathMatch[1],
+        );
+
+        if (uuidRegex.test(id)) {
+          console.log(
+            "QR TYPE: FORENSIC STATUS URL",
+          );
+
+          return id;
         }
       }
+
+      /* -----------------------------------------------
+         /forensic-submission/:id
+      ------------------------------------------------ */
+
+      const submissionMatch =
+        url.pathname.match(
+          /\/forensic-submission\/([^/]+)$/i,
+        );
+
+      if (submissionMatch?.[1]) {
+        const id = decodeURIComponent(
+          submissionMatch[1],
+        );
+
+        if (uuidRegex.test(id)) {
+          console.log(
+            "QR TYPE: FORENSIC SUBMISSION URL",
+          );
+
+          return id;
+        }
+      }
+
+      /* -----------------------------------------------
+         Query String
+
+         ?id=UUID
+         ?submissionId=UUID
+      ------------------------------------------------ */
+
+      const queryId =
+        url.searchParams.get("submissionId") ||
+        url.searchParams.get("id");
+
+      if (
+        queryId &&
+        uuidRegex.test(queryId)
+      ) {
+        console.log(
+          "QR TYPE: QUERY STRING",
+        );
+
+        return queryId;
+      }
     } catch {
-      // ไม่ใช่ URL
+      console.log(
+        "QR ไม่ใช่ URL",
+      );
+    }
+
+    /* ====================================================
+       3. เผื่อ QR มีข้อความอื่นปนมา
+
+       เช่น
+
+       submissionId:
+       15ab6ebf-3098-444e-88d3-e3229afd216c
+    ==================================================== */
+
+    const uuidMatch =
+      value.match(
+        /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i,
+      );
+
+    if (uuidMatch?.[0]) {
+      console.log(
+        "QR TYPE: UUID INSIDE TEXT",
+      );
+
+      return uuidMatch[0];
     }
 
     return null;
@@ -104,41 +200,113 @@ export default function ForensicQrScanner() {
      SAVE SCAN AUTHORIZATION
   ====================================================== */
 
-  const authorizeScan = (submissionId: string) => {
-    /*
-     * สิทธิ์ทั่วไป
-     */
-    sessionStorage.setItem("forensic_scan_authorized", "true");
-
-    /*
-     * ID ที่เพิ่งสแกน
-     */
-    sessionStorage.setItem("forensic_scan_id", submissionId);
-
-    /*
-     * สิทธิ์เฉพาะ Submission
-     */
-    sessionStorage.setItem(`forensic-scan-${submissionId}`, "true");
-
-    console.log("================================");
-
-    console.log("FORENSIC SCAN AUTHORIZED");
-
-    console.log("Submission ID:", submissionId);
-
-    console.log(
-      "Authorized:",
-      sessionStorage.getItem("forensic_scan_authorized"),
+  const authorizeScan = (
+    submissionId: string,
+  ) => {
+    sessionStorage.setItem(
+      "forensic_scan_authorized",
+      "true",
     );
 
-    console.log("Scan ID:", sessionStorage.getItem("forensic_scan_id"));
-
-    console.log(
-      "Per ID:",
-      sessionStorage.getItem(`forensic-scan-${submissionId}`),
+    sessionStorage.setItem(
+      "forensic_scan_id",
+      submissionId,
     );
 
-    console.log("================================");
+    sessionStorage.setItem(
+      `forensic-scan-${submissionId}`,
+      "true",
+    );
+
+    console.log(
+      "================================",
+    );
+
+    console.log(
+      "FORENSIC SCAN AUTHORIZED",
+    );
+
+    console.log(
+      "Submission ID:",
+      submissionId,
+    );
+
+    console.log(
+      "================================",
+    );
+  };
+
+  /* ======================================================
+     LOAD SUBMISSION
+  ====================================================== */
+
+  const loadSubmission = async (
+    submissionId: string,
+  ) => {
+    console.log(
+      "================================",
+    );
+
+    console.log(
+      "GET FORENSIC STATUS",
+    );
+
+    console.log(
+      "Submission ID:",
+      submissionId,
+    );
+
+    console.log(
+      "URL:",
+      `/forensic-status/${submissionId}`,
+    );
+
+    console.log(
+      "================================",
+    );
+
+    try {
+      const response =
+        await api.get(
+          `/forensic-status/${encodeURIComponent(
+            submissionId,
+          )}`,
+        );
+
+      console.log(
+        "FORENSIC STATUS RESPONSE:",
+        response.data,
+      );
+
+      const submission =
+        response?.data?.data ??
+        response?.data;
+
+      if (!submission) {
+        throw new Error(
+          "ไม่พบข้อมูล Submission",
+        );
+      }
+
+      return submission;
+    } catch (error: any) {
+      console.error(
+        "FORENSIC STATUS API ERROR:",
+        error,
+      );
+
+      console.error(
+        "STATUS:",
+        error?.response?.status,
+      );
+
+      console.error(
+        "RESPONSE:",
+        error?.response?.data,
+      );
+
+      throw error;
+    }
   };
 
   /* ======================================================
@@ -149,18 +317,36 @@ export default function ForensicQrScanner() {
     try {
       await stopScanner();
 
+      if (!mountedRef.current) {
+        return;
+      }
+
       setStarting(true);
       setCameraError(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await new Promise((resolve) =>
+        setTimeout(resolve, 300),
+      );
 
-      const element = document.getElementById("forensic-qr-reader");
-
-      if (!element) {
-        throw new Error("ไม่พบพื้นที่กล้อง");
+      if (!mountedRef.current) {
+        return;
       }
 
-      const scanner = new Html5Qrcode("forensic-qr-reader");
+      const element =
+        document.getElementById(
+          "forensic-qr-reader",
+        );
+
+      if (!element) {
+        throw new Error(
+          "ไม่พบพื้นที่กล้อง",
+        );
+      }
+
+      const scanner =
+        new Html5Qrcode(
+          "forensic-qr-reader",
+        );
 
       scannerRef.current = scanner;
       scanningRef.current = true;
@@ -172,16 +358,12 @@ export default function ForensicQrScanner() {
           },
         },
         {
-          /*
-           * ตรวจ QR 20 ครั้ง / วินาที
-           */
-          fps: 20,
+          fps: 15,
 
-          /*
-           * กรอบใหญ่ขึ้น
-           * เพื่อให้สแกนจากกระดาษและหน้าจอได้ง่าย
-           */
-          qrbox: (viewfinderWidth, viewfinderHeight) => {
+          qrbox: (
+            viewfinderWidth,
+            viewfinderHeight,
+          ) => {
             const size = Math.min(
               viewfinderWidth * 0.8,
               viewfinderHeight * 0.8,
@@ -189,8 +371,12 @@ export default function ForensicQrScanner() {
             );
 
             return {
-              width: Math.floor(Math.max(size, 220)),
-              height: Math.floor(Math.max(size, 220)),
+              width: Math.floor(
+                Math.max(size, 220),
+              ),
+              height: Math.floor(
+                Math.max(size, 220),
+              ),
             };
           },
 
@@ -198,10 +384,6 @@ export default function ForensicQrScanner() {
 
           disableFlip: false,
 
-          /*
-           * ขอความละเอียดกล้องสูง
-           * เพื่อช่วยตอนถือ QR ห่างประมาณ 10 ซม.+
-           */
           videoConstraints: {
             facingMode: {
               ideal: "environment",
@@ -232,23 +414,48 @@ export default function ForensicQrScanner() {
 
           scanningRef.current = false;
 
-          console.log("QR Code:", decodedText);
+          console.log(
+            "================================",
+          );
+
+          console.log(
+            "QR SCANNED:",
+          );
+
+          console.log(
+            decodedText,
+          );
+
+          console.log(
+            "================================",
+          );
 
           await stopScanner();
 
           try {
-            /*
-             * ดึง Submission ID
-             */
-            const submissionId = getSubmissionIdFromQr(decodedText);
+            /* ==============================================
+               ดึง Submission ID
+            ============================================== */
+
+            const submissionId =
+              getSubmissionIdFromQr(
+                decodedText,
+              );
+
+            console.log(
+              "EXTRACTED SUBMISSION ID:",
+              submissionId,
+            );
 
             if (!submissionId) {
               await Swal.fire({
                 icon: "error",
                 title: "QR Code ไม่ถูกต้อง",
-                text: "QR Code นี้ไม่ใช่เอกสารส่งตรวจ ศพฐ.",
+                text:
+                  "ไม่พบ Submission ID ใน QR Code",
                 confirmButtonText: "ตกลง",
-                confirmButtonColor: "#800020",
+                confirmButtonColor:
+                  "#800020",
               });
 
               await startScanner();
@@ -256,92 +463,186 @@ export default function ForensicQrScanner() {
               return;
             }
 
-            console.log("Submission ID:", submissionId);
+            /* ==============================================
+               โหลดข้อมูล
+            ============================================== */
 
-            /* ==================================================
-               โหลดข้อมูลจาก Backend
-            ================================================== */
+            const submission =
+              await loadSubmission(
+                submissionId,
+              );
 
-            const response = await api.get(`/forensic-status/${submissionId}`);
+            const status =
+              Number(
+                submission.status,
+              );
 
-            /*
-             * รองรับทั้ง
-             *
-             * response.data
-             *
-             * และ
-             *
-             * response.data.data
-             */
+            console.log(
+              "SUBMISSION:",
+              submission,
+            );
 
-            const submission = response?.data?.data ?? response?.data;
+            console.log(
+              "STATUS:",
+              status,
+            );
 
-            if (!submission) {
-              throw new Error("ไม่พบข้อมูล Submission");
-            }
+            /* ==============================================
+               บันทึกสิทธิ์
+            ============================================== */
 
-            const status = Number(submission.status);
+            authorizeScan(
+              submissionId,
+            );
 
-            console.log("Submission Status:", status);
-
-            /* ==================================================
-               บันทึกสิทธิ์ก่อนเข้า Status
-            ================================================== */
-
-            authorizeScan(submissionId);
-
-            /* ==================================================
+            /* ==============================================
                STATUS 4
-            ================================================== */
+            ============================================== */
 
             if (status === 4) {
               await Swal.fire({
                 icon: "info",
-                title: "เอกสารดำเนินการเสร็จสิ้น",
-                text: "รายการนี้ส่งคืนต้นสังกัดแล้ว",
-                confirmButtonText: "ดูข้อมูล",
-                confirmButtonColor: "#800020",
+                title:
+                  "เอกสารดำเนินการเสร็จสิ้น",
+                text:
+                  "รายการนี้ส่งคืนต้นสังกัดแล้ว",
+                confirmButtonText:
+                  "ดูข้อมูล",
+                confirmButtonColor:
+                  "#800020",
               });
             }
 
-            /* ==================================================
+            /* ==============================================
                ไปหน้า Status
-            ================================================== */
+            ============================================== */
 
-            navigate(`/forensic-status/${encodeURIComponent(submissionId)}`, {
-              replace: true,
-              state: {
-                status,
-                completed: status === 4,
+            navigate(
+              `/forensic-status/${encodeURIComponent(
+                submissionId,
+              )}`,
+              {
+                replace: true,
+
+                state: {
+                  status,
+
+                  completed:
+                    status === 4,
+                },
               },
-            });
+            );
           } catch (error: any) {
-            console.error("QR Error:", error);
+            console.error(
+              "QR Error:",
+              error,
+            );
 
-            /*
-             * ถ้า Backend ไม่พบข้อมูล
-             */
-            const status = error?.response?.status;
+            const httpStatus =
+              error?.response?.status;
 
-            if (status === 404) {
+            const backendError =
+              error?.response?.data
+                ?.error ||
+              error?.response?.data
+                ?.message;
+
+            /* ==============================================
+               404
+            ============================================== */
+
+            if (httpStatus === 404) {
               await Swal.fire({
                 icon: "error",
                 title: "ไม่พบข้อมูล",
-                text: "ไม่พบข้อมูลเอกสารนี้ในระบบ",
-                confirmButtonText: "ตกลง",
-                confirmButtonColor: "#800020",
-              });
-            } else {
-              await Swal.fire({
-                icon: "error",
-                title: "ไม่สามารถโหลดข้อมูล",
-                text: "ไม่สามารถโหลดข้อมูลเอกสารนี้ได้",
-                confirmButtonText: "ตกลง",
-                confirmButtonColor: "#800020",
+                html: `
+                  <div style="font-size:14px">
+                    <p>ไม่พบข้อมูลเอกสารนี้ในระบบ</p>
+
+                    <p style="
+                      margin-top:12px;
+                      padding:10px;
+                      background:#f5f5f5;
+                      border-radius:8px;
+                      word-break:break-all;
+                      font-family:monospace;
+                    ">
+                      ${getSubmissionIdFromQr(
+                        decodedText,
+                      ) || "-"}
+                    </p>
+                  </div>
+                `,
+                confirmButtonText:
+                  "ตกลง",
+                confirmButtonColor:
+                  "#800020",
               });
             }
 
-            await startScanner();
+            /* ==============================================
+               400
+            ============================================== */
+
+            else if (
+              httpStatus === 400
+            ) {
+              await Swal.fire({
+                icon: "warning",
+                title: "ข้อมูลไม่ถูกต้อง",
+                text:
+                  backendError ||
+                  "ข้อมูล QR Code ไม่ถูกต้อง",
+                confirmButtonText:
+                  "ตกลง",
+                confirmButtonColor:
+                  "#800020",
+              });
+            }
+
+            /* ==============================================
+               500
+            ============================================== */
+
+            else if (
+              httpStatus === 500
+            ) {
+              await Swal.fire({
+                icon: "error",
+                title:
+                  "ระบบเกิดข้อผิดพลาด",
+                text:
+                  backendError ||
+                  "เซิร์ฟเวอร์ไม่สามารถโหลดข้อมูลได้",
+                confirmButtonText:
+                  "ตกลง",
+                confirmButtonColor:
+                  "#800020",
+              });
+            }
+
+            /* ==============================================
+               Network / อื่น ๆ
+            ============================================== */
+
+            else {
+              await Swal.fire({
+                icon: "error",
+                title:
+                  "ไม่สามารถโหลดข้อมูล",
+                text:
+                  backendError ||
+                  "ไม่สามารถโหลดข้อมูลเอกสารนี้ได้",
+                confirmButtonText:
+                  "ตกลง",
+                confirmButtonColor:
+                  "#800020",
+              });
+            }
+
+            if (mountedRef.current) {
+              await startScanner();
+            }
           }
         },
 
@@ -350,11 +651,14 @@ export default function ForensicQrScanner() {
         ================================================== */
 
         () => {
-          /*
-           * ไม่ต้องแสดง Error ทุก Frame
-           */
+          // ไม่ต้องแสดง error ทุก frame
         },
       );
+
+      if (!mountedRef.current) {
+        await stopScanner();
+        return;
+      }
 
       setStarting(false);
 
@@ -364,17 +668,20 @@ export default function ForensicQrScanner() {
 
       setTimeout(async () => {
         try {
-          const video = document.querySelector(
-            "#forensic-qr-reader video",
-          ) as HTMLVideoElement | null;
+          const video =
+            document.querySelector(
+              "#forensic-qr-reader video",
+            ) as HTMLVideoElement | null;
 
           if (!video?.srcObject) {
             return;
           }
 
-          const stream = video.srcObject as MediaStream;
+          const stream =
+            video.srcObject as MediaStream;
 
-          const track = stream.getVideoTracks()[0];
+          const track =
+            stream.getVideoTracks()[0];
 
           if (!track) {
             return;
@@ -383,6 +690,7 @@ export default function ForensicQrScanner() {
           const capabilities =
             track.getCapabilities() as MediaTrackCapabilities & {
               focusMode?: string[];
+
               zoom?: {
                 min?: number;
                 max?: number;
@@ -390,32 +698,48 @@ export default function ForensicQrScanner() {
               };
             };
 
-          console.log("Camera capabilities:", capabilities);
-
-          /*
-           * Continuous Autofocus
-           */
+          console.log(
+            "Camera capabilities:",
+            capabilities,
+          );
 
           if (
-            Array.isArray(capabilities.focusMode) &&
-            capabilities.focusMode.includes("continuous")
+            Array.isArray(
+              capabilities.focusMode,
+            ) &&
+            capabilities.focusMode.includes(
+              "continuous",
+            )
           ) {
             await track.applyConstraints({
               advanced: [
                 {
-                  focusMode: "continuous",
+                  focusMode:
+                    "continuous",
                 } as any,
               ],
             });
 
-            console.log("เปิด Continuous Autofocus แล้ว");
+            console.log(
+              "เปิด Continuous Autofocus แล้ว",
+            );
           }
-        } catch (focusError) {
-          console.log("ไม่สามารถตั้ง autofocus:", focusError);
+        } catch (error) {
+          console.log(
+            "ไม่สามารถตั้ง autofocus:",
+            error,
+          );
         }
       }, 700);
     } catch (error) {
-      console.error("Start scanner error:", error);
+      console.error(
+        "Start scanner error:",
+        error,
+      );
+
+      if (!mountedRef.current) {
+        return;
+      }
 
       setStarting(false);
       setCameraError(true);
@@ -425,7 +749,8 @@ export default function ForensicQrScanner() {
       await Swal.fire({
         icon: "error",
         title: "เปิดกล้องไม่ได้",
-        text: "กรุณาอนุญาตให้เว็บไซต์ใช้กล้อง และตรวจสอบว่าเว็บไซต์ใช้ HTTPS",
+        text:
+          "กรุณาอนุญาตให้เว็บไซต์ใช้กล้อง และตรวจสอบว่าเว็บไซต์ใช้ HTTPS",
         confirmButtonText: "ตกลง",
         confirmButtonColor: "#800020",
       });
@@ -437,9 +762,13 @@ export default function ForensicQrScanner() {
   ====================================================== */
 
   useEffect(() => {
+    mountedRef.current = true;
+
     startScanner();
 
     return () => {
+      mountedRef.current = false;
+
       stopScanner();
     };
   }, []);
@@ -451,27 +780,30 @@ export default function ForensicQrScanner() {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="mx-auto w-full max-w-2xl">
-        {/* =================================================
-            HEADER
-        ================================================= */}
+
+        {/* HEADER */}
 
         <div className="mb-6 rounded-3xl bg-[#800020] p-6 text-white shadow-lg">
-          <h1 className="text-3xl font-bold">สแกนเอกสารส่งตรวจ ศพฐ.</h1>
+          <h1 className="text-3xl font-bold">
+            สแกนเอกสารส่งตรวจ ศพฐ.
+          </h1>
 
           <p className="mt-2 text-lg text-white/80">
             สแกน QR Code จากเอกสารเพื่อแสดงข้อมูล
           </p>
         </div>
 
-        {/* =================================================
-            CAMERA CARD
-        ================================================= */}
+        {/* CAMERA CARD */}
 
         <div className="overflow-hidden rounded-3xl bg-white p-5 shadow-lg">
+
           <div className="mb-4 flex items-center justify-between">
+
             <div>
               <h2 className="text-xl font-bold text-gray-800">
-                {starting ? "กำลังเปิดกล้อง..." : "กำลังสแกน"}
+                {starting
+                  ? "กำลังเปิดกล้อง..."
+                  : "กำลังสแกน"}
               </h2>
 
               <p className="mt-1 text-sm text-gray-500">
@@ -491,46 +823,49 @@ export default function ForensicQrScanner() {
             </button>
           </div>
 
-          {/* =================================================
-              CAMERA
-          ================================================= */}
+          {/* CAMERA */}
 
           <div className="relative overflow-hidden rounded-3xl bg-black">
-            <div id="forensic-qr-reader" className="w-full" />
+
+            <div
+              id="forensic-qr-reader"
+              className="w-full"
+            />
 
             {!cameraError && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+
                 <div className="relative h-72 w-72 sm:h-80 sm:w-80">
-                  {/* มุมซ้ายบน */}
+
                   <div className="absolute left-0 top-0 h-12 w-12 border-l-4 border-t-4 border-white" />
 
-                  {/* มุมขวาบน */}
                   <div className="absolute right-0 top-0 h-12 w-12 border-r-4 border-t-4 border-white" />
 
-                  {/* มุมซ้ายล่าง */}
                   <div className="absolute bottom-0 left-0 h-12 w-12 border-b-4 border-l-4 border-white" />
 
-                  {/* มุมขวาล่าง */}
                   <div className="absolute bottom-0 right-0 h-12 w-12 border-b-4 border-r-4 border-white" />
 
-                  {/* เส้นสแกน */}
                   {!starting && (
                     <div className="absolute left-3 right-3 top-1/2 h-0.5 animate-pulse bg-red-500" />
                   )}
+
                 </div>
               </div>
             )}
           </div>
 
-          {/* =================================================
-              STATUS
-          ================================================= */}
+          {/* STATUS */}
 
           <div className="mt-5 text-center">
+
             {starting ? (
-              <p className="text-sm text-gray-500">กำลังเปิดกล้อง...</p>
+              <p className="text-sm text-gray-500">
+                กำลังเปิดกล้อง...
+              </p>
             ) : cameraError ? (
-              <p className="text-sm text-red-500">ไม่สามารถเปิดกล้องได้</p>
+              <p className="text-sm text-red-500">
+                ไม่สามารถเปิดกล้องได้
+              </p>
             ) : (
               <p className="text-sm text-gray-600">
                 กรุณาให้ QR Code อยู่ตรงกลางกรอบ
@@ -544,11 +879,10 @@ export default function ForensicQrScanner() {
             <p className="mt-1 text-xs text-gray-400">
               แนะนำระยะประมาณ 10 ซม. ขึ้นไป
             </p>
+
           </div>
 
-          {/* =================================================
-              RETRY
-          ================================================= */}
+          {/* RETRY */}
 
           {cameraError && (
             <button
@@ -559,6 +893,7 @@ export default function ForensicQrScanner() {
               เปิดกล้องอีกครั้ง
             </button>
           )}
+
         </div>
       </div>
     </div>
