@@ -21,17 +21,23 @@ export default function ForensicSubmissionListPage() {
   }, []);
 
   const fetchData = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/forensic-submission");
-      setData(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error(err);
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+
+    const res = await api.get("/forensic-submission");
+
+    console.log("FORENSIC SUBMISSION RESPONSE:", res.data);
+
+    const result = res?.data?.data ?? res?.data;
+
+    setData(Array.isArray(result) ? result : []);
+  } catch (err) {
+    console.error("LOAD FORENSIC SUBMISSION ERROR:", err);
+    setData([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Date
   const formatThaiDate = (dateString: string) => {
