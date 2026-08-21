@@ -3,7 +3,45 @@ import prisma from "../prisma.js";
 
 const router = Router();
 
-// GET /api/forensic-status/:id
+/**
+ * GET /api/forensic-status/:id/history
+ * ประวัติการเปลี่ยนสถานะ
+ */
+router.get("/:id/history", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const history =
+      await prisma.forensicSubmissionStatusHistory.findMany({
+        where: {
+          submissionId: id,
+        },
+        orderBy: {
+          changedAt: "desc",
+        },
+      });
+
+    return res.json({
+      success: true,
+      data: history,
+    });
+  } catch (err) {
+    console.error(
+      "GET FORENSIC STATUS HISTORY ERROR:",
+      err
+    );
+
+    return res.status(500).json({
+      success: false,
+      error: "ไม่สามารถโหลดประวัติได้",
+    });
+  }
+});
+
+/**
+ * GET /api/forensic-status/:id
+ * ดูข้อมูลรายการส่ง ศพฐ.
+ */
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -39,7 +77,10 @@ router.get("/:id", async (req, res) => {
       data: submission,
     });
   } catch (err) {
-    console.error("GET FORENSIC STATUS ERROR:", err);
+    console.error(
+      "GET FORENSIC STATUS ERROR:",
+      err
+    );
 
     return res.status(500).json({
       success: false,
@@ -48,11 +89,18 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// PATCH /api/forensic-status/:id
+/**
+ * PATCH /api/forensic-status/:id
+ * เปลี่ยนสถานะ
+ */
 router.patch("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, remark, changedBy } = req.body;
+    const {
+      status,
+      remark,
+      changedBy,
+    } = req.body;
 
     const statusNum = Number(status);
 
@@ -84,6 +132,7 @@ router.patch("/:id", async (req, res) => {
       });
     }
 
+    // status 4 จบแล้ว
     if (submission.status === 4) {
       return res.status(400).json({
         success: false,
@@ -92,6 +141,7 @@ router.patch("/:id", async (req, res) => {
       });
     }
 
+    // สถานะเดิม
     if (submission.status === statusNum) {
       return res.status(400).json({
         success: false,
@@ -107,6 +157,8 @@ router.patch("/:id", async (req, res) => {
 
     const result =
       await prisma.$transaction(async (tx) => {
+
+        // 1. เปลี่ยนสถานะ Submission
         await tx.forensicSubmission.update({
           where: {
             submissionId: id,
@@ -117,6 +169,7 @@ router.patch("/:id", async (req, res) => {
           },
         });
 
+        // 2. เปลี่ยนสถานะ Person
         if (personIds.length > 0) {
           await tx.person.updateMany({
             where: {
@@ -132,6 +185,7 @@ router.patch("/:id", async (req, res) => {
           });
         }
 
+        // 3. บันทึกประวัติ
         await tx.forensicSubmissionStatusHistory.create({
           data: {
             submissionId: id,
@@ -142,6 +196,7 @@ router.patch("/:id", async (req, res) => {
           },
         });
 
+        // 4. ดึงข้อมูลล่าสุด
         return await tx.forensicSubmission.findUnique({
           where: {
             submissionId: id,
@@ -165,44 +220,22 @@ router.patch("/:id", async (req, res) => {
       success: true,
       data: result,
     });
-  } catch (err) {
-    console.error("PATCH FORENSIC STATUS ERROR:", err);
 
-    return res.status(500).json({
-      success: false,
-      error: "เปลี่ยนสถานะไม่สำเร็จ",
-    });
-  }
-});
-
-// GET /api/forensic-status/:id/history
-router.get("/:id/history", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const history =
-      await prisma.forensicSubmissionStatusHistory.findMany({
-        where: {
-          submissionId: id,
-        },
-        orderBy: {
-          changedAt: "desc",
-        },
-      });
-
-    return res.json({
-      success: true,
-      data: history,
-    });
   } catch (err) {
     console.error(
-      "GET FORENSIC STATUS HISTORY ERROR:",
-      err
+      "PATCH FORENSIC STATUS ERROR:"
     );
+
+    console.error("Message:", err?.message);
+    console.error("Code:", err?.code);
+    console.error("Meta:", err?.meta);
+    console.error("Stack:", err?.stack);
 
     return res.status(500).json({
       success: false,
-      error: "ไม่สามารถโหลดประวัติได้",
+      error:
+        err?.message ||
+        "เปลี่ยนสถานะไม่สำเร็จ",
     });
   }
 });
