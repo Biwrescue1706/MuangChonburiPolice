@@ -2,13 +2,11 @@ import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
-  schema: "prisma/schema.prisma",
-
+  schema: "prisma-neon/schema.prisma",
   migrations: {
-    path: "prisma/migrations",
+    path: "prisma-neon/migrations",
   },
-
   datasource: {
-    url: env("SUPABASE_DIRECT_URL"),
+    url: env("NEON_DATABASE_URL"),
   },
 });

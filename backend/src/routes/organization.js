@@ -1,5 +1,5 @@
 import express from "express";
-import prisma from "../prisma.js";
+import neonPrisma from "../neon.js";
 import multer from "multer";
 import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
@@ -7,37 +7,32 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-/* ================= SUPABASE ================= */
+// Supabase
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 );
 
-/* ================= MULTER ================= */
+// Multer
 const upload = multer({
   storage: multer.memoryStorage(),
-
   limits: {
     fileSize: 2 * 1024 * 1024,
   },
 });
 
-/* ================= UTIL ================= */
+// Build full name
 function buildFullName({
   firstName,
   lastName,
   rank,
 }) {
-
   const fullName =
-    `${firstName || ""} ${lastName || ""}`
-      .trim();
+    `${firstName || ""} ${lastName || ""}`.trim();
 
-  const fullNameWithRank =
-    rank
-      ? `${rank}${firstName || ""} ${lastName || ""}`
-        .trim()
-      : fullName;
+  const fullNameWithRank = rank
+    ? `${rank}${firstName || ""} ${lastName || ""}`.trim()
+    : fullName;
 
   return {
     fullName,
@@ -45,23 +40,16 @@ function buildFullName({
   };
 }
 
-/* ================= ORGANIZATION ================= */
-
-/* ===== GET ALL ===== */
+// Get all organizations
 router.get("/", async (req, res) => {
   try {
-
-    const page =
-      Number(req.query.page || 1);
-
+    const page = Number(req.query.page || 1);
     const limit = 20;
 
     const data =
-      await prisma.organization.findMany({
-
+      await neonPrisma.organization.findMany({
         skip: (page - 1) * limit,
         take: limit,
-
         select: {
           organizationId: true,
           organizationName: true,
@@ -72,7 +60,6 @@ router.get("/", async (req, res) => {
           fullNameWithRank: true,
           position: true,
           createdAt: true,
-
           commander: {
             select: {
               rank: true,
@@ -86,7 +73,6 @@ router.get("/", async (req, res) => {
               signatureImage: true,
             },
           },
-
           finance: {
             select: {
               rank: true,
@@ -98,33 +84,27 @@ router.get("/", async (req, res) => {
             },
           },
         },
-
         orderBy: {
           createdAt: "desc",
         },
       });
 
     res.json(data);
-
   } catch (err) {
-    console.error(err);
-
     res.status(500).json({
       error: "Fetch failed",
     });
   }
 });
 
-/* ===== GET ONE ===== */
+// Get organization
 router.get("/:id", async (req, res) => {
   try {
-
     const data =
-      await prisma.organization.findUnique({
+      await neonPrisma.organization.findUnique({
         where: {
           organizationId: req.params.id,
         },
-
         include: {
           commander: true,
           finance: true,
@@ -138,29 +118,24 @@ router.get("/:id", async (req, res) => {
     }
 
     res.json(data);
-
   } catch (err) {
-    console.error(err);
-
     res.status(500).json({
       error: "Fetch failed",
     });
   }
 });
 
-/* ===== UPDATE ORG ===== */
+// Update organization
 router.patch(
   "/:id",
   authMiddleware,
   async (req, res) => {
     try {
-
       const { id } = req.params;
-
       const data = req.body;
 
       const existing =
-        await prisma.organization.findUnique({
+        await neonPrisma.organization.findUnique({
           where: {
             organizationId: id,
           },
@@ -172,7 +147,7 @@ router.patch(
         });
       }
 
-      /* ===== whitelist ===== */
+      // Whitelist
       const allowedFields = [
         "organizationName",
         "rank",
@@ -184,7 +159,6 @@ router.patch(
       const clean = {};
 
       for (const key of allowedFields) {
-
         if (
           data[key] !== "" &&
           data[key] !== null &&
@@ -194,44 +168,33 @@ router.patch(
         }
       }
 
-      const name =
-        buildFullName({
-          firstName:
-            clean.firstName ??
-            existing.firstName,
+      const name = buildFullName({
+        firstName:
+          clean.firstName ??
+          existing.firstName,
+        lastName:
+          clean.lastName ??
+          existing.lastName,
+        rank:
+          clean.rank ??
+          existing.rank,
+      });
 
-          lastName:
-            clean.lastName ??
-            existing.lastName,
-
-          rank:
-            clean.rank ??
-            existing.rank,
-        });
-
-      clean.fullName =
-        name.fullName;
-
+      clean.fullName = name.fullName;
       clean.fullNameWithRank =
         name.fullNameWithRank;
-
-      clean.updatedAt =
-        new Date();
+      clean.updatedAt = new Date();
 
       const result =
-        await prisma.organization.update({
+        await neonPrisma.organization.update({
           where: {
             organizationId: id,
           },
-
           data: clean,
         });
 
       res.json(result);
-
     } catch (err) {
-      console.error(err);
-
       res.status(500).json({
         error: "Update failed",
       });
@@ -239,107 +202,76 @@ router.patch(
   }
 );
 
-/* ================= COMMANDER ================= */
+// Get commander
+router.get(
+  "/:id/commander",
+  async (req, res) => {
+    try {
+      const data =
+        await neonPrisma.organizationCommander.findUnique({
+          where: {
+            organizationId: req.params.id,
+          },
+        });
 
-/* ===== GET ===== */
-router.get("/:id/commander", async (req, res) => {
-  try {
-
-    const data =
-      await prisma.organizationCommander.findUnique({
-        where: {
-          organizationId: req.params.id,
-        },
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({
+        error: "Fetch commander failed",
       });
-
-    res.json(data);
-
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      error: "Fetch commander failed",
-    });
+    }
   }
-});
+);
 
-/* ===== PATCH ===== */
+// Update commander
 router.patch(
   "/:id/commander",
   authMiddleware,
   async (req, res) => {
     try {
-
       const { id } = req.params;
-
       const data = req.body;
 
-      const name =
-        buildFullName(data);
+      const name = buildFullName(data);
 
       const result =
-        await prisma.organizationCommander.upsert({
-
+        await neonPrisma.organizationCommander.upsert({
           where: {
             organizationId: id,
           },
-
           update: {
             ...data,
-
-            fullName:
-              name.fullName,
-
+            fullName: name.fullName,
             fullNameWithRank:
               name.fullNameWithRank,
-
-            updatedAt:
-              new Date(),
+            updatedAt: new Date(),
           },
-
           create: {
             organizationId: id,
-
             ...data,
-
-            fullName:
-              name.fullName,
-
+            fullName: name.fullName,
             fullNameWithRank:
               name.fullNameWithRank,
           },
         });
 
       res.json(result);
-
     } catch (err) {
-      console.error(
-        "COMMANDER ERROR:",
-        err
-      );
-
       res.status(500).json({
-        error:
-          "Update commander failed",
+        error: "Update commander failed",
       });
     }
   }
 );
 
-/* ================= UPLOAD SIGNATURE ================= */
-
+// Upload signature
 router.post(
   "/:id/upload-signature",
-
   authMiddleware,
-
   upload.single("file"),
-
   async (req, res) => {
     try {
-
       const { id } = req.params;
-
       const file = req.file;
 
       if (!file) {
@@ -348,7 +280,7 @@ router.post(
         });
       }
 
-      /* ===== allow image ===== */
+      // Allow image
       const allowedTypes = [
         "image/png",
         "image/jpeg",
@@ -366,9 +298,9 @@ router.post(
         });
       }
 
-      /* ===== check org ===== */
+      // Check organization
       const org =
-        await prisma.organization.findUnique({
+        await neonPrisma.organization.findUnique({
           where: {
             organizationId: id,
           },
@@ -381,9 +313,9 @@ router.post(
         });
       }
 
-      /* ===== delete old ===== */
+      // Delete old signature
       const existingCommander =
-        await prisma.organizationCommander.findUnique({
+        await neonPrisma.organizationCommander.findUnique({
           where: {
             organizationId: id,
           },
@@ -393,7 +325,6 @@ router.post(
         existingCommander?.signatureImage
       ) {
         try {
-
           const oldPath =
             existingCommander.signatureImage
               .split("/signatures/")[1];
@@ -403,7 +334,6 @@ router.post(
               .from("signatures")
               .remove([oldPath]);
           }
-
         } catch (e) {
           console.warn(
             "Delete old image fail:",
@@ -412,7 +342,7 @@ router.post(
         }
       }
 
-      /* ===== filename ===== */
+      // Create filename
       const ext =
         file.originalname
           .split(".")
@@ -422,7 +352,7 @@ router.post(
       const fileName =
         `signature_${id}_${crypto.randomUUID()}.${ext}`;
 
-      /* ===== upload ===== */
+      // Upload signature
       const { error } =
         await supabase.storage
           .from("signatures")
@@ -435,10 +365,11 @@ router.post(
             }
           );
 
-      if (error)
+      if (error) {
         throw error;
+      }
 
-      /* ===== public url ===== */
+      // Get public URL
       const { data } =
         supabase.storage
           .from("signatures")
@@ -447,21 +378,17 @@ router.post(
       const publicUrl =
         data.publicUrl;
 
-      /* ===== save db ===== */
-      await prisma.organizationCommander.upsert({
-
+      // Save URL to database
+      await neonPrisma.organizationCommander.upsert({
         where: {
           organizationId: id,
         },
-
         update: {
           signatureImage:
             publicUrl,
-
           updatedAt:
             new Date(),
         },
-
         create: {
           organizationId: id,
           signatureImage:
@@ -470,18 +397,10 @@ router.post(
       });
 
       res.json({
-        message:
-          "Upload success",
-
+        message: "Upload success",
         url: publicUrl,
       });
-
     } catch (err) {
-      console.error(
-        "UPLOAD ERROR:",
-        err
-      );
-
       res.status(500).json({
         error: "Upload failed",
       });
@@ -489,85 +408,64 @@ router.post(
   }
 );
 
-/* ================= FINANCE ================= */
+// Get finance
+router.get(
+  "/:id/finance",
+  async (req, res) => {
+    try {
+      const data =
+        await neonPrisma.organizationFinance.findUnique({
+          where: {
+            organizationId:
+              req.params.id,
+          },
+        });
 
-/* ===== GET ===== */
-router.get("/:id/finance", async (req, res) => {
-  try {
-
-    const data =
-      await prisma.organizationFinance.findUnique({
-        where: {
-          organizationId: req.params.id,
-        },
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({
+        error: "Fetch finance failed",
       });
-
-    res.json(data);
-
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      error: "Fetch finance failed",
-    });
+    }
   }
-});
+);
 
-/* ===== PATCH ===== */
+// Update finance
 router.patch(
   "/:id/finance",
   authMiddleware,
   async (req, res) => {
     try {
-
       const { id } = req.params;
-
       const data = req.body;
 
-      const name =
-        buildFullName(data);
+      const name = buildFullName(data);
 
       const result =
-        await prisma.organizationFinance.upsert({
-
+        await neonPrisma.organizationFinance.upsert({
           where: {
             organizationId: id,
           },
-
           update: {
             ...data,
-
-            fullName:
-              name.fullName,
-
+            fullName: name.fullName,
             fullNameWithRank:
               name.fullNameWithRank,
-
-            updatedAt:
-              new Date(),
+            updatedAt: new Date(),
           },
-
           create: {
             organizationId: id,
-
             ...data,
-
-            fullName:
-              name.fullName,
-
+            fullName: name.fullName,
             fullNameWithRank:
               name.fullNameWithRank,
           },
         });
 
       res.json(result);
-
     } catch (err) {
-      console.error(err);
-
       res.status(500).json({
-        error:
-          "Update finance failed",
+        error: "Update finance failed",
       });
     }
   }
