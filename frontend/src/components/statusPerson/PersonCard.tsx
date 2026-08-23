@@ -95,10 +95,6 @@ export default function PersonCard({
                 <h3 className="break-words text-base font-bold text-gray-900">
                   {p.fullName || "-"}
                 </h3>
-
-                <p className="mt-1 text-xs text-gray-500">
-                  รหัสข้อมูล: {p.personId || "-"}
-                </p>
               </div>
             </div>
 
@@ -121,38 +117,38 @@ export default function PersonCard({
               <div className="mb-3 flex items-center gap-2">
                 <span className="text-lg">🧾</span>
 
-                <span className="font-bold text-gray-800">
+                <span className="font-bold text-md text-gray-900">
                   ข้อมูลใบเสร็จ
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-md font-bold text-gray-900">
                     เล่มใบเสร็จ
                   </p>
 
-                  <p className="mt-1 font-bold text-gray-800">
+                  <p className="mt-1 font-bold text-gray-900">
                     {p.receiptBookNo || "-"}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-md font-bold text-gray-900">
                     เลขที่
                   </p>
 
-                  <p className="mt-1 font-bold text-gray-800">
+                  <p className="mt-1 font-bold text-gray-900">
                     {p.receiptNo || "-"}
                   </p>
                 </div>
 
                 <div className="col-span-2">
-                  <p className="text-xs text-gray-500">
+                  <p className="text-md font-bold text-gray-900">
                     วันที่พิมพ์มือ
                   </p>
 
-                  <p className="mt-1 font-semibold text-gray-800">
+                  <p className="mt-1 font-semibold text-gray-900">
                     {formatThaiDate(p.receiptDate)}
                   </p>
                 </div>
@@ -161,22 +157,22 @@ export default function PersonCard({
 
             {/* Purpose */}
             <div className="mt-3">
-              <p className="text-xs font-semibold text-gray-500">
+              <p className="text-md font-semibold font-bold text-gray-900">
                 เรื่องที่ขออนุญาต
               </p>
 
-              <p className="mt-1 break-words text-sm leading-6 text-gray-800">
+              <p className="mt-1 break-words text-md leading-6 font-bold text-gray-900">
                 {p.purpose || "-"}
               </p>
             </div>
 
             {/* Agency */}
             <div className="mt-3">
-              <p className="text-xs font-semibold text-gray-500">
+              <p className="text-md font-semibold font-bold text-gray-900">
                 หน่วยงาน
               </p>
 
-              <p className="mt-1 break-words text-sm leading-6 text-gray-800">
+              <p className="mt-1 break-words text-sm leading-6 font-bold text-gray-900">
                 {p.requestingAgency || "-"}
               </p>
             </div>
@@ -184,7 +180,7 @@ export default function PersonCard({
             {/* Status */}
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                <p className="mb-2 text-xs font-semibold text-gray-500">
+                <p className="mb-2 text-md font-semibold font-bold text-gray-900">
                   สถานะ
                 </p>
 
@@ -192,7 +188,7 @@ export default function PersonCard({
               </div>
 
               <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                <p className="mb-2 text-xs font-semibold text-gray-500">
+                <p className="mb-2 text-md font-semibold font-bold text-gray-900">
                   ความเร่งด่วน
                 </p>
 
@@ -203,11 +199,11 @@ export default function PersonCard({
             {/* Return date */}
             {p.status === 4 && (
               <div className="mt-3 rounded-xl border border-red-100 bg-red-50 p-3">
-                <p className="text-xs font-semibold text-red-600">
+                <p className="text-md font-semibold font-bold text-red-900">
                   📅 วันคืน
                 </p>
 
-                <p className="mt-1 font-semibold text-red-700">
+                <p className="mt-1 font-semibold font-bold text-red-900">
                   {formatThaiDate(p.returnDate)}
                 </p>
               </div>
@@ -216,11 +212,11 @@ export default function PersonCard({
             {/* Delete date */}
             {p.status === 4 && p.deleteAt && (
               <div className="mt-3 rounded-xl border border-orange-100 bg-orange-50 p-3">
-                <p className="text-xs font-semibold text-orange-600">
+                <p className="text-md font-semibold font-bold text-orange-900">
                   📅 วันหมดอายุเอกสาร
                 </p>
 
-                <p className="mt-1 font-semibold text-orange-700">
+                <p className="mt-1 font-semibold font-bold text-orange-900">
                   {formatThaiDate(p.deleteAt)}
                 </p>
               </div>

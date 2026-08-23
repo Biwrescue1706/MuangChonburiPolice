@@ -1,86 +1,126 @@
-//src/routes/foreigner.js
 // src/routes/foreigner.js
+
 import express from "express";
 import prisma from "../prisma.js";
 
 const router = express.Router();
 
-// GET ALL
+/* ======================================================
+   GET ALL
+   GET /api/foreigner
+====================================================== */
+
 router.get("/", async (req, res) => {
     try {
-        const { search, nationality, province } = req.query;
+        const {
+            search,
+            nationality,
+            province,
+            year,
+        } = req.query;
+
         const where = {};
 
-        if (search) {
+        // ================= SEARCH =================
+
+        if (search?.trim()) {
             where.OR = [
                 {
                     foreignerIdNo: {
-                        contains: search,
+                        contains: search.trim(),
                         mode: "insensitive",
                     },
                 },
                 {
                     name: {
-                        contains: search,
+                        contains: search.trim(),
                         mode: "insensitive",
                     },
                 },
                 {
                     certificateRegistrationNo: {
-                        contains: search,
+                        contains: search.trim(),
                         mode: "insensitive",
                     },
                 },
                 {
                     certificateNo: {
-                        contains: search,
+                        contains: search.trim(),
                         mode: "insensitive",
                     },
                 },
                 {
                     receiptNo: {
-                        contains: search,
+                        contains: search.trim(),
                         mode: "insensitive",
                     },
                 },
             ];
         }
 
-        if (nationality) {
+        // ================= NATIONALITY =================
+
+        if (nationality?.trim()) {
             where.nationality = {
-                contains: nationality,
+                contains: nationality.trim(),
                 mode: "insensitive",
             };
         }
 
-        if (province) {
+        // ================= PROVINCE =================
+
+        if (province?.trim()) {
             where.province = {
-                contains: province,
+                contains: province.trim(),
                 mode: "insensitive",
             };
         }
+
+        // ================= YEAR =================
+
+        if (year !== undefined && year !== "") {
+            const yearNumber = Number(year);
+
+            if (!Number.isNaN(yearNumber)) {
+                where.year = yearNumber;
+            }
+        }
+
+        // ================= GET =================
 
         const data = await prisma.foreigner.findMany({
             where,
-            orderBy: {
-                sequenceNo: "asc",
-            },
+
+            orderBy: [
+                {
+                    year: "desc",
+                },
+                {
+                    sequenceNo: "asc",
+                },
+            ],
         });
 
-        res.json({
+        return res.json({
             success: true,
             data,
             total: data.length,
         });
     } catch (err) {
-        res.status(500).json({
+        console.error("GET FOREIGNER ERROR:", err);
+
+        return res.status(500).json({
             success: false,
             error: "ดึงข้อมูลคนต่างด้าวไม่สำเร็จ",
         });
     }
 });
 
-// GET BY ID
+/* ======================================================
+   GET BY ID
+   GET /api/foreigner/:id
+====================================================== */
+
 router.get("/:id", async (req, res) => {
     try {
         const data = await prisma.foreigner.findUnique({
@@ -96,122 +136,356 @@ router.get("/:id", async (req, res) => {
             });
         }
 
-        res.json({
+        return res.json({
             success: true,
             data,
         });
     } catch (err) {
-        res.status(500).json({
+        console.error("GET FOREIGNER BY ID ERROR:", err);
+
+        return res.status(500).json({
             success: false,
             error: "ดึงข้อมูลไม่สำเร็จ",
         });
     }
 });
 
-// CREATE
+/* ======================================================
+   CREATE
+   POST /api/foreigner
+
+   sequenceNo รัน +1 แยกตามปี
+
+   2569
+   1
+   2
+   3
+
+   2570
+   1
+   2
+====================================================== */
+
 router.post("/", async (req, res) => {
     try {
         const data = req.body;
 
-        const foreigner = await prisma.foreigner.create({
-            data: {
-                sequenceNo:
-                    data.sequenceNo !== undefined
-                        ? Number(data.sequenceNo)
-                        : null,
+        // ================= YEAR =================
 
-                foreignerIdNo:
-                    data.foreignerIdNo || null,
+        if (
+            data.year === undefined ||
+            data.year === null ||
+            data.year === ""
+        ) {
+            return res.status(400).json({
+                success: false,
+                error: "กรุณาระบุปี พ.ศ.",
+            });
+        }
 
-                name:
-                    data.name || "",
+        const year = Number(data.year);
 
-                age:
-                    data.age !== undefined && data.age !== ""
-                        ? Number(data.age)
-                        : null,
+        if (
+            Number.isNaN(year) ||
+            !Number.isInteger(year)
+        ) {
+            return res.status(400).json({
+                success: false,
+                error: "ปี พ.ศ. ไม่ถูกต้อง",
+            });
+        }
 
-                nationality:
-                    data.nationality || null,
+        // ================= NAME =================
 
-                ethnicity:
-                    data.ethnicity || null,
+        if (
+            !data.name ||
+            !String(data.name).trim()
+        ) {
+            return res.status(400).json({
+                success: false,
+                error: "กรุณากรอกชื่อ แซ่",
+            });
+        }
 
-                certificateRegistrationNo:
-                    data.certificateRegistrationNo || null,
+        const name = String(data.name).trim();
 
-                certificateDate:
-                    data.certificateDate
-                        ? new Date(data.certificateDate)
-                        : null,
+        // ================= AGE =================
 
-                district:
-                    data.district || null,
+        if (
+            data.age === undefined ||
+            data.age === null ||
+            data.age === ""
+        ) {
+            return res.status(400).json({
+                success: false,
+                error: "กรุณากรอกอายุ",
+            });
+        }
 
-                province:
-                    data.province || null,
+        const age = Number(data.age);
 
-                domicile:
-                    data.domicile || null,
+        if (
+            Number.isNaN(age) ||
+            !Number.isInteger(age) ||
+            age < 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                error: "อายุไม่ถูกต้อง",
+            });
+        }
 
-                applicationDate:
-                    data.applicationDate
-                        ? new Date(data.applicationDate)
-                        : null,
+        // ==================================================
+        // TRANSACTION
+        // ==================================================
 
-                expirationDate:
-                    data.expirationDate
-                        ? new Date(data.expirationDate)
-                        : null,
+        const foreigner = await prisma.$transaction(
+            async (tx) => {
+                // ===============================
+                // หาเลขล่าสุดของปีนั้น
+                // ===============================
 
-                amount:
-                    data.amount !== undefined && data.amount !== ""
-                        ? data.amount
-                        : null,
+                const last = await tx.foreigner.findFirst({
+                    where: {
+                        year,
+                    },
 
-                receiptBookNo:
-                    data.receiptBookNo || null,
+                    orderBy: {
+                        sequenceNo: "desc",
+                    },
 
-                receiptNo:
-                    data.receiptNo || null,
+                    select: {
+                        sequenceNo: true,
+                    },
+                });
 
-                receiptDate:
-                    data.receiptDate
-                        ? new Date(data.receiptDate)
-                        : null,
+                // ===============================
+                // สร้างเลขลำดับใหม่
+                // ===============================
 
-                certificateNo:
-                    data.certificateNo || null,
+                const sequenceNo =
+                    (last?.sequenceNo ?? 0) + 1;
 
-                petitionDate:
-                    data.petitionDate
-                        ? new Date(data.petitionDate)
-                        : null,
-            },
-        });
+                // ===============================
+                // CREATE
+                // ===============================
 
-        res.status(201).json({
+                return await tx.foreigner.create({
+                    data: {
+                        // ===============================
+                        // ลำดับ
+                        // ===============================
+
+                        sequenceNo,
+                        year,
+
+                        // ===============================
+                        // ข้อมูลบุคคล
+                        // ===============================
+
+                        foreignerIdNo:
+                            data.foreignerIdNo
+                                ? String(
+                                    data.foreignerIdNo
+                                ).trim()
+                                : null,
+
+                        name,
+
+                        age,
+
+                        nationality:
+                            data.nationality
+                                ? String(
+                                    data.nationality
+                                ).trim()
+                                : null,
+
+                        ethnicity:
+                            data.ethnicity
+                                ? String(
+                                    data.ethnicity
+                                ).trim()
+                                : null,
+
+                        // ===============================
+                        // ใบสำคัญ
+                        // ===============================
+
+                        certificateRegistrationNo:
+                            data.certificateRegistrationNo
+                                ? String(
+                                    data.certificateRegistrationNo
+                                ).trim()
+                                : null,
+
+                        // เก็บเป็น String
+                        certificateDate:
+                            data.certificateDate
+                                ? String(
+                                    data.certificateDate
+                                )
+                                : null,
+
+                        // ===============================
+                        // ออกให้ ณ
+                        // ===============================
+
+                        district:
+                            data.district
+                                ? String(
+                                    data.district
+                                ).trim()
+                                : null,
+
+                        province:
+                            data.province
+                                ? String(
+                                    data.province
+                                ).trim()
+                                : null,
+
+                        // ===============================
+                        // ภูมิลำเนา
+                        // ===============================
+
+                        domicile:
+                            data.domicile
+                                ? String(
+                                    data.domicile
+                                ).trim()
+                                : null,
+
+                        // ===============================
+                        // การขอรับ
+                        // ===============================
+
+                        applicationType:
+                            data.applicationType
+                                ? String(
+                                    data.applicationType
+                                ).trim()
+                                : null,
+
+                        // เก็บเป็น String
+                        applicationDate:
+                            data.applicationDate
+                                ? String(
+                                    data.applicationDate
+                                )
+                                : null,
+
+                        // เก็บเป็น String
+                        expirationDate:
+                            data.expirationDate
+                                ? String(
+                                    data.expirationDate
+                                )
+                                : null,
+
+                        // ===============================
+                        // ค่าธรรมเนียม
+                        // ===============================
+
+                        amount:
+                            data.amount !== undefined &&
+                                data.amount !== null &&
+                                data.amount !== ""
+                                ? Number(data.amount)
+                                : null,
+
+                        // ===============================
+                        // ใบเสร็จ
+                        // ===============================
+
+                        receiptBookNo:
+                            data.receiptBookNo
+                                ? String(
+                                    data.receiptBookNo
+                                ).trim()
+                                : null,
+
+                        receiptNo:
+                            data.receiptNo
+                                ? String(
+                                    data.receiptNo
+                                ).trim()
+                                : null,
+
+                        // เก็บเป็น String
+                        receiptDate:
+                            data.receiptDate
+                                ? String(
+                                    data.receiptDate
+                                )
+                                : null,
+
+                        // ===============================
+                        // ใบสำคัญ
+                        // ===============================
+
+                        certificateNo:
+                            data.certificateNo
+                                ? String(
+                                    data.certificateNo
+                                ).trim()
+                                : null,
+
+                        // ===============================
+                        // วันที่ยื่นคำร้อง
+                        // ===============================
+
+                        petitionDate:
+                            data.petitionDate
+                                ? new Date(
+                                    data.petitionDate
+                                )
+                                : null,
+                    },
+                });
+            }
+        );
+
+        console.log(
+            `CREATE FOREIGNER: ${foreigner.name} | ปี ${foreigner.year} | ลำดับ ${foreigner.sequenceNo}`
+        );
+
+        return res.status(201).json({
             success: true,
             data: foreigner,
         });
     } catch (err) {
-        res.status(500).json({
+        console.error(
+            "CREATE FOREIGNER ERROR:",
+            err
+        );
+
+        return res.status(500).json({
             success: false,
-            error: "เพิ่มข้อมูลคนต่างด้าวไม่สำเร็จ",
+            error:
+                err?.message ||
+                "เพิ่มข้อมูลคนต่างด้าวไม่สำเร็จ",
         });
     }
 });
 
-// UPDATE
+/* ======================================================
+   UPDATE
+   PUT /api/foreigner/:id
+====================================================== */
+
 router.put("/:id", async (req, res) => {
     try {
         const data = req.body;
 
-        const existing = await prisma.foreigner.findUnique({
-            where: {
-                id: req.params.id,
-            },
-        });
+        // ================= FIND =================
+
+        const existing =
+            await prisma.foreigner.findUnique({
+                where: {
+                    id: req.params.id,
+                },
+            });
 
         if (!existing) {
             return res.status(404).json({
@@ -220,117 +494,252 @@ router.put("/:id", async (req, res) => {
             });
         }
 
-        const foreigner = await prisma.foreigner.update({
-            where: {
-                id: req.params.id,
-            },
-            data: {
-                sequenceNo:
-                    data.sequenceNo !== undefined
-                        ? Number(data.sequenceNo)
-                        : existing.sequenceNo,
+        // ================= YEAR =================
 
-                foreignerIdNo:
-                    data.foreignerIdNo ??
-                    existing.foreignerIdNo,
+        let year = existing.year;
 
-                name:
-                    data.name ??
-                    existing.name,
+        if (
+            data.year !== undefined &&
+            data.year !== ""
+        ) {
+            year = Number(data.year);
 
-                age:
-                    data.age !== undefined && data.age !== ""
-                        ? Number(data.age)
-                        : existing.age,
+            if (
+                Number.isNaN(year) ||
+                !Number.isInteger(year)
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    error: "ปี พ.ศ. ไม่ถูกต้อง",
+                });
+            }
+        }
 
-                nationality:
-                    data.nationality ??
-                    existing.nationality,
+        // ================= NAME =================
 
-                ethnicity:
-                    data.ethnicity ??
-                    existing.ethnicity,
+        let name = existing.name;
 
-                certificateRegistrationNo:
-                    data.certificateRegistrationNo ??
-                    existing.certificateRegistrationNo,
+        if (data.name !== undefined) {
+            name = String(data.name).trim();
+        }
 
-                certificateDate:
-                    data.certificateDate
-                        ? new Date(data.certificateDate)
-                        : existing.certificateDate,
+        if (!name) {
+            return res.status(400).json({
+                success: false,
+                error: "กรุณากรอกชื่อ แซ่",
+            });
+        }
 
-                district:
-                    data.district ??
-                    existing.district,
+        // ================= AGE =================
 
-                province:
-                    data.province ??
-                    existing.province,
+        let age = existing.age;
 
-                domicile:
-                    data.domicile ??
-                    existing.domicile,
+        if (
+            data.age !== undefined &&
+            data.age !== ""
+        ) {
+            age = Number(data.age);
 
-                applicationDate:
-                    data.applicationDate
-                        ? new Date(data.applicationDate)
-                        : existing.applicationDate,
+            if (
+                Number.isNaN(age) ||
+                !Number.isInteger(age) ||
+                age < 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    error: "อายุไม่ถูกต้อง",
+                });
+            }
+        }
 
-                expirationDate:
-                    data.expirationDate
-                        ? new Date(data.expirationDate)
-                        : existing.expirationDate,
+        // ================= UPDATE =================
 
-                amount:
-                    data.amount !== undefined && data.amount !== ""
-                        ? data.amount
-                        : existing.amount,
+        const foreigner =
+            await prisma.foreigner.update({
+                where: {
+                    id: req.params.id,
+                },
 
-                receiptBookNo:
-                    data.receiptBookNo ??
-                    existing.receiptBookNo,
+                data: {
+                    // ปี
+                    year,
 
-                receiptNo:
-                    data.receiptNo ??
-                    existing.receiptNo,
+                    // ไม่เปลี่ยนลำดับ
+                    sequenceNo:
+                        existing.sequenceNo,
 
-                receiptDate:
-                    data.receiptDate
-                        ? new Date(data.receiptDate)
-                        : existing.receiptDate,
+                    // ===============================
+                    // ข้อมูลบุคคล
+                    // ===============================
 
-                certificateNo:
-                    data.certificateNo ??
-                    existing.certificateNo,
+                    foreignerIdNo:
+                        data.foreignerIdNo !== undefined
+                            ? data.foreignerIdNo || null
+                            : existing.foreignerIdNo,
 
-                petitionDate:
-                    data.petitionDate
-                        ? new Date(data.petitionDate)
-                        : existing.petitionDate,
-            },
-        });
+                    name,
 
-        res.json({
+                    age,
+
+                    nationality:
+                        data.nationality !== undefined
+                            ? data.nationality || null
+                            : existing.nationality,
+
+                    ethnicity:
+                        data.ethnicity !== undefined
+                            ? data.ethnicity || null
+                            : existing.ethnicity,
+
+                    // ===============================
+                    // ใบสำคัญ
+                    // ===============================
+
+                    certificateRegistrationNo:
+                        data.certificateRegistrationNo !==
+                            undefined
+                            ? data.certificateRegistrationNo ||
+                            null
+                            : existing.certificateRegistrationNo,
+
+                    certificateDate:
+                        data.certificateDate !== undefined
+                            ? data.certificateDate || null
+                            : existing.certificateDate,
+
+                    // ===============================
+                    // ออกให้ ณ
+                    // ===============================
+
+                    district:
+                        data.district !== undefined
+                            ? data.district || null
+                            : existing.district,
+
+                    province:
+                        data.province !== undefined
+                            ? data.province || null
+                            : existing.province,
+
+                    // ===============================
+                    // ภูมิลำเนา
+                    // ===============================
+
+                    domicile:
+                        data.domicile !== undefined
+                            ? data.domicile || null
+                            : existing.domicile,
+
+                    // ===============================
+                    // การขอรับ
+                    // ===============================
+
+                    applicationType:
+                        data.applicationType !== undefined
+                            ? data.applicationType || null
+                            : existing.applicationType,
+
+                    applicationDate:
+                        data.applicationDate !== undefined
+                            ? data.applicationDate || null
+                            : existing.applicationDate,
+
+                    expirationDate:
+                        data.expirationDate !== undefined
+                            ? data.expirationDate || null
+                            : existing.expirationDate,
+
+                    // ===============================
+                    // ค่าธรรมเนียม
+                    // ===============================
+
+                    amount:
+                        data.amount !== undefined
+                            ? data.amount !== null &&
+                                data.amount !== ""
+                                ? Number(data.amount)
+                                : null
+                            : existing.amount,
+
+                    // ===============================
+                    // ใบเสร็จ
+                    // ===============================
+
+                    receiptBookNo:
+                        data.receiptBookNo !== undefined
+                            ? data.receiptBookNo || null
+                            : existing.receiptBookNo,
+
+                    receiptNo:
+                        data.receiptNo !== undefined
+                            ? data.receiptNo || null
+                            : existing.receiptNo,
+
+                    receiptDate:
+                        data.receiptDate !== undefined
+                            ? data.receiptDate || null
+                            : existing.receiptDate,
+
+                    // ===============================
+                    // ใบสำคัญ
+                    // ===============================
+
+                    certificateNo:
+                        data.certificateNo !== undefined
+                            ? data.certificateNo || null
+                            : existing.certificateNo,
+
+                    // ===============================
+                    // วันที่ยื่นคำร้อง
+                    // ===============================
+
+                    petitionDate:
+                        data.petitionDate !== undefined
+                            ? data.petitionDate
+                                ? new Date(
+                                    data.petitionDate
+                                )
+                                : null
+                            : existing.petitionDate,
+                },
+            });
+
+        console.log(
+            `UPDATE FOREIGNER: ${foreigner.id}`
+        );
+
+        return res.json({
             success: true,
             data: foreigner,
         });
     } catch (err) {
-        res.status(500).json({
+        console.error(
+            "UPDATE FOREIGNER ERROR:",
+            err
+        );
+
+        return res.status(500).json({
             success: false,
-            error: "แก้ไขข้อมูลไม่สำเร็จ",
+            error:
+                err?.message ||
+                "แก้ไขข้อมูลไม่สำเร็จ",
         });
     }
 });
 
-// DELETE
+/* ======================================================
+   DELETE
+   DELETE /api/foreigner/:id
+====================================================== */
+
 router.delete("/:id", async (req, res) => {
     try {
-        const existing = await prisma.foreigner.findUnique({
-            where: {
-                id: req.params.id,
-            },
-        });
+        const existing =
+            await prisma.foreigner.findUnique({
+                where: {
+                    id: req.params.id,
+                },
+            });
 
         if (!existing) {
             return res.status(404).json({
@@ -345,14 +754,25 @@ router.delete("/:id", async (req, res) => {
             },
         });
 
-        res.json({
+        console.log(
+            `DELETE FOREIGNER: ${existing.name}`
+        );
+
+        return res.json({
             success: true,
             message: "ลบข้อมูลสำเร็จ",
         });
     } catch (err) {
-        res.status(500).json({
+        console.error(
+            "DELETE FOREIGNER ERROR:",
+            err
+        );
+
+        return res.status(500).json({
             success: false,
-            error: "ลบข้อมูลไม่สำเร็จ",
+            error:
+                err?.message ||
+                "ลบข้อมูลไม่สำเร็จ",
         });
     }
 });

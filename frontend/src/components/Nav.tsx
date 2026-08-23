@@ -49,9 +49,7 @@ export default function Nav() {
   const shortText = (text: string = "", max: number = 16) => {
     if (!text) return "-";
 
-    return text.length > max
-      ? `${text.substring(0, max)}...`
-      : text;
+    return text.length > max ? `${text.substring(0, max)}...` : text;
   };
 
   // ============================================================
@@ -79,7 +77,7 @@ export default function Nav() {
     setOpenMenus((prev) =>
       prev.includes(label)
         ? prev.filter((item) => item !== label)
-        : [...prev, label]
+        : [...prev, label],
     );
   };
 
@@ -89,9 +87,7 @@ export default function Nav() {
 
   const hasActiveChild = (item: MenuItem) => {
     return (
-      item.children?.some(
-        (child) => location.pathname === child.path
-      ) ?? false
+      item.children?.some((child) => location.pathname === child.path) ?? false
     );
   };
 
@@ -152,25 +148,42 @@ export default function Nav() {
       icon: "scan",
     },
 
+    // ============================================================
+    // คนต่างด้าว
+    // ============================================================
+
     {
-    path: "/settings",
-    label: "ตั้งค่า",
-    description: "จัดการการตั้งค่าระบบ",
-    icon: "settings",
-  },
-];
+      label: "คนต่างด้าว",
+      icon: "foreigner",
+      children: [
+        {
+          path: "/foreigner/create",
+          label: "เพิ่มคนต่างด้าว",
+          description: "บันทึกข้อมูลคนต่างด้าว",
+          icon: "personAdd",
+        },
+        {
+          path: "/foreigner",
+          label: "ประวัติคนต่างด้าว",
+          description: "ดูประวัติข้อมูลคนต่างด้าว",
+          icon: "history",
+        },
+      ],
+    },
+
+    {
+      path: "/settings",
+      label: "ตั้งค่า",
+      description: "จัดการการตั้งค่าระบบ",
+      icon: "settings",
+    },
+  ];
 
   // ============================================================
   // MENU ICON
   // ============================================================
 
-  const MenuIcon = ({
-    type,
-    size = 21,
-  }: {
-    type: string;
-    size?: number;
-  }) => {
+  const MenuIcon = ({ type, size = 21 }: { type: string; size?: number }) => {
     if (type === "home") {
       return (
         <svg
@@ -376,13 +389,7 @@ export default function Nav() {
   // ARROW ICON
   // ============================================================
 
-  const ArrowIcon = ({
-    open,
-    size = 16,
-  }: {
-    open: boolean;
-    size?: number;
-  }) => (
+  const ArrowIcon = ({ open, size = 16 }: { open: boolean; size?: number }) => (
     <svg
       width={size}
       height={size}
@@ -636,13 +643,9 @@ export default function Nav() {
           </div>
 
           <div className="ml-2">
-            <p className="text-xs font-bold">
-              งานพิมพ์มือตรวจประวัติ
-            </p>
+            <p className="text-xs font-bold">งานพิมพ์มือตรวจประวัติ</p>
 
-            <p className="text-[9px] text-white/50">
-              งานนโยบายและแผน
-            </p>
+            <p className="text-[9px] text-white/50">งานนโยบายและแผน</p>
           </div>
         </div>
 
@@ -668,10 +671,7 @@ export default function Nav() {
               const isOpen = openMenus.includes(item.label);
 
               return (
-                <div
-                  key={item.label}
-                  className="space-y-1"
-                >
+                <div key={item.label} className="space-y-1">
                   {/* Parent */}
 
                   <button
@@ -701,10 +701,7 @@ export default function Nav() {
                     `}
                   >
                     <span className="shrink-0">
-                      <MenuIcon
-                        type={item.icon}
-                        size={20}
-                      />
+                      <MenuIcon type={item.icon} size={20} />
                     </span>
 
                     <span className="min-w-0 flex-1">
@@ -772,10 +769,7 @@ export default function Nav() {
                             )}
 
                             <span className="shrink-0">
-                              <MenuIcon
-                                type={child.icon}
-                                size={17}
-                              />
+                              <MenuIcon type={child.icon} size={17} />
                             </span>
 
                             <span className="min-w-0 flex-1">
@@ -862,10 +856,7 @@ export default function Nav() {
                 )}
 
                 <span className="shrink-0">
-                  <MenuIcon
-                    type={item.icon}
-                    size={20}
-                  />
+                  <MenuIcon type={item.icon} size={20} />
                 </span>
 
                 <span className="min-w-0 flex-1">
@@ -879,11 +870,7 @@ export default function Nav() {
                       block
                       truncate
                       text-[9px]
-                      ${
-                        active
-                          ? "text-[#800020]/50"
-                          : "text-white/40"
-                      }
+                      ${active ? "text-[#800020]/50" : "text-white/40"}
                     `}
                   >
                     {item.description}
@@ -925,9 +912,7 @@ export default function Nav() {
           >
             <LogoutIcon />
 
-            <span className="text-xs font-bold">
-              ออกจากระบบ
-            </span>
+            <span className="text-xs font-bold">ออกจากระบบ</span>
           </button>
         </div>
       </aside>
@@ -978,11 +963,7 @@ export default function Nav() {
 
           min-[1200px]:hidden
 
-          ${
-            menuOpen
-              ? "translate-x-0"
-              : "-translate-x-full"
-          }
+          ${menuOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
         {/* Drawer Header */}
@@ -1022,9 +1003,7 @@ export default function Nav() {
             </div>
 
             <div className="leading-none">
-              <p className="m-0 text-sm font-bold leading-tight">
-                เมนูหลัก
-              </p>
+              <p className="m-0 text-sm font-bold leading-tight">เมนูหลัก</p>
 
               <p className="m-0 mt-1 text-[10px] leading-tight text-white/60">
                 งานพิมพ์มือตรวจประวัติ
@@ -1147,23 +1126,15 @@ export default function Nav() {
               // ==================================================
 
               if (item.children) {
-                const parentActive =
-                  hasActiveChild(item);
+                const parentActive = hasActiveChild(item);
 
-                const isOpen = openMenus.includes(
-                  item.label
-                );
+                const isOpen = openMenus.includes(item.label);
 
                 return (
-                  <div
-                    key={item.label}
-                    className="space-y-1"
-                  >
+                  <div key={item.label} className="space-y-1">
                     <button
                       type="button"
-                      onClick={() =>
-                        toggleMenu(item.label)
-                      }
+                      onClick={() => toggleMenu(item.label)}
                       className={`
                         flex
                         w-full
@@ -1199,10 +1170,7 @@ export default function Nav() {
                           }
                         `}
                       >
-                        <MenuIcon
-                          type={item.icon}
-                          size={19}
-                        />
+                        <MenuIcon type={item.icon} size={19} />
                       </span>
 
                       <span className="min-w-0 flex-1">
@@ -1217,15 +1185,10 @@ export default function Nav() {
 
                       <span
                         className={
-                          parentActive
-                            ? "text-[#800020]"
-                            : "text-gray-400"
+                          parentActive ? "text-[#800020]" : "text-gray-400"
                         }
                       >
-                        <ArrowIcon
-                          open={isOpen}
-                          size={18}
-                        />
+                        <ArrowIcon open={isOpen} size={18} />
                       </span>
                     </button>
 
@@ -1233,19 +1196,15 @@ export default function Nav() {
 
                     {isOpen && (
                       <div className="ml-5 space-y-1 border-l-2 border-[#800020]/10 pl-2">
-                        {item.children.map(
-                          (child) => {
-                            const active =
-                              isActive(child.path);
+                        {item.children.map((child) => {
+                          const active = isActive(child.path);
 
-                            return (
-                              <button
-                                key={child.path}
-                                type="button"
-                                onClick={() =>
-                                  go(child.path)
-                                }
-                                className={`
+                          return (
+                            <button
+                              key={child.path}
+                              type="button"
+                              onClick={() => go(child.path)}
+                              className={`
                                   flex
                                   w-full
                                   items-center
@@ -1262,9 +1221,9 @@ export default function Nav() {
                                       : "text-gray-600 hover:bg-gray-50 hover:text-[#800020]"
                                   }
                                 `}
-                              >
-                                <span
-                                  className={`
+                            >
+                              <span
+                                className={`
                                     flex
                                     h-8
                                     w-8
@@ -1279,30 +1238,26 @@ export default function Nav() {
                                         : "bg-gray-100 text-gray-500"
                                     }
                                   `}
-                                >
-                                  <MenuIcon
-                                    type={child.icon}
-                                    size={17}
-                                  />
+                              >
+                                <MenuIcon type={child.icon} size={17} />
+                              </span>
+
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-xs font-semibold">
+                                  {child.label}
                                 </span>
 
-                                <span className="min-w-0 flex-1">
-                                  <span className="block text-xs font-semibold">
-                                    {child.label}
-                                  </span>
-
-                                  <span className="mt-0.5 block truncate text-[9px] text-gray-400">
-                                    {child.description}
-                                  </span>
+                                <span className="mt-0.5 block truncate text-[9px] text-gray-400">
+                                  {child.description}
                                 </span>
+                              </span>
 
-                                {active && (
-                                  <span className="h-2 w-2 shrink-0 rounded-full bg-[#800020]" />
-                                )}
-                              </button>
-                            );
-                          }
-                        )}
+                              {active && (
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-[#800020]" />
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -1360,10 +1315,7 @@ export default function Nav() {
                       }
                     `}
                   >
-                    <MenuIcon
-                      type={item.icon}
-                      size={19}
-                    />
+                    <MenuIcon type={item.icon} size={19} />
                   </span>
 
                   <span className="min-w-0 flex-1">
@@ -1377,11 +1329,7 @@ export default function Nav() {
                         block
                         truncate
                         text-[10px]
-                        ${
-                          active
-                            ? "text-[#800020]/60"
-                            : "text-gray-400"
-                        }
+                        ${active ? "text-[#800020]/60" : "text-gray-400"}
                       `}
                     >
                       {item.description}
@@ -1428,7 +1376,6 @@ export default function Nav() {
             "
           >
             <LogoutIcon size={19} />
-
             ออกจากระบบ
           </button>
         </div>

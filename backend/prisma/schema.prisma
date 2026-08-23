@@ -13,44 +13,82 @@ model Foreigner {
   // ลำดับ
   sequenceNo Int?
 
+  // ปี พ.ศ. ของรายการ
+  year Int?
+
+  // =========================
   // ข้อมูลบุคคล
-  foreignerIdNo String? // รหัสประจำตัวคนต่างด้าว
-  name          String // ชื่อ แซ่
-  age           Int? // อายุ
-  nationality   String? // สัญชาติ
-  ethnicity     String? // เชื้อชาติ
+  // =========================
 
+  foreignerIdNo String?
+  name          String
+  age           Int?
+  nationality   String?
+  ethnicity     String?
+
+  // =========================
   // ใบสำคัญ
-  certificateRegistrationNo String? // เลขทะเบียนของใบสำคัญ
-  certificateDate           DateTime? @db.Date // วัน เดือน ปี ของใบสำคัญ
+  // =========================
 
-  //ออกให้ ณ 
-  district String? // อำเภอ
-  province String? // จังหวัด
+  certificateRegistrationNo String?
 
-  domicile String? // ภูมิลำเนา
+  // เก็บเป็น String
+  certificateDate String?
 
+  // =========================
+  // ออกให้ ณ
+  // =========================
+
+  district String?
+  province String?
+
+  // =========================
+  // ภูมิลำเนา
+  // =========================
+
+  domicile String?
+
+  // =========================
   // การขอรับใหม่ / ขอรับใบแทน / ขอต่ออายุ
-  applicationDate DateTime? @db.Date
+  // =========================
 
-  // วันหมดอายุ
-  expirationDate DateTime? @db.Date
+  applicationType String?
 
+  // เก็บเป็น String
+  applicationDate String?
+
+  // เก็บเป็น String
+  expirationDate String?
+
+  // =========================
   // ค่าธรรมเนียม
+  // =========================
+
   amount Decimal?
 
+  // =========================
   // ใบเสร็จ
-  receiptBookNo String? // ใบเสร็จเล่มที่
-  receiptNo     String? // ใบเสร็จเลขที่
-  receiptDate   DateTime? @db.Date // วัน เดือน ปี ของใบเสร็จ
+  // =========================
 
+  receiptBookNo String?
+  receiptNo     String?
+
+  // เก็บเป็น String
+  receiptDate String?
+
+  // =========================
   // ใบสำคัญ
-  certificateNo String? // เลขใบสำคัญฯ
+  // =========================
+
+  certificateNo String?
 
   // วันที่ยื่นคำร้อง
   petitionDate DateTime? @db.Date
 
+  // =========================
   // ระบบ
+  // =========================
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

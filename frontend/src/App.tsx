@@ -26,6 +26,10 @@ import ForensicSubmissionListPage from "./pages/Forensic/ForensicSubmissionListP
 import ForensicSubmissionPdfPage from "./pages/Forensic/ForensicSubmissionPdfPage";
 import ForensicStatusPage from "./pages/Forensic/ForensicStatusPage";
 import ForensicScanPage from "./pages/Forensic/ForensicQrScanner";
+import CreateForeigner from "./pages/Foreigner/CreateForeigner";
+import ForeignerHistory from "./pages/Foreigner/ForeignerHistory";
+import ForeignerDetail from "./pages/Foreigner/ForeignerDetail";
+import EditForeigner from "./pages/Foreigner/EditForeigner";
 
 function App() {
   return (
@@ -62,21 +66,29 @@ function App() {
           <Route path="/forensic-scan" element={<ForensicScanPage />} />
           <Route path="/forensic-status/:id" element={<ForensicStatusPage />} />
 
+          {/* foreigner */}
+          <Route path="/foreigner" element={<ForeignerHistory />} />
+          <Route path="/foreigner/:id" element={<ForeignerDetail />} />
+          <Route path="/foreigner/edit/:id" element={<EditForeigner />} />
+          <Route path="/foreigner/create" element={<CreateForeigner />} />
+
           {/* ⭐ STATUS FLOW */}
           <Route path="/person/edit/:id" element={<PersonEditPage />} />
 
           {/* ⭐ HISTORY */}
           <Route path="/person/history" element={<PersonHistoryPage />} />
 
-<Route path="/settings" element={<Settings />} />
+          <Route path="/settings" element={<Settings />} />
 
           {/* DETAIL */}
           <Route path="/person/:id" element={<PersonDetailPage />} />
           <Route path="/status-history" element={<StatusHistoryPage />} />
+
           <Route
             path="/forensic-submission"
             element={<ForensicSubmissionPage />}
           />
+
           <Route
             path="/forensic-submission/list"
             element={<ForensicSubmissionListPage />}

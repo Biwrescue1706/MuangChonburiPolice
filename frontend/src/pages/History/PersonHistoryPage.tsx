@@ -289,9 +289,7 @@ export default function PersonHistoryPage() {
         "
       >
         <div className="mx-auto px-4 w-full max-w-[1500px]">
-          {/* =================================================
-              HEADER
-          ================================================= */}
+          {/* HEADER           */}
           <section
             className="
             relative
@@ -453,9 +451,7 @@ export default function PersonHistoryPage() {
             </div>
           </section>
 
-          {/* =================================================
-              SEARCH
-          ================================================= */}
+          {/*SEARCH */}
           <section
             className="
             mt-5
@@ -667,9 +663,7 @@ export default function PersonHistoryPage() {
             </div>
           </section>
 
-          {/* =================================================
-              ACTION BAR
-          ================================================= */}
+          {/* ACTION BAR */}
           <section
             className="
             mt-4
@@ -683,11 +677,11 @@ export default function PersonHistoryPage() {
           "
           >
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#800020]">
+              <p className="text-md font-bold uppercase tracking-[0.15em] text-[#800020]">
                 Management
               </p>
 
-              <p className="mt-1 text-sm font-bold text-gray-800">
+              <p className="mt-1 text-md font-bold text-gray-800">
                 จัดการรายการ
               </p>
             </div>
@@ -839,9 +833,9 @@ export default function PersonHistoryPage() {
             "
             >
               <div>
-                <p className="text-sm font-bold text-gray-900">สถานะข้อมูล</p>
+                <p className="text-md font-bold text-gray-900">สถานะข้อมูล</p>
 
-                <p className="text-[10px] text-gray-400">
+                <p className="text-md text-gray-400">
                   เลือกสถานะเพื่อกรองรายการ
                 </p>
               </div>
@@ -927,9 +921,7 @@ export default function PersonHistoryPage() {
             </div>
           </section>
 
-          {/* =================================================
-              RESULT HEADER
-          ================================================= */}
+          {/*  RESULT HEADER */}
           <div
             className="
             mt-6
@@ -952,7 +944,7 @@ export default function PersonHistoryPage() {
                 รายการข้อมูล
               </h2>
 
-              <p className="mt-0.5 text-xs text-gray-400">
+              <p className="mt-0.5 text-md text-gray-400">
                 พบ {sortedPersons.length.toLocaleString("th-TH")} รายการ
               </p>
             </div>
@@ -963,7 +955,7 @@ export default function PersonHistoryPage() {
               bg-gray-100
               px-3
               py-1.5
-              text-[10px]
+              text-[14px]
               font-semibold
               text-gray-500
             "

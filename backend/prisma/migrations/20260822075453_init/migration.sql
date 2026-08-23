@@ -2,6 +2,7 @@
 CREATE TABLE "Foreigner" (
     "id" TEXT NOT NULL,
     "sequenceNo" INTEGER,
+    "year" INTEGER,
     "foreignerIdNo" TEXT,
     "name" TEXT NOT NULL,
     "age" INTEGER,
@@ -12,6 +13,7 @@ CREATE TABLE "Foreigner" (
     "district" TEXT,
     "province" TEXT,
     "domicile" TEXT,
+    "applicationType" TEXT,
     "applicationDate" DATE,
     "expirationDate" DATE,
     "amount" DECIMAL(65,30),

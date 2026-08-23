@@ -908,12 +908,14 @@ export namespace Prisma {
 
   export type ForeignerAvgAggregateOutputType = {
     sequenceNo: number | null
+    year: number | null
     age: number | null
     amount: Decimal | null
   }
 
   export type ForeignerSumAggregateOutputType = {
     sequenceNo: number | null
+    year: number | null
     age: number | null
     amount: Decimal | null
   }
@@ -921,22 +923,24 @@ export namespace Prisma {
   export type ForeignerMinAggregateOutputType = {
     id: string | null
     sequenceNo: number | null
+    year: number | null
     foreignerIdNo: string | null
     name: string | null
     age: number | null
     nationality: string | null
     ethnicity: string | null
     certificateRegistrationNo: string | null
-    certificateDate: Date | null
+    certificateDate: string | null
     district: string | null
     province: string | null
     domicile: string | null
-    applicationDate: Date | null
-    expirationDate: Date | null
+    applicationType: string | null
+    applicationDate: string | null
+    expirationDate: string | null
     amount: Decimal | null
     receiptBookNo: string | null
     receiptNo: string | null
-    receiptDate: Date | null
+    receiptDate: string | null
     certificateNo: string | null
     petitionDate: Date | null
     createdAt: Date | null
@@ -946,22 +950,24 @@ export namespace Prisma {
   export type ForeignerMaxAggregateOutputType = {
     id: string | null
     sequenceNo: number | null
+    year: number | null
     foreignerIdNo: string | null
     name: string | null
     age: number | null
     nationality: string | null
     ethnicity: string | null
     certificateRegistrationNo: string | null
-    certificateDate: Date | null
+    certificateDate: string | null
     district: string | null
     province: string | null
     domicile: string | null
-    applicationDate: Date | null
-    expirationDate: Date | null
+    applicationType: string | null
+    applicationDate: string | null
+    expirationDate: string | null
     amount: Decimal | null
     receiptBookNo: string | null
     receiptNo: string | null
-    receiptDate: Date | null
+    receiptDate: string | null
     certificateNo: string | null
     petitionDate: Date | null
     createdAt: Date | null
@@ -971,6 +977,7 @@ export namespace Prisma {
   export type ForeignerCountAggregateOutputType = {
     id: number
     sequenceNo: number
+    year: number
     foreignerIdNo: number
     name: number
     age: number
@@ -981,6 +988,7 @@ export namespace Prisma {
     district: number
     province: number
     domicile: number
+    applicationType: number
     applicationDate: number
     expirationDate: number
     amount: number
@@ -997,12 +1005,14 @@ export namespace Prisma {
 
   export type ForeignerAvgAggregateInputType = {
     sequenceNo?: true
+    year?: true
     age?: true
     amount?: true
   }
 
   export type ForeignerSumAggregateInputType = {
     sequenceNo?: true
+    year?: true
     age?: true
     amount?: true
   }
@@ -1010,6 +1020,7 @@ export namespace Prisma {
   export type ForeignerMinAggregateInputType = {
     id?: true
     sequenceNo?: true
+    year?: true
     foreignerIdNo?: true
     name?: true
     age?: true
@@ -1020,6 +1031,7 @@ export namespace Prisma {
     district?: true
     province?: true
     domicile?: true
+    applicationType?: true
     applicationDate?: true
     expirationDate?: true
     amount?: true
@@ -1035,6 +1047,7 @@ export namespace Prisma {
   export type ForeignerMaxAggregateInputType = {
     id?: true
     sequenceNo?: true
+    year?: true
     foreignerIdNo?: true
     name?: true
     age?: true
@@ -1045,6 +1058,7 @@ export namespace Prisma {
     district?: true
     province?: true
     domicile?: true
+    applicationType?: true
     applicationDate?: true
     expirationDate?: true
     amount?: true
@@ -1060,6 +1074,7 @@ export namespace Prisma {
   export type ForeignerCountAggregateInputType = {
     id?: true
     sequenceNo?: true
+    year?: true
     foreignerIdNo?: true
     name?: true
     age?: true
@@ -1070,6 +1085,7 @@ export namespace Prisma {
     district?: true
     province?: true
     domicile?: true
+    applicationType?: true
     applicationDate?: true
     expirationDate?: true
     amount?: true
@@ -1172,22 +1188,24 @@ export namespace Prisma {
   export type ForeignerGroupByOutputType = {
     id: string
     sequenceNo: number | null
+    year: number | null
     foreignerIdNo: string | null
     name: string
     age: number | null
     nationality: string | null
     ethnicity: string | null
     certificateRegistrationNo: string | null
-    certificateDate: Date | null
+    certificateDate: string | null
     district: string | null
     province: string | null
     domicile: string | null
-    applicationDate: Date | null
-    expirationDate: Date | null
+    applicationType: string | null
+    applicationDate: string | null
+    expirationDate: string | null
     amount: Decimal | null
     receiptBookNo: string | null
     receiptNo: string | null
-    receiptDate: Date | null
+    receiptDate: string | null
     certificateNo: string | null
     petitionDate: Date | null
     createdAt: Date
@@ -1216,6 +1234,7 @@ export namespace Prisma {
   export type ForeignerSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     sequenceNo?: boolean
+    year?: boolean
     foreignerIdNo?: boolean
     name?: boolean
     age?: boolean
@@ -1226,6 +1245,7 @@ export namespace Prisma {
     district?: boolean
     province?: boolean
     domicile?: boolean
+    applicationType?: boolean
     applicationDate?: boolean
     expirationDate?: boolean
     amount?: boolean
@@ -1241,6 +1261,7 @@ export namespace Prisma {
   export type ForeignerSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     sequenceNo?: boolean
+    year?: boolean
     foreignerIdNo?: boolean
     name?: boolean
     age?: boolean
@@ -1251,6 +1272,7 @@ export namespace Prisma {
     district?: boolean
     province?: boolean
     domicile?: boolean
+    applicationType?: boolean
     applicationDate?: boolean
     expirationDate?: boolean
     amount?: boolean
@@ -1266,6 +1288,7 @@ export namespace Prisma {
   export type ForeignerSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     sequenceNo?: boolean
+    year?: boolean
     foreignerIdNo?: boolean
     name?: boolean
     age?: boolean
@@ -1276,6 +1299,7 @@ export namespace Prisma {
     district?: boolean
     province?: boolean
     domicile?: boolean
+    applicationType?: boolean
     applicationDate?: boolean
     expirationDate?: boolean
     amount?: boolean
@@ -1291,6 +1315,7 @@ export namespace Prisma {
   export type ForeignerSelectScalar = {
     id?: boolean
     sequenceNo?: boolean
+    year?: boolean
     foreignerIdNo?: boolean
     name?: boolean
     age?: boolean
@@ -1301,6 +1326,7 @@ export namespace Prisma {
     district?: boolean
     province?: boolean
     domicile?: boolean
+    applicationType?: boolean
     applicationDate?: boolean
     expirationDate?: boolean
     amount?: boolean
@@ -1313,7 +1339,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ForeignerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sequenceNo" | "foreignerIdNo" | "name" | "age" | "nationality" | "ethnicity" | "certificateRegistrationNo" | "certificateDate" | "district" | "province" | "domicile" | "applicationDate" | "expirationDate" | "amount" | "receiptBookNo" | "receiptNo" | "receiptDate" | "certificateNo" | "petitionDate" | "createdAt" | "updatedAt", ExtArgs["result"]["foreigner"]>
+  export type ForeignerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sequenceNo" | "year" | "foreignerIdNo" | "name" | "age" | "nationality" | "ethnicity" | "certificateRegistrationNo" | "certificateDate" | "district" | "province" | "domicile" | "applicationType" | "applicationDate" | "expirationDate" | "amount" | "receiptBookNo" | "receiptNo" | "receiptDate" | "certificateNo" | "petitionDate" | "createdAt" | "updatedAt", ExtArgs["result"]["foreigner"]>
 
   export type $ForeignerPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Foreigner"
@@ -1321,22 +1347,24 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       sequenceNo: number | null
+      year: number | null
       foreignerIdNo: string | null
       name: string
       age: number | null
       nationality: string | null
       ethnicity: string | null
       certificateRegistrationNo: string | null
-      certificateDate: Date | null
+      certificateDate: string | null
       district: string | null
       province: string | null
       domicile: string | null
-      applicationDate: Date | null
-      expirationDate: Date | null
+      applicationType: string | null
+      applicationDate: string | null
+      expirationDate: string | null
       amount: Prisma.Decimal | null
       receiptBookNo: string | null
       receiptNo: string | null
-      receiptDate: Date | null
+      receiptDate: string | null
       certificateNo: string | null
       petitionDate: Date | null
       createdAt: Date
@@ -1766,22 +1794,24 @@ export namespace Prisma {
   interface ForeignerFieldRefs {
     readonly id: FieldRef<"Foreigner", 'String'>
     readonly sequenceNo: FieldRef<"Foreigner", 'Int'>
+    readonly year: FieldRef<"Foreigner", 'Int'>
     readonly foreignerIdNo: FieldRef<"Foreigner", 'String'>
     readonly name: FieldRef<"Foreigner", 'String'>
     readonly age: FieldRef<"Foreigner", 'Int'>
     readonly nationality: FieldRef<"Foreigner", 'String'>
     readonly ethnicity: FieldRef<"Foreigner", 'String'>
     readonly certificateRegistrationNo: FieldRef<"Foreigner", 'String'>
-    readonly certificateDate: FieldRef<"Foreigner", 'DateTime'>
+    readonly certificateDate: FieldRef<"Foreigner", 'String'>
     readonly district: FieldRef<"Foreigner", 'String'>
     readonly province: FieldRef<"Foreigner", 'String'>
     readonly domicile: FieldRef<"Foreigner", 'String'>
-    readonly applicationDate: FieldRef<"Foreigner", 'DateTime'>
-    readonly expirationDate: FieldRef<"Foreigner", 'DateTime'>
+    readonly applicationType: FieldRef<"Foreigner", 'String'>
+    readonly applicationDate: FieldRef<"Foreigner", 'String'>
+    readonly expirationDate: FieldRef<"Foreigner", 'String'>
     readonly amount: FieldRef<"Foreigner", 'Decimal'>
     readonly receiptBookNo: FieldRef<"Foreigner", 'String'>
     readonly receiptNo: FieldRef<"Foreigner", 'String'>
-    readonly receiptDate: FieldRef<"Foreigner", 'DateTime'>
+    readonly receiptDate: FieldRef<"Foreigner", 'String'>
     readonly certificateNo: FieldRef<"Foreigner", 'String'>
     readonly petitionDate: FieldRef<"Foreigner", 'DateTime'>
     readonly createdAt: FieldRef<"Foreigner", 'DateTime'>
@@ -2174,6 +2204,7 @@ export namespace Prisma {
   export const ForeignerScalarFieldEnum: {
     id: 'id',
     sequenceNo: 'sequenceNo',
+    year: 'year',
     foreignerIdNo: 'foreignerIdNo',
     name: 'name',
     age: 'age',
@@ -2184,6 +2215,7 @@ export namespace Prisma {
     district: 'district',
     province: 'province',
     domicile: 'domicile',
+    applicationType: 'applicationType',
     applicationDate: 'applicationDate',
     expirationDate: 'expirationDate',
     amount: 'amount',
@@ -2257,20 +2289,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'DateTime'
-   */
-  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
-    
-
-
-  /**
-   * Reference to a field of type 'DateTime[]'
-   */
-  export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
-
-  /**
    * Reference to a field of type 'Decimal'
    */
   export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
@@ -2281,6 +2299,20 @@ export namespace Prisma {
    * Reference to a field of type 'Decimal[]'
    */
   export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'DateTime'
+   */
+  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+  /**
+   * Reference to a field of type 'DateTime[]'
+   */
+  export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
 
 
@@ -2307,22 +2339,24 @@ export namespace Prisma {
     NOT?: ForeignerWhereInput | ForeignerWhereInput[]
     id?: StringFilter<"Foreigner"> | string
     sequenceNo?: IntNullableFilter<"Foreigner"> | number | null
+    year?: IntNullableFilter<"Foreigner"> | number | null
     foreignerIdNo?: StringNullableFilter<"Foreigner"> | string | null
     name?: StringFilter<"Foreigner"> | string
     age?: IntNullableFilter<"Foreigner"> | number | null
     nationality?: StringNullableFilter<"Foreigner"> | string | null
     ethnicity?: StringNullableFilter<"Foreigner"> | string | null
     certificateRegistrationNo?: StringNullableFilter<"Foreigner"> | string | null
-    certificateDate?: DateTimeNullableFilter<"Foreigner"> | Date | string | null
+    certificateDate?: StringNullableFilter<"Foreigner"> | string | null
     district?: StringNullableFilter<"Foreigner"> | string | null
     province?: StringNullableFilter<"Foreigner"> | string | null
     domicile?: StringNullableFilter<"Foreigner"> | string | null
-    applicationDate?: DateTimeNullableFilter<"Foreigner"> | Date | string | null
-    expirationDate?: DateTimeNullableFilter<"Foreigner"> | Date | string | null
+    applicationType?: StringNullableFilter<"Foreigner"> | string | null
+    applicationDate?: StringNullableFilter<"Foreigner"> | string | null
+    expirationDate?: StringNullableFilter<"Foreigner"> | string | null
     amount?: DecimalNullableFilter<"Foreigner"> | Decimal | DecimalJsLike | number | string | null
     receiptBookNo?: StringNullableFilter<"Foreigner"> | string | null
     receiptNo?: StringNullableFilter<"Foreigner"> | string | null
-    receiptDate?: DateTimeNullableFilter<"Foreigner"> | Date | string | null
+    receiptDate?: StringNullableFilter<"Foreigner"> | string | null
     certificateNo?: StringNullableFilter<"Foreigner"> | string | null
     petitionDate?: DateTimeNullableFilter<"Foreigner"> | Date | string | null
     createdAt?: DateTimeFilter<"Foreigner"> | Date | string
@@ -2332,6 +2366,7 @@ export namespace Prisma {
   export type ForeignerOrderByWithRelationInput = {
     id?: SortOrder
     sequenceNo?: SortOrderInput | SortOrder
+    year?: SortOrderInput | SortOrder
     foreignerIdNo?: SortOrderInput | SortOrder
     name?: SortOrder
     age?: SortOrderInput | SortOrder
@@ -2342,6 +2377,7 @@ export namespace Prisma {
     district?: SortOrderInput | SortOrder
     province?: SortOrderInput | SortOrder
     domicile?: SortOrderInput | SortOrder
+    applicationType?: SortOrderInput | SortOrder
     applicationDate?: SortOrderInput | SortOrder
     expirationDate?: SortOrderInput | SortOrder
     amount?: SortOrderInput | SortOrder
@@ -2360,22 +2396,24 @@ export namespace Prisma {
     OR?: ForeignerWhereInput[]
     NOT?: ForeignerWhereInput | ForeignerWhereInput[]
     sequenceNo?: IntNullableFilter<"Foreigner"> | number | null
+    year?: IntNullableFilter<"Foreigner"> | number | null
     foreignerIdNo?: StringNullableFilter<"Foreigner"> | string | null
     name?: StringFilter<"Foreigner"> | string
     age?: IntNullableFilter<"Foreigner"> | number | null
     nationality?: StringNullableFilter<"Foreigner"> | string | null
     ethnicity?: StringNullableFilter<"Foreigner"> | string | null
     certificateRegistrationNo?: StringNullableFilter<"Foreigner"> | string | null
-    certificateDate?: DateTimeNullableFilter<"Foreigner"> | Date | string | null
+    certificateDate?: StringNullableFilter<"Foreigner"> | string | null
     district?: StringNullableFilter<"Foreigner"> | string | null
     province?: StringNullableFilter<"Foreigner"> | string | null
     domicile?: StringNullableFilter<"Foreigner"> | string | null
-    applicationDate?: DateTimeNullableFilter<"Foreigner"> | Date | string | null
-    expirationDate?: DateTimeNullableFilter<"Foreigner"> | Date | string | null
+    applicationType?: StringNullableFilter<"Foreigner"> | string | null
+    applicationDate?: StringNullableFilter<"Foreigner"> | string | null
+    expirationDate?: StringNullableFilter<"Foreigner"> | string | null
     amount?: DecimalNullableFilter<"Foreigner"> | Decimal | DecimalJsLike | number | string | null
     receiptBookNo?: StringNullableFilter<"Foreigner"> | string | null
     receiptNo?: StringNullableFilter<"Foreigner"> | string | null
-    receiptDate?: DateTimeNullableFilter<"Foreigner"> | Date | string | null
+    receiptDate?: StringNullableFilter<"Foreigner"> | string | null
     certificateNo?: StringNullableFilter<"Foreigner"> | string | null
     petitionDate?: DateTimeNullableFilter<"Foreigner"> | Date | string | null
     createdAt?: DateTimeFilter<"Foreigner"> | Date | string
@@ -2385,6 +2423,7 @@ export namespace Prisma {
   export type ForeignerOrderByWithAggregationInput = {
     id?: SortOrder
     sequenceNo?: SortOrderInput | SortOrder
+    year?: SortOrderInput | SortOrder
     foreignerIdNo?: SortOrderInput | SortOrder
     name?: SortOrder
     age?: SortOrderInput | SortOrder
@@ -2395,6 +2434,7 @@ export namespace Prisma {
     district?: SortOrderInput | SortOrder
     province?: SortOrderInput | SortOrder
     domicile?: SortOrderInput | SortOrder
+    applicationType?: SortOrderInput | SortOrder
     applicationDate?: SortOrderInput | SortOrder
     expirationDate?: SortOrderInput | SortOrder
     amount?: SortOrderInput | SortOrder
@@ -2418,22 +2458,24 @@ export namespace Prisma {
     NOT?: ForeignerScalarWhereWithAggregatesInput | ForeignerScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Foreigner"> | string
     sequenceNo?: IntNullableWithAggregatesFilter<"Foreigner"> | number | null
+    year?: IntNullableWithAggregatesFilter<"Foreigner"> | number | null
     foreignerIdNo?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     name?: StringWithAggregatesFilter<"Foreigner"> | string
     age?: IntNullableWithAggregatesFilter<"Foreigner"> | number | null
     nationality?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     ethnicity?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     certificateRegistrationNo?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
-    certificateDate?: DateTimeNullableWithAggregatesFilter<"Foreigner"> | Date | string | null
+    certificateDate?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     district?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     province?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     domicile?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
-    applicationDate?: DateTimeNullableWithAggregatesFilter<"Foreigner"> | Date | string | null
-    expirationDate?: DateTimeNullableWithAggregatesFilter<"Foreigner"> | Date | string | null
+    applicationType?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    applicationDate?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    expirationDate?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     amount?: DecimalNullableWithAggregatesFilter<"Foreigner"> | Decimal | DecimalJsLike | number | string | null
     receiptBookNo?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     receiptNo?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
-    receiptDate?: DateTimeNullableWithAggregatesFilter<"Foreigner"> | Date | string | null
+    receiptDate?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     certificateNo?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     petitionDate?: DateTimeNullableWithAggregatesFilter<"Foreigner"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Foreigner"> | Date | string
@@ -2443,22 +2485,24 @@ export namespace Prisma {
   export type ForeignerCreateInput = {
     id?: string
     sequenceNo?: number | null
+    year?: number | null
     foreignerIdNo?: string | null
     name: string
     age?: number | null
     nationality?: string | null
     ethnicity?: string | null
     certificateRegistrationNo?: string | null
-    certificateDate?: Date | string | null
+    certificateDate?: string | null
     district?: string | null
     province?: string | null
     domicile?: string | null
-    applicationDate?: Date | string | null
-    expirationDate?: Date | string | null
+    applicationType?: string | null
+    applicationDate?: string | null
+    expirationDate?: string | null
     amount?: Decimal | DecimalJsLike | number | string | null
     receiptBookNo?: string | null
     receiptNo?: string | null
-    receiptDate?: Date | string | null
+    receiptDate?: string | null
     certificateNo?: string | null
     petitionDate?: Date | string | null
     createdAt?: Date | string
@@ -2468,22 +2512,24 @@ export namespace Prisma {
   export type ForeignerUncheckedCreateInput = {
     id?: string
     sequenceNo?: number | null
+    year?: number | null
     foreignerIdNo?: string | null
     name: string
     age?: number | null
     nationality?: string | null
     ethnicity?: string | null
     certificateRegistrationNo?: string | null
-    certificateDate?: Date | string | null
+    certificateDate?: string | null
     district?: string | null
     province?: string | null
     domicile?: string | null
-    applicationDate?: Date | string | null
-    expirationDate?: Date | string | null
+    applicationType?: string | null
+    applicationDate?: string | null
+    expirationDate?: string | null
     amount?: Decimal | DecimalJsLike | number | string | null
     receiptBookNo?: string | null
     receiptNo?: string | null
-    receiptDate?: Date | string | null
+    receiptDate?: string | null
     certificateNo?: string | null
     petitionDate?: Date | string | null
     createdAt?: Date | string
@@ -2493,22 +2539,24 @@ export namespace Prisma {
   export type ForeignerUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     sequenceNo?: NullableIntFieldUpdateOperationsInput | number | null
+    year?: NullableIntFieldUpdateOperationsInput | number | null
     foreignerIdNo?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     age?: NullableIntFieldUpdateOperationsInput | number | null
     nationality?: NullableStringFieldUpdateOperationsInput | string | null
     ethnicity?: NullableStringFieldUpdateOperationsInput | string | null
     certificateRegistrationNo?: NullableStringFieldUpdateOperationsInput | string | null
-    certificateDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    certificateDate?: NullableStringFieldUpdateOperationsInput | string | null
     district?: NullableStringFieldUpdateOperationsInput | string | null
     province?: NullableStringFieldUpdateOperationsInput | string | null
     domicile?: NullableStringFieldUpdateOperationsInput | string | null
-    applicationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    expirationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    applicationType?: NullableStringFieldUpdateOperationsInput | string | null
+    applicationDate?: NullableStringFieldUpdateOperationsInput | string | null
+    expirationDate?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     receiptBookNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptNo?: NullableStringFieldUpdateOperationsInput | string | null
-    receiptDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    receiptDate?: NullableStringFieldUpdateOperationsInput | string | null
     certificateNo?: NullableStringFieldUpdateOperationsInput | string | null
     petitionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2518,22 +2566,24 @@ export namespace Prisma {
   export type ForeignerUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     sequenceNo?: NullableIntFieldUpdateOperationsInput | number | null
+    year?: NullableIntFieldUpdateOperationsInput | number | null
     foreignerIdNo?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     age?: NullableIntFieldUpdateOperationsInput | number | null
     nationality?: NullableStringFieldUpdateOperationsInput | string | null
     ethnicity?: NullableStringFieldUpdateOperationsInput | string | null
     certificateRegistrationNo?: NullableStringFieldUpdateOperationsInput | string | null
-    certificateDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    certificateDate?: NullableStringFieldUpdateOperationsInput | string | null
     district?: NullableStringFieldUpdateOperationsInput | string | null
     province?: NullableStringFieldUpdateOperationsInput | string | null
     domicile?: NullableStringFieldUpdateOperationsInput | string | null
-    applicationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    expirationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    applicationType?: NullableStringFieldUpdateOperationsInput | string | null
+    applicationDate?: NullableStringFieldUpdateOperationsInput | string | null
+    expirationDate?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     receiptBookNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptNo?: NullableStringFieldUpdateOperationsInput | string | null
-    receiptDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    receiptDate?: NullableStringFieldUpdateOperationsInput | string | null
     certificateNo?: NullableStringFieldUpdateOperationsInput | string | null
     petitionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2543,22 +2593,24 @@ export namespace Prisma {
   export type ForeignerCreateManyInput = {
     id?: string
     sequenceNo?: number | null
+    year?: number | null
     foreignerIdNo?: string | null
     name: string
     age?: number | null
     nationality?: string | null
     ethnicity?: string | null
     certificateRegistrationNo?: string | null
-    certificateDate?: Date | string | null
+    certificateDate?: string | null
     district?: string | null
     province?: string | null
     domicile?: string | null
-    applicationDate?: Date | string | null
-    expirationDate?: Date | string | null
+    applicationType?: string | null
+    applicationDate?: string | null
+    expirationDate?: string | null
     amount?: Decimal | DecimalJsLike | number | string | null
     receiptBookNo?: string | null
     receiptNo?: string | null
-    receiptDate?: Date | string | null
+    receiptDate?: string | null
     certificateNo?: string | null
     petitionDate?: Date | string | null
     createdAt?: Date | string
@@ -2568,22 +2620,24 @@ export namespace Prisma {
   export type ForeignerUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     sequenceNo?: NullableIntFieldUpdateOperationsInput | number | null
+    year?: NullableIntFieldUpdateOperationsInput | number | null
     foreignerIdNo?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     age?: NullableIntFieldUpdateOperationsInput | number | null
     nationality?: NullableStringFieldUpdateOperationsInput | string | null
     ethnicity?: NullableStringFieldUpdateOperationsInput | string | null
     certificateRegistrationNo?: NullableStringFieldUpdateOperationsInput | string | null
-    certificateDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    certificateDate?: NullableStringFieldUpdateOperationsInput | string | null
     district?: NullableStringFieldUpdateOperationsInput | string | null
     province?: NullableStringFieldUpdateOperationsInput | string | null
     domicile?: NullableStringFieldUpdateOperationsInput | string | null
-    applicationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    expirationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    applicationType?: NullableStringFieldUpdateOperationsInput | string | null
+    applicationDate?: NullableStringFieldUpdateOperationsInput | string | null
+    expirationDate?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     receiptBookNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptNo?: NullableStringFieldUpdateOperationsInput | string | null
-    receiptDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    receiptDate?: NullableStringFieldUpdateOperationsInput | string | null
     certificateNo?: NullableStringFieldUpdateOperationsInput | string | null
     petitionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2593,22 +2647,24 @@ export namespace Prisma {
   export type ForeignerUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     sequenceNo?: NullableIntFieldUpdateOperationsInput | number | null
+    year?: NullableIntFieldUpdateOperationsInput | number | null
     foreignerIdNo?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     age?: NullableIntFieldUpdateOperationsInput | number | null
     nationality?: NullableStringFieldUpdateOperationsInput | string | null
     ethnicity?: NullableStringFieldUpdateOperationsInput | string | null
     certificateRegistrationNo?: NullableStringFieldUpdateOperationsInput | string | null
-    certificateDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    certificateDate?: NullableStringFieldUpdateOperationsInput | string | null
     district?: NullableStringFieldUpdateOperationsInput | string | null
     province?: NullableStringFieldUpdateOperationsInput | string | null
     domicile?: NullableStringFieldUpdateOperationsInput | string | null
-    applicationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    expirationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    applicationType?: NullableStringFieldUpdateOperationsInput | string | null
+    applicationDate?: NullableStringFieldUpdateOperationsInput | string | null
+    expirationDate?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     receiptBookNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptNo?: NullableStringFieldUpdateOperationsInput | string | null
-    receiptDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    receiptDate?: NullableStringFieldUpdateOperationsInput | string | null
     certificateNo?: NullableStringFieldUpdateOperationsInput | string | null
     petitionDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2656,17 +2712,6 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type DecimalNullableFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
     in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
@@ -2676,6 +2721,17 @@ export namespace Prisma {
     gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -2697,6 +2753,7 @@ export namespace Prisma {
   export type ForeignerCountOrderByAggregateInput = {
     id?: SortOrder
     sequenceNo?: SortOrder
+    year?: SortOrder
     foreignerIdNo?: SortOrder
     name?: SortOrder
     age?: SortOrder
@@ -2707,6 +2764,7 @@ export namespace Prisma {
     district?: SortOrder
     province?: SortOrder
     domicile?: SortOrder
+    applicationType?: SortOrder
     applicationDate?: SortOrder
     expirationDate?: SortOrder
     amount?: SortOrder
@@ -2721,6 +2779,7 @@ export namespace Prisma {
 
   export type ForeignerAvgOrderByAggregateInput = {
     sequenceNo?: SortOrder
+    year?: SortOrder
     age?: SortOrder
     amount?: SortOrder
   }
@@ -2728,6 +2787,7 @@ export namespace Prisma {
   export type ForeignerMaxOrderByAggregateInput = {
     id?: SortOrder
     sequenceNo?: SortOrder
+    year?: SortOrder
     foreignerIdNo?: SortOrder
     name?: SortOrder
     age?: SortOrder
@@ -2738,6 +2798,7 @@ export namespace Prisma {
     district?: SortOrder
     province?: SortOrder
     domicile?: SortOrder
+    applicationType?: SortOrder
     applicationDate?: SortOrder
     expirationDate?: SortOrder
     amount?: SortOrder
@@ -2753,6 +2814,7 @@ export namespace Prisma {
   export type ForeignerMinOrderByAggregateInput = {
     id?: SortOrder
     sequenceNo?: SortOrder
+    year?: SortOrder
     foreignerIdNo?: SortOrder
     name?: SortOrder
     age?: SortOrder
@@ -2763,6 +2825,7 @@ export namespace Prisma {
     district?: SortOrder
     province?: SortOrder
     domicile?: SortOrder
+    applicationType?: SortOrder
     applicationDate?: SortOrder
     expirationDate?: SortOrder
     amount?: SortOrder
@@ -2777,6 +2840,7 @@ export namespace Prisma {
 
   export type ForeignerSumOrderByAggregateInput = {
     sequenceNo?: SortOrder
+    year?: SortOrder
     age?: SortOrder
     amount?: SortOrder
   }
@@ -2833,20 +2897,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
   export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
     in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
@@ -2861,6 +2911,20 @@ export namespace Prisma {
     _sum?: NestedDecimalNullableFilter<$PrismaModel>
     _min?: NestedDecimalNullableFilter<$PrismaModel>
     _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -2893,16 +2957,16 @@ export namespace Prisma {
     set?: string | null
   }
 
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
-  }
-
   export type NullableDecimalFieldUpdateOperationsInput = {
     set?: Decimal | DecimalJsLike | number | string | null
     increment?: Decimal | DecimalJsLike | number | string
     decrement?: Decimal | DecimalJsLike | number | string
     multiply?: Decimal | DecimalJsLike | number | string
     divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -2948,17 +3012,6 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type NestedDecimalNullableFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
     in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
@@ -2968,6 +3021,17 @@ export namespace Prisma {
     gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -3053,20 +3117,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
   export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
     in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
@@ -3081,6 +3131,20 @@ export namespace Prisma {
     _sum?: NestedDecimalNullableFilter<$PrismaModel>
     _min?: NestedDecimalNullableFilter<$PrismaModel>
     _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {

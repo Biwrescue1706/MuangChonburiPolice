@@ -385,8 +385,7 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 min-[768px]:grid-cols-3">
-              
-                            {/* เพิ่มข้อมูลบุคคล */}
+              {/* เพิ่มข้อมูลบุคคล */}
               <Link
                 to="/person/create"
                 className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
@@ -414,6 +413,53 @@ export default function Dashboard() {
 
                   <p className="mt-1 text-xs text-white">
                     บันทึกข้อมูลบุคคลใหม่
+                  </p>
+                </div>
+
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0 text-white"
+                >
+                  <path d="M5 12h13" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              </Link>
+
+              {/* เพิ่มบุคคลต่างด้าว */}
+              <Link
+                to="/foreigner/create"
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
+                  <svg
+                    width="25"
+                    height="25"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="8" r="3.5" />
+                    <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
+                    <path d="M19 8v5" />
+                    <path d="M16.5 10.5h5" />
+                  </svg>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">เพิ่มบุคคลต่างด้าว</p>
+
+                  <p className="mt-1 text-xs text-white">
+                    บันทึกข้อมูลบุคคลต่างด้าวใหม่
                   </p>
                 </div>
 
@@ -479,7 +525,54 @@ export default function Dashboard() {
                   <path d="m13 6 6 6-6 6" />
                 </svg>
               </Link>
-              
+
+              {/* ประวัติต่างด้าว */}
+              <Link
+                to="/foreigner"
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
+                  <svg
+                    width="25"
+                    height="25"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M6 3.5h8l4 4V20H6z" />
+                    <path d="M14 3.5V8h4" />
+                    <path d="M9 12h6" />
+                    <path d="M9 15.5h6" />
+                  </svg>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">ประวัติต่างด้าว</p>
+
+                  <p className="mt-1 text-xs text-white">
+                    ดูและจัดการข้อมูลประวัติต่างด้าว
+                  </p>
+                </div>
+
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0 text-white"
+                >
+                  <path d="M5 12h13" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              </Link>
+
               {/* ออกเลขหนังสือ ส่ง ศพฐ. */}
               <Link
                 to="/forensic-submission"
@@ -702,53 +795,6 @@ export default function Dashboard() {
 
                   <p className="mt-1 text-xs text-white">
                     ดูและจัดการโปรไฟล์บุคคล
-                  </p>
-                </div>
-
-                <svg
-                  width="19"
-                  height="19"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="shrink-0 text-white"
-                >
-                  <path d="M5 12h13" />
-                  <path d="m13 6 6 6-6 6" />
-                </svg>
-              </Link>
-
-              {/* ข้อมูลใบเสร็จ */}
-              <Link
-                to="/receipt"
-                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
-                  <svg
-                    width="25"
-                    height="25"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M6 3.5h12v17l-2.5-1.5L13 20.5l-2.5-1.5L8 20.5 6 19z" />
-                    <path d="M9 8h6" />
-                    <path d="M9 11.5h6" />
-                    <path d="M9 15h4" />
-                  </svg>
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-white">ข้อมูลใบเสร็จ</p>
-
-                  <p className="mt-1 text-xs text-white">
-                    ดูข้อมูลและจัดการใบเสร็จ
                   </p>
                 </div>
 

@@ -6,23 +6,15 @@ const router = Router();
 // Create forensic submission
 router.post("/create", async (req, res) => {
   try {
-    const {
-      personIds,
-      submissionNo,
-    } = req.body;
+    const { personIds, submissionNo } = req.body;
 
-    // Validate person IDs
-    if (
-      !Array.isArray(personIds) ||
-      personIds.length === 0
-    ) {
+    if (!Array.isArray(personIds) || personIds.length === 0) {
       return res.status(400).json({
         success: false,
         error: "กรุณาเลือกบุคคล",
       });
     }
 
-    // Validate submission number
     if (!submissionNo?.trim()) {
       return res.status(400).json({
         success: false,
@@ -30,87 +22,69 @@ router.post("/create", async (req, res) => {
       });
     }
 
-    const cleanSubmissionNo =
-      submissionNo.trim();
+    const cleanSubmissionNo = submissionNo.trim();
 
-    // Check duplicate submission number
-    const exists =
-      await neonPrisma.forensicSubmission.findFirst({
-        where: {
-          submissionNo:
-            cleanSubmissionNo,
-        },
-      });
+    const exists = await neonPrisma.forensicSubmission.findFirst({
+      where: {
+        submissionNo: cleanSubmissionNo,
+      },
+    });
 
     if (exists) {
       return res.status(400).json({
         success: false,
-        error:
-          "เลขที่ส่งตรวจนี้มีอยู่แล้ว",
+        error: "เลขที่ส่งตรวจนี้มีอยู่แล้ว",
       });
     }
 
-    // Transaction
-    const result =
-      await neonPrisma.$transaction(
-        async (tx) => {
-          // Create forensic submission
-          const submission =
-            await tx.forensicSubmission.create({
-              data: {
-                submissionNo:
-                  cleanSubmissionNo,
-
-                persons: {
-                  create:
-                    personIds.map(
-                      (personId) => ({
-                        personId,
-                      })
-                    ),
-                },
-              },
-
-              include: {
-                persons: {
-                  include: {
-                    person: true,
-                  },
-                },
-              },
-            });
-
-          // Update person status from 1 to 2
-          await tx.person.updateMany({
-            where: {
-              personId: {
-                in: personIds,
-              },
-              status: 1,
+    const result = await neonPrisma.$transaction(async (tx) => {
+      const submission = await tx.forensicSubmission.create({
+        data: {
+          submissionNo: cleanSubmissionNo,
+          status: 2,
+          statusUpdatedAt: new Date(),
+          persons: {
+            create: personIds.map((personId) => ({
+              personId,
+            })),
+          },
+        },
+        include: {
+          persons: {
+            include: {
+              person: true,
             },
+          },
+        },
+      });
 
-            data: {
-              status: 2,
-              statusUpdatedAt:
-                new Date(),
-              updatedAt:
-                new Date(),
-            },
-          });
+      await tx.person.updateMany({
+        where: {
+          personId: {
+            in: personIds,
+          },
+          status: 1,
+        },
+        data: {
+          status: 2,
+          statusUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
 
-          return submission;
-        }
-      );
+      return submission;
+    });
 
-    // Success
     return res.json({
       success: true,
       data: result,
     });
   } catch (err) {
+    console.error("CREATE FORENSIC SUBMISSION ERROR:", err);
+
     return res.status(500).json({
       success: false,
-      error: "สร้างรายการไม่สำเร็จ",
+      error: err.message || "สร้างรายการไม่สำเร็จ",
     });
   }
 });

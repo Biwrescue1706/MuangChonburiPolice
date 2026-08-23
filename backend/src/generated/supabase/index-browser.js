@@ -123,6 +123,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.ForeignerScalarFieldEnum = {
   id: 'id',
   sequenceNo: 'sequenceNo',
+  year: 'year',
   foreignerIdNo: 'foreignerIdNo',
   name: 'name',
   age: 'age',
@@ -133,6 +134,7 @@ exports.Prisma.ForeignerScalarFieldEnum = {
   district: 'district',
   province: 'province',
   domicile: 'domicile',
+  applicationType: 'applicationType',
   applicationDate: 'applicationDate',
   expirationDate: 'expirationDate',
   amount: 'amount',
