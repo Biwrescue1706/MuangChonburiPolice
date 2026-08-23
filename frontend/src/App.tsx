@@ -4,6 +4,8 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import GuestRoute from "./routes/GuestRoute";
 
+import RouteLoading from "./components/RouteLoading";
+
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
@@ -26,6 +28,7 @@ import ForensicSubmissionListPage from "./pages/Forensic/ForensicSubmissionListP
 import ForensicSubmissionPdfPage from "./pages/Forensic/ForensicSubmissionPdfPage";
 import ForensicStatusPage from "./pages/Forensic/ForensicStatusPage";
 import ForensicScanPage from "./pages/Forensic/ForensicQrScanner";
+
 import CreateForeigner from "./pages/Foreigner/CreateForeigner";
 import ForeignerHistory from "./pages/Foreigner/ForeignerHistory";
 import ForeignerDetail from "./pages/Foreigner/ForeignerDetail";
@@ -34,6 +37,10 @@ import EditForeigner from "./pages/Foreigner/EditForeigner";
 function App() {
   return (
     <AuthProvider>
+
+      {/* Route Loading */}
+      <RouteLoading />
+
       <Routes>
         {/* PUBLIC */}
         <Route
@@ -48,7 +55,7 @@ function App() {
         <Route path="/forgot" element={<ForgotCheck />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* ✅ PROTECTED + NAV */}
+        {/* PROTECTED + NAV */}
         <Route
           element={
             <ProtectedRoute>
@@ -57,33 +64,86 @@ function App() {
           }
         >
           <Route path="/dashboard" element={<Dashboard />} />
+
           <Route path="/profile" element={<Profile />} />
+
           <Route path="/security" element={<Security />} />
-          <Route path="/admin/create" element={<CreateAdmin />} />
-          <Route path="/person/create" element={<PersonPage />} />
-          <Route path="/organization" element={<OrganizationPage />} />
 
-          <Route path="/forensic-scan" element={<ForensicScanPage />} />
-          <Route path="/forensic-status/:id" element={<ForensicStatusPage />} />
+          <Route
+            path="/admin/create"
+            element={<CreateAdmin />}
+          />
 
-          {/* foreigner */}
-          <Route path="/foreigner" element={<ForeignerHistory />} />
-          <Route path="/foreigner/:id" element={<ForeignerDetail />} />
-          <Route path="/foreigner/edit/:id" element={<EditForeigner />} />
-          <Route path="/foreigner/create" element={<CreateForeigner />} />
+          <Route
+            path="/person/create"
+            element={<PersonPage />}
+          />
 
-          {/* ⭐ STATUS FLOW */}
-          <Route path="/person/edit/:id" element={<PersonEditPage />} />
+          <Route
+            path="/organization"
+            element={<OrganizationPage />}
+          />
 
-          {/* ⭐ HISTORY */}
-          <Route path="/person/history" element={<PersonHistoryPage />} />
+          {/* FORENSIC */}
+          <Route
+            path="/forensic-scan"
+            element={<ForensicScanPage />}
+          />
 
-          <Route path="/settings" element={<Settings />} />
+          <Route
+            path="/forensic-status/:id"
+            element={<ForensicStatusPage />}
+          />
 
-          {/* DETAIL */}
-          <Route path="/person/:id" element={<PersonDetailPage />} />
-          <Route path="/status-history" element={<StatusHistoryPage />} />
+          {/* FOREIGNER */}
+          <Route
+            path="/foreigner"
+            element={<ForeignerHistory />}
+          />
 
+          <Route
+            path="/foreigner/:id"
+            element={<ForeignerDetail />}
+          />
+
+          <Route
+            path="/foreigner/edit/:id"
+            element={<EditForeigner />}
+          />
+
+          <Route
+            path="/foreigner/create"
+            element={<CreateForeigner />}
+          />
+
+          {/* PERSON */}
+          <Route
+            path="/person/edit/:id"
+            element={<PersonEditPage />}
+          />
+
+          <Route
+            path="/person/history"
+            element={<PersonHistoryPage />}
+          />
+
+          <Route
+            path="/settings"
+            element={<Settings />}
+          />
+
+          {/* PERSON DETAIL */}
+          <Route
+            path="/person/:id"
+            element={<PersonDetailPage />}
+          />
+
+          <Route
+            path="/status-history"
+            element={<StatusHistoryPage />}
+          />
+
+          {/* FORENSIC SUBMISSION */}
           <Route
             path="/forensic-submission"
             element={<ForensicSubmissionPage />}
@@ -93,13 +153,18 @@ function App() {
             path="/forensic-submission/list"
             element={<ForensicSubmissionListPage />}
           />
+
           <Route
             path="/forensic-submission/pdf/:id"
             element={<ForensicSubmissionPdfPage />}
           />
         </Route>
 
-        <Route path="*" element={<NotFound />} />
+        {/* NOT FOUND */}
+        <Route
+          path="*"
+          element={<NotFound />}
+        />
       </Routes>
     </AuthProvider>
   );
