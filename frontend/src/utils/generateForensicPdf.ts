@@ -143,9 +143,9 @@ async function drawForensicPage(
 
       page.drawImage(signatureImage, {
         x: 315,
-        y: 570,
-        width: 100,
-        height: 50,
+        y: 565,
+        width: 80,
+        height: 40,
       });
     }
 
