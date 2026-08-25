@@ -636,7 +636,7 @@ export default function Nav() {
             "
           >
             <img
-              src="/muangchonburi.webp"
+              src="/assets/muangchonburi.webp"
               alt="โลโก้"
               className="h-7 w-7 object-contain"
             />
@@ -996,7 +996,7 @@ export default function Nav() {
               "
             >
               <img
-                src="/muangchonburi.webp"
+                src="/assets/muangchonburi.webp"
                 alt="โลโก้"
                 className="h-8 w-8 object-contain"
               />
