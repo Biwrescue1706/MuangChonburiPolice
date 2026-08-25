@@ -135,25 +135,19 @@ async function drawForensicPage(
   ==================================================== */
 
   if (org?.commander?.signatureImage) {
-    try {
       const imageResponse = await fetch(org.commander.signatureImage);
 
-      if (imageResponse.ok) {
-        const imageBytes = await imageResponse.arrayBuffer();
+      const imageBytes = await imageResponse.arrayBuffer();
 
-        const signatureImage = await pdfDoc.embedPng(imageBytes);
+      const signatureImage = await pdfDoc.embedPng(imageBytes);
 
-        page.drawImage(signatureImage, {
-          x: 315,
-          y: 570,
-          width: 100,
-          height: 50,
-        });
-      }
-    } catch (error) {
-      console.warn("โหลดลายเซ็นไม่สำเร็จ:", error);
+      page.drawImage(signatureImage, {
+        x: 315,
+        y: 570,
+        width: 100,
+        height: 50,
+      });
     }
-  }
 
   page.drawText(org?.commander?.fullRank || "-", {
     x: 251,
