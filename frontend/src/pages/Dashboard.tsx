@@ -1,5 +1,4 @@
 // src/pages/Dashboard.tsx
-
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
@@ -7,9 +6,7 @@ import api from "../api/axios";
 
 export default function Dashboard() {
   const { admin } = useAuth();
-
   const [thaiTime, setThaiTime] = useState("");
-
   const [summary, setSummary] = useState({
     all: 0,
     s0: 0,
@@ -19,9 +16,7 @@ export default function Dashboard() {
     s4: 0,
   });
 
-  // =========================================================
   // เวลาไทย
-  // =========================================================
   useEffect(() => {
     const update = () => {
       const now = new Date();
@@ -58,48 +53,26 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  // =========================================================
   // โหลดข้อมูล
-  // =========================================================
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await api.get("/person/getall");
-
         const raw = res.data;
+
         const list = Array.isArray(raw)
           ? raw
           : Array.isArray(raw?.data)
             ? raw.data
             : [];
 
-        const s0 = list.filter(
-          (p: any) => Number(p.status) === 0
-        ).length;
-
-        const s1 = list.filter(
-          (p: any) => Number(p.status) === 1
-        ).length;
-
-        const s2 = list.filter(
-          (p: any) => Number(p.status) === 2
-        ).length;
-
-        const s3 = list.filter(
-          (p: any) => Number(p.status) === 3
-        ).length;
-
-        const s4 = list.filter(
-          (p: any) => Number(p.status) === 4
-        ).length;
-
         setSummary({
           all: list.length,
-          s0,
-          s1,
-          s2,
-          s3,
-          s4,
+          s0: list.filter((p: any) => Number(p.status) === 0).length,
+          s1: list.filter((p: any) => Number(p.status) === 1).length,
+          s2: list.filter((p: any) => Number(p.status) === 2).length,
+          s3: list.filter((p: any) => Number(p.status) === 3).length,
+          s4: list.filter((p: any) => Number(p.status) === 4).length,
         });
       } catch (err) {
         console.error("โหลดข้อมูลไม่สำเร็จ:", err);
@@ -109,69 +82,47 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  // =========================================================
   // Summary Cards
-  // =========================================================
   const summaryCards = [
     {
       title: "ข้อมูลทั้งหมด",
       value: summary.all,
       href: "/person/history",
       icon: "all",
-      color: "text-[#800020]",
-      bg: "bg-[#800020]/10",
-      border: "border-[#800020]/10",
     },
     {
       title: "รอส่ง ศพฐ.",
       value: summary.s0,
       href: "/person/history?status=0",
       icon: "wait",
-      color: "text-amber-600",
-      bg: "bg-amber-50",
-      border: "border-amber-100",
     },
     {
       title: "เตรียมเอกสารส่ง ศพฐ. แล้ว",
       value: summary.s1,
       href: "/person/history?status=1",
       icon: "document",
-      color: "text-blue-600",
-      bg: "bg-blue-50",
-      border: "border-blue-100",
     },
     {
       title: "ส่ง ศพฐ. แล้ว",
       value: summary.s2,
       href: "/person/history?status=2",
       icon: "send",
-      color: "text-cyan-600",
-      bg: "bg-cyan-50",
-      border: "border-cyan-100",
     },
     {
       title: "รับจาก ศพฐ. แล้ว",
       value: summary.s3,
       href: "/person/history?status=3",
       icon: "check",
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
-      border: "border-emerald-100",
     },
     {
       title: "ส่งคืนต้นสังกัด",
       value: summary.s4,
       href: "/person/history?status=4",
       icon: "return",
-      color: "text-gray-600",
-      bg: "bg-gray-100",
-      border: "border-gray-200",
     },
   ];
 
-  // =========================================================
   // Icon
-  // =========================================================
   const SummaryIcon = ({ type }: { type: string }) => {
     if (type === "all") {
       return (
@@ -285,143 +236,38 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#f6f7f9]">
-
-      {/* =====================================================
-          CONTENT
-      ===================================================== */}
-      <main
-        className="
-          min-h-screen
-          px-4
-          pb-10
-          pt-6
-
-          min-[480px]:px-5
-
-          min-[768px]:px-8
-          min-[768px]:pt-8
-
-          min-[1200px]:ml-[100px]
-          min-[1200px]:px-10
-        "
-      >
-
+      <main className="min-h-screen px-5 pb-10 pt-6 min-[1200px]:px-8">
         <div className="mx-auto w-full max-w-[1400px]">
+          {/* Header */}
+          <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#800020] via-[#690018] to-[#40000e] p-6 text-white shadow-xl shadow-[#800020]/15 min-[480px]:p-7 min-[768px]:p-9">
+            <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full border border-white/10" />
+            <div className="pointer-events-none absolute -bottom-40 right-20 h-80 w-80 rounded-full bg-white/[0.03] blur-2xl" />
 
-          {/* =================================================
-              WELCOME HEADER
-          ================================================= */}
-          <section className="
-            relative
-            overflow-hidden
-            rounded-[28px]
-            bg-gradient-to-br
-            from-[#800020]
-            via-[#690018]
-            to-[#40000e]
-            p-6
-            text-white
-            shadow-xl
-            shadow-[#800020]/15
-
-            min-[480px]:p-7
-
-            min-[768px]:p-9
-          ">
-
-            {/* Decoration */}
-            <div className="
-              pointer-events-none
-              absolute
-              -right-20
-              -top-24
-              h-72
-              w-72
-              rounded-full
-              border
-              border-white/10
-            " />
-
-            <div className="
-              pointer-events-none
-              absolute
-              -bottom-40
-              right-20
-              h-80
-              w-80
-              rounded-full
-              bg-white/[0.03]
-              blur-2xl
-            " />
-
-            <div className="
-              relative
-              flex
-              flex-col
-              gap-6
-
-              min-[768px]:flex-row
-              min-[768px]:items-center
-              min-[768px]:justify-between
-            ">
-
-              {/* Welcome */}
+            <div className="relative flex flex-col gap-6 min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between">
               <div>
-
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white">
                   Dashboard
                 </p>
 
-                <h1 className="
-                  mt-2
-                  text-2xl
-                  font-bold
-
-                  min-[480px]:text-3xl
-
-                  min-[768px]:text-4xl
-                ">
+                <h1 className="mt-2 text-2xl font-bold text-white min-[480px]:text-3xl min-[768px]:text-4xl">
                   หน้าหลัก
                 </h1>
 
-                <p className="mt-2 text-sm text-white/75">
+                <p className="mt-2 text-sm text-white">
                   ยินดีต้อนรับกลับมา{" "}
                   <span className="font-bold text-white">
                     {admin?.name || "-"}
                   </span>
                 </p>
 
-                <p className="mt-1 text-xs text-white/55">
+                <p className="mt-1 text-xs text-white">
                   ตำแหน่ง : {admin?.position || "-"}
                 </p>
-
               </div>
 
-              {/* Time */}
-              <div className="
-                rounded-2xl
-                border
-                border-white/10
-                bg-white/10
-                px-5
-                py-4
-                backdrop-blur-md
-
-                min-[768px]:min-w-[330px]
-              ">
-
+              <div className="rounded-2xl border border-white bg-[#600017] px-5 py-4 min-[768px]:min-w-[330px]">
                 <div className="flex items-center gap-3">
-
-                  <div className="
-                    flex
-                    h-11
-                    w-11
-                    shrink-0
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-white/10
-                  ">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#800020] text-white">
                     <svg
                       width="23"
                       height="23"
@@ -438,28 +284,21 @@ export default function Dashboard() {
                   </div>
 
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white">
                       เวลาปัจจุบัน
                     </p>
 
-                    <p className="mt-1 text-xs leading-5 text-white/90">
+                    <p className="mt-1 text-xs leading-5 text-white">
                       {thaiTime}
                     </p>
                   </div>
-
                 </div>
-
               </div>
-
             </div>
-
           </section>
 
-          {/* =================================================
-              SUMMARY TITLE
-          ================================================= */}
+          {/* Summary */}
           <div className="mt-8 flex items-end justify-between">
-
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#800020]">
                 Overview
@@ -470,94 +309,27 @@ export default function Dashboard() {
               </h2>
             </div>
 
-            <span className="hidden text-xs text-gray-400 min-[480px]:block">
+            <span className="hidden text-xs text-gray-500 min-[480px]:block">
               คลิกการ์ดเพื่อดูรายละเอียด
             </span>
-
           </div>
 
-          {/* =================================================
-              SUMMARY CARDS
-          ================================================= */}
-          <div className="
-            mt-4
-            grid
-            grid-cols-1
-            gap-4
-
-            min-[480px]:grid-cols-2
-
-            min-[768px]:grid-cols-3
-
-            min-[1200px]:grid-cols-3
-          ">
-
+          {/* Summary Cards */}
+          <div className="mt-4 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 min-[768px]:grid-cols-3">
             {summaryCards.map((item) => (
               <Link
                 key={item.title}
                 to={item.href}
-                className={`
-                  group
-                  relative
-                  overflow-hidden
-                  rounded-2xl
-                  border
-                  ${item.border}
-                  bg-white
-                  p-5
-                  no-underline
-                  shadow-sm
-                  transition-all
-                  duration-300
-
-                  hover:-translate-y-1
-                  hover:shadow-xl
-                `}
+                className="group relative overflow-hidden rounded-2xl border border-[#600018] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/20 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl hover:shadow-[#800020]/30"
               >
+                <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/10 transition-transform duration-500 group-hover:scale-150" />
 
-                {/* Top Accent */}
-                <div
-                  className={`
-                    absolute
-                    left-0
-                    top-0
-                    h-1
-                    w-full
-                    ${item.bg}
-                  `}
-                />
-
-                <div className="flex items-start justify-between">
-
-                  {/* Icon */}
-                  <div
-                    className={`
-                      flex
-                      h-12
-                      w-12
-                      items-center
-                      justify-center
-                      rounded-xl
-                      ${item.bg}
-                      ${item.color}
-                      transition-transform
-                      duration-300
-
-                      group-hover:scale-110
-                    `}
-                  >
+                <div className="relative flex items-start justify-between">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white bg-[#600017] text-white transition-transform duration-300 group-hover:scale-110">
                     <SummaryIcon type={item.icon} />
                   </div>
 
-                  {/* Arrow */}
-                  <div className="
-                    text-gray-300
-                    transition-all
-                    duration-300
-
-                    group-hover:translate-x-1
-                    group-hover:text-[#800020]
-                  ">
+                  <div className="text-white transition-all duration-300 group-hover:translate-x-1">
                     <svg
                       width="20"
                       height="20"
@@ -572,39 +344,36 @@ export default function Dashboard() {
                       <path d="m13 6 6 6-6 6" />
                     </svg>
                   </div>
-
                 </div>
 
-                <p className="
-                  mt-5
-                  min-h-[40px]
-                  text-sm
-                  font-semibold
-                  leading-5
-                  text-gray-500
-                ">
+                <p className="relative mt-5 min-h-[40px] text-sm font-bold leading-5 text-white">
                   {item.title}
                 </p>
 
-                <p className={`
-                  mt-1
-                  text-3xl
-                  font-bold
-                  ${item.color}
-                `}>
+                <p className="relative mt-1 text-3xl font-bold text-white">
                   {item.value.toLocaleString("th-TH")}
                 </p>
 
+                <div className="relative mt-4 h-1.5 overflow-hidden rounded-full bg-white/20">
+                  <div
+                    className="h-full rounded-full bg-white"
+                    style={{
+                      width:
+                        summary.all > 0
+                          ? `${Math.min(
+                              (item.value / summary.all) * 100,
+                              100,
+                            )}%`
+                          : "0%",
+                    }}
+                  />
+                </div>
               </Link>
             ))}
-
           </div>
 
-          {/* =================================================
-              MENU
-          ================================================= */}
+          {/* Quick Menu */}
           <div className="mt-9">
-
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#800020]">
                 Quick Menu
@@ -615,50 +384,13 @@ export default function Dashboard() {
               </h2>
             </div>
 
-            <div className="
-              mt-4
-              grid
-              grid-cols-1
-              gap-4
-
-              min-[768px]:grid-cols-3
-            ">
-
-              {/* Add Person */}
+            <div className="mt-4 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 min-[768px]:grid-cols-3">
+              {/* เพิ่มข้อมูลบุคคล */}
               <Link
                 to="/person/create"
-                className="
-                  group
-                  flex
-                  items-center
-                  gap-4
-                  rounded-2xl
-                  border
-                  border-[#800020]/10
-                  bg-white
-                  p-5
-                  no-underline
-                  shadow-sm
-                  transition-all
-                  duration-300
-
-                  hover:-translate-y-1
-                  hover:border-[#800020]/20
-                  hover:shadow-xl
-                "
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
               >
-
-                <div className="
-                  flex
-                  h-12
-                  w-12
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-[#800020]/10
-                  text-[#800020]
-                ">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
                   <svg
                     width="25"
                     height="25"
@@ -677,15 +409,11 @@ export default function Dashboard() {
                 </div>
 
                 <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">เพิ่มข้อมูลบุคคล</p>
 
-                  <p className="font-bold text-gray-900">
-                    เพิ่มข้อมูลบุคคล
-                  </p>
-
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-1 text-xs text-white">
                     บันทึกข้อมูลบุคคลใหม่
                   </p>
-
                 </div>
 
                 <svg
@@ -697,49 +425,66 @@ export default function Dashboard() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="text-gray-300 transition-transform group-hover:translate-x-1"
+                  className="shrink-0 text-white"
                 >
                   <path d="M5 12h13" />
                   <path d="m13 6 6 6-6 6" />
                 </svg>
-
               </Link>
 
-              {/* History */}
+              {/* เพิ่มบุคคลต่างด้าว */}
+              <Link
+                to="/foreigner/create"
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
+                  <svg
+                    width="25"
+                    height="25"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="8" r="3.5" />
+                    <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
+                    <path d="M19 8v5" />
+                    <path d="M16.5 10.5h5" />
+                  </svg>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">เพิ่มบุคคลต่างด้าว</p>
+
+                  <p className="mt-1 text-xs text-white">
+                    บันทึกข้อมูลบุคคลต่างด้าวใหม่
+                  </p>
+                </div>
+
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0 text-white"
+                >
+                  <path d="M5 12h13" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              </Link>
+
+              {/* ประวัติบุคคล */}
               <Link
                 to="/person/history"
-                className="
-                  group
-                  flex
-                  items-center
-                  gap-4
-                  rounded-2xl
-                  border
-                  border-blue-100
-                  bg-white
-                  p-5
-                  no-underline
-                  shadow-sm
-                  transition-all
-                  duration-300
-
-                  hover:-translate-y-1
-                  hover:border-blue-200
-                  hover:shadow-xl
-                "
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
               >
-
-                <div className="
-                  flex
-                  h-12
-                  w-12
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-blue-50
-                  text-blue-600
-                ">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
                   <svg
                     width="25"
                     height="25"
@@ -758,15 +503,11 @@ export default function Dashboard() {
                 </div>
 
                 <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">ประวัติบุคคล</p>
 
-                  <p className="font-bold text-gray-900">
-                    ประวัติบุคคล
-                  </p>
-
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-1 text-xs text-white">
                     ดูและจัดการข้อมูลประวัติ
                   </p>
-
                 </div>
 
                 <svg
@@ -778,49 +519,114 @@ export default function Dashboard() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="text-gray-300 transition-transform group-hover:translate-x-1"
+                  className="shrink-0 text-white"
                 >
                   <path d="M5 12h13" />
                   <path d="m13 6 6 6-6 6" />
                 </svg>
-
               </Link>
 
-              {/* Receipt */}
+              {/* ประวัติต่างด้าว */}
               <Link
-                to="/receipt"
-                className="
-                  group
-                  flex
-                  items-center
-                  gap-4
-                  rounded-2xl
-                  border
-                  border-emerald-100
-                  bg-white
-                  p-5
-                  no-underline
-                  shadow-sm
-                  transition-all
-                  duration-300
-
-                  hover:-translate-y-1
-                  hover:border-emerald-200
-                  hover:shadow-xl
-                "
+                to="/foreigner"
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
               >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
+                  <svg
+                    width="25"
+                    height="25"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M6 3.5h8l4 4V20H6z" />
+                    <path d="M14 3.5V8h4" />
+                    <path d="M9 12h6" />
+                    <path d="M9 15.5h6" />
+                  </svg>
+                </div>
 
-                <div className="
-                  flex
-                  h-12
-                  w-12
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-emerald-50
-                  text-emerald-600
-                ">
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">ประวัติต่างด้าว</p>
+
+                  <p className="mt-1 text-xs text-white">
+                    ดูและจัดการข้อมูลประวัติต่างด้าว
+                  </p>
+                </div>
+
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0 text-white"
+                >
+                  <path d="M5 12h13" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              </Link>
+
+              {/* ออกเลขหนังสือ ส่ง ศพฐ. */}
+              <Link
+                to="/forensic-submission"
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
+                  <svg
+                    width="25"
+                    height="25"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M6 3.5h8l4 4V20H6z" />
+                    <path d="M14 3.5V8h4" />
+                    <path d="M9 12h6" />
+                    <path d="M9 15.5h6" />
+                    <path d="M12 10v7" />
+                  </svg>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">ออกเลขหนังสือ ส่ง ศพฐ.</p>
+
+                  <p className="mt-1 text-xs text-white">
+                    สร้างหนังสือนำส่ง ศพฐ.
+                  </p>
+                </div>
+
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0 text-white"
+                >
+                  <path d="M5 12h13" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              </Link>
+
+              {/* รายการหนังสือ ที่ส่ง ศพฐ. */}
+              <Link
+                to="/forensic-submission/list"
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
                   <svg
                     width="25"
                     height="25"
@@ -839,15 +645,13 @@ export default function Dashboard() {
                 </div>
 
                 <div className="min-w-0 flex-1">
-
-                  <p className="font-bold text-gray-900">
-                    ข้อมูลใบเสร็จ
+                  <p className="font-bold text-white">
+                    รายการหนังสือ ที่ส่ง ศพฐ.
                   </p>
 
-                  <p className="mt-1 text-xs text-gray-400">
-                    ดูข้อมูลและจัดการใบเสร็จ
+                  <p className="mt-1 text-xs text-white">
+                    ดูรายการหนังสือนำส่งทั้งหมด
                   </p>
-
                 </div>
 
                 <svg
@@ -859,17 +663,158 @@ export default function Dashboard() {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="text-gray-300 transition-transform group-hover:translate-x-1"
+                  className="shrink-0 text-white"
                 >
                   <path d="M5 12h13" />
                   <path d="m13 6 6 6-6 6" />
                 </svg>
-
               </Link>
 
+              {/* สแกนเอกสาร */}
+              <Link
+                to="/forensic-scan"
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
+                  <svg
+                    width="25"
+                    height="25"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 7V5a2 2 0 0 1 2-2h2" />
+                    <path d="M16 3h2a2 2 0 0 1 2 2v2" />
+                    <path d="M20 17v2a2 2 0 0 1-2 2h-2" />
+                    <path d="M8 21H6a2 2 0 0 1-2-2v-2" />
+                    <path d="M8 12h8" />
+                    <path d="M12 8v8" />
+                  </svg>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">สแกนเอกสาร</p>
+
+                  <p className="mt-1 text-xs text-white">สแกนและจัดการเอกสาร</p>
+                </div>
+
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0 text-white"
+                >
+                  <path d="M5 12h13" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              </Link>
+
+              {/* ข้อมูลหน่วยงาน */}
+              <Link
+                to="/organization"
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
+                  <svg
+                    width="25"
+                    height="25"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M3 21h18" />
+                    <path d="M5 21V7l7-4 7 4v14" />
+                    <path d="M9 21v-4h6v4" />
+                    <path d="M8 9h1" />
+                    <path d="M12 9h1" />
+                    <path d="M16 9h1" />
+                    <path d="M8 12h1" />
+                    <path d="M12 12h1" />
+                    <path d="M16 12h1" />
+                  </svg>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">ข้อมูลหน่วยงาน</p>
+
+                  <p className="mt-1 text-xs text-white">
+                    จัดการข้อมูลหน่วยงาน
+                  </p>
+                </div>
+
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0 text-white"
+                >
+                  <path d="M5 12h13" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              </Link>
+
+              {/* โปรไฟล์บุคคล */}
+              <Link
+                to="/profile"
+                className="group flex items-center gap-4 rounded-2xl border border-[#800020] bg-[#800020] p-5 text-white no-underline shadow-lg shadow-[#800020]/15 transition-all duration-300 hover:-translate-y-1 hover:bg-[#700019] hover:shadow-xl"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white bg-[#600017] text-white">
+                  <svg
+                    width="25"
+                    height="25"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="8" r="3.5" />
+                    <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
+                  </svg>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-white">โปรไฟล์บุคคล</p>
+
+                  <p className="mt-1 text-xs text-white">
+                    ดูและจัดการโปรไฟล์บุคคล
+                  </p>
+                </div>
+
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="shrink-0 text-white"
+                >
+                  <path d="M5 12h13" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              </Link>
             </div>
           </div>
-
         </div>
       </main>
     </div>

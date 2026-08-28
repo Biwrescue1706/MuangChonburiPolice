@@ -36,26 +36,18 @@ export default function PersonTable({
 }: Props) {
   const navigate = useNavigate();
 
-  const hasReturnDate = persons.some(
-    (p) => p.status === 4,
-  );
+  const hasReturnDate = persons.some((p) => p.status === 4);
 
-  const hasDeleteDate = persons.some(
-    (p) => p.status === 4 && p.deleteAt,
-  );
+  const hasDeleteDate = persons.some((p) => p.status === 4 && p.deleteAt);
 
-  const hasSendButton = persons.some(
-    (p) => p.status < 4,
-  );
+  const hasSendButton = persons.some((p) => p.status < 4);
 
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-gray-50 px-5 py-4">
         <div>
-          <h3 className="text-lg font-bold text-gray-800">
-            รายการข้อมูลบุคคล
-          </h3>
+          <h3 className="text-lg font-bold text-gray-800">รายการข้อมูลบุคคล</h3>
 
           <p className="mt-1 text-sm text-gray-500">
             ทั้งหมด {persons.length} รายการ
@@ -76,79 +68,64 @@ export default function PersonTable({
                     checked={
                       persons.length > 0 &&
                       selectedIds.length ===
-                        persons.filter(
-                          (p) => p.status < 4,
-                        ).length
+                        persons.filter((p) => p.status < 4).length
                     }
                     onChange={handleSelectAll}
                   />
                 </th>
               )}
-
               <th className="whitespace-nowrap border border-gray-700 px-3 py-3">
                 #
               </th>
-
               <th className="whitespace-nowrap border border-gray-700 px-4 py-3">
                 ชื่อ และชื่อสกุล
               </th>
-
               <th className="whitespace-nowrap border border-gray-700 px-4 py-3">
                 เรื่องที่ขออนุญาต
               </th>
-
               <th className="whitespace-nowrap border border-gray-700 px-4 py-3">
                 หน่วยงาน
               </th>
-
               <th className="whitespace-nowrap border border-gray-700 px-3 py-3">
                 เล่มที่
               </th>
-
               <th className="whitespace-nowrap border border-gray-700 px-3 py-3">
                 เลขที่
               </th>
-
               <th className="whitespace-nowrap border border-gray-700 px-4 py-3">
                 ลงวันที่
               </th>
-
               <th className="whitespace-nowrap border border-gray-700 px-4 py-3">
                 สถานะ
               </th>
-
               <th className="whitespace-nowrap border border-gray-700 px-4 py-3">
                 ความเร่งด่วน
               </th>
-
               {hasReturnDate && (
                 <th className="whitespace-nowrap border border-gray-700 px-4 py-3">
                   วันคืน
                 </th>
               )}
-
               {hasDeleteDate && (
                 <th className="whitespace-nowrap border border-gray-700 px-4 py-3">
                   วันหมดอายุเอกสาร
                 </th>
               )}
-
               <th className="whitespace-nowrap border border-gray-700 px-3 py-3">
-                ดู
+                ดูรายละเอียด
               </th>
-
               <th className="whitespace-nowrap border border-gray-700 px-3 py-3">
                 PDF
               </th>
-
-              <th className="whitespace-nowrap border border-gray-700 px-3 py-3">
-                แก้ไข
-              </th>
-
+              {hasSendButton && (
+                <th className="whitespace-nowrap border border-gray-700 px-3 py-3">
+                  แก้ไข
+                </th>
+              )}
+              
               <th className="whitespace-nowrap border border-gray-700 px-3 py-3">
                 ลบ
               </th>
-
               {hasSendButton && (
                 <th className="whitespace-nowrap border border-gray-700 px-3 py-3">
                   ส่ง
@@ -183,9 +160,7 @@ export default function PersonTable({
                 >
                   <div className="text-4xl">📂</div>
 
-                  <div className="mt-2 font-semibold">
-                    ไม่พบข้อมูล
-                  </div>
+                  <div className="mt-2 font-semibold">ไม่พบข้อมูล</div>
 
                   <div className="mt-1 text-sm text-gray-400">
                     ลองเปลี่ยนเงื่อนไขการค้นหา
@@ -197,10 +172,7 @@ export default function PersonTable({
             {/* Data */}
             {!loading &&
               persons.map((p, i) => (
-                <tr
-                  key={p.personId}
-                  className="transition hover:bg-blue-50"
-                >
+                <tr key={p.personId} className="transition hover:bg-blue-50">
                   {/* Select */}
                   {selectMode && (
                     <td className="border border-gray-200 px-3 py-3 text-center">
@@ -208,15 +180,8 @@ export default function PersonTable({
                         <input
                           type="checkbox"
                           className="h-4 w-4 cursor-pointer accent-blue-600"
-                          checked={selectedIds.includes(
-                            p.personId,
-                          )}
-                          onChange={() =>
-                            toggleSelect(
-                              p.personId,
-                              p.status,
-                            )
-                          }
+                          checked={selectedIds.includes(p.personId)}
+                          onChange={() => toggleSelect(p.personId, p.status)}
                         />
                       )}
                     </td>
@@ -234,10 +199,7 @@ export default function PersonTable({
 
                   {/* Purpose */}
                   <td className="max-w-[300px] border border-gray-200 px-4 py-3 text-left">
-                    <div
-                      className="line-clamp-2"
-                      title={p.purpose || ""}
-                    >
+                    <div className="line-clamp-2" title={p.purpose || ""}>
                       {p.purpose || "-"}
                     </div>
                   </td>
@@ -280,9 +242,7 @@ export default function PersonTable({
                   {/* Return date */}
                   {hasReturnDate && (
                     <td className="whitespace-nowrap border border-gray-200 px-4 py-3 text-center">
-                      {p.status === 4
-                        ? formatThaiDate(p.returnDate)
-                        : "-"}
+                      {p.status === 4 ? formatThaiDate(p.returnDate) : "-"}
                     </td>
                   )}
 
@@ -300,11 +260,9 @@ export default function PersonTable({
                     <button
                       type="button"
                       className="rounded-lg bg-sky-500 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-sky-600 active:scale-95"
-                      onClick={() =>
-                        navigate(`/person/${p.personId}`)
-                      }
+                      onClick={() => navigate(`/person/${p.personId}`)}
                     >
-                      👁️ ดู
+                      👁️ ดูรายละเอียด
                     </button>
                   </td>
 
@@ -333,25 +291,22 @@ export default function PersonTable({
                   </td>
 
                   {/* Edit */}
-                  <td className="border border-gray-200 px-3 py-3 text-center">
+                  {p.status<4 &&(
+                                      <td className="border border-gray-200 px-3 py-3 text-center">
                     {p.status < 4 ? (
                       <button
                         type="button"
                         className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600 active:scale-95"
-                        onClick={() =>
-                          navigate(
-                            `/person/edit/${p.personId}`,
-                          )
-                        }
+                        onClick={() => navigate(`/person/edit/${p.personId}`)}
                       >
                         ✏️
                       </button>
                     ) : (
-                      <span className="text-gray-400">
-                        -
-                      </span>
+                      <span className="text-gray-400">-</span>
                     )}
                   </td>
+                  )}
+
 
                   {/* Delete */}
                   <td className="border border-gray-200 px-3 py-3 text-center">
@@ -373,9 +328,7 @@ export default function PersonTable({
                           className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-bold shadow-sm transition active:scale-95 ${getStatusButtonStyle(
                             p.status,
                           )}`}
-                          onClick={() =>
-                            handleUpdateStatus(p)
-                          }
+                          onClick={() => handleUpdateStatus(p)}
                         >
                           {getStatusButton(p.status)}
                         </button>
@@ -392,9 +345,7 @@ export default function PersonTable({
       {!loading && persons.length > 0 && (
         <div className="border-t bg-gray-50 px-5 py-3 text-right text-sm text-gray-600">
           แสดงทั้งหมด{" "}
-          <span className="font-bold text-gray-900">
-            {persons.length}
-          </span>{" "}
+          <span className="font-bold text-gray-900">{persons.length}</span>{" "}
           รายการ
         </div>
       )}

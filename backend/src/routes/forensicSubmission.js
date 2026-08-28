@@ -1,50 +1,54 @@
 import { Router } from "express";
-import prisma from "../prisma.js";
+import neonPrisma from "../neon.js";
 
 const router = Router();
 
-//สร้างรายการเตรียมออก PDF ศพฐ.
-
+// Create forensic submission
 router.post("/create", async (req, res) => {
   try {
     const { personIds, submissionNo } = req.body;
 
     if (!Array.isArray(personIds) || personIds.length === 0) {
       return res.status(400).json({
+        success: false,
         error: "กรุณาเลือกบุคคล",
       });
     }
 
     if (!submissionNo?.trim()) {
       return res.status(400).json({
+        success: false,
         error: "กรุณาระบุเลขที่ส่งตรวจ",
       });
     }
 
-    const exists = await prisma.forensicSubmission.findFirst({
+    const cleanSubmissionNo = submissionNo.trim();
+
+    const exists = await neonPrisma.forensicSubmission.findFirst({
       where: {
-        submissionNo: submissionNo.trim(),
+        submissionNo: cleanSubmissionNo,
       },
     });
 
     if (exists) {
       return res.status(400).json({
+        success: false,
         error: "เลขที่ส่งตรวจนี้มีอยู่แล้ว",
       });
     }
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await neonPrisma.$transaction(async (tx) => {
       const submission = await tx.forensicSubmission.create({
         data: {
-          submissionNo: submissionNo.trim(),
-
+          submissionNo: cleanSubmissionNo,
+          status: 2,
+          statusUpdatedAt: new Date(),
           persons: {
             create: personIds.map((personId) => ({
               personId,
             })),
           },
         },
-
         include: {
           persons: {
             include: {
@@ -54,7 +58,6 @@ router.post("/create", async (req, res) => {
         },
       });
 
-      // เปลี่ยนสถานะจาก 1 -> 2 เท่านั้น
       await tx.person.updateMany({
         where: {
           personId: {
@@ -72,124 +75,149 @@ router.post("/create", async (req, res) => {
       return submission;
     });
 
-    res.json({
+    return res.json({
       success: true,
       data: result,
     });
   } catch (err) {
-    console.error(err);
+    console.error("CREATE FORENSIC SUBMISSION ERROR:", err);
 
-    res.status(500).json({
-      error: "สร้างรายการไม่สำเร็จ",
+    return res.status(500).json({
+      success: false,
+      error: err.message || "สร้างรายการไม่สำเร็จ",
     });
   }
 });
 
-//ดูทั้งหมด
+// Get all forensic submissions
 router.get("/", async (_, res) => {
   try {
-    const data = await prisma.forensicSubmission.findMany({
-      include: {
-        persons: {
-          include: {
-            person: true,
+    const data =
+      await neonPrisma.forensicSubmission.findMany({
+        include: {
+          persons: {
+            include: {
+              person: true,
+            },
           },
         },
-      },
-      orderBy: {
-        submissionDate: "desc",
-      },
-    });
 
+        orderBy: {
+          submissionDate: "desc",
+        },
+      });
+
+    // Sort persons by receipt book and receipt number
     data.forEach((submission) => {
       submission.persons.sort((a, b) => {
-        const bookA = Number(a.receiptBookNo || 0);
-        const bookB = Number(b.receiptBookNo || 0);
+        const bookA =
+          Number(a.receiptBookNo || 0);
+
+        const bookB =
+          Number(b.receiptBookNo || 0);
 
         if (bookA !== bookB) {
           return bookA - bookB;
         }
 
-        const noA = Number(a.receiptNo || 0);
-        const noB = Number(b.receiptNo || 0);
+        const noA =
+          Number(a.receiptNo || 0);
+
+        const noB =
+          Number(b.receiptNo || 0);
 
         return noA - noB;
       });
     });
 
-    res.json(data);
+    // Return response
+    return res.json({
+      success: true,
+      data,
+    });
   } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
+    return res.status(500).json({
+      success: false,
       error: "โหลดข้อมูลไม่สำเร็จ",
     });
   }
 });
 
-//ดูรายการรายฉบับ
+// Get forensic submission by ID
 router.get("/:id", async (req, res) => {
   try {
-    const data = await prisma.forensicSubmission.findUnique({
-      where: {
-        submissionId: req.params.id,
-      },
-      include: {
-        persons: {
-          include: {
-            person: true,
+    const data =
+      await neonPrisma.forensicSubmission.findUnique({
+        where: {
+          submissionId:
+            req.params.id,
+        },
+
+        include: {
+          persons: {
+            include: {
+              person: true,
+            },
           },
         },
-      },
-    });
+      });
 
     if (!data) {
       return res.status(404).json({
+        success: false,
         error: "ไม่พบข้อมูล",
       });
     }
 
+    // Sort persons
     data.persons.sort((a, b) => {
-      const bookA = Number(a.receiptBookNo || 0);
-      const bookB = Number(b.receiptBookNo || 0);
+      const bookA =
+        Number(a.receiptBookNo || 0);
+
+      const bookB =
+        Number(b.receiptBookNo || 0);
 
       if (bookA !== bookB) {
         return bookA - bookB;
       }
 
-      const noA = Number(a.receiptNo || 0);
-      const noB = Number(b.receiptNo || 0);
+      const noA =
+        Number(a.receiptNo || 0);
+
+      const noB =
+        Number(b.receiptNo || 0);
 
       return noA - noB;
     });
 
-    res.json(data);
+    return res.json({
+      success: true,
+      data,
+    });
   } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
+    return res.status(500).json({
+      success: false,
       error: "โหลดข้อมูลไม่สำเร็จ",
     });
   }
 });
 
-//ลบรายการ
-
+// Delete forensic submission
 router.delete("/:id", async (req, res) => {
   try {
-    await prisma.forensicSubmission.delete({
+    await neonPrisma.forensicSubmission.delete({
       where: {
-        submissionId: req.params.id,
+        submissionId:
+          req.params.id,
       },
     });
 
-    res.json({
+    return res.json({
       success: true,
     });
   } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
+    return res.status(500).json({
+      success: false,
       error: "ลบไม่สำเร็จ",
     });
   }

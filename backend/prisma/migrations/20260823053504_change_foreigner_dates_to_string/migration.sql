@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Foreigner" ALTER COLUMN "certificateDate" SET DATA TYPE TEXT,
+ALTER COLUMN "applicationDate" SET DATA TYPE TEXT,
+ALTER COLUMN "expirationDate" SET DATA TYPE TEXT,
+ALTER COLUMN "receiptDate" SET DATA TYPE TEXT;

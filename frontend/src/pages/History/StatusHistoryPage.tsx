@@ -41,9 +41,7 @@ export default function StatusHistoryPage() {
     window.innerWidth < 1280,
   );
 
-  // =========================================================
   // RESPONSIVE
-  // =========================================================
 
   useEffect(() => {
     const handleResize = () => {
@@ -57,9 +55,7 @@ export default function StatusHistoryPage() {
     };
   }, []);
 
-  // =========================================================
   // FORMAT DATE
-  // =========================================================
 
   const formatThaiShortDate = (
     dateStr?: string | null,
@@ -92,9 +88,7 @@ export default function StatusHistoryPage() {
     return `${day} ${months[month] || month} ${year.slice(-2)}`;
   };
 
-  // =========================================================
   // FETCH DATA
-  // =========================================================
 
   const fetchData = async (
     selectedStartDate: string,
@@ -155,25 +149,19 @@ export default function StatusHistoryPage() {
     }
   };
 
-  // =========================================================
   // INITIAL LOAD
-  // =========================================================
 
   useEffect(() => {
     fetchData(startDate, endDate);
   }, []);
 
-  // =========================================================
   // SEARCH
-  // =========================================================
 
   const handleSearch = () => {
     fetchData(startDate, endDate);
   };
 
-  // =========================================================
   // LOADING CARD
-  // =========================================================
 
   const LoadingView = () => (
     <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-sm">
@@ -185,9 +173,7 @@ export default function StatusHistoryPage() {
     </div>
   );
 
-  // =========================================================
   // EMPTY VIEW
-  // =========================================================
 
   const EmptyView = () => (
     <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 text-center">
@@ -219,13 +205,11 @@ export default function StatusHistoryPage() {
     </div>
   );
 
-  // =========================================================
   // PAGE
-  // =========================================================
 
   return (
     <div className="main-content px-3 py-4 sm:px-4">
-      <div className="mx-auto w-full max-w-[1600px]">
+      <div className="mx-auto px-4 w-full max-w-[1600px]">
 
         {/* =====================================================
             HEADER

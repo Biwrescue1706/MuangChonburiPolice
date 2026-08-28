@@ -1,15 +1,38 @@
-// prisma.js
+// src/prisma.js
+
 import "dotenv/config";
 
-import pg from "pg";
+import { PrismaClient } from "./generated/supabase/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
+import pg from "pg";
 
-const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
+const { Pool } = pg;
+
+const connectionString = process.env.SUPABASE_DIRECT_URL;
+
+if (!connectionString) {
+  throw new Error("❌ ไม่พบ SUPABASE_DIRECT_URL ใน .env");
+}
+
+const pool = new Pool({
+  connectionString,
+
+  // สำคัญมากสำหรับ Supabase
   ssl: {
     rejectUnauthorized: false,
   },
+
+  max: 10,
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
+});
+
+pool.on("connect", () => {
+  console.log("✅ Supabase PostgreSQL connected");
+});
+
+pool.on("error", (err) => {
+  console.error("❌ Supabase PostgreSQL pool error:", err);
 });
 
 const adapter = new PrismaPg(pool);

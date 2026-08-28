@@ -15,24 +15,51 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Footer -->
-    <footer
-      class="smart-footer text-center fw-bold text-dark py-2 w-100"
-      style="
-        margin-top: 50px;
-        font-size: 14px;
-        background: rgb(255, 255, 255);
-        backdrop-filter: blur(8px);
-        border-top: 1px solid rgb(0, 0, 0);
-      "
-    >
-      © <span id="smartYear"></span> งานพิมพ์มือตรวจประวัติ. <br />
-      พัฒนาโดย งาน นโยบายและแผน. สภ.เมืองชลบุรี <br /> สงวนลิขสิทธิ์ทุกประการ
-    </footer>
+
+<!-- Footer --><footer class="w-full mt-12 border-t border-slate-200 bg-gradient-to-b from-white via-slate-50 to-slate-100">
+  <div class="max-w-7xl mx-auto px-4 py-6 text-center"><!-- Decorative Line -->
+<div class="flex items-center justify-center gap-3 mb-4">
+  <div class="h-px w-16 bg-gradient-to-r from-transparent to-blue-300"></div>
+
+  <div class="flex h-8 w-8 items-center justify-center rounded-full border border-blue-100 bg-white shadow-sm">
+    <span class="text-sm font-bold text-blue-700">✦</span>
+  </div>
+
+  <div class="h-px w-16 bg-gradient-to-l from-transparent to-blue-300"></div>
+</div>
+
+<!-- Copyright -->
+<p class="m-0 text-sm font-bold text-slate-700">
+  © <span id="smartYear"></span>
+  <span class="mx-1 text-blue-600">งานพิมพ์มือตรวจประวัติ</span>
+</p>
+
+<!-- Organization -->
+<p class="mt-1.5 mb-0 text-sm text-slate-500">
+  พัฒนาโดย
+  <span class="font-semibold text-blue-700">
+    งานนโยบายและแผน
+  </span>
+  <span class="mx-1 text-slate-300">•</span>
+  <span class="font-medium text-slate-600">
+    สภ.เมืองชลบุรี
+  </span>
+</p>
+
+<!-- Copyright Notice -->
+<p class="mt-2 mb-0 text-xs text-slate-400">
+  สงวนลิขสิทธิ์ทุกประการ
+</p>
+
+<!-- Bottom Accent -->
+<div class="mx-auto mt-4 h-0.5 w-20 rounded-full bg-gradient-to-r from-blue-600 via-cyan-400 to-blue-600 opacity-70"></div>
+
+  </div>
+</footer>
 
     <script>
       document.getElementById("smartYear").textContent =
-        `2569 - ${new Date().getFullYear()+543}`;
+        `2569 - ${new Date().getFullYear() + 543}`;
     </script>
 
     <!-- App Script -->

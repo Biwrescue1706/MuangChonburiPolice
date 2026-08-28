@@ -6,6 +6,10 @@ import api from "../../api/axios";
 import { generateForensicPdf } from "../../utils/generateForensicPdf";
 import { generateForensicPdfs } from "../../utils/generateForensicPdfS";
 
+/* ======================================================
+   TYPES
+====================================================== */
+
 interface Person {
   personId: string;
   fullName: string;
@@ -17,6 +21,7 @@ interface Person {
 }
 
 interface SubmissionPerson {
+  id?: string;
   person: Person;
 }
 
@@ -27,108 +32,210 @@ interface Submission {
   persons: SubmissionPerson[];
 }
 
+interface ApiResponse {
+  success?: boolean;
+  data?: Submission;
+  error?: string;
+}
+
+/* ======================================================
+   PAGE
+====================================================== */
+
 export default function ForensicSubmissionPdfPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<Submission | null>(null);
 
+  /* ======================================================
+     LOAD DATA
+  ====================================================== */
+
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [id]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
 
-      const res = await api.get(`/forensic-submission/${id}`);
+      if (!id) {
+        setData(null);
+        return;
+      }
 
-      const persons = [...res.data.persons].sort((a, b) => {
-        const bookA = Number(a.person.receiptBookNo || 0);
-        const bookB = Number(b.person.receiptBookNo || 0);
+      const res = await api.get<ApiResponse | Submission>(
+        `/forensic-submission/${encodeURIComponent(id)}`,
+      );
+
+      console.log("FORENSIC PDF RESPONSE:", res.data);
+
+      /*
+       * รองรับทั้ง 2 รูปแบบ
+       *
+       * แบบเดิม:
+       * {
+       *   submissionId: "...",
+       *   persons: [...]
+       * }
+       *
+       * แบบใหม่:
+       * {
+       *   success: true,
+       *   data: {
+       *     submissionId: "...",
+       *     persons: [...]
+       *   }
+       * }
+       */
+
+      const responseData = res.data as any;
+
+      const submission: Submission =
+        responseData?.data ?? responseData;
+
+      if (!submission?.submissionId) {
+        throw new Error("ไม่พบ Submission ID");
+      }
+
+      if (!Array.isArray(submission.persons)) {
+        throw new Error("ไม่พบรายชื่อบุคคล");
+      }
+
+      /* ==================================================
+         เรียงตาม เล่มที่ → เลขที่
+      ================================================== */
+
+      const persons = [...submission.persons].sort((a, b) => {
+        const bookA = Number(a?.person?.receiptBookNo || 0);
+        const bookB = Number(b?.person?.receiptBookNo || 0);
 
         if (bookA !== bookB) {
           return bookA - bookB;
         }
 
-        const receiptA = Number(a.person.receiptNo || 0);
-        const receiptB = Number(b.person.receiptNo || 0);
+        const receiptA = Number(a?.person?.receiptNo || 0);
+        const receiptB = Number(b?.person?.receiptNo || 0);
 
         return receiptA - receiptB;
       });
 
       setData({
-        ...res.data,
+        ...submission,
         persons,
       });
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error("Load forensic submission error:", error);
+
+      console.error(
+        "Response:",
+        error?.response?.data,
+      );
+
       setData(null);
     } finally {
       setLoading(false);
     }
   };
 
-  // =========================================================
-  // PDF ส่ง ศพฐ.
-  // =========================================================
+  /* ======================================================
+     PDF ส่ง ศพฐ.
+  ====================================================== */
 
   const handleGeneratePdf = async () => {
-    if (!data) return;
+    if (!data) {
+      return;
+    }
 
-    await generateForensicPdf({
-      submissionNo: data.submissionNo,
+    if (!data.submissionId) {
+      console.error("ไม่พบ submissionId");
+      return;
+    }
 
-      submissionDate: new Date(
-        data.submissionDate,
-      ).toLocaleDateString("th-TH", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }),
+    try {
+      await generateForensicPdf({
+        submissionId: data.submissionId,
 
-      persons: data.persons.map((item) => ({
-        fullName: item.person.fullName,
-        purpose: item.person.purpose,
-        receiptBookNo: item.person.receiptBookNo,
-        receiptNo: item.person.receiptNo,
-        receiptDate: item.person.receiptDate,
-        priority: item.person.priority,
-      })),
-    });
+        submissionNo: data.submissionNo,
+
+        submissionDate: new Date(
+          data.submissionDate,
+        ).toLocaleDateString("th-TH", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }),
+
+        persons: data.persons.map((item) => ({
+          fullName: item.person.fullName,
+
+          purpose: item.person.purpose,
+
+          receiptBookNo: item.person.receiptBookNo,
+
+          receiptNo: item.person.receiptNo,
+
+          receiptDate: item.person.receiptDate,
+
+          priority: item.person.priority,
+        })),
+      });
+    } catch (error) {
+      console.error(
+        "Generate forensic PDF error:",
+        error,
+      );
+    }
   };
 
-  // =========================================================
-  // PDF ส่งเงิน
-  // =========================================================
+  /* ======================================================
+     PDF ส่งเงิน
+  ====================================================== */
 
   const handleGeneratePdf2 = async () => {
-    if (!data) return;
+    if (!data) {
+      return;
+    }
 
-    await generateForensicPdfs({
-      submissionNo: data.submissionNo,
+    try {
+      await generateForensicPdfs({
+        submissionNo: data.submissionNo,
 
-      submissionDate: data.submissionDate,
+        submissionDate: data.submissionDate,
 
-      persons: data.persons.map((item) => ({
-        fullName: item.person.fullName,
-        purpose: item.person.purpose,
-        receiptBookNo: item.person.receiptBookNo,
-        receiptNo: item.person.receiptNo,
-        receiptDate: item.person.receiptDate,
-        priority: item.person.priority,
-      })),
-    });
+        persons: data.persons.map((item) => ({
+          fullName: item.person.fullName,
+
+          purpose: item.person.purpose,
+
+          receiptBookNo: item.person.receiptBookNo,
+
+          receiptNo: item.person.receiptNo,
+
+          receiptDate: item.person.receiptDate,
+
+          priority: item.person.priority,
+        })),
+      });
+    } catch (error) {
+      console.error(
+        "Generate payment PDF error:",
+        error,
+      );
+    }
   };
 
-  // =========================================================
-  // วันที่ไทยแบบย่อ
-  // =========================================================
+  /* ======================================================
+     วันที่ไทยแบบย่อ
+  ====================================================== */
 
   const formatShortThaiDate = (
     dateString?: string,
   ) => {
-    if (!dateString) return "-";
+    if (!dateString) {
+      return "-";
+    }
 
     const months: Record<string, string> = {
       มกราคม: "ม.ค.",
@@ -156,9 +263,9 @@ export default function ForensicSubmissionPdfPage() {
     return `${day} ${months[month] || month} ${year.slice(-2)}`;
   };
 
-  // =========================================================
-  // Loading
-  // =========================================================
+  /* ======================================================
+     LOADING
+  ====================================================== */
 
   if (loading) {
     return (
@@ -176,16 +283,15 @@ export default function ForensicSubmissionPdfPage() {
     );
   }
 
-  // =========================================================
-  // ไม่พบข้อมูล
-  // =========================================================
+  /* ======================================================
+     ไม่พบข้อมูล
+  ====================================================== */
 
   if (!data) {
     return (
       <div className="main-content min-h-screen bg-gray-50 px-3 py-6 sm:px-4 lg:px-6">
-        <div className="mx-auto max-w-[1400px]">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-8">
           <div className="rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm">
-
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">
               <svg
                 width="25"
@@ -210,31 +316,30 @@ export default function ForensicSubmissionPdfPage() {
             <p className="mt-1 text-sm text-gray-400">
               ไม่พบข้อมูลหนังสือส่งตรวจที่ต้องการ
             </p>
-
           </div>
         </div>
       </div>
     );
   }
 
+  /* ======================================================
+     MAIN
+  ====================================================== */
+
   return (
     <div className="main-content min-h-screen bg-gray-50 px-3 py-4 sm:px-4 lg:px-6">
       <div className="mx-auto w-full max-w-[1400px]">
 
-        {/* ===================================================
+        {/* ==================================================
             HEADER
-        =================================================== */}
+        ================================================== */}
 
         <div className="mb-5 overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] shadow-lg">
-
           <div className="px-5 py-5 sm:px-7">
-
             <div className="flex items-center justify-between gap-4">
 
               <div className="flex min-w-0 items-center gap-3">
-
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white">
-
                   <svg
                     width="24"
                     height="24"
@@ -245,16 +350,14 @@ export default function ForensicSubmissionPdfPage() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <path d="M6 2h12v20l-3-2-3 2-3-2-3 2z" />
+                    <path d="M6 2h12v20l-3-2-3 2-3-2-3 2-3 2z" />
                     <path d="M9 7h6" />
                     <path d="M9 11h6" />
                     <path d="M9 15h4" />
                   </svg>
-
                 </div>
 
                 <div className="min-w-0">
-
                   <h1 className="truncate text-lg font-bold text-white sm:text-xl">
                     หนังสือ ศพฐ.
                   </h1>
@@ -262,13 +365,10 @@ export default function ForensicSubmissionPdfPage() {
                   <p className="mt-0.5 text-xs text-white/70 sm:text-sm">
                     รายละเอียดหนังสือนำส่งตรวจประวัติ
                   </p>
-
                 </div>
-
               </div>
 
               <div className="hidden shrink-0 text-right sm:block">
-
                 <p className="text-[10px] text-white/60">
                   เลขหนังสือนำส่ง
                 </p>
@@ -276,26 +376,24 @@ export default function ForensicSubmissionPdfPage() {
                 <p className="text-sm font-bold text-white">
                   {data.submissionNo || "-"}
                 </p>
-
               </div>
 
             </div>
-
           </div>
         </div>
 
-        {/* ===================================================
+        {/* ==================================================
             SUMMARY
-        =================================================== */}
+        ================================================== */}
 
         <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
 
-          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+          {/* จำนวนรายชื่อ */}
 
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
 
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-
                 <svg
                   width="20"
                   height="20"
@@ -309,11 +407,9 @@ export default function ForensicSubmissionPdfPage() {
                   <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
                   <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
-
               </div>
 
               <div>
-
                 <p className="text-xs text-gray-400">
                   จำนวนรายชื่อ
                 </p>
@@ -324,19 +420,17 @@ export default function ForensicSubmissionPdfPage() {
                     คน
                   </span>
                 </p>
-
               </div>
 
             </div>
-
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+          {/* เลขหนังสือ */}
 
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
 
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-
                 <svg
                   width="20"
                   height="20"
@@ -344,18 +438,14 @@ export default function ForensicSubmissionPdfPage() {
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
                 >
-                  <path d="M6 2h12v20l-3-2-3 2-3-2-3 2z" />
+                  <path d="M6 2h12v20l-3-2-3 2-3-2-3 2-3 2z" />
                   <path d="M9 7h6" />
                   <path d="M9 11h6" />
                 </svg>
-
               </div>
 
               <div>
-
                 <p className="text-xs text-gray-400">
                   เลขหนังสือนำส่ง
                 </p>
@@ -363,23 +453,20 @@ export default function ForensicSubmissionPdfPage() {
                 <p className="text-sm font-bold text-gray-800">
                   {data.submissionNo || "-"}
                 </p>
-
               </div>
 
             </div>
-
           </div>
 
         </div>
 
-        {/* ===================================================
-            PDF BUTTONS
-        =================================================== */}
+        {/* ==================================================
+            PDF
+        ================================================== */}
 
         <div className="mb-5 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
 
           <div className="mb-4">
-
             <h2 className="text-sm font-bold text-gray-800">
               สร้างเอกสาร PDF
             </h2>
@@ -387,7 +474,6 @@ export default function ForensicSubmissionPdfPage() {
             <p className="mt-1 text-xs text-gray-400">
               เลือกรูปแบบเอกสารที่ต้องการ
             </p>
-
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -399,7 +485,6 @@ export default function ForensicSubmissionPdfPage() {
               onClick={handleGeneratePdf}
               className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-[#800020] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#650017] active:scale-[0.98]"
             >
-
               <svg
                 width="19"
                 height="19"
@@ -417,7 +502,6 @@ export default function ForensicSubmissionPdfPage() {
               </svg>
 
               ดาวน์โหลด PDF ส่ง ศพฐ
-
             </button>
 
             {/* PDF ส่งเงิน */}
@@ -427,7 +511,6 @@ export default function ForensicSubmissionPdfPage() {
               onClick={handleGeneratePdf2}
               className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98]"
             >
-
               <svg
                 width="19"
                 height="19"
@@ -443,17 +526,14 @@ export default function ForensicSubmissionPdfPage() {
               </svg>
 
               ดาวน์โหลด PDF ส่งเงิน
-
             </button>
 
           </div>
-
         </div>
 
-        {/* ===================================================
+        {/* ==================================================
             DESKTOP TABLE
-            >= 1200px
-        =================================================== */}
+        ================================================== */}
 
         <div className="hidden overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm min-[1200px]:block">
 
@@ -462,7 +542,6 @@ export default function ForensicSubmissionPdfPage() {
             <table className="w-full border-collapse text-sm">
 
               <thead>
-
                 <tr className="bg-gray-800 text-white">
 
                   <th className="w-[70px] border border-gray-700 px-3 py-3 text-center font-semibold">
@@ -494,63 +573,56 @@ export default function ForensicSubmissionPdfPage() {
                   </th>
 
                 </tr>
-
               </thead>
 
               <tbody>
+                {data.persons.map((item, index) => (
+                  <tr
+                    key={item.person.personId || index}
+                    className="transition hover:bg-gray-50"
+                  >
 
-                {data.persons.map(
-                  (item, index) => (
-                    <tr
-                      key={index}
-                      className="transition hover:bg-gray-50"
-                    >
+                    <td className="border border-gray-200 px-3 py-3 text-center">
+                      {index + 1}
+                    </td>
 
-                      <td className="border border-gray-200 px-3 py-3 text-center">
-                        {index + 1}
-                      </td>
+                    <td className="border border-gray-200 px-3 py-3 font-medium text-gray-800">
+                      {item.person.fullName}
+                    </td>
 
-                      <td className="border border-gray-200 px-3 py-3 font-medium text-gray-800">
-                        {item.person.fullName}
-                      </td>
+                    <td className="border border-gray-200 px-3 py-3 text-gray-700">
+                      {item.person.purpose || "-"}
+                    </td>
 
-                      <td className="border border-gray-200 px-3 py-3 text-gray-700">
-                        {item.person.purpose || "-"}
-                      </td>
+                    <td className="border border-gray-200 px-3 py-3 text-center">
+                      {item.person.receiptBookNo || "-"}
+                    </td>
 
-                      <td className="border border-gray-200 px-3 py-3 text-center">
-                        {item.person.receiptBookNo || "-"}
-                      </td>
+                    <td className="border border-gray-200 px-3 py-3 text-center">
+                      {item.person.receiptNo || "-"}
+                    </td>
 
-                      <td className="border border-gray-200 px-3 py-3 text-center">
-                        {item.person.receiptNo || "-"}
-                      </td>
+                    <td className="border border-gray-200 px-3 py-3 text-center">
+                      {formatShortThaiDate(
+                        item.person.receiptDate,
+                      )}
+                    </td>
 
-                      <td className="border border-gray-200 px-3 py-3 text-center">
-                        {formatShortThaiDate(
-                          item.person.receiptDate,
-                        )}
-                      </td>
+                    <td className="border border-gray-200 px-3 py-3 text-center">
 
-                      <td className="border border-gray-200 px-3 py-3 text-center">
+                      {item.person.priority === 1 && (
+                        <span className="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-600">
+                          ด่วน
+                        </span>
+                      )}
 
-                        {item.person.priority ===
-                          1 && (
-                          <span className="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-600">
-                            ด่วน
-                          </span>
-                        )}
+                    </td>
 
-                      </td>
-
-                    </tr>
-                  ),
-                )}
-
+                  </tr>
+                ))}
               </tbody>
 
               <tfoot>
-
                 <tr className="bg-gray-50">
 
                   <td
@@ -565,131 +637,110 @@ export default function ForensicSubmissionPdfPage() {
                   </td>
 
                 </tr>
-
               </tfoot>
 
             </table>
 
           </div>
-
         </div>
 
-        {/* ===================================================
+        {/* ==================================================
             MOBILE / TABLET
-            < 1200px
-        =================================================== */}
+        ================================================== */}
 
         <div className="mt-4 flex flex-col gap-3 min-[1200px]:hidden">
 
-          {data.persons.map(
-            (item, index) => (
-              <div
-                key={index}
-                className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"
-              >
+          {data.persons.map((item, index) => (
+            <div
+              key={item.person.personId || index}
+              className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"
+            >
 
-                {/* Card Header */}
+              <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-3">
 
-                <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-3">
+                <div className="flex items-center gap-2">
 
-                  <div className="flex items-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#800020]/10 text-xs font-bold text-[#800020]">
+                    {index + 1}
+                  </span>
 
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#800020]/10 text-xs font-bold text-[#800020]">
-                      {index + 1}
-                    </span>
-
-                    <span className="text-xs font-semibold text-gray-500">
-                      รายการ
-                    </span>
-
-                  </div>
-
-                  {item.person.priority ===
-                    1 && (
-                    <span className="rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-bold text-red-600">
-                      ด่วน
-                    </span>
-                  )}
+                  <span className="text-xs font-semibold text-gray-500">
+                    รายการ
+                  </span>
 
                 </div>
 
-                {/* Card Body */}
+                {item.person.priority === 1 && (
+                  <span className="rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-bold text-red-600">
+                    ด่วน
+                  </span>
+                )}
 
-                <div className="space-y-3 p-4">
+              </div>
 
-                  <div>
+              <div className="space-y-3 p-4">
 
-                    <p className="mb-1 text-[10px] font-semibold text-gray-400">
-                      ชื่อ และ ชื่อสกุล
+                <div>
+                  <p className="mb-1 text-[10px] font-semibold text-gray-400">
+                    ชื่อ และ ชื่อสกุล
+                  </p>
+
+                  <p className="text-sm font-bold text-gray-800">
+                    {item.person.fullName}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="mb-1 text-[10px] font-semibold text-gray-400">
+                    เรื่องที่ขออนุญาต
+                  </p>
+
+                  <p className="text-sm leading-6 text-gray-700">
+                    {item.person.purpose || "-"}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+
+                  <div className="rounded-xl bg-gray-50 p-3">
+                    <p className="text-[10px] font-semibold text-gray-400">
+                      เล่มที่
                     </p>
 
-                    <p className="text-sm font-bold text-gray-800">
-                      {item.person.fullName}
+                    <p className="mt-1 text-sm font-bold text-gray-800">
+                      {item.person.receiptBookNo || "-"}
                     </p>
-
-                  </div>
-
-                  <div>
-
-                    <p className="mb-1 text-[10px] font-semibold text-gray-400">
-                      เรื่องที่ขออนุญาต
-                    </p>
-
-                    <p className="text-sm leading-6 text-gray-700">
-                      {item.person.purpose || "-"}
-                    </p>
-
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-
-                    <div className="rounded-xl bg-gray-50 p-3">
-
-                      <p className="text-[10px] font-semibold text-gray-400">
-                        เล่มที่
-                      </p>
-
-                      <p className="mt-1 text-sm font-bold text-gray-800">
-                        {item.person.receiptBookNo || "-"}
-                      </p>
-
-                    </div>
-
-                    <div className="rounded-xl bg-gray-50 p-3">
-
-                      <p className="text-[10px] font-semibold text-gray-400">
-                        เลขที่
-                      </p>
-
-                      <p className="mt-1 text-sm font-bold text-gray-800">
-                        {item.person.receiptNo || "-"}
-                      </p>
-
-                    </div>
-
                   </div>
 
                   <div className="rounded-xl bg-gray-50 p-3">
-
                     <p className="text-[10px] font-semibold text-gray-400">
-                      ลงวันที่
+                      เลขที่
                     </p>
 
-                    <p className="mt-1 text-sm font-semibold text-gray-700">
-                      {formatShortThaiDate(
-                        item.person.receiptDate,
-                      )}
+                    <p className="mt-1 text-sm font-bold text-gray-800">
+                      {item.person.receiptNo || "-"}
                     </p>
-
                   </div>
+
+                </div>
+
+                <div className="rounded-xl bg-gray-50 p-3">
+
+                  <p className="text-[10px] font-semibold text-gray-400">
+                    ลงวันที่
+                  </p>
+
+                  <p className="mt-1 text-sm font-semibold text-gray-700">
+                    {formatShortThaiDate(
+                      item.person.receiptDate,
+                    )}
+                  </p>
 
                 </div>
 
               </div>
-            ),
-          )}
-
-          {/* Total */}
+            </div>
+          ))}
 
           <div className="rounded-2xl bg-[#800020]/5 px-4 py-4 text-center">
 
@@ -708,7 +759,6 @@ export default function ForensicSubmissionPdfPage() {
           </div>
 
         </div>
-
       </div>
     </div>
   );

@@ -1,20 +1,20 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import prisma from "../prisma.js";
+import neonPrisma from "../neon.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const auth = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-if (!JWT_SECRET)
+if (!JWT_SECRET) {
   throw new Error("JWT_SECRET missing");
+}
 
-/* ================= LOGIN ================= */
+// Login
 auth.post("/login", async (req, res) => {
   try {
-
     const {
       username,
       password,
@@ -26,17 +26,15 @@ auth.post("/login", async (req, res) => {
       });
     }
 
-    /* ===== trim only ===== */
-    const cleanUsername =
-      username.trim();
+    // Trim username
+    const cleanUsername = username.trim();
 
-    /* ===== find user ===== */
-    const adminUser =
-      await prisma.admin.findUnique({
-        where: {
-          username: cleanUsername,
-        },
-      });
+    // Find user
+    const adminUser = await neonPrisma.admin.findUnique({
+      where: {
+        username: cleanUsername,
+      },
+    });
 
     if (!adminUser) {
       return res.status(401).json({
@@ -44,12 +42,11 @@ auth.post("/login", async (req, res) => {
       });
     }
 
-    /* ===== compare password ===== */
-    const valid =
-      await bcrypt.compare(
-        password,
-        adminUser.password
-      );
+    // Compare password
+    const valid = await bcrypt.compare(
+      password,
+      adminUser.password
+    );
 
     if (!valid) {
       return res.status(401).json({
@@ -57,7 +54,7 @@ auth.post("/login", async (req, res) => {
       });
     }
 
-    /* ===== create token ===== */
+    // Create token
     const token = jwt.sign(
       {
         adminId: adminUser.adminId,
@@ -71,42 +68,28 @@ auth.post("/login", async (req, res) => {
     const isProd =
       process.env.NODE_ENV === "production";
 
-    /* ===== cookie ===== */
+    // Set cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
-
       ...(isProd && {
-        domain:
-          ".smartdorm-biwboong.shop",
+        domain: ".smartdorm-biwboong.shop",
       }),
-
       path: "/",
-
-      maxAge:
-        90 * 60 * 1000,
+      maxAge: 90 * 60 * 1000,
     });
 
-    /* ===== response ===== */
+    // Response
     res.json({
       message: "เข้าสู่ระบบสำเร็จ",
-
       admin: {
-        adminId:
-          adminUser.adminId,
-
-        username:
-          adminUser.username,
-
-        name:
-          adminUser.name,
-
-        position:
-          adminUser.position,
+        adminId: adminUser.adminId,
+        username: adminUser.username,
+        name: adminUser.name,
+        position: adminUser.position,
       },
     });
-
   } catch (err) {
     console.error(err);
 
@@ -116,18 +99,19 @@ auth.post("/login", async (req, res) => {
   }
 });
 
-/* ================= VERIFY ================= */
+// Verify
 auth.get("/verify", async (req, res) => {
   try {
+    const token = req.cookies?.token;
 
-    const token =
-      req.cookies?.token;
-
-    if (!token)
+    if (!token) {
       return res.sendStatus(401);
+    }
 
-    const decoded =
-      jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      JWT_SECRET
+    );
 
     if (
       !decoded ||
@@ -138,12 +122,10 @@ auth.get("/verify", async (req, res) => {
     }
 
     const adminUser =
-      await prisma.admin.findUnique({
+      await neonPrisma.admin.findUnique({
         where: {
-          adminId:
-            decoded.adminId,
+          adminId: decoded.adminId,
         },
-
         select: {
           adminId: true,
           username: true,
@@ -152,56 +134,46 @@ auth.get("/verify", async (req, res) => {
         },
       });
 
-    if (!adminUser)
+    if (!adminUser) {
       return res.sendStatus(401);
+    }
 
     res.json({
       admin: adminUser,
     });
-
   } catch (err) {
-    console.error(
-      "VERIFY ERROR:",
-      err
-    );
+    console.error("VERIFY ERROR:", err);
 
     res.sendStatus(401);
   }
 });
 
-/* ================= LOGOUT ================= */
+// Logout
 auth.post("/logout", (_req, res) => {
-
   const isProd =
     process.env.NODE_ENV === "production";
 
   res.clearCookie("token", {
     httpOnly: true,
     secure: isProd,
-    sameSite:
-      isProd ? "none" : "lax",
-
+    sameSite: isProd ? "none" : "lax",
     ...(isProd && {
-      domain:
-        ".smartdorm-biwboong.shop",
+      domain: ".smartdorm-biwboong.shop",
     }),
-
     path: "/",
   });
 
   res.json({
-    message:
-      "ออกจากระบบสำเร็จ",
+    message: "ออกจากระบบสำเร็จ",
   });
 });
 
-/* ================= CHANGE PASSWORD ================= */
+// Change password
 auth.put(
   "/change-password",
   authMiddleware,
   async (req, res) => {
     try {
-
       const {
         oldPassword,
         newPassword,
@@ -217,7 +189,7 @@ auth.put(
       }
 
       const user =
-        await prisma.admin.findUnique({
+        await neonPrisma.admin.findUnique({
           where: {
             adminId:
               req.admin.adminId,
@@ -230,7 +202,7 @@ auth.put(
         });
       }
 
-      /* ===== validate ===== */
+      // Validate password
       if (
         oldPassword === newPassword
       ) {
@@ -247,7 +219,7 @@ auth.put(
         });
       }
 
-      /* ===== check old ===== */
+      // Check old password
       const valid =
         await bcrypt.compare(
           oldPassword,
@@ -261,20 +233,19 @@ auth.put(
         });
       }
 
-      /* ===== hash ===== */
+      // Hash new password
       const hash =
         await bcrypt.hash(
           newPassword,
           10
         );
 
-      /* ===== update ===== */
-      await prisma.admin.update({
+      // Update password
+      await neonPrisma.admin.update({
         where: {
           adminId:
             user.adminId,
         },
-
         data: {
           password: hash,
         },
@@ -284,7 +255,6 @@ auth.put(
         message:
           "เปลี่ยนรหัสผ่านสำเร็จ",
       });
-
     } catch (err) {
       console.error(err);
 
@@ -295,12 +265,11 @@ auth.put(
   }
 );
 
-/* ================= FORGOT CHECK ================= */
+// Forgot password check
 auth.post(
   "/forgot/check",
   async (req, res) => {
     try {
-
       const { username } =
         req.body;
 
@@ -315,12 +284,11 @@ auth.post(
         username.trim();
 
       const user =
-        await prisma.admin.findUnique({
+        await neonPrisma.admin.findUnique({
           where: {
             username:
               cleanUsername,
           },
-
           select: {
             username: true,
             name: true,
@@ -337,7 +305,6 @@ auth.post(
       res.json({
         admin: user,
       });
-
     } catch (err) {
       console.error(err);
 
@@ -348,12 +315,11 @@ auth.post(
   }
 );
 
-/* ================= RESET PASSWORD ================= */
+// Reset password
 auth.put(
   "/forgot/reset",
   async (req, res) => {
     try {
-
       const {
         username,
         newPassword,
@@ -378,9 +344,9 @@ auth.put(
       const cleanUsername =
         username.trim();
 
-      /* ===== check user ===== */
+      // Check user
       const exist =
-        await prisma.admin.findUnique({
+        await neonPrisma.admin.findUnique({
           where: {
             username:
               cleanUsername,
@@ -394,20 +360,19 @@ auth.put(
         });
       }
 
-      /* ===== hash ===== */
+      // Hash password
       const hash =
         await bcrypt.hash(
           newPassword,
           10
         );
 
-      /* ===== update ===== */
-      await prisma.admin.update({
+      // Update password
+      await neonPrisma.admin.update({
         where: {
           username:
             cleanUsername,
         },
-
         data: {
           password: hash,
         },
@@ -417,7 +382,6 @@ auth.put(
         message:
           "ตั้งรหัสใหม่สำเร็จ",
       });
-
     } catch (err) {
       console.error(err);
 

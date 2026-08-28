@@ -108,7 +108,7 @@ export default function Login() {
               ring-white/10
             ">
               <img
-                src="/muangchonburi.webp"
+                src="/assets/muangchonburi.webp"
                 alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
                 className="h-28 w-28 object-contain"
               />
@@ -184,7 +184,7 @@ export default function Login() {
                 min-[768px]:w-32
               ">
                 <img
-                  src="/muangchonburi.webp"
+                                  src="/assets/muangchonburi.webp"
                   alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
                   className="
                     h-20
