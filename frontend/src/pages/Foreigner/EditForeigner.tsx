@@ -1,5 +1,3 @@
-// src/pages/Foreigner/EditForeigner.tsx
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -14,14 +12,23 @@ interface DateParts {
 interface FormData {
   year: string;
   foreignerIdNo: string;
-  name: string;
+  prefix: string;
+  firstName: string;
+  lastName: string;
   age: string;
   nationality: string;
   ethnicity: string;
   certificateRegistrationNo: string;
   district: string;
   province: string;
-  domicile: string;
+  policeStation: string;
+  policeProvince: string;
+  houseNo: string;
+  moo: string;
+  road: string;
+  subdistrict: string;
+  domicileDistrict: string;
+  domicileProvince: string;
   applicationType: string;
   amount: string;
   receiptBookNo: string;
@@ -34,7 +41,10 @@ interface ForeignerData {
   sequenceNo: number | null;
   year: number | null;
   foreignerIdNo: string | null;
-  name: string;
+  prefix: string | null;
+  firstName: string;
+  lastName: string;
+  fullName: string;
   age: number | null;
   nationality: string | null;
   ethnicity: string | null;
@@ -42,11 +52,21 @@ interface ForeignerData {
   certificateDate: string | null;
   district: string | null;
   province: string | null;
+  policeStation: string | null;
+  policeProvince: string | null;
+  houseNo: string | null;
+  moo: string | null;
+  road: string | null;
+  subdistrict: string | null;
+  domicileDistrict: string | null;
+  domicileProvince: string | null;
   domicile: string | null;
   applicationType: string | null;
   applicationDate: string | null;
   expirationDate: string | null;
-  amount: string | number | null;
+  previousExpirationDate: string | null;
+  amount: number | null;
+  amountText: string | null;
   receiptBookNo: string | null;
   receiptNo: string | null;
   receiptDate: string | null;
@@ -69,26 +89,28 @@ const MONTHS = [
   { value: "12", label: "ธ.ค." },
 ];
 
-/* ======================================================
-   แปลงวันที่จาก Backend
-   รองรับ:
-   13 ก.ค. 2569
-   2 ม.ค. 2569
-   2026-07-13
-====================================================== */
+const CHONBURI_DISTRICTS = [
+  "เมืองชลบุรี",
+  "บ้านบึง",
+  "หนองใหญ่",
+  "บางละมุง",
+  "พานทอง",
+  "พนัสนิคม",
+  "ศรีราชา",
+  "เกาะจันทร์",
+  "สัตหีบ",
+  "บ่อทอง",
+  "เกาะสีชัง",
+];
 
+// แปลงวันที่จาก Backend
 function stringToDateParts(value: string | null | undefined): DateParts {
   if (!value) {
-    return {
-      day: "",
-      month: "",
-      year: "",
-    };
+    return { day: "", month: "", year: "" };
   }
 
   const text = String(value).replace(/\s+/g, " ").trim();
 
-  // YYYY-MM-DD
   const isoMatch = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
 
   if (isoMatch) {
@@ -103,7 +125,6 @@ function stringToDateParts(value: string | null | undefined): DateParts {
     };
   }
 
-  // DD เดือนย่อ พ.ศ.
   const thaiMatch = text.match(/^(\d{1,2})\s+(.+?)\s+(\d{4})$/);
 
   if (thaiMatch) {
@@ -122,20 +143,10 @@ function stringToDateParts(value: string | null | undefined): DateParts {
     }
   }
 
-  console.warn("ไม่สามารถแปลงวันที่:", value);
-
-  return {
-    day: "",
-    month: "",
-    year: "",
-  };
+  return { day: "", month: "", year: "" };
 }
 
-/* ======================================================
-   วัน / เดือน / พ.ศ.
-   → String เช่น 13 ก.ค. 2569
-====================================================== */
-
+// แปลงวันที่เป็น String
 function datePartsToString(value: DateParts): string {
   if (!value.day && !value.month && !value.year) {
     return "";
@@ -166,7 +177,6 @@ function datePartsToString(value: DateParts): string {
   }
 
   const ceYear = buddhistYear - 543;
-
   const lastDay = new Date(ceYear, month, 0).getDate();
 
   if (day > lastDay) {
@@ -184,10 +194,45 @@ function datePartsToString(value: DateParts): string {
   return `${day} ${monthData.label} ${buddhistYear}`;
 }
 
-/* ======================================================
-   DATE INPUT
-====================================================== */
+// แปลงวันที่เป็น ISO สำหรับ petitionDate
+function datePartsToISO(value: DateParts): string | null {
+  if (!value.day && !value.month && !value.year) {
+    return null;
+  }
 
+  if (!value.day || !value.month || !value.year) {
+    throw new Error("กรุณากรอก วัน เดือน และปี ให้ครบถ้วน");
+  }
+
+  const day = Number(value.day);
+  const month = Number(value.month);
+  const buddhistYear = Number(value.year);
+  const ceYear = buddhistYear - 543;
+
+  if (
+    !Number.isInteger(day) ||
+    day < 1 ||
+    day > new Date(ceYear, month, 0).getDate()
+  ) {
+    throw new Error("วันที่ไม่ถูกต้อง");
+  }
+
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    throw new Error("เดือนไม่ถูกต้อง");
+  }
+
+  if (
+    !Number.isInteger(buddhistYear) ||
+    buddhistYear < 2400 ||
+    buddhistYear > 2700
+  ) {
+    throw new Error("ปี พ.ศ. ไม่ถูกต้อง");
+  }
+
+  return `${ceYear}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+// ช่องกรอกวันที่
 function DateInput({
   label,
   required = false,
@@ -203,13 +248,12 @@ function DateInput({
     <div>
       <label className="mb-2 block text-sm font-medium text-slate-700">
         {label}
-
         {required && <span className="ml-1 text-red-500">*</span>}
       </label>
 
       <div className="grid grid-cols-3 gap-2">
-        {/* วัน */}
         <select
+          required={required}
           value={value.day}
           onChange={(e) =>
             onChange({
@@ -221,7 +265,6 @@ function DateInput({
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
         >
           <option value="">วัน</option>
-
           {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
             <option key={day} value={String(day)}>
               {day}
@@ -229,8 +272,8 @@ function DateInput({
           ))}
         </select>
 
-        {/* เดือน */}
         <select
+          required={required}
           value={value.month}
           onChange={(e) =>
             onChange({
@@ -242,7 +285,6 @@ function DateInput({
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
         >
           <option value="">เดือน</option>
-
           {MONTHS.map((month) => (
             <option key={month.value} value={month.value}>
               {month.label}
@@ -250,10 +292,12 @@ function DateInput({
           ))}
         </select>
 
-        {/* พ.ศ. */}
         <input
+          required={required}
           type="number"
           inputMode="numeric"
+          min="2400"
+          max="2700"
           value={value.year}
           onChange={(e) =>
             onChange({
@@ -270,10 +314,7 @@ function DateInput({
   );
 }
 
-/* ======================================================
-   SECTION
-====================================================== */
-
+// กล่อง Section
 function Section({
   title,
   children,
@@ -286,7 +327,6 @@ function Section({
       <h2 className="mb-5 border-l-4 border-[#800020] pl-3 text-lg font-bold text-[#800020]">
         {title}
       </h2>
-
       {children}
     </section>
   );
@@ -295,31 +335,34 @@ function Section({
 const inputClass =
   "w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none transition focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10";
 
-/* ======================================================
-   PAGE
-====================================================== */
-
 export default function EditForeigner() {
   const navigate = useNavigate();
   const { id } = useParams();
 
   const [loading, setLoading] = useState(true);
-
   const [saving, setSaving] = useState(false);
-
   const [sequenceNo, setSequenceNo] = useState<number | null>(null);
 
   const [form, setForm] = useState<FormData>({
     year: String(new Date().getFullYear() + 543),
     foreignerIdNo: "",
-    name: "",
+    prefix: "",
+    firstName: "",
+    lastName: "",
     age: "",
     nationality: "",
     ethnicity: "",
     certificateRegistrationNo: "",
     district: "",
-    province: "",
-    domicile: "",
+    province: "ชลบุรี",
+    policeStation: "",
+    policeProvince: "ชลบุรี",
+    houseNo: "",
+    moo: "",
+    road: "",
+    subdistrict: "",
+    domicileDistrict: "",
+    domicileProvince: "ชลบุรี",
     applicationType: "",
     amount: "",
     receiptBookNo: "",
@@ -345,6 +388,13 @@ export default function EditForeigner() {
     year: "",
   });
 
+  const [previousExpirationDate, setPreviousExpirationDate] =
+    useState<DateParts>({
+      day: "",
+      month: "",
+      year: "",
+    });
+
   const [receiptDate, setReceiptDate] = useState<DateParts>({
     day: "",
     month: "",
@@ -356,10 +406,6 @@ export default function EditForeigner() {
     month: "",
     year: "",
   });
-
-  /* ======================================================
-     LOAD
-  ====================================================== */
 
   useEffect(() => {
     if (!id) {
@@ -375,10 +421,7 @@ export default function EditForeigner() {
       setLoading(true);
 
       const response = await api.get(`/foreigner/${id}`);
-
       const data: ForeignerData = response.data.data;
-
-      console.log("EDIT FOREIGNER DATA:", data);
 
       setSequenceNo(data.sequenceNo);
 
@@ -387,48 +430,40 @@ export default function EditForeigner() {
           data.year !== null && data.year !== undefined
             ? String(data.year)
             : String(new Date().getFullYear() + 543),
-
         foreignerIdNo: data.foreignerIdNo || "",
-
-        name: data.name || "",
-
+        prefix: data.prefix || "",
+        firstName: data.firstName || "",
+        lastName: data.lastName || "",
         age:
           data.age !== null && data.age !== undefined ? String(data.age) : "",
-
         nationality: data.nationality || "",
-
         ethnicity: data.ethnicity || "",
-
         certificateRegistrationNo: data.certificateRegistrationNo || "",
-
         district: data.district || "",
-
-        province: data.province || "",
-
-        domicile: data.domicile || "",
-
+        province: data.province || "ชลบุรี",
+        policeStation: data.policeStation || "",
+        policeProvince: data.policeProvince || "ชลบุรี",
+        houseNo: data.houseNo || "",
+        moo: data.moo || "",
+        road: data.road || "",
+        subdistrict: data.subdistrict || "",
+        domicileDistrict: data.domicileDistrict || "",
+        domicileProvince: data.domicileProvince || "ชลบุรี",
         applicationType: data.applicationType || "",
-
         amount:
           data.amount !== null && data.amount !== undefined
             ? String(data.amount)
             : "",
-
         receiptBookNo: data.receiptBookNo || "",
-
         receiptNo: data.receiptNo || "",
-
         certificateNo: data.certificateNo || "",
       });
 
       setCertificateDate(stringToDateParts(data.certificateDate));
-
       setApplicationDate(stringToDateParts(data.applicationDate));
-
       setExpirationDate(stringToDateParts(data.expirationDate));
-
+      setPreviousExpirationDate(stringToDateParts(data.previousExpirationDate));
       setReceiptDate(stringToDateParts(data.receiptDate));
-
       setPetitionDate(stringToDateParts(data.petitionDate));
     } catch (error) {
       console.error("GET FOREIGNER ERROR:", error);
@@ -446,10 +481,6 @@ export default function EditForeigner() {
     }
   };
 
-  /* ======================================================
-     CHANGE
-  ====================================================== */
-
   const change = (key: keyof FormData, value: string) => {
     setForm((prev) => ({
       ...prev,
@@ -457,90 +488,179 @@ export default function EditForeigner() {
     }));
   };
 
-  /* ======================================================
-     SUBMIT
-  ====================================================== */
+  const validate = () => {
+    if (!form.prefix.trim()) {
+      throw new Error("กรุณากรอกคำนำหน้า");
+    }
+
+    if (!form.firstName.trim()) {
+      throw new Error("กรุณากรอกชื่อ");
+    }
+
+    if (!form.lastName.trim()) {
+      throw new Error("กรุณากรอกนามสกุล");
+    }
+
+    if (!form.age.trim()) {
+      throw new Error("กรุณากรอกอายุ");
+    }
+
+    if (!Number.isInteger(Number(form.age)) || Number(form.age) < 0) {
+      throw new Error("อายุไม่ถูกต้อง");
+    }
+
+    if (!form.nationality.trim()) {
+      throw new Error("กรุณากรอกสัญชาติ");
+    }
+
+    if (!form.ethnicity.trim()) {
+      throw new Error("กรุณากรอกเชื้อชาติ");
+    }
+
+    if (!form.certificateRegistrationNo.trim()) {
+      throw new Error("กรุณากรอกเลขทะเบียนของใบสำคัญ");
+    }
+
+    if (!form.district.trim()) {
+      throw new Error("กรุณากรอกออกให้ ณ อำเภอ");
+    }
+
+    if (!form.province.trim()) {
+      throw new Error("กรุณากรอกออกให้ ณ จังหวัด");
+    }
+
+    if (!form.policeStation.trim()) {
+      throw new Error("กรุณากรอกสถานีตำรวจ");
+    }
+
+    if (!form.policeProvince.trim()) {
+      throw new Error("กรุณากรอกจังหวัดของสถานีตำรวจ");
+    }
+
+    if (!form.houseNo.trim()) {
+      throw new Error("กรุณากรอกบ้านเลขที่");
+    }
+
+    if (!form.subdistrict.trim()) {
+      throw new Error("กรุณากรอกตำบล");
+    }
+
+    if (!form.domicileDistrict.trim()) {
+      throw new Error("กรุณากรอกอำเภอของภูมิลำเนา");
+    }
+
+    if (!form.domicileProvince.trim()) {
+      throw new Error("กรุณากรอกจังหวัดของภูมิลำเนา");
+    }
+
+    if (!form.applicationType.trim()) {
+      throw new Error("กรุณากรอกชนิดการขอรับ");
+    }
+
+    if (!form.amount.trim()) {
+      throw new Error("กรุณากรอกจำนวนเงิน");
+    }
+
+    if (!Number.isInteger(Number(form.amount)) || Number(form.amount) < 0) {
+      throw new Error("จำนวนเงินต้องเป็นจำนวนเต็ม");
+    }
+
+    if (!form.receiptBookNo.trim()) {
+      throw new Error("กรุณากรอกใบเสร็จเล่มที่");
+    }
+
+    if (!form.receiptNo.trim()) {
+      throw new Error("กรุณากรอกใบเสร็จเลขที่");
+    }
+
+    datePartsToString(certificateDate);
+    datePartsToString(applicationDate);
+    datePartsToString(receiptDate);
+
+    if (
+      previousExpirationDate.day ||
+      previousExpirationDate.month ||
+      previousExpirationDate.year
+    ) {
+      datePartsToString(previousExpirationDate);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!id) return;
-
-    if (!form.name.trim()) {
-      await Swal.fire({
-        icon: "warning",
-        title: "กรุณากรอกชื่อ แซ่",
-        confirmButtonText: "ตกลง",
-      });
-      return;
-    }
-
-    if (!form.age.trim()) {
-      await Swal.fire({
-        icon: "warning",
-        title: "กรุณากรอกอายุ",
-        confirmButtonText: "ตกลง",
-      });
-      return;
-    }
-
-    if (!form.certificateRegistrationNo.trim()) {
-      await Swal.fire({
-        icon: "warning",
-        title: "กรุณากรอกเลขทะเบียนของใบสำคัญ",
-        confirmButtonText: "ตกลง",
-      });
-      return;
-    }
+    if (!id || saving) return;
 
     try {
+      validate();
+
       setSaving(true);
+
+      const certificateDateValue = datePartsToString(certificateDate);
+
+      const applicationDateValue = datePartsToString(applicationDate);
+
+      const expirationDateValue = datePartsToString(expirationDate);
+
+      const previousExpirationDateValue = datePartsToString(
+        previousExpirationDate,
+      );
+
+      const receiptDateValue = datePartsToString(receiptDate);
+
+      const petitionDateValue = datePartsToISO(petitionDate);
+
+      const domicileParts = [
+        form.houseNo.trim(),
+        form.moo.trim() ? `หมู่ ${form.moo.trim()}` : "",
+        form.road.trim(),
+        form.subdistrict.trim() ? `ตำบล${form.subdistrict.trim()}` : "",
+        form.domicileDistrict.trim()
+          ? `อำเภอ${form.domicileDistrict.trim()}`
+          : "",
+        form.domicileProvince.trim(),
+      ].filter(Boolean);
 
       const payload = {
         year: Number(form.year),
-
         foreignerIdNo: form.foreignerIdNo.trim() || null,
-
-        name: form.name.trim(),
-
-        age: form.age.trim() ? Number(form.age) : null,
-
-        nationality: form.nationality.trim() || null,
-
-        ethnicity: form.ethnicity.trim() || null,
-
-        certificateRegistrationNo:
-          form.certificateRegistrationNo.trim() || null,
-
-        // ส่งเป็น "13 ก.ค. 2569"
-        certificateDate: datePartsToString(certificateDate) || null,
-
-        district: form.district.trim() || null,
-
-        province: form.province.trim() || null,
-
-        domicile: form.domicile.trim() || null,
-
-        applicationType: form.applicationType.trim() || null,
-
-        // ส่งเป็น "25 ก.พ. 2569"
-        applicationDate: datePartsToString(applicationDate) || null,
-
-        // ส่งเป็น "25 ก.พ. 2570"
-        expirationDate: datePartsToString(expirationDate) || null,
-
-        amount: form.amount.trim() || null,
-
-        receiptBookNo: form.receiptBookNo.trim() || null,
-
-        receiptNo: form.receiptNo.trim() || null,
-
-        // ส่งเป็น "2 ม.ค. 2569"
-        receiptDate: datePartsToString(receiptDate) || null,
-
+        prefix: form.prefix.trim(),
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        fullName: [
+          form.prefix.trim(),
+          form.firstName.trim(),
+          form.lastName.trim(),
+        ]
+          .filter(Boolean)
+          .join(" "),
+        age: Number(form.age),
+        nationality: form.nationality.trim(),
+        ethnicity: form.ethnicity.trim(),
+        certificateRegistrationNo: form.certificateRegistrationNo.trim(),
+        certificateDate: certificateDateValue || null,
+        district: form.district.trim(),
+        province: form.province.trim(),
+        policeStation: form.policeStation.trim(),
+        policeProvince: form.policeProvince.trim(),
+        houseNo: form.houseNo.trim(),
+        moo: form.moo.trim() || null,
+        road: form.road.trim() || null,
+        subdistrict: form.subdistrict.trim(),
+        domicileDistrict: form.domicileDistrict.trim(),
+        domicileProvince: form.domicileProvince.trim(),
+        domicile: domicileParts.join(" "),
+        applicationType: form.applicationType.trim(),
+        applicationDate: applicationDateValue || null,
+        expirationDate: expirationDateValue || null,
+        previousExpirationDate: previousExpirationDateValue || null,
+        amount: Number(form.amount),
+        amountText: null,
+        receiptBookNo: form.receiptBookNo.trim(),
+        receiptNo: form.receiptNo.trim(),
+        receiptDate: receiptDateValue || null,
         certificateNo: form.certificateNo.trim() || null,
-
-        petitionDate: datePartsToString(petitionDate) || null,
+        petitionDate: petitionDateValue,
       };
 
       console.log("UPDATE FOREIGNER PAYLOAD:", payload);
@@ -575,10 +695,6 @@ export default function EditForeigner() {
     }
   };
 
-  /* ======================================================
-     LOADING
-  ====================================================== */
-
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
@@ -589,15 +705,9 @@ export default function EditForeigner() {
     );
   }
 
-  /* ======================================================
-     RENDER
-  ====================================================== */
-
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 md:px-6">
       <div className="mx-auto max-w-6xl">
-        {/* HEADER */}
-
         <div className="mb-6">
           <button
             type="button"
@@ -625,8 +735,6 @@ export default function EditForeigner() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* ข้อมูลบุคคล */}
-
           <Section title="ข้อมูลบุคคล">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
               <div>
@@ -644,14 +752,45 @@ export default function EditForeigner() {
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ชื่อ แซ่
+                  คำนำหน้า
                   <span className="ml-1 text-red-500">*</span>
                 </label>
 
                 <input
                   type="text"
-                  value={form.name}
-                  onChange={(e) => change("name", e.target.value)}
+                  required
+                  value={form.prefix}
+                  onChange={(e) => change("prefix", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  ชื่อ
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+
+                <input
+                  type="text"
+                  required
+                  value={form.firstName}
+                  onChange={(e) => change("firstName", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  นามสกุล
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+
+                <input
+                  type="text"
+                  required
+                  value={form.lastName}
+                  onChange={(e) => change("lastName", e.target.value)}
                   className={inputClass}
                 />
               </div>
@@ -664,7 +803,9 @@ export default function EditForeigner() {
 
                 <input
                   type="number"
+                  required
                   min="0"
+                  step="1"
                   value={form.age}
                   onChange={(e) => change("age", e.target.value)}
                   className={inputClass}
@@ -674,10 +815,12 @@ export default function EditForeigner() {
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   สัญชาติ
+                  <span className="ml-1 text-red-500">*</span>
                 </label>
 
                 <input
                   type="text"
+                  required
                   value={form.nationality}
                   onChange={(e) => change("nationality", e.target.value)}
                   className={inputClass}
@@ -687,10 +830,12 @@ export default function EditForeigner() {
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   เชื้อชาติ
+                  <span className="ml-1 text-red-500">*</span>
                 </label>
 
                 <input
                   type="text"
+                  required
                   value={form.ethnicity}
                   onChange={(e) => change("ethnicity", e.target.value)}
                   className={inputClass}
@@ -698,8 +843,6 @@ export default function EditForeigner() {
               </div>
             </div>
           </Section>
-
-          {/* ใบสำคัญ */}
 
           <Section title="ใบสำคัญ">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -711,6 +854,7 @@ export default function EditForeigner() {
 
                 <input
                   type="text"
+                  required
                   value={form.certificateRegistrationNo}
                   onChange={(e) =>
                     change("certificateRegistrationNo", e.target.value)
@@ -728,73 +872,215 @@ export default function EditForeigner() {
             </div>
           </Section>
 
-          {/* ออกให้ ณ */}
-
           <Section title="ออกให้ ณ">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
-                  อำเภอ
+                  ออกให้ ณ อำเภอ
+                  <span className="ml-1 text-red-500">*</span>
                 </label>
 
                 <input
+                  list="district-options"
                   type="text"
+                  required
                   value={form.district}
                   onChange={(e) => change("district", e.target.value)}
+                  placeholder="เลือกหรือกรอกอำเภอ"
                   className={inputClass}
                 />
+
+                <datalist id="district-options">
+                  {CHONBURI_DISTRICTS.map((district) => (
+                    <option key={district} value={district} />
+                  ))}
+                </datalist>
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
-                  จังหวัด
+                  ออกให้ ณ จังหวัด
+                  <span className="ml-1 text-red-500">*</span>
                 </label>
 
                 <input
                   type="text"
+                  required
                   value={form.province}
                   onChange={(e) => change("province", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ภูมิลำเนา
-                </label>
-
-                <input
-                  type="text"
-                  value={form.domicile}
-                  onChange={(e) => change("domicile", e.target.value)}
                   className={inputClass}
                 />
               </div>
             </div>
           </Section>
 
-          {/* การขอรับ */}
+          <Section title="สถานีตำรวจ">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  สถานีตำรวจ
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+
+                <input
+                  type="text"
+                  required
+                  value={form.policeStation}
+                  onChange={(e) => change("policeStation", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  จังหวัดของสถานีตำรวจ
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+
+                <input
+                  type="text"
+                  required
+                  value={form.policeProvince}
+                  onChange={(e) => change("policeProvince", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </Section>
+
+          <Section title="ภูมิลำเนา">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  บ้านเลขที่
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+
+                <input
+                  type="text"
+                  required
+                  value={form.houseNo}
+                  onChange={(e) => change("houseNo", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  หมู่
+                </label>
+
+                <input
+                  type="text"
+                  value={form.moo}
+                  onChange={(e) => change("moo", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  ถนน
+                </label>
+
+                <input
+                  type="text"
+                  value={form.road}
+                  onChange={(e) => change("road", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  ตำบล
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+
+                <input
+                  type="text"
+                  required
+                  value={form.subdistrict}
+                  onChange={(e) => change("subdistrict", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  อำเภอ
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+
+                <input
+                  list="domicile-district-options"
+                  type="text"
+                  required
+                  value={form.domicileDistrict}
+                  onChange={(e) => change("domicileDistrict", e.target.value)}
+                  placeholder="เลือกหรือกรอกอำเภอ"
+                  className={inputClass}
+                />
+
+                <datalist id="domicile-district-options">
+                  {CHONBURI_DISTRICTS.map((district) => (
+                    <option key={district} value={district} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  จังหวัดของภูมิลำเนา
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+
+                <input
+                  type="text"
+                  required
+                  value={form.domicileProvince}
+                  onChange={(e) => change("domicileProvince", e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+          </Section>
 
           <Section title="การขอรับ / ขอรับใบแทน / ขอต่ออายุ">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
-                  วันที่ขอรับใหม่ / ขอรับใบแทน / ขอต่ออายุ เป็นชนิดนั้น
+                  ชนิดการขอรับ
+                  <span className="ml-1 text-red-500">*</span>
                 </label>
 
                 <input
+                  list="application-type-options"
                   type="text"
+                  required
                   value={form.applicationType}
                   onChange={(e) => change("applicationType", e.target.value)}
-                  placeholder="กรอกชนิด"
+                  placeholder="เลือกหรือกรอกชนิด"
                   className={inputClass}
                 />
+
+                <datalist id="application-type-options">
+                  <option value="ชนิดที่ 1" />
+                  <option value="ชนิดที่ 2" />
+                </datalist>
               </div>
 
               <DateInput
-                label="วัน เดือน ปี"
+                label="วัน เดือน ปี ที่ขอรับ / ขอรับใบแทน / ขอต่ออายุ"
+                required
                 value={applicationDate}
                 onChange={setApplicationDate}
+              />
+
+              <DateInput
+                label="วันหมดอายุก่อนต่ออายุ"
+                value={previousExpirationDate}
+                onChange={setPreviousExpirationDate}
               />
 
               <DateInput
@@ -805,19 +1091,19 @@ export default function EditForeigner() {
             </div>
           </Section>
 
-          {/* ค่าธรรมเนียม */}
-
           <Section title="ค่าธรรมเนียมและใบเสร็จรับเงิน">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   จำนวนเงิน
+                  <span className="ml-1 text-red-500">*</span>
                 </label>
 
                 <input
                   type="number"
+                  required
                   min="0"
-                  step="0.01"
+                  step="1"
                   value={form.amount}
                   onChange={(e) => change("amount", e.target.value)}
                   className={inputClass}
@@ -827,10 +1113,12 @@ export default function EditForeigner() {
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   ใบเสร็จเล่มที่
+                  <span className="ml-1 text-red-500">*</span>
                 </label>
 
                 <input
                   type="text"
+                  required
                   value={form.receiptBookNo}
                   onChange={(e) => change("receiptBookNo", e.target.value)}
                   className={inputClass}
@@ -840,10 +1128,12 @@ export default function EditForeigner() {
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   ใบเสร็จเลขที่
+                  <span className="ml-1 text-red-500">*</span>
                 </label>
 
                 <input
                   type="text"
+                  required
                   value={form.receiptNo}
                   onChange={(e) => change("receiptNo", e.target.value)}
                   className={inputClass}
@@ -852,19 +1142,18 @@ export default function EditForeigner() {
 
               <DateInput
                 label="วัน เดือน ปี ของใบเสร็จ"
+                required
                 value={receiptDate}
                 onChange={setReceiptDate}
               />
             </div>
           </Section>
 
-          {/* อื่น ๆ */}
-
-          <Section title="อื่น ๆ">
+          <Section title="ข้อมูลอื่น ๆ">
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
-                  เลขใบสำคัญฯ
+                  ใบสำคัญ
                 </label>
 
                 <input
@@ -882,8 +1171,6 @@ export default function EditForeigner() {
               />
             </div>
           </Section>
-
-          {/* BUTTON */}
 
           <div className="flex flex-col-reverse gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:justify-end">
             <button

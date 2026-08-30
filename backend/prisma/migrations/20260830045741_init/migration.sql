@@ -4,22 +4,35 @@ CREATE TABLE "Foreigner" (
     "sequenceNo" INTEGER,
     "year" INTEGER,
     "foreignerIdNo" TEXT,
-    "name" TEXT NOT NULL,
+    "prefix" TEXT,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
     "age" INTEGER,
     "nationality" TEXT,
     "ethnicity" TEXT,
     "certificateRegistrationNo" TEXT,
-    "certificateDate" DATE,
+    "certificateDate" TEXT,
     "district" TEXT,
     "province" TEXT,
+    "policeStation" TEXT,
+    "policeProvince" TEXT,
+    "houseNo" TEXT,
+    "moo" TEXT,
+    "road" TEXT,
+    "subdistrict" TEXT,
+    "domicileDistrict" TEXT,
+    "domicileProvince" TEXT,
     "domicile" TEXT,
     "applicationType" TEXT,
-    "applicationDate" DATE,
-    "expirationDate" DATE,
-    "amount" DECIMAL(65,30),
+    "applicationDate" TEXT,
+    "expirationDate" TEXT,
+    "previousExpirationDate" TEXT,
+    "amount" INTEGER,
+    "amountText" TEXT,
     "receiptBookNo" TEXT,
     "receiptNo" TEXT,
-    "receiptDate" DATE,
+    "receiptDate" TEXT,
     "certificateNo" TEXT,
     "petitionDate" DATE,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -32,7 +45,7 @@ CREATE TABLE "Foreigner" (
 CREATE INDEX "Foreigner_foreignerIdNo_idx" ON "Foreigner"("foreignerIdNo");
 
 -- CreateIndex
-CREATE INDEX "Foreigner_name_idx" ON "Foreigner"("name");
+CREATE INDEX "Foreigner_fullName_idx" ON "Foreigner"("fullName");
 
 -- CreateIndex
 CREATE INDEX "Foreigner_certificateRegistrationNo_idx" ON "Foreigner"("certificateRegistrationNo");

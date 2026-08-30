@@ -10,90 +10,54 @@ datasource db {
 model Foreigner {
   id String @id @default(uuid())
 
-  // ลำดับ
-  sequenceNo Int?
+  sequenceNo Int? // ลำดับ
+  year       Int? // ปี พ.ศ. ของรายการ
 
-  // ปี พ.ศ. ของรายการ
-  year Int?
+  foreignerIdNo             String? //เลขรหัสคนต่างด้าว
+  prefix                    String? // คำนำหน้า
+  firstName                 String // ชื่อ
+  lastName                  String // นามสกุล
+  fullName                  String // ชื่อเต็ม
+  age                       Int? //อายุ
+  nationality               String? //สัญชาติ
+  ethnicity                 String? //เชื้อชาติ
+  certificateRegistrationNo String? //เลขทะเบียนของใบสำคัญ
+  certificateDate           String? //วัน เดือน ปี ของใบสำคัญ เก็บเป็น String
+  district                  String? // ออกให้ ณ อำเภอ
+  province                  String? // ออกให้ ณ จังหวัด
 
-  // =========================
-  // ข้อมูลบุคคล
-  // =========================
+  policeStation  String? // สถานีตำรวจ
+  policeProvince String? // จังหวัดของสถานีตำรวจ
 
-  foreignerIdNo String?
-  name          String
-  age           Int?
-  nationality   String?
-  ethnicity     String?
-
-  // =========================
-  // ใบสำคัญ
-  // =========================
-
-  certificateRegistrationNo String?
-
-  // เก็บเป็น String
-  certificateDate String?
-
-  // =========================
-  // ออกให้ ณ
-  // =========================
-
-  district String?
-  province String?
-
-  // =========================
   // ภูมิลำเนา
-  // =========================
+  houseNo          String? // บ้านเลขที่
+  moo              String? // หมู่
+  road             String? // ถนน
+  subdistrict      String? // ตำบล
+  domicileDistrict String? // อำเภอ
+  domicileProvince String? // จังหวัด
 
-  domicile String?
+  domicile String? // ที่อยู่รวม บ้านเลขที่ + หมู่ + ถนน + ตำบล + อำเภอ + จังหวัด
 
-  // =========================
-  // การขอรับใหม่ / ขอรับใบแทน / ขอต่ออายุ
-  // =========================
+  applicationType        String? // การขอรับใหม่ / ขอรับใบแทน / ขอต่ออายุ เก็บเป็น String
+  applicationDate        String? //วันเริ่มต่ออายุ เก็บเป็น String
+  expirationDate         String? //วันที่หมดอายุ เก็บเป็น String
+  previousExpirationDate String? // วันหมดอายุก่อนต่ออายุ
 
-  applicationType String?
+  amount        Int? // ค่าธรรมเนียม
+  amountText    String? // ค่าธรรมเนียมแบบตัวอักษร
+  receiptBookNo String? // ใบเสร็จเล่มที่
+  receiptNo     String? //ใบเสร็จเลขที่
+  receiptDate   String? // เก็บเป็น String
+  certificateNo String? // ใบสำคัญ
+  petitionDate  DateTime? @db.Date // วันที่ยื่นคำร้อง
 
-  // เก็บเป็น String
-  applicationDate String?
-
-  // เก็บเป็น String
-  expirationDate String?
-
-  // =========================
-  // ค่าธรรมเนียม
-  // =========================
-
-  amount Decimal?
-
-  // =========================
-  // ใบเสร็จ
-  // =========================
-
-  receiptBookNo String?
-  receiptNo     String?
-
-  // เก็บเป็น String
-  receiptDate String?
-
-  // =========================
-  // ใบสำคัญ
-  // =========================
-
-  certificateNo String?
-
-  // วันที่ยื่นคำร้อง
-  petitionDate DateTime? @db.Date
-
-  // =========================
   // ระบบ
-  // =========================
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([foreignerIdNo])
-  @@index([name])
+  @@index([fullName])
   @@index([certificateRegistrationNo])
   @@index([certificateNo])
   @@index([receiptNo])

@@ -27,14 +27,6 @@ const pool = new Pool({
   idleTimeoutMillis: 30000,
 });
 
-pool.on("connect", () => {
-  console.log("✅ Supabase PostgreSQL connected");
-});
-
-pool.on("error", (err) => {
-  console.error("❌ Supabase PostgreSQL pool error:", err);
-});
-
 const adapter = new PrismaPg(pool);
 
 const prisma = new PrismaClient({

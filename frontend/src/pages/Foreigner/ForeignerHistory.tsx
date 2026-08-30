@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, FileText, Eye, Copy, Files } from "lucide-react";
 import api from "../../api/axios";
-
 import type { Foreigner } from "../../types/foreigner";
+import { generateTorTor8 } from "./generateTorTor8";
+import { generateForeignerYearPDF } from "./generateForeignerYearPDF";
 
 const MONTHS = [
   "",
@@ -52,23 +53,6 @@ function formatThaiDate(value: string | null | undefined) {
   return `${day} ${MONTHS[month]} ${year + 543}`;
 }
 
-function formatMoney(value: string | number | null | undefined) {
-  if (value === null || value === undefined || value === "") {
-    return "-";
-  }
-
-  const number = Number(value);
-
-  if (Number.isNaN(number)) {
-    return String(value);
-  }
-
-  return number.toLocaleString("th-TH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
 function Info({
   label,
   value,
@@ -79,11 +63,36 @@ function Info({
   return (
     <div>
       <div className="mb-1 text-xs font-medium text-slate-400">{label}</div>
-
       <div className="min-h-[22px] text-sm font-medium text-slate-700">
         {value !== null && value !== undefined && value !== "" ? value : "-"}
       </div>
     </div>
+  );
+}
+
+function ActionButton({
+  icon,
+  label,
+  onClick,
+  title,
+  className,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  title: string;
+  className: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className={`flex min-w-[68px] flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 transition ${className}`}
+    >
+      {icon}
+      <span className="text-[11px] font-semibold leading-tight">{label}</span>
+    </button>
   );
 }
 
@@ -164,7 +173,7 @@ export default function ForeignerHistory() {
       title: "ยืนยันการลบ",
       html: `
         ต้องการลบข้อมูล<br>
-        <strong>${item.name}</strong>
+        <strong>${item.fullName || "-"}</strong>
         ใช่หรือไม่?
       `,
       showCancelButton: true,
@@ -178,7 +187,7 @@ export default function ForeignerHistory() {
     try {
       await api.delete(`/foreigner/${item.id}`);
 
-      Swal.fire({
+      await Swal.fire({
         icon: "success",
         title: "ลบข้อมูลสำเร็จ",
         timer: 1500,
@@ -199,6 +208,108 @@ export default function ForeignerHistory() {
     }
   };
 
+  const handleGenerateTorTor8 = async (item: Foreigner) => {
+    try {
+      await generateTorTor8(item);
+    } catch (error) {
+      console.error("GENERATE ทต.8 ERROR:", error);
+
+      Swal.fire({
+        icon: "error",
+        title: "สร้าง PDF ไม่สำเร็จ",
+        text:
+          error instanceof Error
+            ? error.message
+            : "ไม่สามารถสร้างเอกสาร ทต.8 ได้",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
+  const handleGenerateYearPDF = async () => {
+    try {
+      if (years.length === 0) {
+        await Swal.fire({
+          icon: "warning",
+          title: "ไม่พบปี",
+          text: "ยังไม่มีข้อมูลปี พ.ศ. สำหรับออก PDF",
+          confirmButtonText: "ตกลง",
+        });
+        return;
+      }
+
+      const inputOptions = years.reduce(
+        (options, item) => {
+          options[String(item)] = `ปี พ.ศ. ${item}`;
+          return options;
+        },
+        {} as Record<string, string>,
+      );
+
+      const result = await Swal.fire({
+        title: "เลือกปี พ.ศ.",
+        input: "select",
+        inputOptions,
+        inputPlaceholder: "กรุณาเลือกปี พ.ศ.",
+        showCancelButton: true,
+        confirmButtonText: "ออก PDF",
+        cancelButtonText: "ยกเลิก",
+        confirmButtonColor: "#800020",
+        inputValidator: (value) => {
+          if (!value) {
+            return "กรุณาเลือกปี พ.ศ.";
+          }
+
+          return null;
+        },
+      });
+
+      if (!result.isConfirmed || !result.value) return;
+
+      const selectedYear = Number(result.value);
+
+      const response = await api.get("/foreigner", {
+        params: {
+          year: String(selectedYear),
+        },
+      });
+
+      if (!response.data?.success) {
+        throw new Error("ไม่สามารถดึงข้อมูลบุคคลในปีที่เลือกได้");
+      }
+
+      const yearData: Foreigner[] = response.data.data || [];
+
+      if (yearData.length === 0) {
+        await Swal.fire({
+          icon: "warning",
+          title: "ไม่พบข้อมูล",
+          text: `ไม่พบข้อมูลบุคคลต่างด้าวในปี พ.ศ. ${selectedYear}`,
+          confirmButtonText: "ตกลง",
+        });
+        return;
+      }
+
+      await generateForeignerYearPDF(yearData, selectedYear);
+    } catch (error) {
+      console.error("GENERATE YEAR PDF ERROR:", error);
+
+      await Swal.fire({
+        icon: "error",
+        title: "สร้าง PDF ไม่สำเร็จ",
+        text:
+          error instanceof Error
+            ? error.message
+            : "ไม่สามารถสร้าง PDF รายปีได้",
+        confirmButtonText: "ตกลง",
+      });
+    }
+  };
+
+  const handleCreateNew = (item: Foreigner) => {
+    navigate(`/foreigner/create?copyId=${item.id}`);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-6 md:px-6">
       <div className="mx-auto max-w-[1800px]">
@@ -213,13 +324,24 @@ export default function ForeignerHistory() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => navigate("/foreigner/create")}
-            className="rounded-xl bg-[#800020] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#660019]"
-          >
-            + เพิ่มบุคคลต่างด้าว
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleGenerateYearPDF}
+              className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700"
+            >
+              <Files size={18} />
+              PDF รายปี
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/foreigner/create")}
+              className="rounded-xl bg-[#800020] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#660019]"
+            >
+              + เพิ่มบุคคลต่างด้าว
+            </button>
+          </div>
         </div>
 
         <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -313,170 +435,73 @@ export default function ForeignerHistory() {
           )}
 
           {!loading && data.length > 0 && (
-            <div className="hidden overflow-x-auto min-[1200px]:block">
-              <table className="w-full min-w-[1900px] border-collapse text-sm">
+            <div className="hidden min-[1200px]:block">
+              <table className="w-full table-fixed border-collapse text-sm">
                 <thead className="bg-[#800020] text-white">
                   <tr>
-                    <th
-                      rowSpan={2}
-                      className="border-r border-white/20 px-4 py-3 text-center"
-                    >
+                    <th className="border-r border-black px-4 py-3 text-center">
                       ลำดับ
                     </th>
 
-                    <th
-                      rowSpan={2}
-                      className="border-r border-white/20 px-4 py-3 text-center"
-                    >
-                      รหัสประจำตัว
-                      <br />
-                      คนต่างด้าว
-                    </th>
-
-                    <th
-                      rowSpan={2}
-                      className="border-r border-white/20 px-4 py-3 text-center"
-                    >
+                    <th className="border-r border-black px-4 py-3 text-center">
                       ชื่อ แซ่
                     </th>
 
-                    <th
-                      rowSpan={2}
-                      className="border-r border-white/20 px-4 py-3 text-center"
-                    >
+                    <th className="border-r border-black px-4 py-3 text-center">
                       อายุ
                     </th>
 
-                    <th
-                      rowSpan={2}
-                      className="border-r border-white/20 px-4 py-3 text-center"
-                    >
+                    <th className="border-r border-black px-4 py-3 text-center">
                       สัญชาติ
                     </th>
 
-                    <th
-                      rowSpan={2}
-                      className="border-r border-white/20 px-4 py-3 text-center"
-                    >
+                    <th className="border-r border-black px-4 py-3 text-center">
                       เชื้อชาติ
                     </th>
 
-                    <th
-                      colSpan={2}
-                      className="border-r border-white/20 px-4 py-2 text-center"
-                    >
-                      ใบสำคัญ
+                    <th className="border-r border-black px-4 py-3 text-center">
+                      ต่ออายุเมื่อ
                     </th>
 
-                    <th
-                      colSpan={2}
-                      className="border-r border-white/20 px-4 py-2 text-center"
-                    >
-                      ออกให้ ณ
+                    <th className="border-r border-black px-4 py-3 text-center">
+                      หมดอายุ
                     </th>
 
-                    <th
-                      rowSpan={2}
-                      className="border-r border-white/20 px-4 py-3 text-center"
-                    >
-                      ภูมิลำเนา
+                    <th className="border-r border-black px-4 py-3 text-center">
+                      ดูรายละเอียดบุคคล
                     </th>
 
-                    <th
-                      colSpan={2}
-                      className="border-r border-white/20 px-4 py-2 text-center"
-                    >
-                      การขอรับ / ขอรับใบแทน / ขอต่ออายุ
+                    <th className="border-r border-black px-4 py-3 text-center">
+                      PDF ทต.8
                     </th>
 
-                    <th
-                      rowSpan={2}
-                      className="border-r border-white/20 px-4 py-3 text-center"
-                    >
-                      จำนวนเงิน
+                    <th className="border-r border-black px-4 py-3 text-center">
+                      สร้างใหม่
                     </th>
 
-                    <th
-                      colSpan={2}
-                      className="border-r border-white/20 px-4 py-2 text-center"
-                    >
-                      ใบเสร็จรับเงิน
-                    </th>
-
-                    <th
-                      rowSpan={2}
-                      className="border-r border-white/20 px-4 py-3 text-center"
-                    >
-                      วัน เดือน ปี
-                      <br />
-                      ของใบเสร็จ
-                    </th>
-
-                    <th rowSpan={2} className="px-4 py-3 text-center">
-                      ดู
-                    </th>
-
-                    <th rowSpan={2} className="px-4 py-3 text-center">
+                    <th className="border-r border-black px-4 py-3 text-center">
                       แก้ไข
                     </th>
 
-                    <th rowSpan={2} className="px-4 py-3 text-center">
+                    <th className="border-r border-black px-4 py-3 text-center">
                       ลบ
-                    </th>
-                  </tr>
-
-                  <tr>
-                    <th className="border-r border-white/20 px-4 py-2 text-center text-xs">
-                      เลขทะเบียน
-                    </th>
-
-                    <th className="border-r border-white/20 px-4 py-2 text-center text-xs">
-                      วัน เดือน ปี
-                    </th>
-
-                    <th className="border-r border-white/20 px-4 py-2 text-center text-xs">
-                      อำเภอ
-                    </th>
-
-                    <th className="border-r border-white/20 px-4 py-2 text-center text-xs">
-                      จังหวัด
-                    </th>
-
-                    <th className="border-r border-white/20 px-4 py-2 text-center text-xs">
-                      วัน เดือน ปี
-                    </th>
-
-                    <th className="border-r border-white/20 px-4 py-2 text-center text-xs">
-                      วันหมดอายุ
-                    </th>
-
-                    <th className="border-r border-white/20 px-4 py-2 text-center text-xs">
-                      ใบเสร็จเล่มที่
-                    </th>
-
-                    <th className="border-r border-white/20 px-4 py-2 text-center text-xs">
-                      ใบเสร็จเลขที่
                     </th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 text-center">
                   {data.map((item) => (
                     <tr key={item.id} className="transition hover:bg-slate-50">
-                      <td className="whitespace-nowrap px-4 py-4 text-center">
-                        {item.sequenceNo ?? "-"}
-                      </td>
-
                       <td className="whitespace-nowrap px-4 py-4">
-                        {item.foreignerIdNo || "-"}
+                        {`${item.sequenceNo ?? "-"} / ${item.year ?? "-"}`}
                       </td>
 
-                      <td className="whitespace-nowrap px-4 py-4 font-semibold text-slate-800">
-                        {item.name}
-                      </td>
+                      <td className="px-4 py-4">{item.fullName || "-"}</td>
 
-                      <td className="whitespace-nowrap px-4 py-4 text-center">
-                        {item.age !== null ? item.age : "-"}
+                      <td className="px-4 py-4">
+                        {item.age !== null && item.age !== undefined
+                          ? item.age
+                          : "-"}
                       </td>
 
                       <td className="whitespace-nowrap px-4 py-4">
@@ -488,26 +513,6 @@ export default function ForeignerHistory() {
                       </td>
 
                       <td className="whitespace-nowrap px-4 py-4">
-                        {item.certificateRegistrationNo || "-"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4">
-                        {formatThaiDate(item.certificateDate)}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4">
-                        {item.district || "-"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4">
-                        {item.province || "-"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4">
-                        {item.domicile || "-"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4">
                         {formatThaiDate(item.applicationDate)}
                       </td>
 
@@ -515,60 +520,65 @@ export default function ForeignerHistory() {
                         {formatThaiDate(item.expirationDate)}
                       </td>
 
-                      <td className="whitespace-nowrap px-4 py-4 text-right">
-                        {formatMoney(item.amount)}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4">
-                        {item.receiptBookNo || "-"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4">
-                        {item.receiptNo || "-"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4">
-                        {formatThaiDate(item.receiptDate)}
-                      </td>
-
                       <td className="whitespace-nowrap px-4 py-4">
                         <div className="flex justify-center">
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/foreigner/${item.id}`)}
+                          <ActionButton
+                            icon={<Eye size={20} />}
+                            label="ดูรายละเอียดบุคคล"
                             title="ดูรายละเอียด"
-                            className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"
-                          >
-                            ดู
-                          </button>
+                            onClick={() => navigate(`/foreigner/${item.id}`)}
+                            className="bg-slate-100 text-slate-700 hover:bg-slate-200"
+                          />
                         </div>
                       </td>
 
                       <td className="whitespace-nowrap px-4 py-4">
                         <div className="flex justify-center">
-                          <button
-                            type="button"
+                          <ActionButton
+                            icon={<FileText size={20} />}
+                            label="PDF ทต.8"
+                            title="ออก PDF ทต.8"
+                            onClick={() => handleGenerateTorTor8(item)}
+                            className="bg-red-50 text-red-600 hover:bg-red-100"
+                          />
+                        </div>
+                      </td>
+
+                      <td className="whitespace-nowrap px-4 py-4">
+                        <div className="flex justify-center">
+                          <ActionButton
+                            icon={<Copy size={20} />}
+                            label="สร้างใหม่"
+                            title="สร้างข้อมูลใหม่จากรายการนี้"
+                            onClick={() => handleCreateNew(item)}
+                            className="bg-green-50 text-green-700 hover:bg-green-100"
+                          />
+                        </div>
+                      </td>
+
+                      <td className="whitespace-nowrap px-4 py-4">
+                        <div className="flex justify-center">
+                          <ActionButton
+                            icon={<Pencil size={20} />}
+                            label="แก้ไข"
+                            title="แก้ไข"
                             onClick={() =>
                               navigate(`/foreigner/edit/${item.id}`)
                             }
-                            title="แก้ไข"
-                            className="rounded-lg bg-blue-50 p-2 text-blue-700 hover:bg-blue-100"
-                          >
-                            <Pencil size={17} />
-                          </button>
+                            className="bg-blue-50 text-blue-700 hover:bg-blue-100"
+                          />
                         </div>
                       </td>
 
                       <td className="whitespace-nowrap px-4 py-4">
                         <div className="flex justify-center">
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(item)}
+                          <ActionButton
+                            icon={<Trash2 size={20} />}
+                            label="ลบ"
                             title="ลบ"
-                            className="rounded-lg bg-red-50 p-2 text-red-600 hover:bg-red-100"
-                          >
-                            <Trash2 size={17} />
-                          </button>
+                            onClick={() => handleDelete(item)}
+                            className="bg-red-50 text-red-600 hover:bg-red-100"
+                          />
                         </div>
                       </td>
                     </tr>
@@ -592,7 +602,7 @@ export default function ForeignerHistory() {
                       </div>
 
                       <h3 className="mt-1 text-lg font-bold text-slate-800">
-                        {item.name}
+                        {item.fullName || "-"}
                       </h3>
                     </div>
 
@@ -603,40 +613,18 @@ export default function ForeignerHistory() {
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Info
-                      label="รหัสประจำตัวคนต่างด้าว"
-                      value={item.foreignerIdNo}
-                    />
-
-                    <Info
                       label="อายุ"
-                      value={item.age !== null ? `${item.age} ปี` : null}
+                      value={
+                        item.age !== null && item.age !== undefined
+                          ? `${item.age} ปี`
+                          : null
+                      }
                     />
 
                     <Info label="เชื้อชาติ" value={item.ethnicity} />
 
-                    <Info label="ภูมิลำเนา" value={item.domicile} />
-
                     <Info
-                      label="เลขทะเบียนของใบสำคัญ"
-                      value={item.certificateRegistrationNo}
-                    />
-
-                    <Info
-                      label="วัน เดือน ปี ของใบสำคัญ"
-                      value={formatThaiDate(item.certificateDate)}
-                    />
-
-                    <Info label="ออกให้ ณ อำเภอ" value={item.district} />
-
-                    <Info label="ออกให้ ณ จังหวัด" value={item.province} />
-
-                    <Info
-                      label="การขอรับ / ขอรับใบแทน / ขอต่ออายุ"
-                      value={item.applicationType}
-                    />
-
-                    <Info
-                      label="วัน เดือน ปี"
+                      label="วัน เดือน ปี ที่ต่ออายุ"
                       value={formatThaiDate(item.applicationDate)}
                     />
 
@@ -644,238 +632,175 @@ export default function ForeignerHistory() {
                       label="วันหมดอายุ"
                       value={formatThaiDate(item.expirationDate)}
                     />
-
-                    <Info
-                      label="จำนวนเงิน"
-                      value={
-                        item.amount !== null
-                          ? `${formatMoney(item.amount)} บาท`
-                          : null
-                      }
-                    />
-
-                    <Info label="ใบเสร็จเล่มที่" value={item.receiptBookNo} />
-
-                    <Info label="ใบเสร็จเลขที่" value={item.receiptNo} />
-
-                    <Info
-                      label="วัน เดือน ปี ของใบเสร็จ"
-                      value={formatThaiDate(item.receiptDate)}
-                    />
                   </div>
 
-                  <div className="mt-5 flex gap-2 border-t border-slate-100 pt-4">
-                    <button
-                      type="button"
+                  <div className="mt-5 flex flex-wrap justify-center gap-2 border-t border-slate-100 pt-4">
+                    <ActionButton
+                      icon={<Eye size={20} />}
+                      label="ดู"
+                      title="ดูรายละเอียด"
                       onClick={() => navigate(`/foreigner/${item.id}`)}
-                      className="flex-1 rounded-xl bg-slate-100 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
-                    >
-                      ดูรายละเอียด
-                    </button>
+                      className="bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    />
 
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/foreigner/edit/${item.id}`)}
+                    <ActionButton
+                      icon={<FileText size={20} />}
+                      label="PDF ทต.8"
+                      title="ออก PDF ทต.8"
+                      onClick={() => handleGenerateTorTor8(item)}
+                      className="bg-red-50 text-red-600 hover:bg-red-100"
+                    />
+
+                    <ActionButton
+                      icon={<Copy size={20} />}
+                      label="สร้างใหม่"
+                      title="สร้างข้อมูลใหม่จากรายการนี้"
+                      onClick={() => handleCreateNew(item)}
+                      className="bg-green-50 text-green-700 hover:bg-green-100"
+                    />
+
+                    <ActionButton
+                      icon={<Pencil size={20} />}
+                      label="แก้ไข"
                       title="แก้ไข"
-                      className="rounded-xl bg-blue-50 p-2.5 text-blue-700 hover:bg-blue-100"
-                    >
-                      <Pencil size={18} />
-                    </button>
+                      onClick={() => navigate(`/foreigner/edit/${item.id}`)}
+                      className="bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    />
 
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(item)}
+                    <ActionButton
+                      icon={<Trash2 size={20} />}
+                      label="ลบ"
                       title="ลบ"
-                      className="rounded-xl bg-red-50 p-2.5 text-red-600 hover:bg-red-100"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                      onClick={() => handleDelete(item)}
+                      className="bg-red-50 text-red-600 hover:bg-red-100"
+                    />
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
 
-      {selected && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setSelected(null)}
-        >
+        {selected && (
           <div
-            className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={() => setSelected(null)}
           >
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-6 py-4">
-              <div>
-                <h2 className="text-xl font-bold text-[#800020]">
-                  ข้อมูลบุคคลต่างด้าว
-                </h2>
+            <div
+              className="max-h-[90vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-6 py-4">
+                <div>
+                  <h2 className="text-xl font-bold text-[#800020]">
+                    ข้อมูลบุคคลต่างด้าว
+                  </h2>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  ลำดับ {selected.sequenceNo ?? "-"} / ปี {selected.year ?? "-"}
-                </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    ลำดับ {selected.sequenceNo ?? "-"} / ปี{" "}
+                    {selected.year ?? "-"}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelected(null)}
+                  className="rounded-lg px-3 py-2 text-2xl text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                >
+                  ×
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                className="rounded-lg px-3 py-2 text-2xl text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-              >
-                ×
-              </button>
-            </div>
+              <div className="space-y-7 p-6">
+                <section>
+                  <h3 className="mb-4 border-l-4 border-[#800020] pl-3 font-bold text-[#800020]">
+                    ข้อมูลบุคคล
+                  </h3>
 
-            <div className="space-y-7 p-6">
-              <section>
-                <h3 className="mb-4 border-l-4 border-[#800020] pl-3 font-bold text-[#800020]">
-                  ข้อมูลบุคคล
-                </h3>
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                    <Info
+                      label="รหัสประจำตัวคนต่างด้าว"
+                      value={selected.foreignerIdNo}
+                    />
 
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-                  <Info
-                    label="รหัสประจำตัวคนต่างด้าว"
-                    value={selected.foreignerIdNo}
+                    <Info
+                      label="ชื่อ แซ่"
+                      value={
+                        selected.fullName ||
+                        [selected.prefix, selected.firstName, selected.lastName]
+                          .filter(Boolean)
+                          .join(" ") ||
+                        "-"
+                      }
+                    />
+
+                    <Info
+                      label="อายุ"
+                      value={
+                        selected.age !== null && selected.age !== undefined
+                          ? `${selected.age} ปี`
+                          : null
+                      }
+                    />
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="mb-4 border-l-4 border-[#800020] pl-3 font-bold text-[#800020]">
+                    วัน เดือน ปี ที่ต่ออายุ / วันหมดอายุ
+                  </h3>
+
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                    <Info
+                      label="วัน เดือน ปี ที่ต่ออายุ"
+                      value={formatThaiDate(selected.applicationDate)}
+                    />
+
+                    <Info
+                      label="วันหมดอายุ"
+                      value={formatThaiDate(selected.expirationDate)}
+                    />
+                  </div>
+                </section>
+
+                <div className="flex flex-wrap justify-center gap-3 border-t border-slate-100 pt-5">
+                  <ActionButton
+                    icon={<FileText size={20} />}
+                    label="PDF ทต.8"
+                    title="ออก PDF ทต.8"
+                    onClick={() => handleGenerateTorTor8(selected)}
+                    className="bg-red-50 text-red-600 hover:bg-red-100"
                   />
 
-                  <Info label="ชื่อ แซ่" value={selected.name} />
-
-                  <Info
-                    label="อายุ"
-                    value={selected.age !== null ? `${selected.age} ปี` : null}
+                  <ActionButton
+                    icon={<Copy size={20} />}
+                    label="สร้างใหม่"
+                    title="สร้างข้อมูลใหม่จากรายการนี้"
+                    onClick={() => handleCreateNew(selected)}
+                    className="bg-green-50 text-green-700 hover:bg-green-100"
                   />
 
-                  <Info label="สัญชาติ" value={selected.nationality} />
-
-                  <Info label="เชื้อชาติ" value={selected.ethnicity} />
-                </div>
-              </section>
-
-              <section>
-                <h3 className="mb-4 border-l-4 border-[#800020] pl-3 font-bold text-[#800020]">
-                  ใบสำคัญ
-                </h3>
-
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-                  <Info
-                    label="เลขทะเบียนของใบสำคัญ"
-                    value={selected.certificateRegistrationNo}
+                  <ActionButton
+                    icon={<Pencil size={20} />}
+                    label="แก้ไข"
+                    title="แก้ไข"
+                    onClick={() => navigate(`/foreigner/edit/${selected.id}`)}
+                    className="bg-blue-50 text-blue-700 hover:bg-blue-100"
                   />
 
-                  <Info
-                    label="วัน เดือน ปี ของใบสำคัญ"
-                    value={formatThaiDate(selected.certificateDate)}
-                  />
-
-                  <Info label="เลขใบสำคัญฯ" value={selected.certificateNo} />
-                </div>
-              </section>
-
-              <section>
-                <h3 className="mb-4 border-l-4 border-[#800020] pl-3 font-bold text-[#800020]">
-                  ออกให้ ณ
-                </h3>
-
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-                  <Info label="อำเภอ" value={selected.district} />
-                  <Info label="จังหวัด" value={selected.province} />
-                  <Info label="ภูมิลำเนา" value={selected.domicile} />
-                </div>
-              </section>
-
-              <section>
-                <h3 className="mb-4 border-l-4 border-[#800020] pl-3 font-bold text-[#800020]">
-                  การขอรับ / ขอรับใบแทน / ขอต่ออายุ
-                </h3>
-
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-                  <Info label="ชนิด" value={selected.applicationType} />
-
-                  <Info
-                    label="วัน เดือน ปี"
-                    value={formatThaiDate(selected.applicationDate)}
-                  />
-
-                  <Info
-                    label="วันหมดอายุ"
-                    value={formatThaiDate(selected.expirationDate)}
-                  />
-                </div>
-              </section>
-
-              <section>
-                <h3 className="mb-4 border-l-4 border-[#800020] pl-3 font-bold text-[#800020]">
-                  ค่าธรรมเนียมและใบเสร็จ
-                </h3>
-
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
-                  <Info
-                    label="จำนวนเงิน"
-                    value={
-                      selected.amount !== null
-                        ? `${formatMoney(selected.amount)} บาท`
-                        : null
-                    }
-                  />
-
-                  <Info label="ใบเสร็จเล่มที่" value={selected.receiptBookNo} />
-
-                  <Info label="ใบเสร็จเลขที่" value={selected.receiptNo} />
-
-                  <Info
-                    label="วัน เดือน ปี ของใบเสร็จ"
-                    value={formatThaiDate(selected.receiptDate)}
+                  <ActionButton
+                    icon={<Trash2 size={20} />}
+                    label="ลบ"
+                    title="ลบ"
+                    onClick={() => handleDelete(selected)}
+                    className="bg-red-50 text-red-600 hover:bg-red-100"
                   />
                 </div>
-              </section>
-
-              <section>
-                <h3 className="mb-4 border-l-4 border-[#800020] pl-3 font-bold text-[#800020]">
-                  อื่น ๆ
-                </h3>
-
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-                  <Info label="เลขใบสำคัญฯ" value={selected.certificateNo} />
-
-                  <Info
-                    label="วันที่ยื่นคำร้อง"
-                    value={formatThaiDate(selected.petitionDate)}
-                  />
-                </div>
-              </section>
-            </div>
-
-            <div className="flex flex-wrap justify-end gap-3 border-t bg-slate-50 px-6 py-4">
-              <button
-                type="button"
-                onClick={() => handleDelete(selected)}
-                title="ลบข้อมูล"
-                className="rounded-xl bg-red-50 p-2.5 text-red-600 hover:bg-red-100"
-              >
-                <Trash2 size={18} />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigate(`/foreigner/edit/${selected.id}`)}
-                title="แก้ไขข้อมูล"
-                className="rounded-xl bg-blue-50 p-2.5 text-blue-700 hover:bg-blue-100"
-              >
-                <Pencil size={18} />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                className="rounded-xl bg-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-300"
-              >
-                ปิด
-              </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

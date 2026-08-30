@@ -910,14 +910,14 @@ export namespace Prisma {
     sequenceNo: number | null
     year: number | null
     age: number | null
-    amount: Decimal | null
+    amount: number | null
   }
 
   export type ForeignerSumAggregateOutputType = {
     sequenceNo: number | null
     year: number | null
     age: number | null
-    amount: Decimal | null
+    amount: number | null
   }
 
   export type ForeignerMinAggregateOutputType = {
@@ -925,7 +925,10 @@ export namespace Prisma {
     sequenceNo: number | null
     year: number | null
     foreignerIdNo: string | null
-    name: string | null
+    prefix: string | null
+    firstName: string | null
+    lastName: string | null
+    fullName: string | null
     age: number | null
     nationality: string | null
     ethnicity: string | null
@@ -933,11 +936,21 @@ export namespace Prisma {
     certificateDate: string | null
     district: string | null
     province: string | null
+    policeStation: string | null
+    policeProvince: string | null
+    houseNo: string | null
+    moo: string | null
+    road: string | null
+    subdistrict: string | null
+    domicileDistrict: string | null
+    domicileProvince: string | null
     domicile: string | null
     applicationType: string | null
     applicationDate: string | null
     expirationDate: string | null
-    amount: Decimal | null
+    previousExpirationDate: string | null
+    amount: number | null
+    amountText: string | null
     receiptBookNo: string | null
     receiptNo: string | null
     receiptDate: string | null
@@ -952,7 +965,10 @@ export namespace Prisma {
     sequenceNo: number | null
     year: number | null
     foreignerIdNo: string | null
-    name: string | null
+    prefix: string | null
+    firstName: string | null
+    lastName: string | null
+    fullName: string | null
     age: number | null
     nationality: string | null
     ethnicity: string | null
@@ -960,11 +976,21 @@ export namespace Prisma {
     certificateDate: string | null
     district: string | null
     province: string | null
+    policeStation: string | null
+    policeProvince: string | null
+    houseNo: string | null
+    moo: string | null
+    road: string | null
+    subdistrict: string | null
+    domicileDistrict: string | null
+    domicileProvince: string | null
     domicile: string | null
     applicationType: string | null
     applicationDate: string | null
     expirationDate: string | null
-    amount: Decimal | null
+    previousExpirationDate: string | null
+    amount: number | null
+    amountText: string | null
     receiptBookNo: string | null
     receiptNo: string | null
     receiptDate: string | null
@@ -979,7 +1005,10 @@ export namespace Prisma {
     sequenceNo: number
     year: number
     foreignerIdNo: number
-    name: number
+    prefix: number
+    firstName: number
+    lastName: number
+    fullName: number
     age: number
     nationality: number
     ethnicity: number
@@ -987,11 +1016,21 @@ export namespace Prisma {
     certificateDate: number
     district: number
     province: number
+    policeStation: number
+    policeProvince: number
+    houseNo: number
+    moo: number
+    road: number
+    subdistrict: number
+    domicileDistrict: number
+    domicileProvince: number
     domicile: number
     applicationType: number
     applicationDate: number
     expirationDate: number
+    previousExpirationDate: number
     amount: number
+    amountText: number
     receiptBookNo: number
     receiptNo: number
     receiptDate: number
@@ -1022,7 +1061,10 @@ export namespace Prisma {
     sequenceNo?: true
     year?: true
     foreignerIdNo?: true
-    name?: true
+    prefix?: true
+    firstName?: true
+    lastName?: true
+    fullName?: true
     age?: true
     nationality?: true
     ethnicity?: true
@@ -1030,11 +1072,21 @@ export namespace Prisma {
     certificateDate?: true
     district?: true
     province?: true
+    policeStation?: true
+    policeProvince?: true
+    houseNo?: true
+    moo?: true
+    road?: true
+    subdistrict?: true
+    domicileDistrict?: true
+    domicileProvince?: true
     domicile?: true
     applicationType?: true
     applicationDate?: true
     expirationDate?: true
+    previousExpirationDate?: true
     amount?: true
+    amountText?: true
     receiptBookNo?: true
     receiptNo?: true
     receiptDate?: true
@@ -1049,7 +1101,10 @@ export namespace Prisma {
     sequenceNo?: true
     year?: true
     foreignerIdNo?: true
-    name?: true
+    prefix?: true
+    firstName?: true
+    lastName?: true
+    fullName?: true
     age?: true
     nationality?: true
     ethnicity?: true
@@ -1057,11 +1112,21 @@ export namespace Prisma {
     certificateDate?: true
     district?: true
     province?: true
+    policeStation?: true
+    policeProvince?: true
+    houseNo?: true
+    moo?: true
+    road?: true
+    subdistrict?: true
+    domicileDistrict?: true
+    domicileProvince?: true
     domicile?: true
     applicationType?: true
     applicationDate?: true
     expirationDate?: true
+    previousExpirationDate?: true
     amount?: true
+    amountText?: true
     receiptBookNo?: true
     receiptNo?: true
     receiptDate?: true
@@ -1076,7 +1141,10 @@ export namespace Prisma {
     sequenceNo?: true
     year?: true
     foreignerIdNo?: true
-    name?: true
+    prefix?: true
+    firstName?: true
+    lastName?: true
+    fullName?: true
     age?: true
     nationality?: true
     ethnicity?: true
@@ -1084,11 +1152,21 @@ export namespace Prisma {
     certificateDate?: true
     district?: true
     province?: true
+    policeStation?: true
+    policeProvince?: true
+    houseNo?: true
+    moo?: true
+    road?: true
+    subdistrict?: true
+    domicileDistrict?: true
+    domicileProvince?: true
     domicile?: true
     applicationType?: true
     applicationDate?: true
     expirationDate?: true
+    previousExpirationDate?: true
     amount?: true
+    amountText?: true
     receiptBookNo?: true
     receiptNo?: true
     receiptDate?: true
@@ -1190,7 +1268,10 @@ export namespace Prisma {
     sequenceNo: number | null
     year: number | null
     foreignerIdNo: string | null
-    name: string
+    prefix: string | null
+    firstName: string
+    lastName: string
+    fullName: string
     age: number | null
     nationality: string | null
     ethnicity: string | null
@@ -1198,11 +1279,21 @@ export namespace Prisma {
     certificateDate: string | null
     district: string | null
     province: string | null
+    policeStation: string | null
+    policeProvince: string | null
+    houseNo: string | null
+    moo: string | null
+    road: string | null
+    subdistrict: string | null
+    domicileDistrict: string | null
+    domicileProvince: string | null
     domicile: string | null
     applicationType: string | null
     applicationDate: string | null
     expirationDate: string | null
-    amount: Decimal | null
+    previousExpirationDate: string | null
+    amount: number | null
+    amountText: string | null
     receiptBookNo: string | null
     receiptNo: string | null
     receiptDate: string | null
@@ -1236,7 +1327,10 @@ export namespace Prisma {
     sequenceNo?: boolean
     year?: boolean
     foreignerIdNo?: boolean
-    name?: boolean
+    prefix?: boolean
+    firstName?: boolean
+    lastName?: boolean
+    fullName?: boolean
     age?: boolean
     nationality?: boolean
     ethnicity?: boolean
@@ -1244,11 +1338,21 @@ export namespace Prisma {
     certificateDate?: boolean
     district?: boolean
     province?: boolean
+    policeStation?: boolean
+    policeProvince?: boolean
+    houseNo?: boolean
+    moo?: boolean
+    road?: boolean
+    subdistrict?: boolean
+    domicileDistrict?: boolean
+    domicileProvince?: boolean
     domicile?: boolean
     applicationType?: boolean
     applicationDate?: boolean
     expirationDate?: boolean
+    previousExpirationDate?: boolean
     amount?: boolean
+    amountText?: boolean
     receiptBookNo?: boolean
     receiptNo?: boolean
     receiptDate?: boolean
@@ -1263,7 +1367,10 @@ export namespace Prisma {
     sequenceNo?: boolean
     year?: boolean
     foreignerIdNo?: boolean
-    name?: boolean
+    prefix?: boolean
+    firstName?: boolean
+    lastName?: boolean
+    fullName?: boolean
     age?: boolean
     nationality?: boolean
     ethnicity?: boolean
@@ -1271,11 +1378,21 @@ export namespace Prisma {
     certificateDate?: boolean
     district?: boolean
     province?: boolean
+    policeStation?: boolean
+    policeProvince?: boolean
+    houseNo?: boolean
+    moo?: boolean
+    road?: boolean
+    subdistrict?: boolean
+    domicileDistrict?: boolean
+    domicileProvince?: boolean
     domicile?: boolean
     applicationType?: boolean
     applicationDate?: boolean
     expirationDate?: boolean
+    previousExpirationDate?: boolean
     amount?: boolean
+    amountText?: boolean
     receiptBookNo?: boolean
     receiptNo?: boolean
     receiptDate?: boolean
@@ -1290,7 +1407,10 @@ export namespace Prisma {
     sequenceNo?: boolean
     year?: boolean
     foreignerIdNo?: boolean
-    name?: boolean
+    prefix?: boolean
+    firstName?: boolean
+    lastName?: boolean
+    fullName?: boolean
     age?: boolean
     nationality?: boolean
     ethnicity?: boolean
@@ -1298,11 +1418,21 @@ export namespace Prisma {
     certificateDate?: boolean
     district?: boolean
     province?: boolean
+    policeStation?: boolean
+    policeProvince?: boolean
+    houseNo?: boolean
+    moo?: boolean
+    road?: boolean
+    subdistrict?: boolean
+    domicileDistrict?: boolean
+    domicileProvince?: boolean
     domicile?: boolean
     applicationType?: boolean
     applicationDate?: boolean
     expirationDate?: boolean
+    previousExpirationDate?: boolean
     amount?: boolean
+    amountText?: boolean
     receiptBookNo?: boolean
     receiptNo?: boolean
     receiptDate?: boolean
@@ -1317,7 +1447,10 @@ export namespace Prisma {
     sequenceNo?: boolean
     year?: boolean
     foreignerIdNo?: boolean
-    name?: boolean
+    prefix?: boolean
+    firstName?: boolean
+    lastName?: boolean
+    fullName?: boolean
     age?: boolean
     nationality?: boolean
     ethnicity?: boolean
@@ -1325,11 +1458,21 @@ export namespace Prisma {
     certificateDate?: boolean
     district?: boolean
     province?: boolean
+    policeStation?: boolean
+    policeProvince?: boolean
+    houseNo?: boolean
+    moo?: boolean
+    road?: boolean
+    subdistrict?: boolean
+    domicileDistrict?: boolean
+    domicileProvince?: boolean
     domicile?: boolean
     applicationType?: boolean
     applicationDate?: boolean
     expirationDate?: boolean
+    previousExpirationDate?: boolean
     amount?: boolean
+    amountText?: boolean
     receiptBookNo?: boolean
     receiptNo?: boolean
     receiptDate?: boolean
@@ -1339,7 +1482,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ForeignerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sequenceNo" | "year" | "foreignerIdNo" | "name" | "age" | "nationality" | "ethnicity" | "certificateRegistrationNo" | "certificateDate" | "district" | "province" | "domicile" | "applicationType" | "applicationDate" | "expirationDate" | "amount" | "receiptBookNo" | "receiptNo" | "receiptDate" | "certificateNo" | "petitionDate" | "createdAt" | "updatedAt", ExtArgs["result"]["foreigner"]>
+  export type ForeignerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sequenceNo" | "year" | "foreignerIdNo" | "prefix" | "firstName" | "lastName" | "fullName" | "age" | "nationality" | "ethnicity" | "certificateRegistrationNo" | "certificateDate" | "district" | "province" | "policeStation" | "policeProvince" | "houseNo" | "moo" | "road" | "subdistrict" | "domicileDistrict" | "domicileProvince" | "domicile" | "applicationType" | "applicationDate" | "expirationDate" | "previousExpirationDate" | "amount" | "amountText" | "receiptBookNo" | "receiptNo" | "receiptDate" | "certificateNo" | "petitionDate" | "createdAt" | "updatedAt", ExtArgs["result"]["foreigner"]>
 
   export type $ForeignerPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Foreigner"
@@ -1349,7 +1492,10 @@ export namespace Prisma {
       sequenceNo: number | null
       year: number | null
       foreignerIdNo: string | null
-      name: string
+      prefix: string | null
+      firstName: string
+      lastName: string
+      fullName: string
       age: number | null
       nationality: string | null
       ethnicity: string | null
@@ -1357,11 +1503,21 @@ export namespace Prisma {
       certificateDate: string | null
       district: string | null
       province: string | null
+      policeStation: string | null
+      policeProvince: string | null
+      houseNo: string | null
+      moo: string | null
+      road: string | null
+      subdistrict: string | null
+      domicileDistrict: string | null
+      domicileProvince: string | null
       domicile: string | null
       applicationType: string | null
       applicationDate: string | null
       expirationDate: string | null
-      amount: Prisma.Decimal | null
+      previousExpirationDate: string | null
+      amount: number | null
+      amountText: string | null
       receiptBookNo: string | null
       receiptNo: string | null
       receiptDate: string | null
@@ -1796,7 +1952,10 @@ export namespace Prisma {
     readonly sequenceNo: FieldRef<"Foreigner", 'Int'>
     readonly year: FieldRef<"Foreigner", 'Int'>
     readonly foreignerIdNo: FieldRef<"Foreigner", 'String'>
-    readonly name: FieldRef<"Foreigner", 'String'>
+    readonly prefix: FieldRef<"Foreigner", 'String'>
+    readonly firstName: FieldRef<"Foreigner", 'String'>
+    readonly lastName: FieldRef<"Foreigner", 'String'>
+    readonly fullName: FieldRef<"Foreigner", 'String'>
     readonly age: FieldRef<"Foreigner", 'Int'>
     readonly nationality: FieldRef<"Foreigner", 'String'>
     readonly ethnicity: FieldRef<"Foreigner", 'String'>
@@ -1804,11 +1963,21 @@ export namespace Prisma {
     readonly certificateDate: FieldRef<"Foreigner", 'String'>
     readonly district: FieldRef<"Foreigner", 'String'>
     readonly province: FieldRef<"Foreigner", 'String'>
+    readonly policeStation: FieldRef<"Foreigner", 'String'>
+    readonly policeProvince: FieldRef<"Foreigner", 'String'>
+    readonly houseNo: FieldRef<"Foreigner", 'String'>
+    readonly moo: FieldRef<"Foreigner", 'String'>
+    readonly road: FieldRef<"Foreigner", 'String'>
+    readonly subdistrict: FieldRef<"Foreigner", 'String'>
+    readonly domicileDistrict: FieldRef<"Foreigner", 'String'>
+    readonly domicileProvince: FieldRef<"Foreigner", 'String'>
     readonly domicile: FieldRef<"Foreigner", 'String'>
     readonly applicationType: FieldRef<"Foreigner", 'String'>
     readonly applicationDate: FieldRef<"Foreigner", 'String'>
     readonly expirationDate: FieldRef<"Foreigner", 'String'>
-    readonly amount: FieldRef<"Foreigner", 'Decimal'>
+    readonly previousExpirationDate: FieldRef<"Foreigner", 'String'>
+    readonly amount: FieldRef<"Foreigner", 'Int'>
+    readonly amountText: FieldRef<"Foreigner", 'String'>
     readonly receiptBookNo: FieldRef<"Foreigner", 'String'>
     readonly receiptNo: FieldRef<"Foreigner", 'String'>
     readonly receiptDate: FieldRef<"Foreigner", 'String'>
@@ -2206,7 +2375,10 @@ export namespace Prisma {
     sequenceNo: 'sequenceNo',
     year: 'year',
     foreignerIdNo: 'foreignerIdNo',
-    name: 'name',
+    prefix: 'prefix',
+    firstName: 'firstName',
+    lastName: 'lastName',
+    fullName: 'fullName',
     age: 'age',
     nationality: 'nationality',
     ethnicity: 'ethnicity',
@@ -2214,11 +2386,21 @@ export namespace Prisma {
     certificateDate: 'certificateDate',
     district: 'district',
     province: 'province',
+    policeStation: 'policeStation',
+    policeProvince: 'policeProvince',
+    houseNo: 'houseNo',
+    moo: 'moo',
+    road: 'road',
+    subdistrict: 'subdistrict',
+    domicileDistrict: 'domicileDistrict',
+    domicileProvince: 'domicileProvince',
     domicile: 'domicile',
     applicationType: 'applicationType',
     applicationDate: 'applicationDate',
     expirationDate: 'expirationDate',
+    previousExpirationDate: 'previousExpirationDate',
     amount: 'amount',
+    amountText: 'amountText',
     receiptBookNo: 'receiptBookNo',
     receiptNo: 'receiptNo',
     receiptDate: 'receiptDate',
@@ -2289,20 +2471,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Decimal'
-   */
-  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
-    
-
-
-  /**
-   * Reference to a field of type 'Decimal[]'
-   */
-  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -2341,7 +2509,10 @@ export namespace Prisma {
     sequenceNo?: IntNullableFilter<"Foreigner"> | number | null
     year?: IntNullableFilter<"Foreigner"> | number | null
     foreignerIdNo?: StringNullableFilter<"Foreigner"> | string | null
-    name?: StringFilter<"Foreigner"> | string
+    prefix?: StringNullableFilter<"Foreigner"> | string | null
+    firstName?: StringFilter<"Foreigner"> | string
+    lastName?: StringFilter<"Foreigner"> | string
+    fullName?: StringFilter<"Foreigner"> | string
     age?: IntNullableFilter<"Foreigner"> | number | null
     nationality?: StringNullableFilter<"Foreigner"> | string | null
     ethnicity?: StringNullableFilter<"Foreigner"> | string | null
@@ -2349,11 +2520,21 @@ export namespace Prisma {
     certificateDate?: StringNullableFilter<"Foreigner"> | string | null
     district?: StringNullableFilter<"Foreigner"> | string | null
     province?: StringNullableFilter<"Foreigner"> | string | null
+    policeStation?: StringNullableFilter<"Foreigner"> | string | null
+    policeProvince?: StringNullableFilter<"Foreigner"> | string | null
+    houseNo?: StringNullableFilter<"Foreigner"> | string | null
+    moo?: StringNullableFilter<"Foreigner"> | string | null
+    road?: StringNullableFilter<"Foreigner"> | string | null
+    subdistrict?: StringNullableFilter<"Foreigner"> | string | null
+    domicileDistrict?: StringNullableFilter<"Foreigner"> | string | null
+    domicileProvince?: StringNullableFilter<"Foreigner"> | string | null
     domicile?: StringNullableFilter<"Foreigner"> | string | null
     applicationType?: StringNullableFilter<"Foreigner"> | string | null
     applicationDate?: StringNullableFilter<"Foreigner"> | string | null
     expirationDate?: StringNullableFilter<"Foreigner"> | string | null
-    amount?: DecimalNullableFilter<"Foreigner"> | Decimal | DecimalJsLike | number | string | null
+    previousExpirationDate?: StringNullableFilter<"Foreigner"> | string | null
+    amount?: IntNullableFilter<"Foreigner"> | number | null
+    amountText?: StringNullableFilter<"Foreigner"> | string | null
     receiptBookNo?: StringNullableFilter<"Foreigner"> | string | null
     receiptNo?: StringNullableFilter<"Foreigner"> | string | null
     receiptDate?: StringNullableFilter<"Foreigner"> | string | null
@@ -2368,7 +2549,10 @@ export namespace Prisma {
     sequenceNo?: SortOrderInput | SortOrder
     year?: SortOrderInput | SortOrder
     foreignerIdNo?: SortOrderInput | SortOrder
-    name?: SortOrder
+    prefix?: SortOrderInput | SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    fullName?: SortOrder
     age?: SortOrderInput | SortOrder
     nationality?: SortOrderInput | SortOrder
     ethnicity?: SortOrderInput | SortOrder
@@ -2376,11 +2560,21 @@ export namespace Prisma {
     certificateDate?: SortOrderInput | SortOrder
     district?: SortOrderInput | SortOrder
     province?: SortOrderInput | SortOrder
+    policeStation?: SortOrderInput | SortOrder
+    policeProvince?: SortOrderInput | SortOrder
+    houseNo?: SortOrderInput | SortOrder
+    moo?: SortOrderInput | SortOrder
+    road?: SortOrderInput | SortOrder
+    subdistrict?: SortOrderInput | SortOrder
+    domicileDistrict?: SortOrderInput | SortOrder
+    domicileProvince?: SortOrderInput | SortOrder
     domicile?: SortOrderInput | SortOrder
     applicationType?: SortOrderInput | SortOrder
     applicationDate?: SortOrderInput | SortOrder
     expirationDate?: SortOrderInput | SortOrder
+    previousExpirationDate?: SortOrderInput | SortOrder
     amount?: SortOrderInput | SortOrder
+    amountText?: SortOrderInput | SortOrder
     receiptBookNo?: SortOrderInput | SortOrder
     receiptNo?: SortOrderInput | SortOrder
     receiptDate?: SortOrderInput | SortOrder
@@ -2398,7 +2592,10 @@ export namespace Prisma {
     sequenceNo?: IntNullableFilter<"Foreigner"> | number | null
     year?: IntNullableFilter<"Foreigner"> | number | null
     foreignerIdNo?: StringNullableFilter<"Foreigner"> | string | null
-    name?: StringFilter<"Foreigner"> | string
+    prefix?: StringNullableFilter<"Foreigner"> | string | null
+    firstName?: StringFilter<"Foreigner"> | string
+    lastName?: StringFilter<"Foreigner"> | string
+    fullName?: StringFilter<"Foreigner"> | string
     age?: IntNullableFilter<"Foreigner"> | number | null
     nationality?: StringNullableFilter<"Foreigner"> | string | null
     ethnicity?: StringNullableFilter<"Foreigner"> | string | null
@@ -2406,11 +2603,21 @@ export namespace Prisma {
     certificateDate?: StringNullableFilter<"Foreigner"> | string | null
     district?: StringNullableFilter<"Foreigner"> | string | null
     province?: StringNullableFilter<"Foreigner"> | string | null
+    policeStation?: StringNullableFilter<"Foreigner"> | string | null
+    policeProvince?: StringNullableFilter<"Foreigner"> | string | null
+    houseNo?: StringNullableFilter<"Foreigner"> | string | null
+    moo?: StringNullableFilter<"Foreigner"> | string | null
+    road?: StringNullableFilter<"Foreigner"> | string | null
+    subdistrict?: StringNullableFilter<"Foreigner"> | string | null
+    domicileDistrict?: StringNullableFilter<"Foreigner"> | string | null
+    domicileProvince?: StringNullableFilter<"Foreigner"> | string | null
     domicile?: StringNullableFilter<"Foreigner"> | string | null
     applicationType?: StringNullableFilter<"Foreigner"> | string | null
     applicationDate?: StringNullableFilter<"Foreigner"> | string | null
     expirationDate?: StringNullableFilter<"Foreigner"> | string | null
-    amount?: DecimalNullableFilter<"Foreigner"> | Decimal | DecimalJsLike | number | string | null
+    previousExpirationDate?: StringNullableFilter<"Foreigner"> | string | null
+    amount?: IntNullableFilter<"Foreigner"> | number | null
+    amountText?: StringNullableFilter<"Foreigner"> | string | null
     receiptBookNo?: StringNullableFilter<"Foreigner"> | string | null
     receiptNo?: StringNullableFilter<"Foreigner"> | string | null
     receiptDate?: StringNullableFilter<"Foreigner"> | string | null
@@ -2425,7 +2632,10 @@ export namespace Prisma {
     sequenceNo?: SortOrderInput | SortOrder
     year?: SortOrderInput | SortOrder
     foreignerIdNo?: SortOrderInput | SortOrder
-    name?: SortOrder
+    prefix?: SortOrderInput | SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    fullName?: SortOrder
     age?: SortOrderInput | SortOrder
     nationality?: SortOrderInput | SortOrder
     ethnicity?: SortOrderInput | SortOrder
@@ -2433,11 +2643,21 @@ export namespace Prisma {
     certificateDate?: SortOrderInput | SortOrder
     district?: SortOrderInput | SortOrder
     province?: SortOrderInput | SortOrder
+    policeStation?: SortOrderInput | SortOrder
+    policeProvince?: SortOrderInput | SortOrder
+    houseNo?: SortOrderInput | SortOrder
+    moo?: SortOrderInput | SortOrder
+    road?: SortOrderInput | SortOrder
+    subdistrict?: SortOrderInput | SortOrder
+    domicileDistrict?: SortOrderInput | SortOrder
+    domicileProvince?: SortOrderInput | SortOrder
     domicile?: SortOrderInput | SortOrder
     applicationType?: SortOrderInput | SortOrder
     applicationDate?: SortOrderInput | SortOrder
     expirationDate?: SortOrderInput | SortOrder
+    previousExpirationDate?: SortOrderInput | SortOrder
     amount?: SortOrderInput | SortOrder
+    amountText?: SortOrderInput | SortOrder
     receiptBookNo?: SortOrderInput | SortOrder
     receiptNo?: SortOrderInput | SortOrder
     receiptDate?: SortOrderInput | SortOrder
@@ -2460,7 +2680,10 @@ export namespace Prisma {
     sequenceNo?: IntNullableWithAggregatesFilter<"Foreigner"> | number | null
     year?: IntNullableWithAggregatesFilter<"Foreigner"> | number | null
     foreignerIdNo?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
-    name?: StringWithAggregatesFilter<"Foreigner"> | string
+    prefix?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    firstName?: StringWithAggregatesFilter<"Foreigner"> | string
+    lastName?: StringWithAggregatesFilter<"Foreigner"> | string
+    fullName?: StringWithAggregatesFilter<"Foreigner"> | string
     age?: IntNullableWithAggregatesFilter<"Foreigner"> | number | null
     nationality?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     ethnicity?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
@@ -2468,11 +2691,21 @@ export namespace Prisma {
     certificateDate?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     district?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     province?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    policeStation?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    policeProvince?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    houseNo?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    moo?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    road?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    subdistrict?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    domicileDistrict?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    domicileProvince?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     domicile?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     applicationType?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     applicationDate?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     expirationDate?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
-    amount?: DecimalNullableWithAggregatesFilter<"Foreigner"> | Decimal | DecimalJsLike | number | string | null
+    previousExpirationDate?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
+    amount?: IntNullableWithAggregatesFilter<"Foreigner"> | number | null
+    amountText?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     receiptBookNo?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     receiptNo?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
     receiptDate?: StringNullableWithAggregatesFilter<"Foreigner"> | string | null
@@ -2487,7 +2720,10 @@ export namespace Prisma {
     sequenceNo?: number | null
     year?: number | null
     foreignerIdNo?: string | null
-    name: string
+    prefix?: string | null
+    firstName: string
+    lastName: string
+    fullName: string
     age?: number | null
     nationality?: string | null
     ethnicity?: string | null
@@ -2495,11 +2731,21 @@ export namespace Prisma {
     certificateDate?: string | null
     district?: string | null
     province?: string | null
+    policeStation?: string | null
+    policeProvince?: string | null
+    houseNo?: string | null
+    moo?: string | null
+    road?: string | null
+    subdistrict?: string | null
+    domicileDistrict?: string | null
+    domicileProvince?: string | null
     domicile?: string | null
     applicationType?: string | null
     applicationDate?: string | null
     expirationDate?: string | null
-    amount?: Decimal | DecimalJsLike | number | string | null
+    previousExpirationDate?: string | null
+    amount?: number | null
+    amountText?: string | null
     receiptBookNo?: string | null
     receiptNo?: string | null
     receiptDate?: string | null
@@ -2514,7 +2760,10 @@ export namespace Prisma {
     sequenceNo?: number | null
     year?: number | null
     foreignerIdNo?: string | null
-    name: string
+    prefix?: string | null
+    firstName: string
+    lastName: string
+    fullName: string
     age?: number | null
     nationality?: string | null
     ethnicity?: string | null
@@ -2522,11 +2771,21 @@ export namespace Prisma {
     certificateDate?: string | null
     district?: string | null
     province?: string | null
+    policeStation?: string | null
+    policeProvince?: string | null
+    houseNo?: string | null
+    moo?: string | null
+    road?: string | null
+    subdistrict?: string | null
+    domicileDistrict?: string | null
+    domicileProvince?: string | null
     domicile?: string | null
     applicationType?: string | null
     applicationDate?: string | null
     expirationDate?: string | null
-    amount?: Decimal | DecimalJsLike | number | string | null
+    previousExpirationDate?: string | null
+    amount?: number | null
+    amountText?: string | null
     receiptBookNo?: string | null
     receiptNo?: string | null
     receiptDate?: string | null
@@ -2541,7 +2800,10 @@ export namespace Prisma {
     sequenceNo?: NullableIntFieldUpdateOperationsInput | number | null
     year?: NullableIntFieldUpdateOperationsInput | number | null
     foreignerIdNo?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
+    prefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
     age?: NullableIntFieldUpdateOperationsInput | number | null
     nationality?: NullableStringFieldUpdateOperationsInput | string | null
     ethnicity?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2549,11 +2811,21 @@ export namespace Prisma {
     certificateDate?: NullableStringFieldUpdateOperationsInput | string | null
     district?: NullableStringFieldUpdateOperationsInput | string | null
     province?: NullableStringFieldUpdateOperationsInput | string | null
+    policeStation?: NullableStringFieldUpdateOperationsInput | string | null
+    policeProvince?: NullableStringFieldUpdateOperationsInput | string | null
+    houseNo?: NullableStringFieldUpdateOperationsInput | string | null
+    moo?: NullableStringFieldUpdateOperationsInput | string | null
+    road?: NullableStringFieldUpdateOperationsInput | string | null
+    subdistrict?: NullableStringFieldUpdateOperationsInput | string | null
+    domicileDistrict?: NullableStringFieldUpdateOperationsInput | string | null
+    domicileProvince?: NullableStringFieldUpdateOperationsInput | string | null
     domicile?: NullableStringFieldUpdateOperationsInput | string | null
     applicationType?: NullableStringFieldUpdateOperationsInput | string | null
     applicationDate?: NullableStringFieldUpdateOperationsInput | string | null
     expirationDate?: NullableStringFieldUpdateOperationsInput | string | null
-    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    previousExpirationDate?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
+    amountText?: NullableStringFieldUpdateOperationsInput | string | null
     receiptBookNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptDate?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2568,7 +2840,10 @@ export namespace Prisma {
     sequenceNo?: NullableIntFieldUpdateOperationsInput | number | null
     year?: NullableIntFieldUpdateOperationsInput | number | null
     foreignerIdNo?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
+    prefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
     age?: NullableIntFieldUpdateOperationsInput | number | null
     nationality?: NullableStringFieldUpdateOperationsInput | string | null
     ethnicity?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2576,11 +2851,21 @@ export namespace Prisma {
     certificateDate?: NullableStringFieldUpdateOperationsInput | string | null
     district?: NullableStringFieldUpdateOperationsInput | string | null
     province?: NullableStringFieldUpdateOperationsInput | string | null
+    policeStation?: NullableStringFieldUpdateOperationsInput | string | null
+    policeProvince?: NullableStringFieldUpdateOperationsInput | string | null
+    houseNo?: NullableStringFieldUpdateOperationsInput | string | null
+    moo?: NullableStringFieldUpdateOperationsInput | string | null
+    road?: NullableStringFieldUpdateOperationsInput | string | null
+    subdistrict?: NullableStringFieldUpdateOperationsInput | string | null
+    domicileDistrict?: NullableStringFieldUpdateOperationsInput | string | null
+    domicileProvince?: NullableStringFieldUpdateOperationsInput | string | null
     domicile?: NullableStringFieldUpdateOperationsInput | string | null
     applicationType?: NullableStringFieldUpdateOperationsInput | string | null
     applicationDate?: NullableStringFieldUpdateOperationsInput | string | null
     expirationDate?: NullableStringFieldUpdateOperationsInput | string | null
-    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    previousExpirationDate?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
+    amountText?: NullableStringFieldUpdateOperationsInput | string | null
     receiptBookNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptDate?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2595,7 +2880,10 @@ export namespace Prisma {
     sequenceNo?: number | null
     year?: number | null
     foreignerIdNo?: string | null
-    name: string
+    prefix?: string | null
+    firstName: string
+    lastName: string
+    fullName: string
     age?: number | null
     nationality?: string | null
     ethnicity?: string | null
@@ -2603,11 +2891,21 @@ export namespace Prisma {
     certificateDate?: string | null
     district?: string | null
     province?: string | null
+    policeStation?: string | null
+    policeProvince?: string | null
+    houseNo?: string | null
+    moo?: string | null
+    road?: string | null
+    subdistrict?: string | null
+    domicileDistrict?: string | null
+    domicileProvince?: string | null
     domicile?: string | null
     applicationType?: string | null
     applicationDate?: string | null
     expirationDate?: string | null
-    amount?: Decimal | DecimalJsLike | number | string | null
+    previousExpirationDate?: string | null
+    amount?: number | null
+    amountText?: string | null
     receiptBookNo?: string | null
     receiptNo?: string | null
     receiptDate?: string | null
@@ -2622,7 +2920,10 @@ export namespace Prisma {
     sequenceNo?: NullableIntFieldUpdateOperationsInput | number | null
     year?: NullableIntFieldUpdateOperationsInput | number | null
     foreignerIdNo?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
+    prefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
     age?: NullableIntFieldUpdateOperationsInput | number | null
     nationality?: NullableStringFieldUpdateOperationsInput | string | null
     ethnicity?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2630,11 +2931,21 @@ export namespace Prisma {
     certificateDate?: NullableStringFieldUpdateOperationsInput | string | null
     district?: NullableStringFieldUpdateOperationsInput | string | null
     province?: NullableStringFieldUpdateOperationsInput | string | null
+    policeStation?: NullableStringFieldUpdateOperationsInput | string | null
+    policeProvince?: NullableStringFieldUpdateOperationsInput | string | null
+    houseNo?: NullableStringFieldUpdateOperationsInput | string | null
+    moo?: NullableStringFieldUpdateOperationsInput | string | null
+    road?: NullableStringFieldUpdateOperationsInput | string | null
+    subdistrict?: NullableStringFieldUpdateOperationsInput | string | null
+    domicileDistrict?: NullableStringFieldUpdateOperationsInput | string | null
+    domicileProvince?: NullableStringFieldUpdateOperationsInput | string | null
     domicile?: NullableStringFieldUpdateOperationsInput | string | null
     applicationType?: NullableStringFieldUpdateOperationsInput | string | null
     applicationDate?: NullableStringFieldUpdateOperationsInput | string | null
     expirationDate?: NullableStringFieldUpdateOperationsInput | string | null
-    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    previousExpirationDate?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
+    amountText?: NullableStringFieldUpdateOperationsInput | string | null
     receiptBookNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptDate?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2649,7 +2960,10 @@ export namespace Prisma {
     sequenceNo?: NullableIntFieldUpdateOperationsInput | number | null
     year?: NullableIntFieldUpdateOperationsInput | number | null
     foreignerIdNo?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
+    prefix?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    fullName?: StringFieldUpdateOperationsInput | string
     age?: NullableIntFieldUpdateOperationsInput | number | null
     nationality?: NullableStringFieldUpdateOperationsInput | string | null
     ethnicity?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2657,11 +2971,21 @@ export namespace Prisma {
     certificateDate?: NullableStringFieldUpdateOperationsInput | string | null
     district?: NullableStringFieldUpdateOperationsInput | string | null
     province?: NullableStringFieldUpdateOperationsInput | string | null
+    policeStation?: NullableStringFieldUpdateOperationsInput | string | null
+    policeProvince?: NullableStringFieldUpdateOperationsInput | string | null
+    houseNo?: NullableStringFieldUpdateOperationsInput | string | null
+    moo?: NullableStringFieldUpdateOperationsInput | string | null
+    road?: NullableStringFieldUpdateOperationsInput | string | null
+    subdistrict?: NullableStringFieldUpdateOperationsInput | string | null
+    domicileDistrict?: NullableStringFieldUpdateOperationsInput | string | null
+    domicileProvince?: NullableStringFieldUpdateOperationsInput | string | null
     domicile?: NullableStringFieldUpdateOperationsInput | string | null
     applicationType?: NullableStringFieldUpdateOperationsInput | string | null
     applicationDate?: NullableStringFieldUpdateOperationsInput | string | null
     expirationDate?: NullableStringFieldUpdateOperationsInput | string | null
-    amount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    previousExpirationDate?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
+    amountText?: NullableStringFieldUpdateOperationsInput | string | null
     receiptBookNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptNo?: NullableStringFieldUpdateOperationsInput | string | null
     receiptDate?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2712,17 +3036,6 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type DecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -2755,7 +3068,10 @@ export namespace Prisma {
     sequenceNo?: SortOrder
     year?: SortOrder
     foreignerIdNo?: SortOrder
-    name?: SortOrder
+    prefix?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    fullName?: SortOrder
     age?: SortOrder
     nationality?: SortOrder
     ethnicity?: SortOrder
@@ -2763,11 +3079,21 @@ export namespace Prisma {
     certificateDate?: SortOrder
     district?: SortOrder
     province?: SortOrder
+    policeStation?: SortOrder
+    policeProvince?: SortOrder
+    houseNo?: SortOrder
+    moo?: SortOrder
+    road?: SortOrder
+    subdistrict?: SortOrder
+    domicileDistrict?: SortOrder
+    domicileProvince?: SortOrder
     domicile?: SortOrder
     applicationType?: SortOrder
     applicationDate?: SortOrder
     expirationDate?: SortOrder
+    previousExpirationDate?: SortOrder
     amount?: SortOrder
+    amountText?: SortOrder
     receiptBookNo?: SortOrder
     receiptNo?: SortOrder
     receiptDate?: SortOrder
@@ -2789,7 +3115,10 @@ export namespace Prisma {
     sequenceNo?: SortOrder
     year?: SortOrder
     foreignerIdNo?: SortOrder
-    name?: SortOrder
+    prefix?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    fullName?: SortOrder
     age?: SortOrder
     nationality?: SortOrder
     ethnicity?: SortOrder
@@ -2797,11 +3126,21 @@ export namespace Prisma {
     certificateDate?: SortOrder
     district?: SortOrder
     province?: SortOrder
+    policeStation?: SortOrder
+    policeProvince?: SortOrder
+    houseNo?: SortOrder
+    moo?: SortOrder
+    road?: SortOrder
+    subdistrict?: SortOrder
+    domicileDistrict?: SortOrder
+    domicileProvince?: SortOrder
     domicile?: SortOrder
     applicationType?: SortOrder
     applicationDate?: SortOrder
     expirationDate?: SortOrder
+    previousExpirationDate?: SortOrder
     amount?: SortOrder
+    amountText?: SortOrder
     receiptBookNo?: SortOrder
     receiptNo?: SortOrder
     receiptDate?: SortOrder
@@ -2816,7 +3155,10 @@ export namespace Prisma {
     sequenceNo?: SortOrder
     year?: SortOrder
     foreignerIdNo?: SortOrder
-    name?: SortOrder
+    prefix?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
+    fullName?: SortOrder
     age?: SortOrder
     nationality?: SortOrder
     ethnicity?: SortOrder
@@ -2824,11 +3166,21 @@ export namespace Prisma {
     certificateDate?: SortOrder
     district?: SortOrder
     province?: SortOrder
+    policeStation?: SortOrder
+    policeProvince?: SortOrder
+    houseNo?: SortOrder
+    moo?: SortOrder
+    road?: SortOrder
+    subdistrict?: SortOrder
+    domicileDistrict?: SortOrder
+    domicileProvince?: SortOrder
     domicile?: SortOrder
     applicationType?: SortOrder
     applicationDate?: SortOrder
     expirationDate?: SortOrder
+    previousExpirationDate?: SortOrder
     amount?: SortOrder
+    amountText?: SortOrder
     receiptBookNo?: SortOrder
     receiptNo?: SortOrder
     receiptDate?: SortOrder
@@ -2897,22 +3249,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
-  }
-
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -2955,14 +3291,6 @@ export namespace Prisma {
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
-  }
-
-  export type NullableDecimalFieldUpdateOperationsInput = {
-    set?: Decimal | DecimalJsLike | number | string | null
-    increment?: Decimal | DecimalJsLike | number | string
-    decrement?: Decimal | DecimalJsLike | number | string
-    multiply?: Decimal | DecimalJsLike | number | string
-    divide?: Decimal | DecimalJsLike | number | string
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -3010,17 +3338,6 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
   }
 
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
@@ -3115,22 +3432,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
-  }
-
-  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
