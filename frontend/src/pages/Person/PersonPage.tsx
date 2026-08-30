@@ -30,41 +30,59 @@ export default function PersonPage() {
   return (
     <div className="main-content min-h-screen bg-gray-50 px-3 py-4 sm:px-4 lg:px-6">
       <div className="mx-auto px-4 w-full max-w-[1400px]">
-        {/* =====================================================
-            HEADER
-        ===================================================== */}
+        {/* HEADER */}
+        <div className="mb-5">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="mb-3 flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-[#8f2946] px-5 text-lg font-bold text-white transition hover:bg-[#9f3453] active:scale-[0.98] max-[1199px]:flex min-[1200px]:hidden"
+          >
+            <svg
+              width="27"
+              height="27"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+            กลับหน้าเดิม
+          </button>
 
-        <div className="mb-5 overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] shadow-lg">
-          <div className="px-5 py-5 sm:px-7 sm:py-6">
-            <div className="flex items-center gap-4">
-              {/* ICON */}
+          <div className="overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] shadow-lg">
+            <div className="px-5 py-5 sm:px-7 sm:py-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white shadow-sm sm:h-14 sm:w-14">
+                  <svg
+                    width="27"
+                    height="27"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 21a8 8 0 0 0-16 0" />
+                    <circle cx="12" cy="7" r="4" />
+                    <path d="M19 8v6" />
+                    <path d="M16 11h6" />
+                  </svg>
+                </div>
 
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white shadow-sm sm:h-14 sm:w-14">
-                <svg
-                  width="27"
-                  height="27"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M20 21a8 8 0 0 0-16 0" />
-                  <circle cx="12" cy="7" r="4" />
-                  <path d="M19 8v6" />
-                  <path d="M16 11h6" />
-                </svg>
-              </div>
+                <div className="min-w-0">
+                  <h1 className="text-xl font-bold text-white sm:text-2xl">
+                    สร้างข้อมูลบุคคล
+                  </h1>
 
-              <div className="min-w-0">
-                <h1 className="text-xl font-bold text-white sm:text-2xl">
-                  สร้างข้อมูลบุคคล
-                </h1>
-
-                <p className="mt-1 text-xs text-white/70 sm:text-sm">
-                  บันทึกข้อมูลบุคคลสำหรับการพิมพ์มือตรวจประวัติ
-                </p>
+                  <p className="mt-1 text-xs text-white/70 sm:text-sm">
+                    บันทึกข้อมูลบุคคลสำหรับการพิมพ์มือตรวจประวัติ
+                  </p>
+                </div>
               </div>
             </div>
           </div>

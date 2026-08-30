@@ -1,6 +1,6 @@
 // src/pages/person/PersonHistoryPage.tsx
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import usePersonHistory from "../../hooks/usePersonHistory";
 import useSelection from "../../hooks/useSelection";
 import usePersonActions from "../../hooks/usePersonActions";
@@ -8,6 +8,7 @@ import PersonCard from "../../components/statusPerson/PersonCard";
 import PersonTable from "../../components/statusPerson/PersonTable";
 
 export default function PersonHistoryPage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const statusParam = searchParams.get("status");
 
@@ -267,9 +268,31 @@ export default function PersonHistoryPage() {
     <div className="min-h-screen bg-[#f6f7f9]">
       <main className="min-h-screen px-4 pb-10 pt-6 min-[480px]:px-5 min-[768px]:px-8 min-[768px]:pt-8 min-[1200px]:px-8">
         <div className="mx-auto w-full max-w-[1500px] px-4">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="mb-3 hidden h-12 w-full items-center justify-center gap-3 rounded-2xl bg-[#8f2946] px-5 text-lg font-bold text-white transition hover:bg-[#9f3453] active:scale-[0.98] max-[1199px]:flex"
+          >
+            <svg
+              width="27"
+              height="27"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+            กลับหน้าเดิม
+          </button>
+
           <section className="relative overflow-hidden rounded-[26px] bg-gradient-to-br from-[#800020] via-[#700019] to-[#43000f] px-5 py-6 text-white shadow-xl shadow-[#800020]/10 min-[480px]:px-7 min-[768px]:px-9 min-[768px]:py-7">
             <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border border-white/10" />
             <div className="pointer-events-none absolute -bottom-32 left-1/3 h-56 w-56 rounded-full bg-white/[0.03] blur-2xl" />
+
             <div className="relative">
               <div className="flex flex-col gap-4 min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between">
                 <div>
@@ -279,21 +302,26 @@ export default function PersonHistoryPage() {
                       PERSON HISTORY
                     </span>
                   </div>
+
                   <h1 className="mt-2 text-2xl font-bold min-[480px]:text-3xl min-[768px]:text-4xl">
                     ประวัติบุคคล
                   </h1>
+
                   <p className="mt-1 text-sm text-white/65">
                     ตรวจสอบและจัดการข้อมูลบุคคลทั้งหมด
                   </p>
                 </div>
+
                 <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-md">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
                     <Icon type="grid" size={21} />
                   </div>
+
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-wider text-white/50">
                       รายการทั้งหมด
                     </p>
+
                     <p className="text-xl font-bold">
                       {statusCounts.all.toLocaleString("th-TH")}
                     </p>
@@ -320,8 +348,10 @@ export default function PersonHistoryPage() {
                   <path d="m20 20-4-4" />
                 </svg>
               </div>
+
               <div>
                 <p className="text-sm font-bold text-gray-900">ค้นหาข้อมูล</p>
+
                 <p className="text-[10px] text-gray-400">
                   ค้นหาจากชื่อหรือชื่อสกุล
                 </p>
@@ -333,6 +363,7 @@ export default function PersonHistoryPage() {
                 <label className="mb-1.5 block text-xs font-semibold text-gray-600">
                   ชื่อ
                 </label>
+
                 <input
                   type="text"
                   value={firstName}
@@ -346,6 +377,7 @@ export default function PersonHistoryPage() {
                 <label className="mb-1.5 block text-xs font-semibold text-gray-600">
                   นามสกุล
                 </label>
+
                 <input
                   type="text"
                   value={lastName}
@@ -386,6 +418,7 @@ export default function PersonHistoryPage() {
               <p className="text-md font-bold uppercase tracking-[0.15em] text-[#800020]">
                 Management
               </p>
+
               <p className="mt-1 text-md font-bold text-gray-800">
                 จัดการรายการ
               </p>
@@ -417,6 +450,7 @@ export default function PersonHistoryPage() {
                   <rect x="4" y="4" width="16" height="16" rx="2" />
                   <path d="m8 12 2.5 2.5L16 9" />
                 </svg>
+
                 {selectMode ? "ยกเลิกเลือก" : "เลือก"}
               </button>
 
@@ -463,6 +497,7 @@ export default function PersonHistoryPage() {
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <p className="text-md font-bold text-gray-900">สถานะข้อมูล</p>
+
                 <p className="text-md text-gray-400">
                   เลือกสถานะเพื่อกรองรายการ
                 </p>
@@ -491,7 +526,9 @@ export default function PersonHistoryPage() {
                       if (filter.value === null) {
                         setSearchParams({});
                       } else {
-                        setSearchParams({ status: filter.value });
+                        setSearchParams({
+                          status: filter.value,
+                        });
                       }
                     }}
                     className={`flex shrink-0 items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-bold transition-all duration-200 ${
@@ -499,9 +536,13 @@ export default function PersonHistoryPage() {
                     }`}
                   >
                     <Icon type={filter.icon} size={17} />
+
                     <span>{filter.label}</span>
+
                     <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] ${active ? "bg-white/20" : "bg-gray-100"}`}
+                      className={`rounded-full px-2 py-0.5 text-[10px] ${
+                        active ? "bg-white/20" : "bg-gray-100"
+                      }`}
                     >
                       {filter.count}
                     </span>
@@ -514,6 +555,7 @@ export default function PersonHistoryPage() {
           <div className="mb-3 mt-6 flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-lg font-bold text-gray-900">รายการข้อมูล</h2>
+
               <p className="mt-0.5 text-md text-gray-400">
                 พบ {sortedPersons.length.toLocaleString("th-TH")} รายการ
               </p>
