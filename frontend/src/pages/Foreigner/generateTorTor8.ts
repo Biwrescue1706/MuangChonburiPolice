@@ -37,6 +37,7 @@ const FULL_THAI_MONTHS: Record<string, string> = {
 // แปลงวันที่เป็นวันที่ไทย
 function formatThaiDate(value: string | null | undefined) {
   if (!value) return "-";
+
   const text = String(value).trim();
   const match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
 
@@ -94,66 +95,12 @@ function getFullName(data: Foreigner) {
   );
 }
 
-// ดึงลายเซ็นจาก API
-async function getSignatureImage(): Promise<{
-  bytes: ArrayBuffer;
-  type: string;
-} | null> {
-  try {
-    const response = await api.get("/organization");
-    const result = response.data;
-    const organization = Array.isArray(result)
-      ? result[0]
-      : (result?.data ?? result);
-    const signatureImage = organization?.commander?.signatureImage;
-
-    if (!signatureImage) {
-      console.warn("ไม่พบ commander.signatureImage");
-      return null;
-    }
-
-    if (signatureImage.startsWith("data:image/")) {
-      const match = signatureImage.match(/^data:(image\/[^;]+);base64,(.+)$/);
-
-      if (!match) return null;
-
-      const binary = atob(match[2]);
-      const bytes = new Uint8Array(binary.length);
-
-      for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-
-      return {
-        bytes: bytes.buffer,
-        type: match[1],
-      };
-    }
-
-    const imageResponse = await fetch(signatureImage);
-
-    if (!imageResponse.ok) {
-      console.error("โหลดลายเซ็นไม่สำเร็จ:", imageResponse.status);
-      return null;
-    }
-
-    return {
-      bytes: await imageResponse.arrayBuffer(),
-      type: imageResponse.headers.get("content-type") || "image/png",
-    };
-  } catch (error) {
-    console.error("GET SIGNATURE IMAGE ERROR:", error);
-    return null;
-  }
-}
-
 // สร้าง PDF ทต.8
 export async function generateTorTor8(data: Foreigner) {
   try {
-    const [pdfResponse, fontResponse, signature] = await Promise.all([
+    const [pdfResponse, fontResponse] = await Promise.all([
       fetch("/ทต.8.pdf"),
       fetch("/fonts/THSarabunIT9.ttf"),
-      getSignatureImage(),
     ]);
 
     if (!pdfResponse.ok) throw new Error("ไม่พบไฟล์ ทต.8.pdf");
@@ -188,7 +135,9 @@ export async function generateTorTor8(data: Foreigner) {
 
     const fullName = getFullName(data);
     const applicationDate = formatThaiDate(data.applicationDate);
-    const previousExpirationDate = formatThaiDate(data.previousExpirationDate);
+    const previousExpirationDate = formatThaiDate(
+      data.previousExpirationDate,
+    );
     const certificateDate = formatThaiDate(data.certificateDate);
     const expirationDate = formatThaiDate(data.expirationDate);
     const receiptDate = formatThaiDate(data.receiptDate);
@@ -215,7 +164,11 @@ export async function generateTorTor8(data: Foreigner) {
     text(fullName, 320, 482);
     text(data.certificateRegistrationNo, 95, 462);
     text(certificateDate, 260, 462);
-    text(data.policeStation?.replace(/^สถานีตำรวจ\s*/, ""), 135, 440);
+    text(
+      data.policeStation?.replace(/^สถานีตำรวจ\s*/, ""),
+      135,
+      440,
+    );
     text(data.policeProvince, 320, 440);
 
     // วันหมดอายุก่อนต่ออายุ
@@ -234,33 +187,6 @@ export async function generateTorTor8(data: Foreigner) {
     text(data.receiptBookNo, 400, 175);
     text(data.receiptNo, 480, 175);
     text(receiptDate, 310, 155);
-
-    // ใส่ลายเซ็น
-    if (signature) {
-      try {
-        let signaturePdfImage;
-
-        if (signature.type.includes("png")) {
-          signaturePdfImage = await pdfDoc.embedPng(signature.bytes);
-        } else if (
-          signature.type.includes("jpeg") ||
-          signature.type.includes("jpg")
-        ) {
-          signaturePdfImage = await pdfDoc.embedJpg(signature.bytes);
-        } else {
-          throw new Error(`ไม่รองรับชนิดรูปภาพ: ${signature.type}`);
-        }
-
-        page.drawImage(signaturePdfImage, {
-          x: 350,
-          y: 115,
-          width: 80,
-          height: 30,
-        });
-      } catch (error) {
-        console.error("ADD SIGNATURE ERROR:", error);
-      }
-    }
 
     // บันทึก PDF
     const result = await pdfDoc.save();
