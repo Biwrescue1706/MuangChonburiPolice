@@ -1,6 +1,5 @@
 import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-import api from "../../api/axios";
 import type { Foreigner } from "../../types/foreigner";
 
 const SHORT_THAI_MONTHS = [
