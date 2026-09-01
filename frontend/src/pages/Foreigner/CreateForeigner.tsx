@@ -252,19 +252,11 @@ export default function CreateForeigner() {
 
         const data = response.data?.data ?? response.data;
 
-        const bookNo = String(data?.receiptBookNo || "").padStart(2, "0");
-
         const availableNos = Array.isArray(data?.receiptNos)
           ? data.receiptNos.map((no: string | number) =>
               String(no).padStart(2, "0"),
             )
           : [];
-
-        setForm((prev) => ({
-          ...prev,
-          receiptBookNo: bookNo,
-          receiptNo: "",
-        }));
 
         setReceiptNos(availableNos);
       } catch (error) {
@@ -332,7 +324,7 @@ export default function CreateForeigner() {
               : data.applicationType === "ชนิดที่ 2"
                 ? "800"
                 : "",
-          receiptBookNo: prev.receiptBookNo,
+          receiptBookNo: "",
           receiptNo: "",
           certificateNo: data.certificateNo || "",
         }));
@@ -457,7 +449,7 @@ export default function CreateForeigner() {
     }
 
     if (!form.receiptBookNo.trim()) {
-      throw new Error("ไม่พบเลขใบเสร็จเล่มที่");
+      throw new Error("กรุณากรอกใบเสร็จเล่มที่");
     }
 
     if (!form.receiptNo.trim()) {
@@ -843,13 +835,26 @@ export default function CreateForeigner() {
                 readOnly
               />
 
-              <Input
-                label="ใบเสร็จเล่มที่"
-                required
-                value={form.receiptBookNo}
-                readOnly
-                disabled={receiptLoading}
-              />
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  ใบเสร็จเล่มที่ <span className="text-red-600">*</span>
+                </label>
+
+                <input
+                  list="receipt-book-options"
+                  required
+                  value={form.receiptBookNo}
+                  onChange={(e) =>
+                    updateField("receiptBookNo", e.target.value)
+                  }
+                  placeholder="เลือกหรือกรอกเลขใบเสร็จเล่มที่"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
+                />
+
+                <p className="mt-1 text-xs text-slate-500">
+                  สามารถกรอกเลขใบเสร็จเล่มที่เองได้
+                </p>
+              </div>
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">
