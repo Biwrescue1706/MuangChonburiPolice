@@ -232,7 +232,7 @@ export default function PersonCard({
                   navigate(`/person/${p.personId}`)
                 }
               >
-                👁️ ดูข้อมูล
+                👁️ <br/>ดูข้อมูลส่วนบุคคล
               </button>
 
               {/* PDF */}
@@ -254,7 +254,7 @@ export default function PersonCard({
                   handleExportPDF(p);
                 }}
               >
-                📄 PDF
+                📄 <br/> PDF แบบพิมพ์มือ
               </button>
 
               {/* แก้ไข */}
@@ -266,7 +266,7 @@ export default function PersonCard({
                     navigate(`/person/edit/${p.personId}`)
                   }
                 >
-                  ✏️ แก้ไข
+                  ✏️ <br/>แก้ไข
                 </button>
               )}
 
@@ -276,7 +276,7 @@ export default function PersonCard({
                 className="rounded-xl bg-red-600 px-3 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 active:scale-95"
                 onClick={() => handleDelete(p)}
               >
-                🗑️ ลบ
+                🗑️ <br/>ลบ
               </button>
 
               {/* ส่งสถานะ */}
