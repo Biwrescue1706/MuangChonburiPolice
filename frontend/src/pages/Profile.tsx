@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import { toast } from "../utils/toast";
 
 type AdminProfile = {
   username: string;
@@ -49,7 +50,7 @@ export default function Profile() {
       setEditProfile(res.data);
     } catch (error) {
       console.error(error);
-      alert("โหลดข้อมูลไม่สำเร็จ");
+      toast("error", "โหลดข้อมูลไม่สำเร็จ");
     } finally {
       setLoading(false);
     }
@@ -67,7 +68,6 @@ export default function Profile() {
   };
 
   /* ================= SAVE PROFILE ================= */
-
   const handleSaveProfile = async () => {
     try {
       setSavingProfile(true);
@@ -77,20 +77,29 @@ export default function Profile() {
       setProfile(editProfile);
       setEditOpen(false);
 
-      alert("บันทึกข้อมูลเรียบร้อย");
+      toast("success", "บันทึกข้อมูลเรียบร้อย");
     } catch (error) {
       console.error(error);
-      alert("บันทึกข้อมูลไม่สำเร็จ");
+      toast("error", "บันทึกข้อมูลไม่สำเร็จ");
     } finally {
       setSavingProfile(false);
     }
   };
 
   /* ================= CHANGE PASSWORD ================= */
-
   const handleChangePassword = async () => {
     if (!password.oldPassword || !password.newPassword) {
-      alert("กรุณากรอกรหัสผ่านให้ครบ");
+      toast("warning", "กรุณากรอกรหัสผ่านให้ครบ");
+      return;
+    }
+
+    if (password.oldPassword === password.newPassword) {
+      toast("warning", "รหัสผ่านใหม่ต้องไม่เหมือนรหัสเดิม");
+      return;
+    }
+
+    if (password.newPassword.length < 6) {
+      toast("warning", "รหัสผ่านใหม่ต้องอย่างน้อย 6 ตัวอักษร");
       return;
     }
 
@@ -108,10 +117,17 @@ export default function Profile() {
       setShowNew(false);
       setPasswordOpen(false);
 
-      alert("เปลี่ยนรหัสผ่านเรียบร้อย");
-    } catch (error) {
+      await toast("success", "เปลี่ยนรหัสผ่านเรียบร้อย");
+
+      // Logout หลังเปลี่ยนรหัสผ่านสำเร็จ
+      await api.post("/auth/logout");
+
+      // กลับหน้า Login
+      window.location.href = "/";
+    } catch (error: any) {
       console.error(error);
-      alert("เปลี่ยนรหัสผ่านไม่สำเร็จ");
+
+      toast("error", error.response?.data?.error || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
     } finally {
       setChangingPassword(false);
     }
@@ -148,8 +164,6 @@ export default function Profile() {
         {/* ================= PROFILE CARD ================= */}
 
         <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200">
-          {/* CARD HEADER */}
-
           <div className="bg-[#800020] px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-xl text-white">
@@ -168,12 +182,8 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* CARD BODY */}
-
           <div className="p-4">
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              {/* USERNAME */}
-
               <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
                 <p className="text-xs font-medium text-gray-500">Username</p>
 
@@ -181,8 +191,6 @@ export default function Profile() {
                   {profile.username || "-"}
                 </p>
               </div>
-
-              {/* NAME */}
 
               <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
                 <p className="text-xs font-medium text-gray-500">
@@ -194,8 +202,6 @@ export default function Profile() {
                 </p>
               </div>
 
-              {/* POSITION */}
-
               <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 md:col-span-2">
                 <p className="text-xs font-medium text-gray-500">ตำแหน่ง</p>
 
@@ -204,8 +210,6 @@ export default function Profile() {
                 </p>
               </div>
             </div>
-
-            {/* ACTION */}
 
             <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
@@ -228,15 +232,11 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* ==================================================
-          EDIT PROFILE MODAL
-      ================================================== */}
+      {/* ================= EDIT PROFILE MODAL ================= */}
 
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-xl">
-            {/* HEADER */}
-
             <div className="flex items-center justify-between bg-[#800020] px-4 py-3">
               <div>
                 <h2 className="font-semibold text-white">แก้ไขข้อมูล</h2>
@@ -255,11 +255,7 @@ export default function Profile() {
               </button>
             </div>
 
-            {/* BODY */}
-
             <div className="space-y-3 p-4">
-              {/* USERNAME */}
-
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">
                   Username
@@ -278,8 +274,6 @@ export default function Profile() {
                   placeholder="Username"
                 />
               </div>
-
-              {/* NAME */}
 
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -300,8 +294,6 @@ export default function Profile() {
                 />
               </div>
 
-              {/* POSITION */}
-
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">
                   ตำแหน่ง
@@ -321,8 +313,6 @@ export default function Profile() {
                 />
               </div>
             </div>
-
-            {/* FOOTER */}
 
             <div className="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-4 py-3">
               <button
@@ -346,15 +336,11 @@ export default function Profile() {
         </div>
       )}
 
-      {/* ==================================================
-          PASSWORD MODAL
-      ================================================== */}
+      {/* ================= PASSWORD MODAL ================= */}
 
       {passwordOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-xl">
-            {/* HEADER */}
-
             <div className="flex items-center justify-between bg-[#800020] px-4 py-3">
               <div>
                 <h2 className="font-semibold text-white">🔒 เปลี่ยนรหัสผ่าน</h2>
@@ -373,11 +359,7 @@ export default function Profile() {
               </button>
             </div>
 
-            {/* BODY */}
-
             <div className="space-y-3 p-4">
-              {/* OLD PASSWORD */}
-
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">
                   รหัสผ่านเดิม
@@ -406,8 +388,6 @@ export default function Profile() {
                   </button>
                 </div>
               </div>
-
-              {/* NEW PASSWORD */}
 
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -438,8 +418,6 @@ export default function Profile() {
                 </div>
               </div>
             </div>
-
-            {/* FOOTER */}
 
             <div className="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-4 py-3">
               <button

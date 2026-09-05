@@ -69,11 +69,10 @@ export const AuthProvider = ({ children }: any) => {
   const logout = async () => {
     try {
       await api.post("/auth/logout");
-      toast("success", "ออกจากระบบสำเร็จ");
-    } catch {
-      toast("error", "ออกจากระบบไม่สำเร็จ");
+    } catch (err) {
+      console.error("Logout error:", err);
     } finally {
-      setAdmin(null); // 🔥 เคลียร์ state แน่นอน
+      setAdmin(null);
     }
   };
 
