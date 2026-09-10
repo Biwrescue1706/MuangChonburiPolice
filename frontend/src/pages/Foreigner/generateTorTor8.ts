@@ -177,7 +177,6 @@ export async function generateTorTor8(data: Foreigner) {
     text(data.applicationType === "ชนิดที่ 1" ? "1" : "2", 250, 397);
     text(data.amount !== null ? formatMoney(data.amount) : "", 440, 397);
     text(data.amountText, 80, 375);
-    text(data.fullName, 340, 338);
 
     // คำสั่งนายทะเบียน
     text(data.applicationType === "ชนิดที่ 1" ? "1" : "2", 410, 239);
