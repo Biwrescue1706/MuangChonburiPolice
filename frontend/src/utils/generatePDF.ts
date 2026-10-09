@@ -4,7 +4,7 @@ import fontkit from "@pdf-lib/fontkit";
 
 export const generatePDF = async (p: any) => {
   const templateBytes = await fetch("/แบบพิมพ์มือ.pdf").then((r) =>
-    r.arrayBuffer()
+    r.arrayBuffer(),
   );
 
   const pdfDoc = await PDFDocument.load(templateBytes);
@@ -12,13 +12,13 @@ export const generatePDF = async (p: any) => {
 
   // ===== โหลดฟอนต์ปกติ =====
   const fontBytes = await fetch("/fonts/THSarabunNew.ttf").then((r) =>
-    r.arrayBuffer()
+    r.arrayBuffer(),
   );
   const font = await pdfDoc.embedFont(fontBytes);
 
   // ===== โหลดฟอนต์ตัวหนา =====
   const fontBoldBytes = await fetch("/fonts/THSarabunNew-Bold.ttf").then((r) =>
-    r.arrayBuffer()
+    r.arrayBuffer(),
   );
   const fontBold = await pdfDoc.embedFont(fontBoldBytes);
 
@@ -41,7 +41,7 @@ export const generatePDF = async (p: any) => {
     text: any,
     x: number,
     y: number,
-    options?: { size?: number; font?: any }
+    options?: { size?: number; font?: any },
   ) => {
     page.drawText(safe(text), {
       x,
@@ -55,10 +55,21 @@ export const generatePDF = async (p: any) => {
   draw(page1, p.fingerprintDate, 270, -800);
   draw(page1, p.organizationName, 825, -800);
 
+  if (p.prefix === "นาย") {
+    draw(page1, "/", 340, -760, {
+      size: 60,
+      font: fontBold,
+    });
+  } else {
+    draw(page1, "/", 475, -760, {
+      size: 60,
+      font: fontBold,
+    });
+  }
   draw(page1, p.fullName, 350, -730);
   draw(page1, p.birthDate, 800, -760);
 
-  draw(page1, p.fullNameWithRank, 200, -510);
+  draw(page1, p.fullNameWithRank, 210, -510);
   draw(page1, p.rank, 175, -480);
 
   // ================= PAGE 2 =================
@@ -73,8 +84,21 @@ export const generatePDF = async (p: any) => {
     font: fontBold,
   });
 
+
+    if (p.prefix === "นาย") {
+    draw(page2, "/", 150, -470, {
+      size: 60,
+      font: fontBold,
+    });
+  } else {
+    draw(page2, "/", 325, -470, {
+      size: 60,
+      font: fontBold,
+    });
+  }
+
   // ชื่อ
-  draw(page2, p.fullName, 225, -440 ,{
+  draw(page2, p.fullName, 225, -440, {
     size: 32,
     font: fontBold,
   });
@@ -142,7 +166,7 @@ export const generatePDF = async (p: any) => {
   const url = URL.createObjectURL(blob);
 
   const fileName = `${clean(p.receiptBookNo)}-${clean(
-    p.receiptNo
+    p.receiptNo,
   )}-${clean(p.fullName)}.pdf`;
 
   const link = document.createElement("a");

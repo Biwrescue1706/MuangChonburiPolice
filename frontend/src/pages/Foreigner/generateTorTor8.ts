@@ -179,6 +179,8 @@ export async function generateTorTor8(data: Foreigner) {
     text(data.amountText, 80, 375);
 
     // คำสั่งนายทะเบียน
+    text(data.sequenceNo,85,239);
+    text(data.year,125,239);
     text(data.applicationType === "ชนิดที่ 1" ? "1" : "2", 410, 239);
     text(applicationDate, 360, 218);
     text(expirationDate, 365, 197);
