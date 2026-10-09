@@ -150,9 +150,14 @@ export async function generateTorTor8(data: Foreigner) {
       text("นาย", 165, 605);
     } else if (data.prefix === "นาง") {
       text("นาง", 165, 605);
-    }else{
+    }else if (data.prefix === "นางสาว") {
       text("น.ส.", 165, 605);
+    } else if (data.prefix === "เด็กชาย") {
+      text("ด.ช.", 165, 605);
+    } else if (data.prefix === "เด็กหญิง") {
+      text("ด.ญ.", 165, 605);
     }
+
     text(data.firstName, 185, 605);
     text(data.lastName, 375, 605);
     text(data.age !== null ? data.age : "", 95, 585);
