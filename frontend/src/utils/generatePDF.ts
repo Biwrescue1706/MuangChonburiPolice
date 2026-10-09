@@ -1,53 +1,124 @@
-//src/utils/generatePDF.ts
-import { PDFDocument } from "pdf-lib";
+// src/utils/generatePDF.ts
+import {
+  PDFDocument,
+  type PDFPage,
+  type PDFFont,
+} from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
-export const generatePDF = async (p: any) => {
-  const templateBytes = await fetch("/แบบพิมพ์มือ.pdf").then((r) =>
-    r.arrayBuffer(),
-  );
+interface GeneratePDFData {
+  fingerprintDate?: string | number | null;
+  organizationName?: string | number | null;
+  prefix?: string | null;
+  fullName?: string | number | null;
+  birthDate?: string | number | null;
+  fullNameWithRank?: string | number | null;
+  rank?: string | number | null;
+  purpose?: string | number | null;
+  requestingAgency?: string | number | null;
+  citizenId?: string | number | null;
+  birthDay?: string | number | null;
+  birthMonth?: string | number | null;
+  birthYear?: string | number | null;
+  nationality?: string | number | null;
+  ethnicity?: string | number | null;
+  height?: string | number | null;
+  weight?: string | number | null;
+  bodyType?: string | number | null;
+  skinColor?: string | number | null;
+  distinguishingMarks?: string | number | null;
+  behavior?: string | number | null;
+  address?: string | number | null;
+  occupation?: string | number | null;
+  workplaceAddress?: string | number | null;
+  father?: string | number | null;
+  mother?: string | number | null;
+  spouse?: string | number | null;
+  fullNameOrg?: string | number | null;
+  position?: string | number | null;
+  receiptBookNo?: string | number | null;
+  receiptNo?: string | number | null;
+  receiptDate?: string | number | null;
+  money?: string | number | null;
+  moneyText?: string | number | null;
+}
 
+export const generatePDF = async (
+  p: GeneratePDFData,
+): Promise<void> => {
+  // โหลดแบบพิมพ์ PDF
+  const templateResponse = await fetch("/แบบพิมพ์มือ.pdf");
+
+  if (!templateResponse.ok) {
+    throw new Error("ไม่สามารถโหลดแบบพิมพ์มือ.pdf ได้");
+  }
+
+  const templateBytes = await templateResponse.arrayBuffer();
   const pdfDoc = await PDFDocument.load(templateBytes);
+
   pdfDoc.registerFontkit(fontkit);
 
-  // ===== โหลดฟอนต์ปกติ =====
-  const fontBytes = await fetch("/fonts/THSarabunNew.ttf").then((r) =>
-    r.arrayBuffer(),
-  );
+  // โหลดฟอนต์ปกติ
+  const fontResponse = await fetch("/fonts/THSarabunNew.ttf");
+
+  if (!fontResponse.ok) {
+    throw new Error("ไม่สามารถโหลดฟอนต์ THSarabunNew.ttf ได้");
+  }
+
+  const fontBytes = await fontResponse.arrayBuffer();
   const font = await pdfDoc.embedFont(fontBytes);
 
-  // ===== โหลดฟอนต์ตัวหนา =====
-  const fontBoldBytes = await fetch("/fonts/THSarabunNew-Bold.ttf").then((r) =>
-    r.arrayBuffer(),
+  // โหลดฟอนต์ตัวหนา
+  const fontBoldResponse = await fetch(
+    "/fonts/THSarabunNew-Bold.ttf",
   );
+
+  if (!fontBoldResponse.ok) {
+    throw new Error("ไม่สามารถโหลดฟอนต์ THSarabunNew-Bold.ttf ได้");
+  }
+
+  const fontBoldBytes = await fontBoldResponse.arrayBuffer();
   const fontBold = await pdfDoc.embedFont(fontBoldBytes);
 
   const [page1, page2] = pdfDoc.getPages();
 
-  const safe = (v: any) =>
-    v === null || v === undefined || v === "" ? "-" : String(v);
+  if (!page1 || !page2) {
+    throw new Error("ไฟล์ PDF ต้องมีอย่างน้อย 2 หน้า");
+  }
 
-  const clean = (v: any) =>
-    safe(v)
+  const safe = (
+    value: string | number | null | undefined,
+  ): string =>
+    value === null || value === undefined || value === ""
+      ? "-"
+      : String(value);
+
+  const clean = (
+    value: string | number | null | undefined,
+  ): string =>
+    safe(value)
       .replace(/[\\/:*?"<>|]/g, "")
       .trim()
       .replace(/\s+/g, "-");
 
-  const fixY = (y: number) => 842 - y;
+  const fixY = (y: number): number => 842 - y;
 
-  // ===== draw รองรับ size + font =====
+  // วาดข้อความลง PDF
   const draw = (
-    page: any,
-    text: any,
+    page: PDFPage,
+    text: string | number | null | undefined,
     x: number,
     y: number,
-    options?: { size?: number; font?: any },
-  ) => {
+    options?: {
+      size?: number;
+      font?: PDFFont;
+    },
+  ): void => {
     page.drawText(safe(text), {
       x,
       y: fixY(y),
-      size: options?.size || 28,
-      font: options?.font || font,
+      size: options?.size ?? 28,
+      font: options?.font ?? font,
     });
   };
 
@@ -66,6 +137,7 @@ export const generatePDF = async (p: any) => {
       font: fontBold,
     });
   }
+
   draw(page1, p.fullName, 350, -730);
   draw(page1, p.birthDate, 800, -760);
 
@@ -78,14 +150,13 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.purpose, 210, -875);
   draw(page2, p.requestingAgency, 270, -840);
 
-  // 🔥 บัตรประชาชน (ใหญ่ + หนา)
+  // บัตรประชาชน
   draw(page2, p.citizenId, 180, -720, {
     size: 40,
     font: fontBold,
   });
 
-
-    if (p.prefix === "นาย") {
+  if (p.prefix === "นาย") {
     draw(page2, "/", 150, -470, {
       size: 60,
       font: fontBold,
@@ -112,7 +183,7 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.nationality, 120, -375);
   draw(page2, p.ethnicity, 410, -375);
 
-  // ส่วนสูง/น้ำหนัก
+  // ส่วนสูง / น้ำหนัก
   draw(page2, p.height, 100, -335);
   draw(page2, p.weight, 430, -335);
 
@@ -123,7 +194,7 @@ export const generatePDF = async (p: any) => {
   // ตำหนิ
   draw(page2, p.distinguishingMarks, 250, -275);
 
-  // ชื่อ (ขวา)
+  // ชื่อด้านขวา
   draw(page2, p.fullName, 950, -240);
 
   // พฤติกรรม
@@ -145,7 +216,7 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.fullNameOrg, 260, 170);
   draw(page2, p.position, 240, 210);
 
-  // ===== ใบเสร็จ =====
+  // ใบเสร็จ
   draw(page2, p.receiptBookNo, 720, -58);
   draw(page2, p.receiptNo, 1050, -58);
   draw(page2, p.receiptDate, 730, -20);
@@ -157,12 +228,18 @@ export const generatePDF = async (p: any) => {
   draw(page2, p.rank, 900, 155);
   draw(page2, p.fullNameOrg, 950, 190);
 
+  // บันทึก PDF
   const pdfBytes = await pdfDoc.save();
 
-  const blob = new Blob([pdfBytes as any], {
+  // แปลง Uint8Array เป็น ArrayBuffer สำหรับ Blob
+  const pdfArrayBuffer = new ArrayBuffer(pdfBytes.byteLength);
+  new Uint8Array(pdfArrayBuffer).set(pdfBytes);
+
+  const blob = new Blob([pdfArrayBuffer], {
     type: "application/pdf",
   });
 
+  // ดาวน์โหลด PDF
   const url = URL.createObjectURL(blob);
 
   const fileName = `${clean(p.receiptBookNo)}-${clean(
@@ -172,5 +249,10 @@ export const generatePDF = async (p: any) => {
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
+
+  document.body.appendChild(link);
   link.click();
+  link.remove();
+
+  URL.revokeObjectURL(url);
 };

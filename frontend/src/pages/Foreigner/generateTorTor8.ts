@@ -146,7 +146,13 @@ export async function generateTorTor8(data: Foreigner) {
     text(receiptDateParts.day, 290, 625);
     text(receiptDateParts.month, 360, 625);
     text(receiptDateParts.year, 460, 625);
-    text(data.prefix, 165, 605);
+    if (data.prefix === "นาย") {
+      text("นาย", 165, 605);
+    } else if (data.prefix === "นาง") {
+      text("นาง", 165, 605);
+    }else{
+      text("น.ส.", 165, 605);
+    }
     text(data.firstName, 185, 605);
     text(data.lastName, 375, 605);
     text(data.age !== null ? data.age : "", 95, 585);
