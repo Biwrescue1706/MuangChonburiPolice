@@ -64,15 +64,6 @@ type PersonRecord = {
     [key: string]: unknown;
 };
 
-type StaffInfo = {
-    name?: string;
-    fullName?: string;
-    firstName?: string;
-    lastName?: string;
-    position?: string;
-    role?: string;
-};
-
 type MenuItem = {
     title: string;
     description: string;
@@ -244,9 +235,11 @@ function getRecordDate(record: PersonRecord): string {
 
 function getTimestamp(record: PersonRecord): number {
     const value = getRecordDate(record);
+
     if (!value) return 0;
 
     const timestamp = new Date(value).getTime();
+
     return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
@@ -304,20 +297,6 @@ function formatThaiDateTime(date: Date): string {
     }).format(date);
 }
 
-function getStaffName(
-    staff: StaffInfo | null | undefined
-): string {
-    if (!staff) return "เจ้าหน้าที่";
-
-    if (staff.fullName?.trim()) return staff.fullName;
-    if (staff.name?.trim()) return staff.name;
-
-    const name =
-        `${staff.firstName ?? ""} ${staff.lastName ?? ""}`.trim();
-
-    return name || "เจ้าหน้าที่";
-}
-
 function StatCard({
     title,
     value,
@@ -359,7 +338,8 @@ function StatCard({
 }
 
 export default function Dashboard() {
-    const { user } = useAuth();
+    // AuthContext ของโปรเจกต์ใช้ admin ไม่ใช่ user
+    const { admin } = useAuth();
 
     const [records, setRecords] = useState<PersonRecord[]>([]);
     const [search, setSearch] = useState("");
@@ -432,7 +412,7 @@ export default function Dashboard() {
         });
     }, [search, sortedRecords]);
 
-    // จำกัดรายการล่าสุดไม่เกิน 10 รายการ หลังจากค้นหาแล้ว
+    // แสดงรายการล่าสุดไม่เกิน 10 รายการ หลังค้นหา
     const latestRecords = filteredRecords.slice(0, 10);
 
     const totalRecords = records.length;
@@ -449,8 +429,8 @@ export default function Dashboard() {
         (record) => getStatusValue(record) === "2"
     ).length;
 
-    const staff = user as StaffInfo | null | undefined;
-    const staffName = getStaffName(staff);
+    const staffName = admin?.name || admin?.username || "เจ้าหน้าที่";
+    const staffPosition = admin?.position || "เจ้าหน้าที่";
 
     return (
         <div className="min-h-screen bg-[#f7f7f8] text-gray-900">
@@ -458,7 +438,6 @@ export default function Dashboard() {
 
             <main className="min-w-0 px-4 py-6 sm:px-6 lg:ml-64 lg:px-8">
                 <div className="mx-auto max-w-7xl space-y-8">
-
                     {/* Page header */}
                     <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
@@ -489,6 +468,7 @@ export default function Dashboard() {
                                 <p className="text-xs text-gray-500">
                                     วันที่และเวลาปัจจุบัน
                                 </p>
+
                                 <p className="mt-1 text-sm font-medium text-gray-800">
                                     {formatThaiDateTime(currentTime)}
                                 </p>
@@ -512,9 +492,7 @@ export default function Dashboard() {
                                 </h2>
 
                                 <p className="mt-2 text-sm text-white/75">
-                                    {staff?.position ||
-                                        staff?.role ||
-                                        "เจ้าหน้าที่"}
+                                    {staffPosition}
                                 </p>
 
                                 <p className="mt-4 max-w-xl text-sm leading-6 text-white/80">
@@ -524,10 +502,7 @@ export default function Dashboard() {
                             </div>
 
                             <div className="hidden h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/10 sm:flex">
-                                <LayoutDashboard
-                                    size={32}
-                                    strokeWidth={1.5}
-                                />
+                                <LayoutDashboard size={32} strokeWidth={1.5} />
                             </div>
                         </div>
                     </section>
@@ -538,6 +513,7 @@ export default function Dashboard() {
                             <h2 className="text-lg font-semibold text-gray-900">
                                 สรุปรายการ
                             </h2>
+
                             <p className="mt-1 text-sm text-gray-500">
                                 สถานะข้อมูลบุคคลในระบบ
                             </p>
@@ -584,6 +560,7 @@ export default function Dashboard() {
                             <h2 className="text-lg font-semibold text-gray-900">
                                 เมนูการทำงาน
                             </h2>
+
                             <p className="mt-1 text-sm text-gray-500">
                                 เลือกหมวดงานที่ต้องการดำเนินการ
                             </p>
@@ -639,6 +616,7 @@ export default function Dashboard() {
                                                             <p className="text-sm font-medium text-gray-800">
                                                                 {item.title}
                                                             </p>
+
                                                             <p className="mt-1 text-xs leading-5 text-gray-500">
                                                                 {item.description}
                                                             </p>
@@ -665,6 +643,7 @@ export default function Dashboard() {
                                 <h2 className="text-lg font-semibold text-gray-900">
                                     รายการล่าสุด
                                 </h2>
+
                                 <p className="mt-1 text-sm text-gray-500">
                                     แสดงรายการล่าสุดสูงสุด 10 รายการ
                                 </p>
@@ -721,18 +700,10 @@ export default function Dashboard() {
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="bg-gray-50/80 text-xs font-medium text-gray-500">
-                                        <th className="px-6 py-4">
-                                            ชื่อบุคคล
-                                        </th>
-                                        <th className="px-6 py-4">
-                                            ประเภทคำขอ
-                                        </th>
-                                        <th className="px-6 py-4">
-                                            วันที่บันทึก
-                                        </th>
-                                        <th className="px-6 py-4">
-                                            สถานะ
-                                        </th>
+                                        <th className="px-6 py-4">ชื่อบุคคล</th>
+                                        <th className="px-6 py-4">ประเภทคำขอ</th>
+                                        <th className="px-6 py-4">วันที่บันทึก</th>
+                                        <th className="px-6 py-4">สถานะ</th>
                                         <th className="px-6 py-4 text-right">
                                             รายละเอียด
                                         </th>
@@ -742,19 +713,13 @@ export default function Dashboard() {
                                 <tbody className="divide-y divide-gray-100">
                                     {loading ? (
                                         <tr>
-                                            <td
-                                                colSpan={5}
-                                                className="px-6 py-12 text-center text-sm text-gray-500"
-                                            >
+                                            <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
                                                 กำลังโหลดข้อมูล...
                                             </td>
                                         </tr>
                                     ) : latestRecords.length === 0 ? (
                                         <tr>
-                                            <td
-                                                colSpan={5}
-                                                className="px-6 py-12 text-center text-sm text-gray-500"
-                                            >
+                                            <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
                                                 {search
                                                     ? "ไม่พบข้อมูลที่ตรงกับคำค้นหา"
                                                     : "ยังไม่มีข้อมูลรายการ"}
@@ -771,10 +736,7 @@ export default function Dashboard() {
 
                                             return (
                                                 <tr
-                                                    key={
-                                                        recordId ||
-                                                        `${getPersonName(record)}-${index}`
-                                                    }
+                                                    key={recordId || `${getPersonName(record)}-${index}`}
                                                     className="transition hover:bg-rose-50/30"
                                                 >
                                                     <td className="px-6 py-4">
@@ -788,15 +750,11 @@ export default function Dashboard() {
                                                     </td>
 
                                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                                        {formatThaiDate(
-                                                            getRecordDate(record)
-                                                        )}
+                                                        {formatThaiDate(getRecordDate(record))}
                                                     </td>
 
                                                     <td className="px-6 py-4">
-                                                        <span
-                                                            className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStatusClass(record)}`}
-                                                        >
+                                                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStatusClass(record)}`}>
                                                             {getStatusLabel(record)}
                                                         </span>
                                                     </td>
@@ -811,9 +769,7 @@ export default function Dashboard() {
                                                                 <ArrowUpRight size={15} />
                                                             </Link>
                                                         ) : (
-                                                            <span className="text-xs text-gray-400">
-                                                                -
-                                                            </span>
+                                                            <span className="text-xs text-gray-400">-</span>
                                                         )}
                                                     </td>
                                                 </tr>
@@ -847,10 +803,7 @@ export default function Dashboard() {
 
                                     return (
                                         <div
-                                            key={
-                                                recordId ||
-                                                `${getPersonName(record)}-${index}`
-                                            }
+                                            key={recordId || `${getPersonName(record)}-${index}`}
                                             className="space-y-3 p-5"
                                         >
                                             <div className="flex items-start justify-between gap-3">
@@ -864,18 +817,14 @@ export default function Dashboard() {
                                                     </p>
                                                 </div>
 
-                                                <span
-                                                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${getStatusClass(record)}`}
-                                                >
+                                                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${getStatusClass(record)}`}>
                                                     {getStatusLabel(record)}
                                                 </span>
                                             </div>
 
                                             <div className="flex items-center justify-between gap-3">
                                                 <span className="text-xs text-gray-500">
-                                                    {formatThaiDate(
-                                                        getRecordDate(record)
-                                                    )}
+                                                    {formatThaiDate(getRecordDate(record))}
                                                 </span>
 
                                                 {recordId && (
