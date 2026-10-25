@@ -1,7 +1,8 @@
 // src/components/Nav.tsx
+
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type MenuChild = {
   path: string;
@@ -18,141 +19,108 @@ type MenuItem = {
   children?: MenuChild[];
 };
 
-export default function Nav() {
-  const { admin, logout } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [openMenus, setOpenMenus] = useState<string[]>([
-    "บุคคลตรวจ",
-    "ส่ง ศพฐ.",
-    "ตั้งค่า",
-  ]);
+const menuItems: MenuItem[] = [
+  {
+    path: "/dashboard",
+    label: "หน้าแรก",
+    description: "ภาพรวมระบบ",
+    icon: "home",
+  },
+  {
+    label: "บุคคลตรวจ",
+    icon: "person",
+    children: [
+      {
+        path: "/person/create",
+        label: "เพิ่มบุคคลตรวจ",
+        description: "บันทึกข้อมูลบุคคล",
+        icon: "personAdd",
+      },
+      {
+        path: "/person/history",
+        label: "ประวัติทั้งหมดแต่ละบุคคล",
+        description: "ข้อมูลประวัติบุคคลตรวจ",
+        icon: "history",
+      },
+    ],
+  },
+  {
+    label: "ส่ง ศพฐ.",
+    icon: "send",
+    children: [
+      {
+        path: "/forensic-submission",
+        label: "ออกเลขหนังสือ ส่ง ศพฐ.",
+        description: "จัดการการออกเลขหนังสือ",
+        icon: "send",
+      },
+      {
+        path: "/forensic-submission/list",
+        label: "รายการหนังสือที่ส่ง ศพฐ.",
+        description: "รายการหนังสือส่งตรวจ",
+        icon: "document",
+      },
+    ],
+  },
+  {
+    path: "/forensic-scan",
+    label: "สแกนเอกสาร",
+    description: "สแกน QR Code เอกสาร ศพฐ.",
+    icon: "scan",
+  },
+  {
+    label: "คนต่างด้าว",
+    icon: "foreigner",
+    children: [
+      {
+        path: "/foreigner/create",
+        label: "เพิ่มคนต่างด้าว",
+        description: "บันทึกข้อมูลคนต่างด้าว",
+        icon: "personAdd",
+      },
+      {
+        path: "/foreigner",
+        label: "ประวัติคนต่างด้าว",
+        description: "ดูประวัติข้อมูลคนต่างด้าว",
+        icon: "history",
+      },
+    ],
+  },
+  {
+    path: "/settings",
+    label: "ตั้งค่า",
+    description: "จัดการการตั้งค่าระบบ",
+    icon: "settings",
+  },
+];
 
-  // Navigation
-  const go = (path: string) => {
-    navigate(path);
-    setMenuOpen(false);
+const morePaths = [
+  "/forensic-scan",
+  "/foreigner/create",
+  "/foreigner",
+  "/settings",
+];
+
+function MenuIcon({
+  type,
+  size = 21,
+}: {
+  type: string;
+  size?: number;
+}) {
+  const common = {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
-
-  const shortText = (text: string = "", max = 16) => {
-    if (!text) return "-";
-    return text.length > max ? `${text.substring(0, max)}...` : text;
-  };
-
-  const isActive = (path: string) => location.pathname === path;
-
-  const toggleMenu = (label: string) => {
-    setOpenMenus((prev) =>
-      prev.includes(label)
-        ? prev.filter((item) => item !== label)
-        : [...prev, label],
-    );
-  };
-
-  const hasActiveChild = (item: MenuItem) =>
-    item.children?.some((child) => location.pathname === child.path) ?? false;
-
-  // Menu data
-  const menuItems: MenuItem[] = [
-    {
-      path: "/dashboard",
-      label: "หน้าแรก",
-      description: "ภาพรวมระบบ",
-      icon: "home",
-    },
-    {
-      label: "บุคคลตรวจ",
-      icon: "person",
-      children: [
-        {
-          path: "/person/create",
-          label: "เพิ่มบุคคลตรวจ",
-          description: "บันทึกข้อมูลบุคคล",
-          icon: "personAdd",
-        },
-        {
-          path: "/person/history",
-          label: "ประวัติทั้งหมดแต่ละบุคคล",
-          description: "ข้อมูลประวัติทั้งหมดแต่ละบุคคล",
-          icon: "history",
-        },
-      ],
-    },
-    {
-      label: "ส่ง ศพฐ.",
-      icon: "send",
-      children: [
-        {
-          path: "/forensic-submission",
-          label: "ออกเลขหนังสือ ส่ง ศพฐ.",
-          description: "จัดการการออกเลขหนังสือ ส่ง ศพฐ.",
-          icon: "send",
-        },
-        {
-          path: "/forensic-submission/list",
-          label: "รายการหนังสือ ที่ส่ง ศพฐ.",
-          description: "รายการหนังสือส่งตรวจ กับ ศพฐ.",
-          icon: "document",
-        },
-      ],
-    },
-    {
-      path: "/forensic-scan",
-      label: "สแกนเอกสาร",
-      description: "สแกน QR Code เอกสาร ศพฐ.",
-      icon: "scan",
-    },
-    {
-      label: "คนต่างด้าว",
-      icon: "foreigner",
-      children: [
-        {
-          path: "/foreigner/create",
-          label: "เพิ่มคนต่างด้าว",
-          description: "บันทึกข้อมูลคนต่างด้าว",
-          icon: "personAdd",
-        },
-        {
-          path: "/foreigner",
-          label: "ประวัติคนต่างด้าว",
-          description: "ดูประวัติข้อมูลคนต่างด้าว",
-          icon: "history",
-        },
-      ],
-    },
-    {
-      path: "/settings",
-      label: "ตั้งค่า",
-      description: "จัดการการตั้งค่าระบบ",
-      icon: "settings",
-    },
-  ];
-
-  const MenuIcon = ({
-    type,
-    size = 21,
-  }: {
-    type: string;
-    size?: number;
-  }) => {
-    const common = {
-      width: size,
-      height: size,
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: 1.8,
-      strokeLinecap: "round" as const,
-      strokeLinejoin: "round" as const,
-    };
-
-    if (type === "home") {
+  switch (type) {
+    case "home":
       return (
         <svg {...common}>
           <path d="m3 10 9-7 9 7" />
@@ -160,18 +128,17 @@ export default function Nav() {
           <path d="M9 20v-6h6v6" />
         </svg>
       );
-    }
 
-    if (type === "person" || type === "foreigner") {
+    case "person":
+    case "foreigner":
       return (
         <svg {...common}>
           <circle cx="12" cy="8" r="3.5" />
           <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
         </svg>
       );
-    }
 
-    if (type === "personAdd") {
+    case "personAdd":
       return (
         <svg {...common}>
           <circle cx="9" cy="8" r="3.5" />
@@ -180,9 +147,9 @@ export default function Nav() {
           <path d="M15 11h6" />
         </svg>
       );
-    }
 
-    if (type === "history" || type === "document") {
+    case "history":
+    case "document":
       return (
         <svg {...common}>
           <path d="M6 3.5h8l4 4V20H6z" />
@@ -191,18 +158,16 @@ export default function Nav() {
           <path d="M9 15.5h6" />
         </svg>
       );
-    }
 
-    if (type === "send") {
+    case "send":
       return (
         <svg {...common}>
           <path d="m21 3-7.5 18-3.5-8L3 9.5z" />
           <path d="M21 3 10 13" />
         </svg>
       );
-    }
 
-    if (type === "scan") {
+    case "scan":
       return (
         <svg {...common}>
           <path d="M4 7V5a1 1 0 0 1 1-1h2" />
@@ -216,26 +181,29 @@ export default function Nav() {
           <path d="M17 17h.01" />
         </svg>
       );
-    }
 
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V20h-2.5v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1A1.7 1.7 0 0 0 8.1 15a1.7 1.7 0 0 0-1.5-1H6.5v-2.5h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.8-1.8.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V5h2.5v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1V14h-.1a1.7 1.7 0 0 0-1.5 1Z" />
-      </svg>
-    );
-  };
+    case "settings":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.1h-2.5v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1A1.7 1.7 0 0 0 8.1 15a1.7 1.7 0 0 0-1.5-1H6.5v-2.5h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.8-1.8.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V5h2.5v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v2.5h-.1a1.7 1.7 0 0 0-1.5 1Z" />
+        </svg>
+      );
 
-  const ArrowIcon = ({
-    open,
-    size = 16,
-  }: {
-    open: boolean;
-    size?: number;
-  }) => (
+    default:
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+        </svg>
+      );
+  }
+}
+
+function ArrowIcon({ open }: { open: boolean }) {
+  return (
     <svg
-      width={size}
-      height={size}
+      width="17"
+      height="17"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -249,8 +217,10 @@ export default function Nav() {
       <path d="m6 9 6 6 6-6" />
     </svg>
   );
+}
 
-  const LogoutIcon = ({ size = 21 }: { size?: number }) => (
+function LogoutIcon({ size = 20 }: { size?: number }) {
+  return (
     <svg
       width={size}
       height={size}
@@ -262,79 +232,239 @@ export default function Nav() {
       strokeLinejoin="round"
     >
       <path d="M10 5H5v14h5" />
-      <path d="M14 8l4 4-4 4" />
+      <path d="m14 8 4 4-4 4" />
       <path d="M18 12H9" />
     </svg>
   );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="m6 6 12 12" />
+      <path d="M18 6 6 18" />
+    </svg>
+  );
+}
+
+export default function Nav() {
+  const { admin, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [openMenus, setOpenMenus] = useState<string[]>([]);
+  const [selectedMenu, setSelectedMenu] =
+    useState<MenuItem | null>(null);
+
+  const isActive = (path: string) =>
+    location.pathname === path;
+
+  const hasActiveChild = (item: MenuItem) =>
+    item.children?.some(
+      (child) => location.pathname === child.path,
+    ) ?? false;
+
+  const isMoreActive = morePaths.includes(location.pathname);
+
+  useEffect(() => {
+    const activeParent = menuItems.find(
+      (item) => item.children && hasActiveChild(item),
+    );
+
+    if (activeParent) {
+      setOpenMenus((prev) =>
+        prev.includes(activeParent.label)
+          ? prev
+          : [...prev, activeParent.label],
+      );
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setSelectedMenu(null);
+  }, [location.pathname]);
+
+  const go = (path: string) => {
+    setSelectedMenu(null);
+    navigate(path);
+  };
+
+  const toggleMenu = (label: string) => {
+    setOpenMenus((prev) =>
+      prev.includes(label)
+        ? prev.filter((item) => item !== label)
+        : [...prev, label],
+    );
+  };
+
+  const openMobileMenu = (label: string) => {
+    const item = menuItems.find(
+      (menu) => menu.label === label,
+    );
+
+    if (item) {
+      setSelectedMenu(item);
+    }
+  };
+
+  const handleLogout = async () => {
+    setSelectedMenu(null);
+    await logout();
+    navigate("/");
+  };
+
+  const shortText = (
+    text: string = "",
+    max = 18,
+  ) => {
+    if (!text) return "-";
+
+    return text.length > max
+      ? `${text.substring(0, max)}...`
+      : text;
+  };
+
+  const mobileMenuItems: MenuItem[] = [
+    ...menuItems.filter(
+      (item) =>
+        item.path === "/forensic-scan" ||
+        item.path === "/settings" ||
+        item.label === "คนต่างด้าว",
+    ),
+  ];
+
+  const renderMobileItem = (item: MenuItem) => {
+    if (item.children) {
+      return (
+        <div key={item.label} className="space-y-2">
+          {item.children.map((child) => {
+            const active = isActive(child.path);
+
+            return (
+              <button
+                key={child.path}
+                type="button"
+                onClick={() => go(child.path)}
+                className={`flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition-colors ${
+                  active
+                    ? "border-[#800020]/15 bg-[#800020]/[0.06]"
+                    : "border-gray-100 bg-white active:bg-gray-50"
+                }`}
+              >
+                <span
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                    active
+                      ? "bg-[#800020] text-white"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  <MenuIcon type={child.icon} size={21} />
+                </span>
+
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold text-gray-800">
+                    {child.label}
+                  </span>
+                  <span className="mt-1 block text-xs leading-relaxed text-gray-500">
+                    {child.description}
+                  </span>
+                </span>
+
+                <span className="text-xl text-gray-400">
+                  ›
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    const active = item.path
+      ? isActive(item.path)
+      : hasActiveChild(item);
+
+    return (
+      <button
+        key={item.path ?? item.label}
+        type="button"
+        onClick={() => item.path && go(item.path)}
+        className={`flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition-colors ${
+          active
+            ? "border-[#800020]/15 bg-[#800020]/[0.06]"
+            : "border-gray-100 bg-white active:bg-gray-50"
+        }`}
+      >
+        <span
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+            active
+              ? "bg-[#800020] text-white"
+              : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          <MenuIcon type={item.icon} size={21} />
+        </span>
+
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-gray-800">
+            {item.label}
+          </span>
+          <span className="mt-1 block text-xs text-gray-500">
+            {item.description}
+          </span>
+        </span>
+
+        <span className="text-xl text-gray-400">›</span>
+      </button>
+    );
+  };
 
   return (
     <>
-      <header className="fixed left-0 top-0 z-40 h-[58px] w-full border-b border-white/10 bg-gradient-to-r from-[#720019] to-[#800020] text-white shadow-lg">
-        <div className="relative mx-auto flex h-full w-full items-center px-3 min-[480px]:px-2 min-[768px]:px-2 min-[1200px]:pl-[120px] min-[1200px]:pr-2">
-          <button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            aria-label="เปิดเมนู"
-            className="flex h-10 w-20 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white transition hover:bg-white/20 active:scale-95 min-[1200px]:hidden"
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            >
-              <path d="M4 6h16" />
-              <path d="M4 12h16" />
-              <path d="M4 18h16" />
-            </svg>
-          </button>
-
+      {/* Desktop Topbar */}
+      <header className="fixed left-0 top-0 z-40 hidden h-[58px] w-full items-center border-b border-white/10 bg-[#800020] text-white shadow-sm min-[1200px]:flex">
+        <div className="flex h-full w-full items-center pl-[260px] pr-6">
           <button
             type="button"
             onClick={() => go("/dashboard")}
-            className="absolute left-1/2 flex -translate-x-1/2 items-center gap-2 border-0 bg-transparent p-0 text-left min-[1200px]:static min-[1200px]:translate-x-0"
+            className="flex items-center gap-2 text-left"
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white shadow-md">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white">
               <img
                 src="/assets/muangchonburi.webp"
-                alt="โลโก้"
+                alt="โลโก้สถานีตำรวจภูธรเมืองชลบุรี"
                 className="h-7 w-7 object-contain"
               />
-            </div>
-            <div className="hidden min-[480px]:block leading-none">
-              <p className="m-0 whitespace-nowrap text-xs font-bold leading-tight text-white">
+            </span>
+
+            <span>
+              <span className="block text-xs font-bold">
                 งานพิมพ์มือตรวจประวัติ
-              </p>
-              <p className="m-0 mt-0.5 whitespace-nowrap text-[14px] font-semibold leading-tight text-white/65">
+              </span>
+              <span className="mt-0.5 block text-[10px] text-white/65">
                 งานนโยบายและแผน
-              </p>
-            </div>
+              </span>
+            </span>
           </button>
 
-          <div className="hidden min-[1200px]:ml-auto min-[1200px]:flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/10">
-              <svg
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="8" r="3.5" />
-                <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
-              </svg>
+          <div className="ml-auto flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
+              <MenuIcon type="person" size={20} />
             </div>
-            <div className="hidden min-[480px]:block leading-none text-right">
-              <p className="m-0 text-xs font-bold leading-tight text-white">
-                {shortText(admin?.name || "", 18)}
+
+            <div className="max-w-[220px] text-right">
+              <p className="truncate text-xs font-semibold">
+                {shortText(admin?.name || "")}
               </p>
-              <p className="m-0 mt-1 text-[10px] leading-tight text-white/60">
+              <p className="mt-1 truncate text-[10px] text-white/65">
                 {admin?.position || "-"}
               </p>
             </div>
@@ -342,22 +472,36 @@ export default function Nav() {
         </div>
       </header>
 
-      <aside className="fixed left-0 top-0 z-30 hidden h-screen w-[240px] flex-col bg-[#720019] text-white shadow-xl min-[1200px]:flex">
-        <div className="flex h-[58px] shrink-0 items-center justify-center border-b border-white/10">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-md">
+      {/* Desktop Sidebar */}
+      <aside className="fixed bottom-0 left-0 top-0 z-30 hidden w-[240px] flex-col border-r border-gray-200 bg-white min-[1200px]:flex">
+        <button
+          type="button"
+          onClick={() => go("/dashboard")}
+          className="flex h-[58px] shrink-0 items-center gap-2.5 border-b border-gray-100 px-4 text-left"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white">
             <img
               src="/assets/muangchonburi.webp"
               alt="โลโก้"
-              className="h-7 w-7 object-contain"
+              className="h-8 w-8 object-contain"
             />
-          </div>
-          <div className="ml-2">
-            <p className="text-xs font-bold">งานพิมพ์มือตรวจประวัติ</p>
-            <p className="text-[9px] text-white/50">งานนโยบายและแผน</p>
-          </div>
-        </div>
+          </span>
 
-        <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+          <span className="min-w-0">
+            <span className="block truncate text-[11px] font-bold text-gray-800">
+              งานพิมพ์มือตรวจประวัติ
+            </span>
+            <span className="mt-1 block text-[10px] text-gray-500">
+              งานนโยบายและแผน
+            </span>
+          </span>
+        </button>
+
+        <div className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
+          <p className="mb-3 px-3 text-[10px] font-semibold tracking-wide text-gray-400">
+            เมนูระบบ
+          </p>
+
           {menuItems.map((item) => {
             if (item.children) {
               const parentActive = hasActiveChild(item);
@@ -368,31 +512,37 @@ export default function Nav() {
                   <button
                     type="button"
                     onClick={() => toggleMenu(item.label)}
-                    title={item.label}
-                    className={`group relative flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all duration-200 ${
+                    aria-expanded={isOpen}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors ${
                       parentActive
-                        ? "border-white/10 bg-white/10 text-white"
-                        : "border-transparent text-white/75 hover:bg-white/10 hover:text-white"
+                        ? "bg-[#800020]/[0.06] text-[#800020]"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-[#800020]"
                     }`}
                   >
-                    <span className="shrink-0">
-                      <MenuIcon type={item.icon} size={20} />
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                        parentActive
+                          ? "bg-[#800020] text-white"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      <MenuIcon type={item.icon} size={19} />
                     </span>
+
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-xs font-bold">
+                      <span className="block text-xs font-semibold">
                         {item.label}
                       </span>
-                      <span className="mt-0.5 block truncate text-[9px] text-white/40">
+                      <span className="mt-1 block text-[10px] text-gray-400">
                         เมนูย่อย
                       </span>
                     </span>
-                    <span className="shrink-0 text-white/50">
-                      <ArrowIcon open={isOpen} />
-                    </span>
+
+                    <ArrowIcon open={isOpen} />
                   </button>
 
                   {isOpen && (
-                    <div className="ml-3 space-y-1 border-l border-white/10 pl-2">
+                    <div className="ml-7 space-y-1 border-l border-gray-200 pl-3">
                       {item.children.map((child) => {
                         const active = isActive(child.path);
 
@@ -401,30 +551,24 @@ export default function Nav() {
                             key={child.path}
                             type="button"
                             onClick={() => go(child.path)}
-                            title={child.label}
-                            className={`group relative flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left transition-all duration-200 ${
+                            className={`flex w-full items-start gap-2 rounded-lg px-2.5 py-2.5 text-left transition-colors ${
                               active
-                                ? "bg-white text-[#800020] shadow-md"
-                                : "text-white/65 hover:bg-white/10 hover:text-white"
+                                ? "bg-[#800020]/[0.07] text-[#800020]"
+                                : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
                             }`}
                           >
-                            {active && (
-                              <span className="absolute -left-[9px] top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-white" />
-                            )}
-                            <span className="shrink-0">
-                              <MenuIcon type={child.icon} size={17} />
+                            <span className="mt-0.5 shrink-0">
+                              <MenuIcon
+                                type={child.icon}
+                                size={16}
+                              />
                             </span>
+
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[11px] font-semibold">
+                              <span className="block text-[11px] font-medium leading-relaxed">
                                 {child.label}
                               </span>
-                              <span
-                                className={`mt-0.5 block truncate text-[8px] ${
-                                  active
-                                    ? "text-[#800020]/50"
-                                    : "text-white/35"
-                                }`}
-                              >
+                              <span className="mt-1 block text-[9px] leading-relaxed text-gray-400">
                                 {child.description}
                               </span>
                             </span>
@@ -437,37 +581,38 @@ export default function Nav() {
               );
             }
 
-            if (!item.path) return null;
-
-            const active = isActive(item.path);
+            const active = isActive(item.path!);
 
             return (
               <button
                 key={item.path}
                 type="button"
                 onClick={() => go(item.path!)}
-                title={item.label}
-                className={`group relative flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all duration-200 ${
+                className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors ${
                   active
-                    ? "border-white/10 bg-white text-[#800020] shadow-md"
-                    : "border-transparent text-white/75 hover:bg-white/10 hover:text-white"
+                    ? "bg-[#800020]/[0.07] text-[#800020]"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-[#800020]"
                 }`}
               >
                 {active && (
-                  <span className="absolute left-0 top-1/2 h-7 w-1 -translate-y-1/2 rounded-r-full bg-[#800020]" />
+                  <span className="absolute bottom-2 left-0 top-2 w-[3px] rounded-r-full bg-[#800020]" />
                 )}
-                <span className="shrink-0">
-                  <MenuIcon type={item.icon} size={20} />
+
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                    active
+                      ? "bg-[#800020] text-white"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  <MenuIcon type={item.icon} size={19} />
                 </span>
+
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-xs font-bold">
+                  <span className="block text-xs font-semibold">
                     {item.label}
                   </span>
-                  <span
-                    className={`mt-0.5 block truncate text-[9px] ${
-                      active ? "text-[#800020]/50" : "text-white/40"
-                    }`}
-                  >
+                  <span className="mt-1 block truncate text-[10px] text-gray-400">
                     {item.description}
                   </span>
                 </span>
@@ -476,234 +621,26 @@ export default function Nav() {
           })}
         </div>
 
-        <div className="shrink-0 border-t border-white/10 p-3">
-          <button
-            type="button"
-            onClick={handleLogout}
-            title="ออกจากระบบ"
-            className="flex w-full items-center justify-start gap-3 rounded-xl bg-white/10 px-3 py-3 text-white transition hover:bg-red-600"
-          >
-            <LogoutIcon />
-            <span className="text-xs font-bold">ออกจากระบบ</span>
-          </button>
-        </div>
-      </aside>
-
-      {menuOpen && (
-        <button
-          type="button"
-          aria-label="ปิดเมนู"
-          onClick={() => setMenuOpen(false)}
-          className="fixed inset-0 z-50 cursor-default border-0 bg-black/50 backdrop-blur-[2px] min-[1200px]:hidden"
-        />
-      )}
-
-      <aside
-        className={`fixed left-0 top-0 z-[60] flex h-screen w-[290px] max-w-[82vw] flex-col bg-white shadow-2xl transition-transform duration-300 ease-out min-[1200px]:hidden ${
-          menuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex h-[76px] shrink-0 items-center justify-between bg-gradient-to-r from-[#720019] to-[#800020] px-4 text-white">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-transparent">
-              <img
-                src="/assets/muangchonburi.webp"
-                alt="โลโก้"
-                className="h-11 w-11 object-contain"
-              />
-            </div>
-            <div className="leading-none">
-              <p className="m-0 text-sm font-bold leading-tight">เมนูหลัก</p>
-              <p className="m-0 mt-1 text-[10px] leading-tight text-white/60">
-                งานพิมพ์มือตรวจประวัติ
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setMenuOpen(false)}
-            aria-label="ปิดเมนู"
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white transition hover:bg-white/20 active:scale-95"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            >
-              <path d="m6 6 12 12" />
-              <path d="M18 6 6 18" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="border-b border-gray-100 bg-gray-50 px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-transparent">
-              <img
-                src="/assets/muangchonburi.webp"
-                alt="โลโก้"
-                className="h-10 w-10 object-contain"
-              />
-            </div>
-            <div className="min-w-0 leading-none">
-              <p className="m-0 truncate text-sm font-bold leading-tight text-gray-900">
-                {admin?.name || "-"}
-              </p>
-              <p className="m-0 mt-1 truncate text-[10px] leading-tight text-gray-400">
-                {admin?.position || "-"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-3">
-          <p className="mb-2 px-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-            เมนูระบบ
-          </p>
-
-          <div className="space-y-1">
-            {menuItems.map((item) => {
-              if (item.children) {
-                const parentActive = hasActiveChild(item);
-                const isOpen = openMenus.includes(item.label);
-
-                return (
-                  <div key={item.label} className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={() => toggleMenu(item.label)}
-                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
-                        parentActive
-                          ? "bg-[#800020]/10 text-[#800020]"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-[#800020]"
-                      }`}
-                    >
-                      <span
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                          parentActive
-                            ? "bg-[#800020] text-white"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
-                        <MenuIcon type={item.icon} size={19} />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-bold">
-                          {item.label}
-                        </span>
-                        <span className="mt-0.5 block text-[10px] text-gray-400">
-                          เมนูย่อย
-                        </span>
-                      </span>
-                      <span
-                        className={
-                          parentActive ? "text-[#800020]" : "text-gray-400"
-                        }
-                      >
-                        <ArrowIcon open={isOpen} size={18} />
-                      </span>
-                    </button>
-
-                    {isOpen && (
-                      <div className="ml-5 space-y-1 border-l-2 border-[#800020]/10 pl-2">
-                        {item.children.map((child) => {
-                          const active = isActive(child.path);
-
-                          return (
-                            <button
-                              key={child.path}
-                              type="button"
-                              onClick={() => go(child.path)}
-                              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
-                                active
-                                  ? "bg-[#800020]/10 text-[#800020]"
-                                  : "text-gray-600 hover:bg-gray-50 hover:text-[#800020]"
-                              }`}
-                            >
-                              <span
-                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                                  active
-                                    ? "bg-[#800020] text-white"
-                                    : "bg-gray-100 text-gray-500"
-                                }`}
-                              >
-                                <MenuIcon type={child.icon} size={17} />
-                              </span>
-                              <span className="min-w-0 flex-1">
-                                <span className="block text-xs font-semibold">
-                                  {child.label}
-                                </span>
-                                <span className="mt-0.5 block truncate text-[9px] text-gray-400">
-                                  {child.description}
-                                </span>
-                              </span>
-                              {active && (
-                                <span className="h-2 w-2 shrink-0 rounded-full bg-[#800020]" />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              if (!item.path) return null;
-
-              const active = isActive(item.path);
-
-              return (
-                <button
-                  key={item.path}
-                  type="button"
-                  onClick={() => go(item.path!)}
-                  className={`group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
-                    active
-                      ? "bg-[#800020]/10 text-[#800020]"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-[#800020]"
-                  }`}
-                >
-                  <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                      active
-                        ? "bg-[#800020] text-white"
-                        : "bg-gray-100 text-gray-500 group-hover:bg-[#800020]/10 group-hover:text-[#800020]"
-                    }`}
-                  >
-                    <MenuIcon type={item.icon} size={19} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-bold">
-                      {item.label}
-                    </span>
-                    <span
-                      className={`mt-0.5 block truncate text-[10px] ${
-                        active ? "text-[#800020]/60" : "text-gray-400"
-                      }`}
-                    >
-                      {item.description}
-                    </span>
-                  </span>
-                  {active && (
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-[#800020]" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         <div className="shrink-0 border-t border-gray-100 p-3">
+          <div className="mb-3 flex items-center gap-2.5 rounded-xl bg-gray-50 p-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#800020] ring-1 ring-gray-200">
+              <MenuIcon type="person" size={20} />
+            </span>
+
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-xs font-semibold text-gray-800">
+                {admin?.name || "-"}
+              </span>
+              <span className="mt-1 block truncate text-[10px] text-gray-500">
+                {admin?.position || "-"}
+              </span>
+            </span>
+          </div>
+
           <button
             type="button"
-            onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition hover:bg-red-100"
+            onClick={() => void handleLogout()}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
           >
             <LogoutIcon size={19} />
             ออกจากระบบ
@@ -711,9 +648,181 @@ export default function Nav() {
         </div>
       </aside>
 
-      <div className="min-h-screen pt-[58px] min-[1200px]:ml-[240px]">
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] min-[1200px]:hidden">
+        <div className="mx-auto grid h-[64px] max-w-xl grid-cols-4">
+          {[
+            {
+              label: "หน้าแรก",
+              icon: "home",
+              path: "/dashboard",
+            },
+            {
+              label: "บุคคลตรวจ",
+              icon: "person",
+              menu: "บุคคลตรวจ",
+            },
+            {
+              label: "ส่ง ศพฐ.",
+              icon: "send",
+              menu: "ส่ง ศพฐ.",
+            },
+            {
+              label: "เพิ่มเติม",
+              icon: "settings",
+              menu: "เพิ่มเติม",
+            },
+          ].map((navItem) => {
+            const active = navItem.path
+              ? isActive(navItem.path)
+              : navItem.menu === "บุคคลตรวจ"
+                ? Boolean(
+                    menuItems.find(
+                      (item) => item.label === "บุคคลตรวจ",
+                    ) &&
+                      hasActiveChild(
+                        menuItems.find(
+                          (item) => item.label === "บุคคลตรวจ",
+                        )!,
+                      ),
+                  )
+                : navItem.menu === "ส่ง ศพฐ."
+                  ? Boolean(
+                      menuItems.find(
+                        (item) => item.label === "ส่ง ศพฐ.",
+                      ) &&
+                        hasActiveChild(
+                          menuItems.find(
+                            (item) => item.label === "ส่ง ศพฐ.",
+                          )!,
+                        ),
+                    )
+                  : isMoreActive;
+
+            const sheetOpen =
+              selectedMenu?.label === navItem.menu;
+
+            return (
+              <button
+                key={navItem.label}
+                type="button"
+                aria-label={navItem.label}
+                aria-expanded={
+                  navItem.menu ? sheetOpen : undefined
+                }
+                onClick={() => {
+                  if (navItem.path) {
+                    go(navItem.path);
+                  } else {
+                    openMobileMenu(navItem.menu!);
+                  }
+                }}
+                className={`relative flex flex-col items-center justify-center gap-1 transition-colors ${
+                  active || sheetOpen
+                    ? "text-[#800020]"
+                    : "text-gray-500"
+                }`}
+              >
+                {(active || sheetOpen) && (
+                  <span className="absolute left-1/2 top-0 h-[3px] w-9 -translate-x-1/2 rounded-b-full bg-[#800020]" />
+                )}
+
+                <span
+                  className={`flex h-8 w-11 items-center justify-center rounded-xl ${
+                    active || sheetOpen
+                      ? "bg-[#800020]/[0.07]"
+                      : ""
+                  }`}
+                >
+                  <MenuIcon type={navItem.icon} size={21} />
+                </span>
+
+                <span
+                  className={`text-[10px] ${
+                    active || sheetOpen
+                      ? "font-bold"
+                      : "font-medium"
+                  }`}
+                >
+                  {navItem.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Mobile Menu Selection Sheet */}
+      {selectedMenu && (
+        <div className="fixed inset-0 z-[70] min-[1200px]:hidden">
+          <button
+            type="button"
+            aria-label="ปิดเมนู"
+            onClick={() => setSelectedMenu(null)}
+            className="absolute inset-0 h-full w-full bg-black/35 backdrop-blur-[2px]"
+          />
+
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label={
+              selectedMenu.label === "เพิ่มเติม"
+                ? "เมนูเพิ่มเติม"
+                : `เลือก${selectedMenu.label}`
+            }
+            className="absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-[24px] bg-white pb-[calc(16px+env(safe-area-inset-bottom))] shadow-2xl"
+          >
+            <div className="sticky top-0 rounded-t-[24px] bg-white">
+              <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-gray-200" />
+
+              <div className="flex items-center justify-between px-5 pb-4 pt-5">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    {selectedMenu.label === "เพิ่มเติม"
+                      ? "เมนูเพิ่มเติม"
+                      : `เลือก${selectedMenu.label}`}
+                  </h2>
+                  <p className="mt-1 text-xs text-gray-500">
+                    เลือกรายการที่ต้องการใช้งาน
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  aria-label="ปิด"
+                  onClick={() => setSelectedMenu(null)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2 px-4">
+              {(selectedMenu.label === "เพิ่มเติม"
+                ? mobileMenuItems
+                : [selectedMenu]
+              ).map(renderMobileItem)}
+            </div>
+
+            <div className="mx-4 mt-4 border-t border-gray-100 pt-3">
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 py-3 text-sm font-semibold text-red-600 transition-colors hover:bg-red-100"
+              >
+                <LogoutIcon size={19} />
+                ออกจากระบบ
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* Page Content */}
+      <main className="min-h-screen pb-[calc(80px+env(safe-area-inset-bottom))] min-[1200px]:ml-[240px] min-[1200px]:pb-0 min-[1200px]:pt-[58px]">
         <Outlet />
-      </div>
+      </main>
     </>
   );
 }
