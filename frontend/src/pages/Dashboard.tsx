@@ -302,8 +302,17 @@ function Icon({
 
 export default function Dashboard() {
   const { admin } = useAuth();
+
   const [thaiTime, setThaiTime] = useState("");
   const [summary, setSummary] = useState<Summary>(initialSummary);
+
+  const currentYear = new Intl.DateTimeFormat(
+    "th-TH-u-ca-buddhist",
+    {
+      year: "numeric",
+      timeZone: "Asia/Bangkok",
+    }
+  ).format(new Date());
 
   useEffect(() => {
     const updateTime = () => {
@@ -605,9 +614,39 @@ export default function Dashboard() {
         </section>
 
         {/* Footer: แสดงเฉพาะหน้าจอ Desktop ตั้งแต่ 1280px */}
-        <footer className="mt-10 hidden flex-col items-center justify-between gap-2 border-t border-gray-200 py-5 text-xs text-gray-400 xl:flex xl:flex-row">
-          <p>ระบบบริหารจัดการข้อมูลและเอกสาร</p>
-          <p>สำหรับการปฏิบัติงานภายในหน่วยงาน</p>
+        <footer className="mt-12 hidden flex-col items-center py-8 text-center xl:flex">
+          <div className="mb-6 flex w-full max-w-xs items-center gap-5">
+            <div className="h-px flex-1 bg-sky-200" />
+
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm">
+              <span className="text-2xl text-blue-600">✦</span>
+            </div>
+
+            <div className="h-px flex-1 bg-sky-200" />
+          </div>
+
+          <p className="text-sm leading-7 text-gray-700">
+            <span className="font-semibold text-gray-900">
+              © 2569 - {currentYear}
+            </span>{" "}
+            <span className="font-medium text-blue-600">
+              งานพิมพ์มือตรวจประวัติ
+            </span>
+          </p>
+
+          <p className="text-sm leading-7 text-gray-700">
+            พัฒนาโดย{" "}
+            <span className="font-medium text-blue-600">
+              งานนโยบายและแผน
+            </span>{" "}
+            สภ.เมืองชลบุรี
+          </p>
+
+          <p className="mt-2 text-xs text-gray-500">
+            สงวนลิขสิทธิ์ทุกประการ
+          </p>
+
+          <div className="mt-6 h-1 w-36 rounded-full bg-sky-600" />
         </footer>
       </div>
     </main>
