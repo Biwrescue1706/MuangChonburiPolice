@@ -28,7 +28,7 @@ import {
 import type { LucideProps } from "lucide-react";
 import Nav from "../components/Nav";
 import { useAuth } from "../context/AuthContext";
-import api from "../api";
+import api from "../api/axios";
 
 type IconComponent = ComponentType<LucideProps>;
 
