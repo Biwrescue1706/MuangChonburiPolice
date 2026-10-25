@@ -1,5 +1,4 @@
 // src/components/Nav.tsx
-
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
@@ -306,6 +305,15 @@ export default function Nav() {
   };
 
   const openMobileMenu = (label: string) => {
+    if (label === "เพิ่มเติม") {
+      setSelectedMenu({
+        label: "เพิ่มเติม",
+        icon: "settings",
+        children: [],
+      });
+      return;
+    }
+
     const item = menuItems.find(
       (menu) => menu.label === label,
     );
@@ -321,10 +329,7 @@ export default function Nav() {
     navigate("/");
   };
 
-  const shortText = (
-    text: string = "",
-    max = 18,
-  ) => {
+  const shortText = (text: string = "", max = 18) => {
     if (!text) return "-";
 
     return text.length > max
@@ -332,14 +337,12 @@ export default function Nav() {
       : text;
   };
 
-  const mobileMenuItems: MenuItem[] = [
-    ...menuItems.filter(
-      (item) =>
-        item.path === "/forensic-scan" ||
-        item.path === "/settings" ||
-        item.label === "คนต่างด้าว",
-    ),
-  ];
+  const mobileMenuItems = menuItems.filter(
+    (item) =>
+      item.path === "/forensic-scan" ||
+      item.path === "/settings" ||
+      item.label === "คนต่างด้าว",
+  );
 
   const renderMobileItem = (item: MenuItem) => {
     if (item.children) {
@@ -378,9 +381,7 @@ export default function Nav() {
                   </span>
                 </span>
 
-                <span className="text-xl text-gray-400">
-                  ›
-                </span>
+                <span className="text-xl text-gray-400">›</span>
               </button>
             );
           })}
@@ -429,8 +430,8 @@ export default function Nav() {
 
   return (
     <>
-      {/* Desktop Topbar */}
-      <header className="fixed left-0 top-0 z-40 hidden h-[58px] w-full items-center border-b border-white/10 bg-[#800020] text-white shadow-sm min-[1200px]:flex">
+      {/* Desktop Topbar: tablet and above */}
+      <header className="fixed left-0 top-0 z-40 hidden h-[58px] w-full items-center border-b border-white/10 bg-[#800020] text-white shadow-sm min-[768px]:flex">
         <div className="flex h-full w-full items-center pl-[260px] pr-6">
           <button
             type="button"
@@ -473,7 +474,7 @@ export default function Nav() {
       </header>
 
       {/* Desktop Sidebar */}
-      <aside className="fixed bottom-0 left-0 top-0 z-30 hidden w-[240px] flex-col border-r border-gray-200 bg-white min-[1200px]:flex">
+      <aside className="fixed bottom-0 left-0 top-0 z-30 hidden w-[240px] flex-col border-r border-gray-200 bg-white min-[768px]:flex">
         <button
           type="button"
           onClick={() => go("/dashboard")}
@@ -558,10 +559,7 @@ export default function Nav() {
                             }`}
                           >
                             <span className="mt-0.5 shrink-0">
-                              <MenuIcon
-                                type={child.icon}
-                                size={16}
-                              />
+                              <MenuIcon type={child.icon} size={16} />
                             </span>
 
                             <span className="min-w-0 flex-1">
@@ -648,8 +646,8 @@ export default function Nav() {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] min-[1200px]:hidden">
+      {/* Mobile Bottom Navigation: below 768px */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] min-[768px]:hidden">
         <div className="mx-auto grid h-[64px] max-w-xl grid-cols-4">
           {[
             {
@@ -673,31 +671,23 @@ export default function Nav() {
               menu: "เพิ่มเติม",
             },
           ].map((navItem) => {
-            const active = navItem.path
-              ? isActive(navItem.path)
-              : navItem.menu === "บุคคลตรวจ"
-                ? Boolean(
-                    menuItems.find(
-                      (item) => item.label === "บุคคลตรวจ",
-                    ) &&
-                      hasActiveChild(
-                        menuItems.find(
-                          (item) => item.label === "บุคคลตรวจ",
-                        )!,
-                      ),
-                  )
-                : navItem.menu === "ส่ง ศพฐ."
-                  ? Boolean(
-                      menuItems.find(
-                        (item) => item.label === "ส่ง ศพฐ.",
-                      ) &&
-                        hasActiveChild(
-                          menuItems.find(
-                            (item) => item.label === "ส่ง ศพฐ.",
-                          )!,
-                        ),
-                    )
-                  : isMoreActive;
+            let active = false;
+
+            if (navItem.path) {
+              active = isActive(navItem.path);
+            } else if (navItem.menu === "บุคคลตรวจ") {
+              const item = menuItems.find(
+                (menu) => menu.label === "บุคคลตรวจ",
+              );
+              active = item ? hasActiveChild(item) : false;
+            } else if (navItem.menu === "ส่ง ศพฐ.") {
+              const item = menuItems.find(
+                (menu) => menu.label === "ส่ง ศพฐ.",
+              );
+              active = item ? hasActiveChild(item) : false;
+            } else {
+              active = isMoreActive;
+            }
 
             const sheetOpen =
               selectedMenu?.label === navItem.menu;
@@ -754,7 +744,7 @@ export default function Nav() {
 
       {/* Mobile Menu Selection Sheet */}
       {selectedMenu && (
-        <div className="fixed inset-0 z-[70] min-[1200px]:hidden">
+        <div className="fixed inset-0 z-[70] min-[768px]:hidden">
           <button
             type="button"
             aria-label="ปิดเมนู"
@@ -820,7 +810,7 @@ export default function Nav() {
       )}
 
       {/* Page Content */}
-      <main className="min-h-screen pb-[calc(80px+env(safe-area-inset-bottom))] min-[1200px]:ml-[240px] min-[1200px]:pb-0 min-[1200px]:pt-[58px]">
+      <main className="min-h-screen pb-[calc(80px+env(safe-area-inset-bottom))] min-[768px]:ml-[240px] min-[768px]:pb-0 min-[768px]:pt-[58px]">
         <Outlet />
       </main>
     </>
