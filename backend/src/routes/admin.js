@@ -1,3 +1,4 @@
+
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import neonPrisma from "../neon.js";
@@ -5,201 +6,307 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const admin = Router();
 
-// Register
-admin.post("/register", async (req, res) => {
+const MAX_PAGE_SIZE = 100;
+const MIN_PASSWORD_LENGTH = 12;
+const MAX_PASSWORD_LENGTH = 128;
+const MAX_USERNAME_LENGTH = 50;
+const MAX_NAME_LENGTH = 100;
+const MAX_POSITION_LENGTH = 100;
+
+// ตรวจสอบ username และข้อความที่รับจาก client
+function isValidText(value, maxLength) {
+  return (
+    typeof value === "string" &&
+    value.trim().length > 0 &&
+    value.trim().length <= maxLength
+  );
+}
+
+// แปลงข้อมูลแอดมินโดยไม่ส่ง password กลับไป
+function safeAdmin(user) {
+  if (!user) return null;
+
+  const {
+    password,
+    ...result
+  } = user;
+
+  return result;
+}
+
+// จัดการข้อผิดพลาดโดยไม่เปิดเผยรายละเอียดภายใน
+function handleError(res, error, operation) {
+  if (error?.code === "P2002") {
+    return res.status(409).json({
+      error: "Username already exists",
+    });
+  }
+
+  if (error?.code === "P2025") {
+    return res.status(404).json({
+      error: "Admin not found",
+    });
+  }
+
+  console.error(`${operation} failed:`, {
+    code: error?.code,
+    name: error?.name,
+  });
+
+  return res.status(500).json({
+    error: "Internal Server Error",
+  });
+}
+
+// ปิดการสมัครสมาชิกสาธารณะโดยกำหนดให้ต้องผ่าน authentication
+admin.post("/register", authMiddleware, async (req, res) => {
   try {
     const {
       username,
       password,
       name,
       position,
-    } = req.body;
+    } = req.body ?? {};
 
-    if (!username || !password) {
+    if (!isValidText(username, MAX_USERNAME_LENGTH)) {
       return res.status(400).json({
-        error: "ข้อมูลไม่ครบ",
+        error: "Invalid username",
       });
     }
 
-    // Trim username
+    if (
+      typeof password !== "string" ||
+      password.length < MIN_PASSWORD_LENGTH ||
+      password.length > MAX_PASSWORD_LENGTH
+    ) {
+      return res.status(400).json({
+        error: `Password must be ${MIN_PASSWORD_LENGTH}-${MAX_PASSWORD_LENGTH} characters`,
+      });
+    }
+
+    if (
+      name !== undefined &&
+      name !== null &&
+      (typeof name !== "string" || name.length > MAX_NAME_LENGTH)
+    ) {
+      return res.status(400).json({
+        error: "Invalid name",
+      });
+    }
+
+    if (
+      position !== undefined &&
+      position !== null &&
+      (typeof position !== "string" ||
+        position.length > MAX_POSITION_LENGTH)
+    ) {
+      return res.status(400).json({
+        error: "Invalid position",
+      });
+    }
+
     const cleanUsername = username.trim();
 
-    // Validate password
-    if (password.length < 6) {
-      return res.status(400).json({
-        error: "รหัสผ่านต้องอย่างน้อย 6 ตัว",
-      });
-    }
+    const hash = await bcrypt.hash(password, 12);
 
-    // Check username
-    const exist = await neonPrisma.admin.findUnique({
-      where: {
-        username: cleanUsername,
-      },
-    });
-
-    if (exist) {
-      return res.status(400).json({
-        error: "username ถูกใช้งานแล้ว",
-      });
-    }
-
-    // Hash password
-    const hash = await bcrypt.hash(password, 10);
-
-    // Create admin
     const user = await neonPrisma.admin.create({
       data: {
         username: cleanUsername,
         password: hash,
-        name,
-        position,
+        name: name?.trim() || null,
+        position: position?.trim() || null,
       },
     });
 
-    // Hide password
-    const {
-      password: _,
-      ...safeUser
-    } = user;
-
-    res.json({
+    return res.status(201).json({
       message: "สร้างสมาชิกสำเร็จ",
-      admin: safeUser,
+      admin: safeAdmin(user),
     });
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      error: "Register error",
-    });
+  } catch (error) {
+    return handleError(res, error, "Admin registration");
   }
 });
 
-// Profile
+// อ่านโปรไฟล์ของผู้ใช้ที่ตรงกับ JWT
 admin.get("/me", authMiddleware, async (req, res) => {
   try {
+    if (!req.admin?.adminId) {
+      return res.status(401).json({
+        error: "Unauthorized",
+      });
+    }
+
     const user = await neonPrisma.admin.findUnique({
       where: {
         adminId: req.admin.adminId,
       },
-    });
-
-    if (!user) {
-      return res.sendStatus(404);
-    }
-
-    // Hide password
-    const {
-      password,
-      ...safeUser
-    } = user;
-
-    res.json(safeUser);
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      error: "Profile error",
-    });
-  }
-});
-
-// Get all admins
-admin.get("/getall", authMiddleware, async (req, res) => {
-  try {
-    const page = Number(req.query.page || 1);
-    const limit = 20;
-
-    const admins = await neonPrisma.admin.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
       select: {
         adminId: true,
         username: true,
         name: true,
         position: true,
         createdAt: true,
-      },
-      orderBy: {
-        createdAt: "desc",
+        updatedAt: true,
       },
     });
 
-    res.json(admins);
-  } catch (err) {
-    console.error(err);
+    if (!user) {
+      return res.status(404).json({
+        error: "Admin not found",
+      });
+    }
 
-    res.status(500).json({
-      error: "Get admins error",
-    });
+    return res.json(user);
+  } catch (error) {
+    return handleError(res, error, "Get profile");
   }
 });
 
-// Update profile
+// แสดงรายชื่อแอดมินแบบแบ่งหน้า
+admin.get("/getall", authMiddleware, async (req, res) => {
+  try {
+    const pageText = req.query.page ?? "1";
+
+    if (
+      typeof pageText !== "string" ||
+      !/^[1-9]\d{0,7}$/.test(pageText)
+    ) {
+      return res.status(400).json({
+        error: "Invalid page",
+      });
+    }
+
+    const page = Number(pageText);
+    const limit = 20;
+
+    const [admins, total] = await Promise.all([
+      neonPrisma.admin.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          adminId: true,
+          username: true,
+          name: true,
+          position: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      neonPrisma.admin.count(),
+    ]);
+
+    return res.json({
+      data: admins,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    return handleError(res, error, "Get admin list");
+  }
+});
+
+// แก้ไขโปรไฟล์ของตัวเองโดยรับเฉพาะฟิลด์ที่อนุญาต
 admin.put("/me", authMiddleware, async (req, res) => {
   try {
+    if (!req.admin?.adminId) {
+      return res.status(401).json({
+        error: "Unauthorized",
+      });
+    }
+
     const {
       username,
       name,
       position,
-    } = req.body;
+    } = req.body ?? {};
 
-    const cleanUsername = username?.trim();
+    const data = {};
 
-    // Check duplicate username
-    if (cleanUsername) {
-      const exist = await neonPrisma.admin.findFirst({
-        where: {
-          username: cleanUsername,
-          NOT: {
-            adminId: req.admin.adminId,
-          },
-        },
-      });
-
-      if (exist) {
+    if (username !== undefined) {
+      if (!isValidText(username, MAX_USERNAME_LENGTH)) {
         return res.status(400).json({
-          error: "username ถูกใช้งานแล้ว",
+          error: "Invalid username",
         });
       }
+
+      data.username = username.trim();
     }
+
+    if (name !== undefined) {
+      if (
+        name !== null &&
+        (typeof name !== "string" || name.length > MAX_NAME_LENGTH)
+      ) {
+        return res.status(400).json({
+          error: "Invalid name",
+        });
+      }
+
+      data.name = name?.trim() || null;
+    }
+
+    if (position !== undefined) {
+      if (
+        position !== null &&
+        (typeof position !== "string" ||
+          position.length > MAX_POSITION_LENGTH)
+      ) {
+        return res.status(400).json({
+          error: "Invalid position",
+        });
+      }
+
+      data.position = position?.trim() || null;
+    }
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({
+        error: "No valid fields provided",
+      });
+    }
+
+    data.updatedAt = new Date();
 
     const updated = await neonPrisma.admin.update({
       where: {
         adminId: req.admin.adminId,
       },
-      data: {
-        username: cleanUsername,
-        name,
-        position,
-        updatedAt: new Date(),
+      data,
+      select: {
+        adminId: true,
+        username: true,
+        name: true,
+        position: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
-    // Hide password
-    const {
-      password,
-      ...safeUser
-    } = updated;
-
-    res.json({
+    return res.json({
       message: "อัปเดตสำเร็จ",
-      admin: safeUser,
+      admin: updated,
     });
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      error: "Update profile error",
-    });
+  } catch (error) {
+    return handleError(res, error, "Update profile");
   }
 });
 
-// Get admin by ID
+// อ่านข้อมูลแอดมินตาม ID
 admin.get("/:adminId", authMiddleware, async (req, res) => {
   try {
     const { adminId } = req.params;
+
+    if (!adminId || adminId.length > 128) {
+      return res.status(400).json({
+        error: "Invalid admin ID",
+      });
+    }
 
     const user = await neonPrisma.admin.findUnique({
       where: {
@@ -216,77 +323,67 @@ admin.get("/:adminId", authMiddleware, async (req, res) => {
     });
 
     if (!user) {
-      return res.sendStatus(404);
+      return res.status(404).json({
+        error: "Admin not found",
+      });
     }
 
-    res.json(user);
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      error: "Get admin error",
-    });
+    return res.json(user);
+  } catch (error) {
+    return handleError(res, error, "Get admin");
   }
 });
 
-// Delete admin
+// ลบแอดมินโดยป้องกันการลบบัญชีตัวเองและบัญชีแรกที่สร้าง
 admin.delete("/:adminId", authMiddleware, async (req, res) => {
   try {
     const { adminId } = req.params;
 
-    // Prevent self delete
+    if (!req.admin?.adminId) {
+      return res.status(401).json({
+        error: "Unauthorized",
+      });
+    }
+
+    if (!adminId || adminId.length > 128) {
+      return res.status(400).json({
+        error: "Invalid admin ID",
+      });
+    }
+
     if (req.admin.adminId === adminId) {
       return res.status(400).json({
         error: "ไม่สามารถลบบัญชีตัวเองได้",
       });
     }
 
-    // Find first admin
     const firstAdmin = await neonPrisma.admin.findFirst({
-      orderBy: {
-        createdAt: "asc",
-      },
+      orderBy: [
+        { createdAt: "asc" },
+        { adminId: "asc" },
+      ],
       select: {
         adminId: true,
       },
     });
 
-    // Prevent deleting main admin
     if (firstAdmin?.adminId === adminId) {
-      return res.status(400).json({
+      return res.status(403).json({
         error: "ไม่สามารถลบ Admin หลักของระบบได้",
       });
     }
 
-    // Check admin
-    const exist = await neonPrisma.admin.findUnique({
-      where: {
-        adminId,
-      },
-    });
-
-    if (!exist) {
-      return res.status(404).json({
-        error: "ไม่พบ admin",
-      });
-    }
-
-    // Delete admin
     await neonPrisma.admin.delete({
       where: {
         adminId,
       },
     });
 
-    res.json({
+    return res.json({
       message: "ลบ admin สำเร็จ",
     });
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      error: "Delete admin error",
-    });
+  } catch (error) {
+    return handleError(res, error, "Delete admin");
   }
 });
 
