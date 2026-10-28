@@ -1,14 +1,58 @@
-// routes/forensicStatus.js
 
+// src/routes/forensicStatus.js
 import { Router } from "express";
 import neonPrisma from "../neon.js";
 
 const router = Router();
 
-// Get status history
+const VALID_STATUSES = [0, 1, 2, 3, 4];
+
+const STATUS_LABELS = {
+  0: "รอดำเนินการ",
+  1: "รับเรื่องแล้ว",
+  2: "ส่งตรวจแล้ว",
+  3: "ได้รับผลตรวจแล้ว",
+  4: "ส่งคืนต้นสังกัดแล้ว",
+};
+
+const normalizeId = (value) =>
+  typeof value === "string" ? value.trim() : "";
+
+const sortPersons = (persons = []) =>
+  [...persons].sort((a, b) => {
+    const bookA = Number(a.receiptBookNo || 0);
+    const bookB = Number(b.receiptBookNo || 0);
+
+    if (bookA !== bookB) {
+      return bookA - bookB;
+    }
+
+    return (
+      Number(a.receiptNo || 0) -
+      Number(b.receiptNo || 0)
+    );
+  });
+
+const getErrorResponse = (err, fallbackMessage) => {
+  console.error(fallbackMessage, err);
+
+  return {
+    success: false,
+    error: fallbackMessage,
+  };
+};
+
+// GET STATUS HISTORY
 router.get("/:id/history", async (req, res) => {
   try {
-    const id = String(req.params.id).trim();
+    const id = normalizeId(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "กรุณาระบุรหัสรายการ",
+      });
+    }
 
     const history =
       await neonPrisma.forensicSubmissionStatusHistory.findMany({
@@ -25,20 +69,23 @@ router.get("/:id/history", async (req, res) => {
       data: history,
     });
   } catch (err) {
-
-    return res.status(500).json({
-      success: false,
-      error:
-        err?.message ||
-        "ไม่สามารถโหลดประวัติได้",
-    });
+    return res.status(500).json(
+      getErrorResponse(err, "ไม่สามารถโหลดประวัติได้")
+    );
   }
 });
 
-// Get forensic submission
+// GET FORENSIC SUBMISSION BY ID
 router.get("/:id", async (req, res) => {
   try {
-    const id = String(req.params.id).trim();
+    const id = normalizeId(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "กรุณาระบุรหัสรายการ",
+      });
+    }
 
     const submission =
       await neonPrisma.forensicSubmission.findUnique({
@@ -59,125 +106,114 @@ router.get("/:id", async (req, res) => {
         },
       });
 
-    // Debug when submission not found
     if (!submission) {
-      console.log("SUBMISSION NOT FOUND");
-      console.log("Searching latest submissions...");
-
-      const latest =
-        await neonPrisma.forensicSubmission.findMany({
-          select: {
-            submissionId: true,
-            submissionNo: true,
-            status: true,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 10,
-        });
-
-      console.log("Latest submissions:", latest);
-
       return res.status(404).json({
         success: false,
         error: "ไม่พบรายการส่ง ศพฐ.",
-        submissionId: id,
-        debug: {
-          receivedId: id,
-          latestSubmissions: latest,
-        },
       });
     }
+
     return res.json({
       success: true,
-      data: submission,
+      data: {
+        ...submission,
+        persons: sortPersons(submission.persons),
+      },
     });
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      error:
-        err?.message ||
-        "ไม่สามารถโหลดข้อมูลได้",
-      code: err?.code || null,
-      meta: err?.meta || null,
-    });
+    return res.status(500).json(
+      getErrorResponse(err, "ไม่สามารถโหลดข้อมูลได้")
+    );
   }
 });
 
-// Update forensic status
+// UPDATE FORENSIC STATUS
 router.patch("/:id", async (req, res) => {
   try {
-    const id = String(req.params.id).trim();
+    const id = normalizeId(req.params.id);
+    const { status, remark } = req.body ?? {};
 
-    const {
-      status,
-      remark,
-      changedBy,
-    } = req.body;
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "กรุณาระบุรหัสรายการ",
+      });
+    }
 
-    const statusNum = Number(status);
-
-    // Validate status
-    if (![0, 1, 2, 3, 4].includes(statusNum)) {
+    // Validate status without accepting empty strings or null.
+    if (
+      status === "" ||
+      status === null ||
+      status === undefined ||
+      !Number.isInteger(Number(status)) ||
+      !VALID_STATUSES.includes(Number(status))
+    ) {
       return res.status(400).json({
         success: false,
         error: "สถานะไม่ถูกต้อง",
       });
     }
 
-    // Find submission
-    const submission =
-      await neonPrisma.forensicSubmission.findUnique({
-        where: {
-          submissionId: id,
-        },
-        include: {
-          persons: {
-            select: {
-              personId: true,
+    if (
+      remark !== undefined &&
+      remark !== null &&
+      typeof remark !== "string"
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "รูปแบบหมายเหตุไม่ถูกต้อง",
+      });
+    }
+
+    const statusNum = Number(status);
+    const cleanRemark = remark?.trim() || null;
+
+    const result = await neonPrisma.$transaction(
+      async (tx) => {
+        const submission =
+          await tx.forensicSubmission.findUnique({
+            where: {
+              submissionId: id,
             },
-          },
-        },
-      });
+            include: {
+              persons: {
+                select: {
+                  personId: true,
+                },
+              },
+            },
+          });
 
-    if (!submission) {
-      return res.status(404).json({
-        success: false,
-        error: "ไม่พบรายการส่ง ศพฐ.",
-      });
-    }
+        if (!submission) {
+          const error = new Error(
+            "ไม่พบรายการส่ง ศพฐ."
+          );
+          error.statusCode = 404;
+          throw error;
+        }
 
-    // Prevent changing completed submission
-    if (submission.status === 4) {
-      return res.status(400).json({
-        success: false,
-        error:
-          "รายการนี้ส่งคืนต้นสังกัดแล้ว ไม่สามารถเปลี่ยนสถานะได้อีก",
-      });
-    }
+        if (submission.status === 4) {
+          const error = new Error(
+            "รายการนี้ส่งคืนต้นสังกัดแล้ว ไม่สามารถเปลี่ยนสถานะได้อีก"
+          );
+          error.statusCode = 400;
+          throw error;
+        }
 
-    // Prevent same status
-    if (submission.status === statusNum) {
-      return res.status(400).json({
-        success: false,
-        error:
-          "สถานะนี้เป็นสถานะปัจจุบันอยู่แล้ว",
-      });
-    }
+        if (submission.status === statusNum) {
+          const error = new Error(
+            "สถานะนี้เป็นสถานะปัจจุบันอยู่แล้ว"
+          );
+          error.statusCode = 400;
+          throw error;
+        }
 
-    const now = new Date();
+        const now = new Date();
 
-    // Get person IDs
-    const personIds =
-      submission.persons.map(
-        (item) => item.personId
-      );
+        const personIds = submission.persons.map(
+          (item) => item.personId
+        );
 
-    // Transaction
-    const result =
-      await neonPrisma.$transaction(async (tx) => {
-        // Update submission
         await tx.forensicSubmission.update({
           where: {
             submissionId: id,
@@ -188,7 +224,6 @@ router.patch("/:id", async (req, res) => {
           },
         });
 
-        // Update persons
         if (personIds.length > 0) {
           await tx.person.updateMany({
             where: {
@@ -204,53 +239,53 @@ router.patch("/:id", async (req, res) => {
           });
         }
 
-        // Create history
         await tx.forensicSubmissionStatusHistory.create({
           data: {
             submissionId: id,
             oldStatus: submission.status,
             newStatus: statusNum,
-            remark: remark?.trim() || null,
-            changedBy: changedBy?.trim() || null,
+            remark: cleanRemark,
           },
         });
 
-        // Get updated submission
-        const updated =
-          await tx.forensicSubmission.findUnique({
-            where: {
-              submissionId: id,
-            },
-            include: {
-              persons: {
-                include: {
-                  person: true,
-                },
-              },
-              statusHistories: {
-                orderBy: {
-                  changedAt: "desc",
-                },
+        return tx.forensicSubmission.findUnique({
+          where: {
+            submissionId: id,
+          },
+          include: {
+            persons: {
+              include: {
+                person: true,
               },
             },
-          });
-
-        return updated;
-      });
+            statusHistories: {
+              orderBy: {
+                changedAt: "desc",
+              },
+            },
+          },
+        });
+      }
+    );
 
     return res.json({
       success: true,
-      data: result,
+      data: {
+        ...result,
+        persons: sortPersons(result?.persons),
+      },
     });
   } catch (err) {
-    return res.status(500).json({
-      success: false,
-      error:
-        err?.message ||
-        "เปลี่ยนสถานะไม่สำเร็จ",
-      code: err?.code || null,
-      meta: err?.meta || null,
-    });
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({
+        success: false,
+        error: err.message,
+      });
+    }
+
+    return res.status(500).json(
+      getErrorResponse(err, "เปลี่ยนสถานะไม่สำเร็จ")
+    );
   }
 });
 
