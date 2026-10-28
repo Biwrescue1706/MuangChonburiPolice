@@ -1,7 +1,7 @@
 
 import express from "express";
 import neonPrisma from "../neon.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
