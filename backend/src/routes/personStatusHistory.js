@@ -2,7 +2,7 @@
 // src/routes/statusHistory.js
 import { Router } from "express";
 import neonPrisma from "../neon.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
