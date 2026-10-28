@@ -1,37 +1,49 @@
+
+// src/routes/organization.js
 import express from "express";
 import neonPrisma from "../neon.js";
 import multer from "multer";
 import crypto from "crypto";
+import path from "path";
+import { fileTypeFromBuffer } from "file-type";
 import { createClient } from "@supabase/supabase-js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
+const MAX_FILE_SIZE = 2 * 1024 * 1024;
+const PAGE_SIZE = 20;
 
-// Multer
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Missing Supabase configuration");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 2 * 1024 * 1024,
+    fileSize: MAX_FILE_SIZE,
+    files: 1,
   },
 });
 
-// Build full name
+// Build full name.
 function buildFullName({
   firstName,
   lastName,
   rank,
-}) {
-  const fullName =
-    `${firstName || ""} ${lastName || ""}`.trim();
+} = {}) {
+  const first = String(firstName ?? "").trim();
+  const last = String(lastName ?? "").trim();
+  const title = String(rank ?? "").trim();
 
-  const fullNameWithRank = rank
-    ? `${rank}${firstName || ""} ${lastName || ""}`.trim()
+  const fullName = `${first} ${last}`.trim();
+  const fullNameWithRank = title
+    ? `${title}${fullName ? ` ${fullName}` : ""}`.trim()
     : fullName;
 
   return {
@@ -40,16 +52,125 @@ function buildFullName({
   };
 }
 
-// Get all organizations
+// Check whether a value is a plain object.
+function isObject(value) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value)
+  );
+}
+
+// Keep only explicitly permitted fields.
+function pickFields(source, fields) {
+  const result = {};
+
+  for (const field of fields) {
+    if (
+      Object.prototype.hasOwnProperty.call(source, field) &&
+      source[field] !== undefined &&
+      source[field] !== null &&
+      source[field] !== ""
+    ) {
+      if (typeof source[field] !== "string") {
+        throw new Error(`ฟิลด์ ${field} ต้องเป็นข้อความ`);
+      }
+
+      result[field] = source[field].trim();
+    }
+  }
+
+  return result;
+}
+
+function sendServerError(res, err, message) {
+  if (err instanceof multer.MulterError) {
+    const status = err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+
+    return res.status(status).json({
+      error:
+        status === 413
+          ? "ไฟล์มีขนาดเกิน 2 MB"
+          : "ข้อมูลไฟล์ไม่ถูกต้อง",
+    });
+  }
+
+  if (err.message?.startsWith("ฟิลด์ ")) {
+    return res.status(400).json({
+      error: err.message,
+    });
+  }
+
+  if (err.code === "P2025") {
+    return res.status(404).json({
+      error: "ไม่พบข้อมูล",
+    });
+  }
+
+  if (err.code === "P2002") {
+    return res.status(409).json({
+      error: "ข้อมูลซ้ำกับรายการที่มีอยู่",
+    });
+  }
+
+  console.error(
+    "[organization route]",
+    err.code || err.name || "Error"
+  );
+
+  return res.status(500).json({
+    error: message,
+  });
+}
+
+// Organization fields that may be updated.
+const ORGANIZATION_FIELDS = [
+  "organizationName",
+  "rank",
+  "firstName",
+  "lastName",
+  "position",
+];
+
+// Commander fields that may be updated.
+// Adjust these against the actual Prisma schema.
+const COMMANDER_FIELDS = [
+  "rank",
+  "fullRank",
+  "firstName",
+  "lastName",
+  "position",
+  "fullPosition",
+];
+
+// Finance fields that may be updated.
+// Adjust these against the actual Prisma schema.
+const FINANCE_FIELDS = [
+  "rank",
+  "firstName",
+  "lastName",
+  "position",
+];
+
+// Get all organizations.
 router.get("/", async (req, res) => {
   try {
-    const page = Number(req.query.page || 1);
-    const limit = 20;
+    const page = Number(req.query.page ?? 1);
 
-    const data =
-      await neonPrisma.organization.findMany({
-        skip: (page - 1) * limit,
-        take: limit,
+    if (
+      !Number.isSafeInteger(page) ||
+      page < 1 ||
+      page > 100000
+    ) {
+      return res.status(400).json({
+        error: "หมายเลขหน้าไม่ถูกต้อง",
+      });
+    }
+
+    const [data, total] = await Promise.all([
+      neonPrisma.organization.findMany({
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
         select: {
           organizationId: true,
           organizationName: true,
@@ -87,386 +208,443 @@ router.get("/", async (req, res) => {
         orderBy: {
           createdAt: "desc",
         },
-      });
+      }),
+      neonPrisma.organization.count(),
+    ]);
 
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({
-      error: "Fetch failed",
+    return res.json({
+      data,
+      pagination: {
+        page,
+        limit: PAGE_SIZE,
+        total,
+        totalPages: Math.ceil(total / PAGE_SIZE),
+      },
     });
+  } catch (err) {
+    return sendServerError(
+      res,
+      err,
+      "ดึงข้อมูลองค์กรไม่สำเร็จ"
+    );
   }
 });
 
-// Get organization
+// Get one organization.
 router.get("/:id", async (req, res) => {
   try {
+    const data = await neonPrisma.organization.findUnique({
+      where: {
+        organizationId: req.params.id,
+      },
+      include: {
+        commander: true,
+        finance: true,
+      },
+    });
+
+    if (!data) {
+      return res.status(404).json({
+        error: "ไม่พบข้อมูลองค์กร",
+      });
+    }
+
+    return res.json(data);
+  } catch (err) {
+    return sendServerError(
+      res,
+      err,
+      "ดึงข้อมูลองค์กรไม่สำเร็จ"
+    );
+  }
+});
+
+// Update organization.
+router.patch("/:id", authMiddleware, async (req, res) => {
+  try {
+    if (!isObject(req.body)) {
+      return res.status(400).json({
+        error: "รูปแบบข้อมูลไม่ถูกต้อง",
+      });
+    }
+
+    const { id } = req.params;
+
+    const existing = await neonPrisma.organization.findUnique({
+      where: {
+        organizationId: id,
+      },
+    });
+
+    if (!existing) {
+      return res.status(404).json({
+        error: "ไม่พบข้อมูลองค์กร",
+      });
+    }
+
+    const clean = pickFields(req.body, ORGANIZATION_FIELDS);
+
+    const firstName = clean.firstName ?? existing.firstName;
+    const lastName = clean.lastName ?? existing.lastName;
+    const rank = clean.rank ?? existing.rank;
+
+    const names = buildFullName({
+      firstName,
+      lastName,
+      rank,
+    });
+
+    clean.fullName = names.fullName;
+    clean.fullNameWithRank = names.fullNameWithRank;
+    clean.updatedAt = new Date();
+
+    const result = await neonPrisma.organization.update({
+      where: {
+        organizationId: id,
+      },
+      data: clean,
+    });
+
+    return res.json(result);
+  } catch (err) {
+    return sendServerError(
+      res,
+      err,
+      "แก้ไขข้อมูลองค์กรไม่สำเร็จ"
+    );
+  }
+});
+
+// Get commander.
+router.get("/:id/commander", async (req, res) => {
+  try {
     const data =
-      await neonPrisma.organization.findUnique({
+      await neonPrisma.organizationCommander.findUnique({
         where: {
           organizationId: req.params.id,
-        },
-        include: {
-          commander: true,
-          finance: true,
         },
       });
 
     if (!data) {
       return res.status(404).json({
-        error: "Not found",
+        error: "ไม่พบข้อมูลผู้บังคับบัญชา",
       });
     }
 
-    res.json(data);
+    return res.json(data);
   } catch (err) {
-    res.status(500).json({
-      error: "Fetch failed",
-    });
+    return sendServerError(
+      res,
+      err,
+      "ดึงข้อมูลผู้บังคับบัญชาไม่สำเร็จ"
+    );
   }
 });
 
-// Update organization
+// Update commander.
 router.patch(
-  "/:id",
+  "/:id/commander",
   authMiddleware,
   async (req, res) => {
     try {
-      const { id } = req.params;
-      const data = req.body;
+      if (!isObject(req.body)) {
+        return res.status(400).json({
+          error: "รูปแบบข้อมูลไม่ถูกต้อง",
+        });
+      }
 
-      const existing =
+      const { id } = req.params;
+
+      const organization =
         await neonPrisma.organization.findUnique({
           where: {
             organizationId: id,
           },
+          select: {
+            organizationId: true,
+          },
         });
 
-      if (!existing) {
+      if (!organization) {
         return res.status(404).json({
-          error: "Organization not found",
+          error: "ไม่พบข้อมูลองค์กร",
         });
       }
 
-      // Whitelist
-      const allowedFields = [
-        "organizationName",
-        "rank",
-        "firstName",
-        "lastName",
-        "position",
-      ];
+      const clean = pickFields(req.body, COMMANDER_FIELDS);
+      const names = buildFullName(clean);
 
-      const clean = {};
-
-      for (const key of allowedFields) {
-        if (
-          data[key] !== "" &&
-          data[key] !== null &&
-          data[key] !== undefined
-        ) {
-          clean[key] = data[key];
-        }
-      }
-
-      const name = buildFullName({
-        firstName:
-          clean.firstName ??
-          existing.firstName,
-        lastName:
-          clean.lastName ??
-          existing.lastName,
-        rank:
-          clean.rank ??
-          existing.rank,
-      });
-
-      clean.fullName = name.fullName;
-      clean.fullNameWithRank =
-        name.fullNameWithRank;
+      clean.fullName = names.fullName;
+      clean.fullNameWithRank = names.fullNameWithRank;
       clean.updatedAt = new Date();
-
-      const result =
-        await neonPrisma.organization.update({
-          where: {
-            organizationId: id,
-          },
-          data: clean,
-        });
-
-      res.json(result);
-    } catch (err) {
-      res.status(500).json({
-        error: "Update failed",
-      });
-    }
-  }
-);
-
-// Get commander
-router.get(
-  "/:id/commander",
-  async (req, res) => {
-    try {
-      const data =
-        await neonPrisma.organizationCommander.findUnique({
-          where: {
-            organizationId: req.params.id,
-          },
-        });
-
-      res.json(data);
-    } catch (err) {
-      res.status(500).json({
-        error: "Fetch commander failed",
-      });
-    }
-  }
-);
-
-// Update commander
-router.patch(
-  "/:id/commander",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { id } = req.params;
-      const data = req.body;
-
-      const name = buildFullName(data);
 
       const result =
         await neonPrisma.organizationCommander.upsert({
           where: {
             organizationId: id,
           },
-          update: {
-            ...data,
-            fullName: name.fullName,
-            fullNameWithRank:
-              name.fullNameWithRank,
-            updatedAt: new Date(),
-          },
+          update: clean,
           create: {
             organizationId: id,
-            ...data,
-            fullName: name.fullName,
-            fullNameWithRank:
-              name.fullNameWithRank,
+            ...clean,
           },
         });
 
-      res.json(result);
+      return res.json(result);
     } catch (err) {
-      res.status(500).json({
-        error: "Update commander failed",
-      });
+      return sendServerError(
+        res,
+        err,
+        "แก้ไขข้อมูลผู้บังคับบัญชาไม่สำเร็จ"
+      );
     }
   }
 );
 
-// Upload signature
+// Upload signature image.
 router.post(
   "/:id/upload-signature",
   authMiddleware,
   upload.single("file"),
   async (req, res) => {
+    let uploadedFileName = null;
+
     try {
       const { id } = req.params;
       const file = req.file;
 
       if (!file) {
         return res.status(400).json({
-          error: "No file uploaded",
+          error: "กรุณาเลือกไฟล์ภาพ",
         });
       }
 
-      // Allow image
-      const allowedTypes = [
-        "image/png",
-        "image/jpeg",
-        "image/webp",
-      ];
-
-      if (
-        !allowedTypes.includes(
-          file.mimetype
-        )
-      ) {
-        return res.status(400).json({
-          error:
-            "Only png jpg webp allowed",
-        });
-      }
-
-      // Check organization
-      const org =
-        await neonPrisma.organization.findUnique({
-          where: {
-            organizationId: id,
-          },
-        });
+      const org = await neonPrisma.organization.findUnique({
+        where: {
+          organizationId: id,
+        },
+        select: {
+          organizationId: true,
+        },
+      });
 
       if (!org) {
         return res.status(404).json({
-          error:
-            "Organization not found",
+          error: "ไม่พบข้อมูลองค์กร",
         });
       }
 
-      // Delete old signature
-      const existingCommander =
+      // Verify actual file signature rather than trusting MIME type.
+      const detected = await fileTypeFromBuffer(file.buffer);
+
+      const allowedTypes = {
+        "image/png": "png",
+        "image/jpeg": "jpg",
+        "image/webp": "webp",
+      };
+
+      if (
+        !detected ||
+        !allowedTypes[detected.mime]
+      ) {
+        return res.status(400).json({
+          error: "รองรับเฉพาะไฟล์ PNG, JPG และ WEBP",
+        });
+      }
+
+      const fileName =
+        `signature_${crypto.randomUUID()}.${allowedTypes[detected.mime]}`;
+
+      uploadedFileName = fileName;
+
+      const { error: uploadError } = await supabase.storage
+        .from("signatures")
+        .upload(fileName, file.buffer, {
+          contentType: detected.mime,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: publicData } = supabase.storage
+        .from("signatures")
+        .getPublicUrl(fileName);
+
+      if (!publicData?.publicUrl) {
+        throw new Error("Unable to create public URL");
+      }
+
+      // Save the new image URL before attempting old-file cleanup.
+      const previous =
         await neonPrisma.organizationCommander.findUnique({
           where: {
             organizationId: id,
           },
+          select: {
+            signatureImage: true,
+          },
         });
 
-      if (
-        existingCommander?.signatureImage
-      ) {
-        try {
-          const oldPath =
-            existingCommander.signatureImage
-              .split("/signatures/")[1];
-
-          if (oldPath) {
-            await supabase.storage
-              .from("signatures")
-              .remove([oldPath]);
-          }
-        } catch (e) {
-          console.warn(
-            "Delete old image fail:",
-            e.message
-          );
-        }
-      }
-
-      // Create filename
-      const ext =
-        file.originalname
-          .split(".")
-          .pop()
-          ?.toLowerCase();
-
-      const fileName =
-        `signature_${id}_${crypto.randomUUID()}.${ext}`;
-
-      // Upload signature
-      const { error } =
-        await supabase.storage
-          .from("signatures")
-          .upload(
-            fileName,
-            file.buffer,
-            {
-              contentType:
-                file.mimetype,
-            }
-          );
-
-      if (error) {
-        throw error;
-      }
-
-      // Get public URL
-      const { data } =
-        supabase.storage
-          .from("signatures")
-          .getPublicUrl(fileName);
-
-      const publicUrl =
-        data.publicUrl;
-
-      // Save URL to database
       await neonPrisma.organizationCommander.upsert({
         where: {
           organizationId: id,
         },
         update: {
-          signatureImage:
-            publicUrl,
-          updatedAt:
-            new Date(),
+          signatureImage: publicData.publicUrl,
+          updatedAt: new Date(),
         },
         create: {
           organizationId: id,
-          signatureImage:
-            publicUrl,
+          signatureImage: publicData.publicUrl,
         },
       });
 
-      res.json({
+      // Remove the previous file only if its URL belongs to this bucket.
+      if (previous?.signatureImage) {
+        try {
+          const oldUrl = new URL(previous.signatureImage);
+          const currentUrl = new URL(supabaseUrl);
+
+          const oldPrefix =
+            `/storage/v1/object/public/signatures/`;
+
+          if (
+            oldUrl.origin === currentUrl.origin &&
+            oldUrl.pathname.startsWith(oldPrefix)
+          ) {
+            const oldPath = decodeURIComponent(
+              oldUrl.pathname.slice(oldPrefix.length)
+            );
+
+            if (oldPath && oldPath !== fileName) {
+              const { error: removeError } =
+                await supabase.storage
+                  .from("signatures")
+                  .remove([oldPath]);
+
+              if (removeError) {
+                console.warn(
+                  "[organization] Previous signature cleanup failed"
+                );
+              }
+            }
+          }
+        } catch {
+          console.warn(
+            "[organization] Previous signature URL could not be cleaned up"
+          );
+        }
+      }
+
+      return res.json({
         message: "Upload success",
-        url: publicUrl,
+        url: publicData.publicUrl,
       });
     } catch (err) {
-      res.status(500).json({
-        error: "Upload failed",
-      });
+      // Delete the new file if the database operation failed.
+      if (uploadedFileName) {
+        try {
+          await supabase.storage
+            .from("signatures")
+            .remove([uploadedFileName]);
+        } catch {
+          // Keep the original error for logging.
+        }
+      }
+
+      return sendServerError(
+        res,
+        err,
+        "อัปโหลดรูปลายเซ็นไม่สำเร็จ"
+      );
     }
   }
 );
 
-// Get finance
-router.get(
-  "/:id/finance",
-  async (req, res) => {
-    try {
-      const data =
-        await neonPrisma.organizationFinance.findUnique({
-          where: {
-            organizationId:
-              req.params.id,
-          },
-        });
+// Get finance.
+router.get("/:id/finance", async (req, res) => {
+  try {
+    const data =
+      await neonPrisma.organizationFinance.findUnique({
+        where: {
+          organizationId: req.params.id,
+        },
+      });
 
-      res.json(data);
-    } catch (err) {
-      res.status(500).json({
-        error: "Fetch finance failed",
+    if (!data) {
+      return res.status(404).json({
+        error: "ไม่พบข้อมูลการเงิน",
       });
     }
-  }
-);
 
-// Update finance
+    return res.json(data);
+  } catch (err) {
+    return sendServerError(
+      res,
+      err,
+      "ดึงข้อมูลการเงินไม่สำเร็จ"
+    );
+  }
+});
+
+// Update finance.
 router.patch(
   "/:id/finance",
   authMiddleware,
   async (req, res) => {
     try {
-      const { id } = req.params;
-      const data = req.body;
+      if (!isObject(req.body)) {
+        return res.status(400).json({
+          error: "รูปแบบข้อมูลไม่ถูกต้อง",
+        });
+      }
 
-      const name = buildFullName(data);
+      const { id } = req.params;
+
+      const organization =
+        await neonPrisma.organization.findUnique({
+          where: {
+            organizationId: id,
+          },
+          select: {
+            organizationId: true,
+          },
+        });
+
+      if (!organization) {
+        return res.status(404).json({
+          error: "ไม่พบข้อมูลองค์กร",
+        });
+      }
+
+      const clean = pickFields(req.body, FINANCE_FIELDS);
+      const names = buildFullName(clean);
+
+      clean.fullName = names.fullName;
+      clean.fullNameWithRank = names.fullNameWithRank;
+      clean.updatedAt = new Date();
 
       const result =
         await neonPrisma.organizationFinance.upsert({
           where: {
             organizationId: id,
           },
-          update: {
-            ...data,
-            fullName: name.fullName,
-            fullNameWithRank:
-              name.fullNameWithRank,
-            updatedAt: new Date(),
-          },
+          update: clean,
           create: {
             organizationId: id,
-            ...data,
-            fullName: name.fullName,
-            fullNameWithRank:
-              name.fullNameWithRank,
+            ...clean,
           },
         });
 
-      res.json(result);
+      return res.json(result);
     } catch (err) {
-      res.status(500).json({
-        error: "Update finance failed",
-      });
+      return sendServerError(
+        res,
+        err,
+        "แก้ไขข้อมูลการเงินไม่สำเร็จ"
+      );
     }
   }
 );
