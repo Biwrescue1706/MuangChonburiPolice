@@ -4,7 +4,18 @@ import neonPrisma from "../neon.js";
 
 const router = express.Router();
 
-// GET LATEST RECEIPT
+const toNumber = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+};
+
+const getUsedNumbers = (receipts) =>
+  receipts
+    .map((receipt) => toNumber(receipt.receiptNo))
+    .filter((number) => number !== null)
+    .sort((a, b) => a - b);
+
+// GET LATEST RECEIPT BOOK AND USED NUMBERS
 router.get("/latest", async (req, res) => {
   try {
     const books = await neonPrisma.receipt.findMany({
@@ -14,124 +25,126 @@ router.get("/latest", async (req, res) => {
       distinct: ["receiptBookNo"],
     });
 
-    if (!books.length) {
+    const latestBookNo = books
+      .map((book) => toNumber(book.receiptBookNo))
+      .filter((number) => number !== null)
+      .sort((a, b) => b - a)[0];
+
+    if (latestBookNo === undefined) {
       return res.json({
         bookNo: null,
         usedNumbers: [],
       });
     }
 
-    const latestBookNo = books
-      .map((b) => Number(b.receiptBookNo))
-      .filter((n) => !isNaN(n))
-      .sort((a, b) => b - a)[0]
-      ?.toString()
-      .padStart(5, "0");
+    const bookNo = String(latestBookNo).padStart(5, "0");
 
-    const receipts =
-      await neonPrisma.receipt.findMany({
-        where: {
-          receiptBookNo: latestBookNo,
-        },
-        select: {
-          receiptNo: true,
-        },
-      });
+    const receipts = await neonPrisma.receipt.findMany({
+      where: {
+        receiptBookNo: bookNo,
+      },
+      select: {
+        receiptNo: true,
+      },
+    });
 
-    const usedNumbers = receipts
-      .map((r) => Number(r.receiptNo))
-      .filter((n) => !isNaN(n))
-      .sort((a, b) => a - b);
-
-    res.json({
-      bookNo: latestBookNo,
-      usedNumbers,
+    return res.json({
+      bookNo,
+      usedNumbers: getUsedNumbers(receipts),
     });
   } catch (err) {
-    res.status(500).json({
+    console.error("GET /receipt/latest error:", err);
+
+    return res.status(500).json({
       bookNo: null,
       usedNumbers: [],
+      error: "ไม่สามารถดึงข้อมูลเล่มใบเสร็จล่าสุดได้",
     });
   }
 });
 
-// GET USED BY BOOK
+// GET USED NUMBERS BY BOOK NUMBER
 router.get("/used/:bookNo", async (req, res) => {
   try {
     const { bookNo } = req.params;
 
-    const receipts =
-      await neonPrisma.receipt.findMany({
-        where: {
-          receiptBookNo: bookNo,
-        },
-        select: {
-          receiptNo: true,
-        },
+    if (!/^\d{1,5}$/.test(bookNo)) {
+      return res.status(400).json({
+        success: false,
+        error: "เลขที่เล่มใบเสร็จไม่ถูกต้อง",
       });
+    }
 
-    const usedNumbers = receipts
-      .map((r) => Number(r.receiptNo))
-      .filter((n) => !isNaN(n))
-      .sort((a, b) => a - b);
+    const normalizedBookNo = bookNo.padStart(5, "0");
 
-    res.json({
-      usedNumbers,
+    const receipts = await neonPrisma.receipt.findMany({
+      where: {
+        receiptBookNo: normalizedBookNo,
+      },
+      select: {
+        receiptNo: true,
+      },
+    });
+
+    return res.json({
+      usedNumbers: getUsedNumbers(receipts),
     });
   } catch (err) {
-    res.status(500).json({
+    console.error("GET /receipt/used/:bookNo error:", err);
+
+    return res.status(500).json({
       usedNumbers: [],
+      error: "ไม่สามารถดึงเลขใบเสร็จที่ใช้แล้วได้",
     });
   }
 });
 
-// GET ALL
+// GET ALL RECEIPTS
 router.get("/all", async (req, res) => {
   try {
-    const receipts =
-      await neonPrisma.receipt.findMany();
-
-    const sorted = receipts.sort((a, b) => {
-      const bookA = Number(
-        a.receiptBookNo || 0
-      );
-
-      const bookB = Number(
-        b.receiptBookNo || 0
-      );
-
-      if (bookA !== bookB) {
-        return bookA - bookB;
-      }
-
-      return (
-        Number(a.receiptNo || 0) -
-        Number(b.receiptNo || 0)
-      );
+    const receipts = await neonPrisma.receipt.findMany({
+      orderBy: [
+        {
+          receiptBookNo: "asc",
+        },
+        {
+          receiptNo: "asc",
+        },
+      ],
     });
 
-    res.json({
+    return res.json({
       success: true,
-      data: sorted,
-      total: sorted.length,
+      data: receipts,
+      total: receipts.length,
     });
   } catch (err) {
-    res.status(500).json({
+    console.error("GET /receipt/all error:", err);
+
+    return res.status(500).json({
       success: false,
-      error: err.message,
+      error: "ไม่สามารถดึงข้อมูลใบเสร็จได้",
     });
   }
 });
 
-// GET BY ID
+// GET RECEIPT BY ID
 router.get("/:id", async (req, res) => {
   try {
-    const receipt =
-      await neonPrisma.receipt.findUnique({
-        where: {
-          receiptId: req.params.id,
-        },
+    const { id } = req.params;
+
+    if (!id || !id.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: "กรุณาระบุรหัสใบเสร็จ",
       });
+    }
+
+    const receipt = await neonPrisma.receipt.findUnique({
+      where: {
+        receiptId: id,
+      },
+    });
 
     if (!receipt) {
       return res.status(404).json({
@@ -140,12 +153,14 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: receipt,
     });
   } catch (err) {
-    res.status(500).json({
+    console.error("GET /receipt/:id error:", err);
+
+    return res.status(500).json({
       success: false,
       error: "ดึงข้อมูลไม่สำเร็จ",
     });
