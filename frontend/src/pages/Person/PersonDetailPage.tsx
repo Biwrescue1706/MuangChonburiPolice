@@ -1,12 +1,56 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import type { ReactNode } from "react";
 import api from "../../api/axios";
 
-const formatThaiDate = (value: any) => {
-  if (!value) return "-";
+type Person = {
+  id?: string | number;
+  status: number;
+  statusUpdatedAt?: string | null;
+  fingerprintDate?: string | null;
+  organizationName?: string | null;
+  fullName?: string | null;
+  birthDate?: string | null;
+  fullNameWithRank?: string | null;
+  purpose?: string | null;
+  requestingAgency?: string | null;
+  citizenId?: string | null;
+  birthDay?: string | number | null;
+  birthMonth?: string | null;
+  birthYear?: string | number | null;
+  ethnicity?: string | null;
+  nationality?: string | null;
+  height?: string | number | null;
+  weight?: string | number | null;
+  bodyType?: string | null;
+  skinColor?: string | null;
+  distinguishingMarks?: string | null;
+  behavior?: string | null;
+  address?: string | null;
+  occupation?: string | null;
+  workplaceAddress?: string | null;
+  father?: string | null;
+  mother?: string | null;
+  spouse?: string | null;
+  receiptBookNo?: string | number | null;
+  receiptNo?: string | number | null;
+  receiptDate?: string | null;
+  money?: string | number | null;
+  moneyText?: string | null;
+};
 
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return value;
+const formatThaiDate = (
+  value: string | number | Date | null | undefined,
+): string => {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
 
   const months = [
     "มกราคม",
@@ -23,10 +67,10 @@ const formatThaiDate = (value: any) => {
     "ธันวาคม",
   ];
 
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear() + 543}`;
 };
 
-const getStatus = (status: number) => {
+const getStatus = (status: number): string => {
   switch (status) {
     case 0:
       return "รอส่ง ศพฐ.";
@@ -43,7 +87,7 @@ const getStatus = (status: number) => {
   }
 };
 
-const getStatusStyle = (status: number) => {
+const getStatusStyle = (status: number): string => {
   switch (status) {
     case 0:
       return "bg-amber-50 text-amber-700 border-amber-200";
@@ -60,7 +104,7 @@ const getStatusStyle = (status: number) => {
   }
 };
 
-const getStatusDot = (status: number) => {
+const getStatusDot = (status: number): string => {
   switch (status) {
     case 0:
       return "bg-amber-500";
@@ -78,34 +122,37 @@ const getStatusDot = (status: number) => {
 };
 
 export default function PersonDetailPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [person, setPerson] = useState<any>(null);
+  const [person, setPerson] = useState<Person | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchPerson = async () => {
+  const fetchPerson = useCallback(async () => {
+    if (!id) {
+      setPerson(null);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const res = await api.get(`/person/${id}`);
-      setPerson(res.data.data);
-    } catch (err) {
-      console.error(err);
+      const res = await api.get<{ data: Person }>(`/person/${id}`);
+      setPerson(res.data.data ?? null);
+    } catch (error: unknown) {
+      console.error("โหลดรายละเอียดบุคคลไม่สำเร็จ", error);
+      setPerson(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
-    fetchPerson();
-  }, []);
+    void fetchPerson();
+  }, [fetchPerson]);
 
-  const SectionTitle = ({
-    icon,
-    title,
-  }: {
-    icon: string;
-    title: string;
-  }) => (
+  const SectionTitle = ({ icon, title }: { icon: string; title: string }) => (
     <div className="mb-3 flex items-center gap-2 border-b border-gray-200 pb-2">
       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#800020] text-sm text-white">
         {icon}
@@ -120,7 +167,7 @@ export default function PersonDetailPage() {
     full = false,
   }: {
     label: string;
-    value: any;
+    value: ReactNode;
     full?: boolean;
   }) => (
     <div className={full ? "md:col-span-2" : ""}>
@@ -155,8 +202,6 @@ export default function PersonDetailPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-3 md:p-4">
       <div className="mx-auto max-w-7xl">
-
-        {/* Header */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-gray-800">
@@ -176,7 +221,6 @@ export default function PersonDetailPage() {
           </button>
         </div>
 
-        {/* Status */}
         <div className="mb-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-200">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -184,15 +228,11 @@ export default function PersonDetailPage() {
 
               <div className="mt-1 flex items-center gap-2">
                 <span
-                  className={`h-2.5 w-2.5 rounded-full ${getStatusDot(
-                    person.status
-                  )}`}
+                  className={`h-2.5 w-2.5 rounded-full ${getStatusDot(person.status)}`}
                 />
 
                 <span
-                  className={`rounded-full border px-3 py-1 text-sm font-semibold ${getStatusStyle(
-                    person.status
-                  )}`}
+                  className={`rounded-full border px-3 py-1 text-sm font-semibold ${getStatusStyle(person.status)}`}
                 >
                   {getStatus(person.status)}
                 </span>
@@ -208,90 +248,53 @@ export default function PersonDetailPage() {
           </div>
         </div>
 
-        {/* Main Card */}
         <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-200">
-
-          {/* ข้อมูลการส่ง */}
           <section className="mb-5">
             <SectionTitle icon="📋" title="ข้อมูลการส่งตรวจ" />
 
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
-              <Info
-                label="วันที่พิมพ์มือ"
-                value={person.fingerprintDate}
-              />
+              <Info label="วันที่พิมพ์มือ" value={person.fingerprintDate} />
 
               <Info
                 label="ส่วนราชการ/หน่วยงาน"
                 value={person.organizationName}
               />
 
-              <Info
-                label="ชื่อ-นามสกุล"
-                value={person.fullName}
-              />
+              <Info label="ชื่อ-นามสกุล" value={person.fullName} />
 
-              <Info
-                label="วันเกิด"
-                value={person.birthDate}
-              />
+              <Info label="วันเกิด" value={person.birthDate} />
 
               <Info
                 label="ชื่อ-นามสกุล เจ้าหน้าที่"
                 value={person.fullNameWithRank}
               />
 
-              <Info
-                label="ตรวจสอบประวัติเพื่อ"
-                value={person.purpose}
-              />
+              <Info label="ตรวจสอบประวัติเพื่อ" value={person.purpose} />
 
               <Info
                 label="ของส่วนราชการ/หน่วยงาน"
                 value={person.requestingAgency}
               />
 
-              <Info
-                label="เลขประจำตัวประชาชน"
-                value={person.citizenId}
-              />
+              <Info label="เลขประจำตัวประชาชน" value={person.citizenId} />
             </div>
           </section>
 
-          {/* ข้อมูลส่วนบุคคล */}
           <section className="mb-5">
             <SectionTitle icon="👤" title="ข้อมูลส่วนบุคคล" />
 
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
-              <Info
-                label="ชื่อ-นามสกุล"
-                value={person.fullName}
-              />
+              <Info label="ชื่อ-นามสกุล" value={person.fullName} />
 
-              <Info
-                label="เกิดวันที่"
-                value={person.birthDay}
-              />
+              <Info label="เกิดวันที่" value={person.birthDay} />
 
-              <Info
-                label="เดือน"
-                value={person.birthMonth}
-              />
+              <Info label="เดือน" value={person.birthMonth} />
 
-              <Info
-                label="ปี"
-                value={person.birthYear}
-              />
+              <Info label="ปี" value={person.birthYear} />
 
-              <Info
-                label="เชื้อชาติ"
-                value={person.ethnicity}
-              />
+              <Info label="เชื้อชาติ" value={person.ethnicity} />
 
-              <Info
-                label="สัญชาติ"
-                value={person.nationality}
-              />
+              <Info label="สัญชาติ" value={person.nationality} />
 
               <Info
                 label="ส่วนสูง"
@@ -303,15 +306,9 @@ export default function PersonDetailPage() {
                 value={person.weight ? `${person.weight} กก.` : "-"}
               />
 
-              <Info
-                label="รูปร่าง"
-                value={person.bodyType}
-              />
+              <Info label="รูปร่าง" value={person.bodyType} />
 
-              <Info
-                label="สีผิว"
-                value={person.skinColor}
-              />
+              <Info label="สีผิว" value={person.skinColor} />
 
               <Info
                 label="ตำหนิ / พิการ / รอยสัก"
@@ -319,72 +316,37 @@ export default function PersonDetailPage() {
                 full
               />
 
-              <Info
-                label="ลักษณะเด่น"
-                value={person.behavior}
-                full
-              />
+              <Info label="ลักษณะเด่น" value={person.behavior} full />
             </div>
           </section>
 
-          {/* ข้อมูลที่อยู่และครอบครัว */}
           <section className="mb-5">
             <SectionTitle icon="🏠" title="ข้อมูลที่อยู่และครอบครัว" />
 
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-              <Info
-                label="ที่อยู่ปัจจุบัน"
-                value={person.address}
-                full
-              />
+              <Info label="ที่อยู่ปัจจุบัน" value={person.address} full />
 
-              <Info
-                label="อาชีพ"
-                value={person.occupation}
-              />
+              <Info label="อาชีพ" value={person.occupation} />
 
-              <Info
-                label="สถานที่ทำงาน"
-                value={person.workplaceAddress}
-                full
-              />
+              <Info label="สถานที่ทำงาน" value={person.workplaceAddress} full />
 
-              <Info
-                label="ชื่อตัว ชื่อสกุล บิดา"
-                value={person.father}
-              />
+              <Info label="ชื่อตัว ชื่อสกุล บิดา" value={person.father} />
 
-              <Info
-                label="ชื่อตัว ชื่อสกุล มารดา"
-                value={person.mother}
-              />
+              <Info label="ชื่อตัว ชื่อสกุล มารดา" value={person.mother} />
 
-              <Info
-                label="ชื่อตัว ชื่อสกุล ภรรยา/สามี"
-                value={person.spouse}
-              />
+              <Info label="ชื่อตัว ชื่อสกุล ภรรยา/สามี" value={person.spouse} />
             </div>
           </section>
 
-          {/* ใบเสร็จ */}
           <section>
             <SectionTitle icon="🧾" title="ข้อมูลใบเสร็จ" />
 
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
-              <Info
-                label="เล่มที่"
-                value={person.receiptBookNo}
-              />
+              <Info label="เล่มที่" value={person.receiptBookNo} />
 
-              <Info
-                label="เลขที่"
-                value={person.receiptNo}
-              />
+              <Info label="เลขที่" value={person.receiptNo} />
 
-              <Info
-                label="ลงวันที่"
-                value={person.receiptDate}
-              />
+              <Info label="ลงวันที่" value={person.receiptDate} />
 
               <Info
                 label="จำนวนเงิน"
@@ -393,20 +355,12 @@ export default function PersonDetailPage() {
 
               <Info
                 label="ตัวอักษร"
-                value={
-                  person.moneyText
-                    ? `( ${person.moneyText} )`
-                    : "-"
-                }
+                value={person.moneyText ? `( ${person.moneyText} )` : "-"}
               />
 
-              <Info
-                label="หน่วยเก็บเงิน"
-                value={person.organizationName}
-              />
+              <Info label="หน่วยเก็บเงิน" value={person.organizationName} />
             </div>
           </section>
-
         </div>
       </div>
     </div>

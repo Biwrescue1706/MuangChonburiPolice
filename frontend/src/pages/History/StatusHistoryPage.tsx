@@ -8,12 +8,10 @@ interface Person {
   fullName: string;
   citizenId: string;
   fingerprintDate: string | null;
-
   purpose?: string;
   receiptBookNo?: string;
   receiptNo?: string;
   receiptDate?: string;
-
   organizationName?: string;
   status?: number;
   priority?: number;
@@ -32,16 +30,10 @@ export default function StatusHistoryPage() {
 
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
-
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [histories, setHistories] = useState<StatusHistory[]>([]);
-
-  const [isCardView, setIsCardView] = useState(
-    window.innerWidth < 1280,
-  );
-
-  // RESPONSIVE
+  const [isCardView, setIsCardView] = useState(window.innerWidth < 1280);
 
   useEffect(() => {
     const handleResize = () => {
@@ -55,11 +47,7 @@ export default function StatusHistoryPage() {
     };
   }, []);
 
-  // FORMAT DATE
-
-  const formatThaiShortDate = (
-    dateStr?: string | null,
-  ) => {
+  const formatThaiShortDate = (dateStr?: string | null): string => {
     if (!dateStr) return "-";
 
     const months: Record<string, string> = {
@@ -88,8 +76,6 @@ export default function StatusHistoryPage() {
     return `${day} ${months[month] || month} ${year.slice(-2)}`;
   };
 
-  // FETCH DATA
-
   const fetchData = async (
     selectedStartDate: string,
     selectedEndDate: string,
@@ -97,51 +83,36 @@ export default function StatusHistoryPage() {
     try {
       setLoading(true);
 
-      const res = await api.get(
-        "/status-history/range",
-        {
-          params: {
-            startDate: selectedStartDate,
-            endDate: selectedEndDate,
-          },
+      const res = await api.get("/status-history/range", {
+        params: {
+          startDate: selectedStartDate,
+          endDate: selectedEndDate,
         },
-      );
+      });
 
       setTotal(res.data.total || 0);
 
-      const sortedData = [
-        ...(res.data.data || []),
-      ].sort((a, b) => {
-        const bookA = Number(
-          a.person?.receiptBookNo || 0,
-        );
+      const sortedData: StatusHistory[] = [...(res.data.data || [])].sort(
+        (a, b) => {
+          const bookA = Number(a.person?.receiptBookNo || 0);
 
-        const bookB = Number(
-          b.person?.receiptBookNo || 0,
-        );
+          const bookB = Number(b.person?.receiptBookNo || 0);
 
-        if (bookA !== bookB) {
-          return bookA - bookB;
-        }
+          if (bookA !== bookB) {
+            return bookA - bookB;
+          }
 
-        const noA = Number(
-          a.person?.receiptNo || 0,
-        );
+          const noA = Number(a.person?.receiptNo || 0);
 
-        const noB = Number(
-          b.person?.receiptNo || 0,
-        );
+          const noB = Number(b.person?.receiptNo || 0);
 
-        return noA - noB;
-      });
-
-      setHistories(sortedData);
-    } catch (err) {
-      console.error(
-        "โหลดรายงานไม่สำเร็จ:",
-        err,
+          return noA - noB;
+        },
       );
 
+      setHistories(sortedData);
+    } catch (err: unknown) {
+      console.error("โหลดรายงานไม่สำเร็จ:", err);
       setHistories([]);
       setTotal(0);
     } finally {
@@ -149,19 +120,13 @@ export default function StatusHistoryPage() {
     }
   };
 
-  // INITIAL LOAD
-
   useEffect(() => {
-    fetchData(startDate, endDate);
-  }, []);
-
-  // SEARCH
+    void fetchData(startDate, endDate);
+  });
 
   const handleSearch = () => {
-    fetchData(startDate, endDate);
+    void fetchData(startDate, endDate);
   };
-
-  // LOADING CARD
 
   const LoadingView = () => (
     <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-sm">
@@ -172,8 +137,6 @@ export default function StatusHistoryPage() {
       </p>
     </div>
   );
-
-  // EMPTY VIEW
 
   const EmptyView = () => (
     <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 text-center">
@@ -195,9 +158,7 @@ export default function StatusHistoryPage() {
         </svg>
       </div>
 
-      <p className="mt-4 text-base font-bold text-gray-700">
-        ไม่พบข้อมูล
-      </p>
+      <p className="mt-4 text-base font-bold text-gray-700">ไม่พบข้อมูล</p>
 
       <p className="mt-1 text-xs text-gray-400">
         ไม่พบรายการส่งตรวจในช่วงวันที่ที่เลือก
@@ -205,21 +166,12 @@ export default function StatusHistoryPage() {
     </div>
   );
 
-  // PAGE
-
   return (
     <div className="main-content px-3 py-4 sm:px-4">
-      <div className="mx-auto px-4 w-full max-w-[1600px]">
-
-        {/* =====================================================
-            HEADER
-        ===================================================== */}
-
+      <div className="mx-auto w-full max-w-[1600px] px-4">
         <div className="mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] px-5 py-5 text-white shadow-lg sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
             <div className="flex items-center gap-3">
-
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15">
                 <svg
                   width="25"
@@ -247,34 +199,22 @@ export default function StatusHistoryPage() {
                   ตรวจสอบรายการส่งตรวจตามช่วงวันที่
                 </p>
               </div>
-
             </div>
 
             <div className="rounded-xl bg-white/10 px-5 py-2 text-center">
-              <p className="text-[10px] text-white/60">
-                จำนวนที่ส่งทั้งหมด
-              </p>
+              <p className="text-[10px] text-white/60">จำนวนที่ส่งทั้งหมด</p>
 
               <p className="text-2xl font-bold">
                 {total.toLocaleString("th-TH")}
               </p>
 
-              <p className="text-[10px] text-white/60">
-                คน
-              </p>
+              <p className="text-[10px] text-white/60">คน</p>
             </div>
-
           </div>
         </div>
 
-        {/* =====================================================
-            SEARCH
-        ===================================================== */}
-
         <div className="mb-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
-
           <div className="mb-4 flex items-center gap-3">
-
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#800020]/10 text-[#800020]">
               <svg
                 width="19"
@@ -286,13 +226,7 @@ export default function StatusHistoryPage() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <rect
-                  x="3"
-                  y="4"
-                  width="18"
-                  height="17"
-                  rx="2"
-                />
+                <rect x="3" y="4" width="18" height="17" rx="2" />
                 <path d="M8 2v4" />
                 <path d="M16 2v4" />
                 <path d="M3 9h18" />
@@ -308,11 +242,9 @@ export default function StatusHistoryPage() {
                 กำหนดวันที่เริ่มต้นและวันที่สิ้นสุด
               </p>
             </div>
-
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_150px] lg:items-end">
-
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-gray-600">
                 วันที่เริ่มต้น
@@ -321,9 +253,7 @@ export default function StatusHistoryPage() {
               <input
                 type="date"
                 value={startDate}
-                onChange={(e) =>
-                  setStartDate(e.target.value)
-                }
+                onChange={(e) => setStartDate(e.target.value)}
                 className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 outline-none transition focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10"
               />
             </div>
@@ -336,9 +266,7 @@ export default function StatusHistoryPage() {
               <input
                 type="date"
                 value={endDate}
-                onChange={(e) =>
-                  setEndDate(e.target.value)
-                }
+                onChange={(e) => setEndDate(e.target.value)}
                 className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 outline-none transition focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10"
               />
             </div>
@@ -366,30 +294,18 @@ export default function StatusHistoryPage() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <circle
-                      cx="11"
-                      cy="11"
-                      r="7"
-                    />
+                    <circle cx="11" cy="11" r="7" />
                     <path d="m20 20-4-4" />
                   </svg>
-
                   ค้นหา
                 </>
               )}
             </button>
-
           </div>
         </div>
 
-        {/* =====================================================
-            SUMMARY
-        ===================================================== */}
-
         <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:flex-row sm:items-center sm:justify-between">
-
           <div className="flex items-center gap-3">
-
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
               <svg
                 width="20"
@@ -419,7 +335,6 @@ export default function StatusHistoryPage() {
                 จำนวนที่ส่งทั้งหมด
               </p>
             </div>
-
           </div>
 
           <div className="text-left sm:text-right">
@@ -427,62 +342,39 @@ export default function StatusHistoryPage() {
               {total.toLocaleString("th-TH")}
             </span>
 
-            <span className="ml-1 text-xs font-semibold text-blue-500">
-              คน
-            </span>
+            <span className="ml-1 text-xs font-semibold text-blue-500">คน</span>
           </div>
-
         </div>
-
-        {/* =====================================================
-            CONTENT
-        ===================================================== */}
 
         {loading ? (
           <LoadingView />
         ) : histories.length === 0 ? (
           <EmptyView />
         ) : isCardView ? (
-
-          /* ===================================================
-             CARD VIEW
-          =================================================== */
-
           <div className="flex flex-col gap-3">
-
             {histories.map((item, index) => (
               <div
                 key={item.historyId}
                 className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md"
               >
-
                 <div className="absolute left-0 top-0 h-1 w-full bg-[#800020]" />
 
                 <div className="p-4 sm:p-5">
-
-                  {/* HEADER */}
-
                   <div className="flex items-start justify-between gap-3">
-
                     <div className="flex min-w-0 items-center gap-3">
-
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#800020]/10 text-sm font-bold text-[#800020]">
                         {index + 1}
                       </div>
 
                       <div className="min-w-0">
-
                         <h3 className="break-words text-base font-bold text-gray-900">
                           {item.person?.fullName ?? "-"}
                         </h3>
 
                         <p className="mt-1 text-[10px] text-gray-400">
-                          ID:{" "}
-                          {item.person?.personId ?? "-"}
+                          ID: {item.person?.personId ?? "-"}
                         </p>
-
                       </div>
-
                     </div>
 
                     {item.person?.priority === 1 ? (
@@ -494,13 +386,9 @@ export default function StatusHistoryPage() {
                         ไม่ด่วน
                       </span>
                     )}
-
                   </div>
 
-                  {/* PURPOSE */}
-
                   <div className="mt-5 rounded-xl bg-gray-50 p-3">
-
                     <p className="text-[10px] font-semibold text-gray-400">
                       เรื่องที่ขออนุญาต
                     </p>
@@ -508,23 +396,16 @@ export default function StatusHistoryPage() {
                     <p className="mt-1 break-words text-sm font-semibold leading-5 text-gray-800">
                       {item.person?.purpose ?? "-"}
                     </p>
-
                   </div>
 
-                  {/* RECEIPT */}
-
                   <div className="mt-3">
-
                     <p className="mb-2 text-[10px] font-bold text-gray-500">
                       ใบเสร็จ
                     </p>
 
                     <div className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-3">
-
                       <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                        <p className="text-[9px] text-gray-400">
-                          เล่มที่
-                        </p>
+                        <p className="text-[9px] text-gray-400">เล่มที่</p>
 
                         <p className="mt-1 text-sm font-bold text-gray-800">
                           {item.person?.receiptBookNo ?? "-"}
@@ -532,9 +413,7 @@ export default function StatusHistoryPage() {
                       </div>
 
                       <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                        <p className="text-[9px] text-gray-400">
-                          เลขที่
-                        </p>
+                        <p className="text-[9px] text-gray-400">เลขที่</p>
 
                         <p className="mt-1 text-sm font-bold text-gray-800">
                           {item.person?.receiptNo ?? "-"}
@@ -542,43 +421,24 @@ export default function StatusHistoryPage() {
                       </div>
 
                       <div className="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                        <p className="text-[9px] text-gray-400">
-                          ลงวันที่
-                        </p>
+                        <p className="text-[9px] text-gray-400">ลงวันที่</p>
 
                         <p className="mt-1 text-xs font-bold text-gray-800">
-                          {formatThaiShortDate(
-                            item.person?.receiptDate,
-                          )}
+                          {formatThaiShortDate(item.person?.receiptDate)}
                         </p>
                       </div>
-
                     </div>
-
                   </div>
-
                 </div>
               </div>
             ))}
-
           </div>
-
         ) : (
-
-          /* ===================================================
-             TABLE VIEW
-          =================================================== */
-
           <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-
             <div className="w-full overflow-x-auto">
-
               <table className="w-full min-w-[1000px] border-collapse text-sm">
-
                 <thead>
-
                   <tr className="bg-gradient-to-r from-[#650017] to-[#800020] text-white">
-
                     <th
                       rowSpan={2}
                       className="w-[70px] border-r border-white/10 px-3 py-4 text-center text-xs font-bold"
@@ -613,11 +473,9 @@ export default function StatusHistoryPage() {
                     >
                       หมายเหตุ
                     </th>
-
                   </tr>
 
                   <tr className="bg-[#650017] text-white">
-
                     <th className="w-[100px] px-3 py-3 text-center text-[10px] font-bold">
                       เล่มที่
                     </th>
@@ -629,38 +487,29 @@ export default function StatusHistoryPage() {
                     <th className="w-[130px] px-3 py-3 text-center text-[10px] font-bold">
                       ลงวันที่
                     </th>
-
                   </tr>
-
                 </thead>
 
                 <tbody>
-
                   {histories.map((item, index) => (
                     <tr
                       key={item.historyId}
                       className={`border-b border-gray-100 transition-colors hover:bg-[#800020]/5 ${
-                        index % 2 === 0
-                          ? "bg-white"
-                          : "bg-gray-50/70"
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50/70"
                       }`}
                     >
-
                       <td className="px-3 py-4 text-center text-xs font-semibold text-gray-500">
                         {index + 1}
                       </td>
 
                       <td className="px-4 py-4 text-left">
-
                         <p className="break-words text-sm font-bold leading-5 text-gray-900">
                           {item.person?.fullName ?? "-"}
                         </p>
 
                         <p className="mt-1 text-[9px] text-gray-400">
-                          ID:{" "}
-                          {item.person?.personId ?? "-"}
+                          ID: {item.person?.personId ?? "-"}
                         </p>
-
                       </td>
 
                       <td className="max-w-[300px] whitespace-normal break-words px-4 py-4 text-left text-xs leading-5 text-gray-700">
@@ -676,13 +525,10 @@ export default function StatusHistoryPage() {
                       </td>
 
                       <td className="whitespace-nowrap px-3 py-4 text-center text-xs font-semibold text-gray-600">
-                        {formatThaiShortDate(
-                          item.person?.receiptDate,
-                        )}
+                        {formatThaiShortDate(item.person?.receiptDate)}
                       </td>
 
                       <td className="px-3 py-4 text-center">
-
                         {item.person?.priority === 1 ? (
                           <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-[10px] font-bold text-red-600">
                             ด่วน
@@ -692,46 +538,33 @@ export default function StatusHistoryPage() {
                             ไม่ด่วน
                           </span>
                         )}
-
                       </td>
-
                     </tr>
                   ))}
-
                 </tbody>
 
                 <tfoot>
-
                   <tr className="border-t border-gray-200 bg-gray-50">
-
                     <td
                       colSpan={7}
                       className="px-4 py-4 text-right text-sm font-bold text-gray-700"
                     >
                       รวมทั้งหมด{" "}
                       <span className="text-[#800020]">
-                        {total.toLocaleString(
-                          "th-TH",
-                        )}
+                        {total.toLocaleString("th-TH")}
                       </span>{" "}
                       คน
                     </td>
-
                   </tr>
-
                 </tfoot>
-
               </table>
-
             </div>
 
             <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 text-[10px] text-gray-400">
               เลื่อนซ้าย-ขวาเพื่อดูข้อมูลเพิ่มเติม
             </div>
-
           </div>
         )}
-
       </div>
     </div>
   );

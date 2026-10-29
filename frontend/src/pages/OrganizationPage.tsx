@@ -1,46 +1,113 @@
-// src/pages/OrganizationPage.tsx
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import api from "../api/axios";
 import { toast } from "../utils/toast";
 
+type FormValue = string | number | null | undefined;
+type FormState = Record<string, FormValue>;
+
+type OrganizationData = {
+  organizationId?: string | number;
+  commander?: unknown;
+  finance?: unknown;
+  [key: string]: unknown;
+};
+
+type ModalType = "org" | "commander" | "finance";
+
+function toFormState(value: unknown): FormState {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  const result: FormState = {};
+
+  for (const [key, entry] of Object.entries(value)) {
+    if (
+      typeof entry === "string" ||
+      typeof entry === "number" ||
+      entry === null
+    ) {
+      result[key] = entry;
+    }
+  }
+
+  return result;
+}
+
+function getImageUrl(value: FormValue): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
 export default function OrganizationPage() {
-  const [org, setOrg] = useState<any>(null);
-  const [orgForm, setOrgForm] = useState<any>({});
-  const [commanderForm, setCommanderForm] = useState<any>({});
-  const [financeForm, setFinanceForm] = useState<any>({});
+  const [org, setOrg] = useState<OrganizationData | null>(null);
+  const [orgForm, setOrgForm] = useState<FormState>({});
+  const [commanderForm, setCommanderForm] = useState<FormState>({});
+  const [financeForm, setFinanceForm] = useState<FormState>({});
 
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState<
-    "org" | "commander" | "finance" | null
-  >(null);
-
+  const [modalType, setModalType] = useState<ModalType | null>(null);
   const [signatureFile, setSignatureFile] = useState<File | null>(null);
 
   const orgId = org?.organizationId;
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      const res = await api.get("/organization");
-      const data = res.data[0];
+  const applyOrganizationData = useCallback(
+    (data: OrganizationData | undefined) => {
+      if (!data) {
+        setOrg(null);
+        setOrgForm({});
+        setCommanderForm({});
+        setFinanceForm({});
+        return;
+      }
 
       setOrg(data);
-      setOrgForm(data);
-      setCommanderForm(data?.commander || {});
-      setFinanceForm(data?.finance || {});
+      setOrgForm(toFormState(data));
+      setCommanderForm(toFormState(data.commander));
+      setFinanceForm(toFormState(data.finance));
+    },
+    [],
+  );
+
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await api.get<OrganizationData[]>("/organization");
+      applyOrganizationData(res.data[0]);
     } catch {
       toast("error", "โหลดข้อมูลไม่สำเร็จ");
     }
-  };
+  }, [applyOrganizationData]);
 
-  const handleChange = (e: any, setForm: any, form: any) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+  useEffect(() => {
+    let cancelled = false;
+
+    api
+      .get<OrganizationData[]>("/organization")
+      .then((res) => {
+        if (cancelled) return;
+        applyOrganizationData(res.data[0]);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          toast("error", "โหลดข้อมูลไม่สำเร็จ");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyOrganizationData]);
+
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    setForm: Dispatch<SetStateAction<FormState>>,
+  ) => {
+    const { name, value } = e.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
   };
 
   const closeModal = () => {
@@ -49,13 +116,18 @@ export default function OrganizationPage() {
     setSignatureFile(null);
   };
 
-  const openModal = (type: "org" | "commander" | "finance") => {
+  const openModal = (type: ModalType) => {
     setModalType(type);
     setSignatureFile(null);
     setShowModal(true);
   };
 
   const saveOrganization = async () => {
+    if (orgId === undefined || orgId === null) {
+      toast("error", "ไม่พบข้อมูลหน่วยงาน");
+      return;
+    }
+
     try {
       await api.patch(`/organization/${orgId}`, orgForm);
       toast("success", "บันทึกหน่วยงานสำเร็จ");
@@ -67,6 +139,11 @@ export default function OrganizationPage() {
   };
 
   const saveCommander = async () => {
+    if (orgId === undefined || orgId === null) {
+      toast("error", "ไม่พบข้อมูลหน่วยงาน");
+      return;
+    }
+
     try {
       let signatureUrl = commanderForm.signatureImage;
 
@@ -74,7 +151,7 @@ export default function OrganizationPage() {
         const formData = new FormData();
         formData.append("file", signatureFile);
 
-        const res = await api.post(
+        const res = await api.post<{ url: string }>(
           `/organization/${orgId}/upload-signature`,
           formData,
         );
@@ -96,6 +173,11 @@ export default function OrganizationPage() {
   };
 
   const saveFinance = async () => {
+    if (orgId === undefined || orgId === null) {
+      toast("error", "ไม่พบข้อมูลหน่วยงาน");
+      return;
+    }
+
     try {
       await api.patch(`/organization/${orgId}/finance`, financeForm);
       toast("success", "บันทึกการเงินสำเร็จ");
@@ -113,9 +195,7 @@ export default function OrganizationPage() {
           <div className="flex min-h-[300px] items-center justify-center rounded-3xl bg-white shadow-sm">
             <div className="text-center">
               <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-[#800020]" />
-              <p className="font-semibold text-gray-500">
-                กำลังโหลดข้อมูล...
-              </p>
+              <p className="font-semibold text-gray-500">กำลังโหลดข้อมูล...</p>
             </div>
           </div>
         </div>
@@ -158,8 +238,7 @@ export default function OrganizationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto px-3 w-full max-w-7xl">
-        {/* HEADER */}
+      <div className="mx-auto w-full max-w-7xl px-3">
         <div className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-[#800020] via-[#6d001b] to-[#3d000e] p-6 text-white shadow-xl sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -186,23 +265,19 @@ export default function OrganizationPage() {
           </div>
         </div>
 
-        {/* CARDS */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => (
             <div
               key={card.type}
               className="group overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
             >
-              {/* Card Header */}
               <div
                 className={`bg-gradient-to-br ${card.gradient} p-5 text-white`}
               >
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="mb-2 text-3xl">{card.icon}</div>
-
                     <h2 className="text-xl font-bold">{card.title}</h2>
-
                     <p className="mt-1 text-xs text-white/60">
                       {card.subtitle}
                     </p>
@@ -214,7 +289,6 @@ export default function OrganizationPage() {
                 </div>
               </div>
 
-              {/* Card Body */}
               <div className="p-5">
                 <div className="mb-5">
                   <p className="mb-1 text-xs font-semibold text-gray-400">
@@ -231,9 +305,7 @@ export default function OrganizationPage() {
                 </div>
 
                 <div className="rounded-2xl bg-gray-50 p-4">
-                  <p className="text-xs font-semibold text-gray-400">
-                    ตำแหน่ง
-                  </p>
+                  <p className="text-xs font-semibold text-gray-400">ตำแหน่ง</p>
 
                   <p className="mt-1 break-words text-sm font-semibold text-gray-800">
                     {card.position}
@@ -253,14 +325,12 @@ export default function OrganizationPage() {
           ))}
         </div>
 
-        {/* INFORMATION */}
         <div className="mt-5 rounded-2xl border border-amber-100 bg-amber-50 p-4">
           <div className="flex gap-3">
             <div className="text-xl">💡</div>
 
             <div>
               <p className="font-bold text-amber-900">หมายเหตุ</p>
-
               <p className="mt-1 text-sm leading-6 text-amber-800">
                 ข้อมูลหน่วยงานและผู้กำกับจะถูกนำไปใช้ในการสร้างเอกสารและ PDF
                 ของระบบโดยอัตโนมัติ
@@ -270,7 +340,6 @@ export default function OrganizationPage() {
         </div>
       </div>
 
-      {/* MODAL */}
       {showModal && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-5"
@@ -279,7 +348,6 @@ export default function OrganizationPage() {
           }}
         >
           <div className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
-            {/* Modal Header */}
             <div className="flex items-center justify-between bg-gradient-to-r from-[#800020] to-[#500014] px-5 py-4 text-white sm:px-6">
               <div>
                 <p className="text-xs font-semibold text-white/60">
@@ -297,23 +365,20 @@ export default function OrganizationPage() {
                 type="button"
                 onClick={closeModal}
                 className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-lg text-white transition hover:bg-white/20"
+                aria-label="ปิดหน้าต่าง"
               >
                 ✕
               </button>
             </div>
 
-            {/* Modal Body */}
             <div className="overflow-y-auto p-5 sm:p-6">
-              {/* ORG */}
               {modalType === "org" && (
                 <div className="space-y-4">
                   <Field
                     label="ชื่อหน่วยงาน"
                     name="organizationName"
                     value={orgForm.organizationName}
-                    onChange={(e: any) =>
-                      handleChange(e, setOrgForm, orgForm)
-                    }
+                    onChange={(e) => handleChange(e, setOrgForm)}
                   />
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -321,18 +386,14 @@ export default function OrganizationPage() {
                       label="ยศ"
                       name="rank"
                       value={orgForm.rank}
-                      onChange={(e: any) =>
-                        handleChange(e, setOrgForm, orgForm)
-                      }
+                      onChange={(e) => handleChange(e, setOrgForm)}
                     />
 
                     <Field
                       label="ตำแหน่ง"
                       name="position"
                       value={orgForm.position}
-                      onChange={(e: any) =>
-                        handleChange(e, setOrgForm, orgForm)
-                      }
+                      onChange={(e) => handleChange(e, setOrgForm)}
                     />
                   </div>
 
@@ -341,33 +402,26 @@ export default function OrganizationPage() {
                       label="ชื่อ"
                       name="firstName"
                       value={orgForm.firstName}
-                      onChange={(e: any) =>
-                        handleChange(e, setOrgForm, orgForm)
-                      }
+                      onChange={(e) => handleChange(e, setOrgForm)}
                     />
 
                     <Field
                       label="นามสกุล"
                       name="lastName"
                       value={orgForm.lastName}
-                      onChange={(e: any) =>
-                        handleChange(e, setOrgForm, orgForm)
-                      }
+                      onChange={(e) => handleChange(e, setOrgForm)}
                     />
                   </div>
                 </div>
               )}
 
-              {/* COMMANDER */}
               {modalType === "commander" && (
                 <div className="space-y-4">
                   <Field
                     label="ยศเต็ม"
                     name="fullRank"
                     value={commanderForm.fullRank}
-                    onChange={(e: any) =>
-                      handleChange(e, setCommanderForm, commanderForm)
-                    }
+                    onChange={(e) => handleChange(e, setCommanderForm)}
                   />
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -375,18 +429,14 @@ export default function OrganizationPage() {
                       label="ยศ"
                       name="rank"
                       value={commanderForm.rank}
-                      onChange={(e: any) =>
-                        handleChange(e, setCommanderForm, commanderForm)
-                      }
+                      onChange={(e) => handleChange(e, setCommanderForm)}
                     />
 
                     <Field
                       label="ตำแหน่ง"
                       name="position"
                       value={commanderForm.position}
-                      onChange={(e: any) =>
-                        handleChange(e, setCommanderForm, commanderForm)
-                      }
+                      onChange={(e) => handleChange(e, setCommanderForm)}
                     />
                   </div>
 
@@ -395,18 +445,14 @@ export default function OrganizationPage() {
                       label="ชื่อ"
                       name="firstName"
                       value={commanderForm.firstName}
-                      onChange={(e: any) =>
-                        handleChange(e, setCommanderForm, commanderForm)
-                      }
+                      onChange={(e) => handleChange(e, setCommanderForm)}
                     />
 
                     <Field
                       label="นามสกุล"
                       name="lastName"
                       value={commanderForm.lastName}
-                      onChange={(e: any) =>
-                        handleChange(e, setCommanderForm, commanderForm)
-                      }
+                      onChange={(e) => handleChange(e, setCommanderForm)}
                     />
                   </div>
 
@@ -414,22 +460,24 @@ export default function OrganizationPage() {
                     label="ตำแหน่งเต็ม"
                     name="fullPosition"
                     value={commanderForm.fullPosition}
-                    onChange={(e: any) =>
-                      handleChange(e, setCommanderForm, commanderForm)
-                    }
+                    onChange={(e) => handleChange(e, setCommanderForm)}
                   />
 
                   <div>
-                    <label className="mb-2 block text-sm font-bold text-gray-700">
+                    <label
+                      htmlFor="signatureFile"
+                      className="mb-2 block text-sm font-bold text-gray-700"
+                    >
                       ลายเซ็น
                     </label>
 
                     <input
+                      id="signatureFile"
                       type="file"
                       accept="image/*"
                       className="block w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-600 outline-none transition file:mr-3 file:rounded-lg file:border-0 file:bg-[#800020] file:px-3 file:py-2 file:text-xs file:font-bold file:text-white hover:border-[#800020] focus:border-[#800020] focus:ring-4 focus:ring-[#800020]/10"
                       onChange={(e) =>
-                        setSignatureFile(e.target.files?.[0] || null)
+                        setSignatureFile(e.target.files?.[0] ?? null)
                       }
                     />
 
@@ -442,29 +490,29 @@ export default function OrganizationPage() {
                         <img
                           src={URL.createObjectURL(signatureFile)}
                           className="max-h-24 max-w-full object-contain"
-                          alt="signature preview"
+                          alt="ตัวอย่างลายเซ็นใหม่"
                         />
                       </div>
                     )}
 
-                    {!signatureFile && commanderForm.signatureImage && (
-                      <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
-                        <p className="mb-2 text-xs font-semibold text-gray-500">
-                          ลายเซ็นปัจจุบัน
-                        </p>
+                    {!signatureFile &&
+                      getImageUrl(commanderForm.signatureImage) && (
+                        <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                          <p className="mb-2 text-xs font-semibold text-gray-500">
+                            ลายเซ็นปัจจุบัน
+                          </p>
 
-                        <img
-                          src={commanderForm.signatureImage}
-                          className="max-h-24 max-w-full object-contain"
-                          alt="current signature"
-                        />
-                      </div>
-                    )}
+                          <img
+                            src={getImageUrl(commanderForm.signatureImage)}
+                            className="max-h-24 max-w-full object-contain"
+                            alt="ลายเซ็นปัจจุบัน"
+                          />
+                        </div>
+                      )}
                   </div>
                 </div>
               )}
 
-              {/* FINANCE */}
               {modalType === "finance" && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -472,18 +520,14 @@ export default function OrganizationPage() {
                       label="ยศ"
                       name="rank"
                       value={financeForm.rank}
-                      onChange={(e: any) =>
-                        handleChange(e, setFinanceForm, financeForm)
-                      }
+                      onChange={(e) => handleChange(e, setFinanceForm)}
                     />
 
                     <Field
                       label="ตำแหน่ง"
                       name="position"
                       value={financeForm.position}
-                      onChange={(e: any) =>
-                        handleChange(e, setFinanceForm, financeForm)
-                      }
+                      onChange={(e) => handleChange(e, setFinanceForm)}
                     />
                   </div>
 
@@ -492,25 +536,20 @@ export default function OrganizationPage() {
                       label="ชื่อ"
                       name="firstName"
                       value={financeForm.firstName}
-                      onChange={(e: any) =>
-                        handleChange(e, setFinanceForm, financeForm)
-                      }
+                      onChange={(e) => handleChange(e, setFinanceForm)}
                     />
 
                     <Field
                       label="นามสกุล"
                       name="lastName"
                       value={financeForm.lastName}
-                      onChange={(e: any) =>
-                        handleChange(e, setFinanceForm, financeForm)
-                      }
+                      onChange={(e) => handleChange(e, setFinanceForm)}
                     />
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Modal Footer */}
             <div className="flex flex-col-reverse gap-2 border-t border-gray-100 bg-gray-50 p-4 sm:flex-row sm:justify-end">
               <button
                 type="button"
@@ -523,9 +562,13 @@ export default function OrganizationPage() {
               <button
                 type="button"
                 onClick={async () => {
-                  if (modalType === "org") await saveOrganization();
-                  if (modalType === "commander") await saveCommander();
-                  if (modalType === "finance") await saveFinance();
+                  if (modalType === "org") {
+                    await saveOrganization();
+                  } else if (modalType === "commander") {
+                    await saveCommander();
+                  } else if (modalType === "finance") {
+                    await saveFinance();
+                  }
                 }}
                 className="h-11 rounded-xl bg-[#800020] px-6 text-sm font-bold text-white shadow-sm transition hover:bg-[#650019] active:scale-[0.98]"
               >
@@ -539,27 +582,28 @@ export default function OrganizationPage() {
   );
 }
 
-function Field({
-  label,
-  name,
-  value,
-  onChange,
-}: {
+type FieldProps = {
   label: string;
   name: string;
-  value: any;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}) {
+  value: FormValue;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+};
+
+function Field({ label, name, value, onChange }: FieldProps) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-bold text-gray-700">
+      <label
+        htmlFor={name}
+        className="mb-2 block text-sm font-bold text-gray-700"
+      >
         {label}
       </label>
 
       <input
+        id={name}
         type="text"
         name={name}
-        value={value || ""}
+        value={value ?? ""}
         onChange={onChange}
         className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#800020] focus:bg-white focus:ring-4 focus:ring-[#800020]/10"
       />

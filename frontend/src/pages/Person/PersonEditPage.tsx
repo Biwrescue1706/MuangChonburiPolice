@@ -1,5 +1,5 @@
 // src/pages/statusPerson/PersonEditPage.tsx
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../../api/axios";
@@ -10,10 +10,23 @@ const currentYearTH = currentYear + 543;
 const maxYear = currentYearTH - 18;
 const minYear = currentYearTH - 100;
 
-const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => maxYear - i);
+const years = Array.from(
+  { length: maxYear - minYear + 1 },
+  (_, i) => maxYear - i,
+);
 const months = [
-  "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
-  "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม",
+  "มกราคม",
+  "กุมภาพันธ์",
+  "มีนาคม",
+  "เมษายน",
+  "พฤษภาคม",
+  "มิถุนายน",
+  "กรกฎาคม",
+  "สิงหาคม",
+  "กันยายน",
+  "ตุลาคม",
+  "พฤศจิกายน",
+  "ธันวาคม",
 ];
 const heights = Array.from({ length: 121 }, (_, i) => i + 100);
 const weights = Array.from({ length: 151 }, (_, i) => i + 30);
@@ -38,7 +51,7 @@ const isLeapYear = (yearBE: string) => {
   return yearAD % 4 === 0;
 };
 
-const getDaysInMonth = (month: string, year?: string) => {
+const getDaysInMonth = (month?: string, year?: string) => {
   if (!month) return 31;
   if (month === "กุมภาพันธ์") return year && isLeapYear(year) ? 29 : 28;
   if (["เมษายน", "มิถุนายน", "กันยายน", "พฤศจิกายน"].includes(month)) return 30;
@@ -102,14 +115,54 @@ function Field({
   );
 }
 
+type PersonForm = {
+  [key: string]: string | number | undefined;
+
+  prefix?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  citizenId?: string;
+  birthDay?: string;
+  birthMonth?: string;
+  birthYear?: string;
+  fingerprintDay?: string;
+  fingerprintMonth?: string;
+  fingerprintYear?: string;
+  receiptDay?: string;
+  receiptMonth?: string;
+  receiptYear?: string;
+  purpose?: string;
+  requestingAgency?: string;
+  nationality?: string;
+  ethnicity?: string;
+  height?: string | number;
+  weight?: string | number;
+  bodyType?: string;
+  skinColor?: string;
+  distinguishingMarks?: string;
+  behavior?: string;
+  address?: string;
+  occupation?: string;
+  workplaceAddress?: string;
+  father?: string;
+  mother?: string;
+  spouse?: string;
+  receiptBookNo?: string;
+  receiptNo?: string;
+  money?: string | number;
+  priority?: number;
+  status?: number;
+};
+
 export default function PersonEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState<any>({});
-  const [original, setOriginal] = useState<any>({});
+  const [form, setForm] = useState<PersonForm>({});
+  const [original, setOriginal] = useState<PersonForm>({});
   const [loading, setLoading] = useState(false);
 
-  const fetchPerson = async () => {
+  const fetchPerson = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get(`/person/${id}`);
@@ -140,28 +193,24 @@ export default function PersonEditPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
 
   useEffect(() => {
-    fetchPerson();
-  }, []);
+    void fetchPerson();
+  }, [fetchPerson]);
 
   const maxBirthDay = getDaysInMonth(form.birthMonth, form.birthYear);
   const maxFingerprintDay = getDaysInMonth(
     form.fingerprintMonth,
     form.fingerprintYear,
   );
-  const maxReceiptDay = getDaysInMonth(
-    form.receiptMonth,
-    form.receiptYear,
-  );
+  const maxReceiptDay = getDaysInMonth(form.receiptMonth, form.receiptYear);
 
   const birthDays = Array.from({ length: maxBirthDay }, (_, i) =>
     String(i + 1).padStart(2, "0"),
   );
-  const fingerprintDays = Array.from(
-    { length: maxFingerprintDay },
-    (_, i) => String(i + 1).padStart(2, "0"),
+  const fingerprintDays = Array.from({ length: maxFingerprintDay }, (_, i) =>
+    String(i + 1).padStart(2, "0"),
   );
   const receiptDays = Array.from({ length: maxReceiptDay }, (_, i) =>
     String(i + 1).padStart(2, "0"),
@@ -177,38 +226,45 @@ export default function PersonEditPage() {
 
   useEffect(() => {
     if (form.birthDay && Number(form.birthDay) > maxBirthDay) {
-      setForm((prev: any) => ({ ...prev, birthDay: "" }));
+      setForm((prev) => ({ ...prev, birthDay: "" }));
     }
-  }, [form.birthMonth, form.birthYear]);
+  }, [form.birthDay, form.birthMonth, form.birthYear, maxBirthDay]);
 
   useEffect(() => {
     if (
       form.fingerprintDay &&
       Number(form.fingerprintDay) > maxFingerprintDay
     ) {
-      setForm((prev: any) => ({ ...prev, fingerprintDay: "" }));
+      setForm((prev) => ({ ...prev, fingerprintDay: "" }));
     }
-  }, [form.fingerprintMonth, form.fingerprintYear]);
+  }, [
+    form.fingerprintDay,
+    form.fingerprintMonth,
+    form.fingerprintYear,
+    maxFingerprintDay,
+  ]);
 
   useEffect(() => {
     if (form.receiptDay && Number(form.receiptDay) > maxReceiptDay) {
-      setForm((prev: any) => ({ ...prev, receiptDay: "" }));
+      setForm((prev) => ({ ...prev, receiptDay: "" }));
     }
-  }, [form.receiptMonth, form.receiptYear]);
+  }, [form.receiptDay, form.receiptMonth, form.receiptYear, maxReceiptDay]);
 
   useEffect(() => {
     if (!form.receiptYear) {
-      setForm((prev: any) => ({
+      setForm((prev) => ({
         ...prev,
         receiptYear: String(currentYearTH),
       }));
     }
   }, [form.receiptYear]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
 
-    setForm((prev: any) => ({
+    setForm((prev) => ({
       ...prev,
       [name]: name === "money" ? Number(value) : value,
     }));
@@ -309,7 +365,9 @@ export default function PersonEditPage() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-medium text-blue-600">PERSON MANAGEMENT</p>
+            <p className="text-sm font-medium text-blue-600">
+              PERSON MANAGEMENT
+            </p>
             <h1 className="mt-1 text-2xl font-bold text-slate-800 md:text-3xl">
               แก้ไขข้อมูลบุคคล
             </h1>
@@ -715,7 +773,7 @@ export default function PersonEditPage() {
                   onChange={(e) => {
                     const priority = Number(e.target.value);
 
-                    setForm((prev: any) => ({
+                    setForm((prev) => ({
                       ...prev,
                       priority,
                       ...(priority === 2 || priority === 3
@@ -792,7 +850,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.status ?? 0}
                   onChange={(e) =>
-                    setForm((prev: any) => ({
+                    setForm((prev) => ({
                       ...prev,
                       status: Number(e.target.value),
                     }))

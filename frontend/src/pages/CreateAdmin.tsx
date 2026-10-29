@@ -1,6 +1,5 @@
-// src/pages/CreateAdmin.tsx
-
 import { useEffect, useState } from "react";
+import axios from "axios";
 import api from "../api/axios";
 import Swal from "sweetalert2";
 
@@ -12,36 +11,37 @@ type Admin = {
   createdAt: string;
 };
 
+type AdminForm = {
+  username: string;
+  password: string;
+  name: string;
+  position: string;
+};
+
+const initialForm: AdminForm = {
+  username: "",
+  password: "",
+  name: "",
+  position: "",
+};
+
 export default function CreateAdmin() {
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [firstAdminId, setFirstAdminId] = useState<string | null>(null);
   const [currentAdminId, setCurrentAdminId] = useState<string | null>(null);
-
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Admin | null>(null);
-
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   const [thaiTime, setThaiTime] = useState("");
+  const [form, setForm] = useState<AdminForm>(initialForm);
 
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
-    name: "",
-    position: "",
-  });
-
-  const isEdit = !!editing;
+  const isEdit = editing !== null;
   const isTable = screenWidth >= 1280;
 
-  // คนที่ Login อยู่เป็น firstAdmin หรือไม่
   const isSuperAdmin =
     currentAdminId !== null &&
     firstAdminId !== null &&
     currentAdminId === firstAdminId;
-
-  // =====================================================
-  // RESPONSIVE
-  // =====================================================
 
   useEffect(() => {
     const resize = () => {
@@ -55,16 +55,10 @@ export default function CreateAdmin() {
     };
   }, []);
 
-  // =====================================================
-  // THAI TIME
-  // =====================================================
-
   useEffect(() => {
     const update = () => {
-      const now = new Date();
-
       setThaiTime(
-        now.toLocaleString("th-TH", {
+        new Date().toLocaleString("th-TH", {
           timeZone: "Asia/Bangkok",
           year: "numeric",
           month: "long",
@@ -79,34 +73,14 @@ export default function CreateAdmin() {
 
     update();
 
-    const timer = setInterval(update, 1000);
+    const timer = window.setInterval(update, 1000);
 
-    return () => clearInterval(timer);
+    return () => window.clearInterval(timer);
   }, []);
 
-  // =====================================================
-  // LOAD CURRENT ADMIN
-  // =====================================================
-
-  const loadCurrentAdmin = async () => {
-    try {
-      const res = await api.get("/admin/me");
-
-      setCurrentAdminId(res.data?.adminId || null);
-    } catch (error) {
-      console.error("โหลดข้อมูล Admin ปัจจุบันไม่สำเร็จ", error);
-      setCurrentAdminId(null);
-    }
-  };
-
-  // =====================================================
-  // LOAD ADMINS
-  // =====================================================
-
-  const loadAdmins = async () => {
+  const loadAdmins = async (showError = true): Promise<void> => {
     try {
       const res = await api.get("/admin/getall");
-
       const data: Admin[] = Array.isArray(res.data) ? res.data : [];
 
       const sorted = [...data].sort((a, b) =>
@@ -116,62 +90,107 @@ export default function CreateAdmin() {
         }),
       );
 
+      const first = [...data].sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      )[0];
+
       setAdmins(sorted);
+      setFirstAdminId(first?.adminId ?? null);
+    } catch (error: unknown) {
+      console.error("โหลดรายชื่อผู้ดูแลระบบไม่สำเร็จ", error);
 
-      // Admin คนแรก = firstAdminId
-      if (sorted.length > 0) {
-        const first = [...sorted].sort(
-          (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-        )[0];
-
-        setFirstAdminId(first.adminId);
-      } else {
-        setFirstAdminId(null);
+      if (showError) {
+        await Swal.fire({
+          icon: "error",
+          title: "โหลดข้อมูลไม่สำเร็จ",
+          text: "ไม่สามารถโหลดรายชื่อผู้ดูแลระบบได้",
+        });
       }
-    } catch (error) {
-      console.error(error);
+    }
+  };
 
-      Swal.fire({
-        icon: "error",
-        title: "โหลดข้อมูลไม่สำเร็จ",
-        text: "ไม่สามารถโหลดรายชื่อผู้ดูแลระบบได้",
-      });
+  const loadCurrentAdmin = async (): Promise<void> => {
+    try {
+      const res = await api.get("/admin/me");
+      setCurrentAdminId(res.data?.adminId ?? null);
+    } catch (error: unknown) {
+      console.error("โหลดข้อมูล Admin ปัจจุบันไม่สำเร็จ", error);
+      setCurrentAdminId(null);
     }
   };
 
   useEffect(() => {
-    loadAdmins();
-    loadCurrentAdmin();
-  }, []);
+    let cancelled = false;
 
-  // =====================================================
-  // OPEN CREATE
-  // ทุกคนสามารถเพิ่มสมาชิกได้
-  // =====================================================
+    const initialize = async () => {
+      const [adminsResult, currentAdminResult] = await Promise.allSettled([
+        api.get("/admin/getall"),
+        api.get("/admin/me"),
+      ]);
+
+      if (cancelled) return;
+
+      if (adminsResult.status === "fulfilled") {
+        const data: Admin[] = Array.isArray(adminsResult.value.data)
+          ? adminsResult.value.data
+          : [];
+
+        const sorted = [...data].sort((a, b) =>
+          (a.username || "").localeCompare(b.username || "", "th", {
+            sensitivity: "base",
+            numeric: true,
+          }),
+        );
+
+        const first = [...data].sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        )[0];
+
+        setAdmins(sorted);
+        setFirstAdminId(first?.adminId ?? null);
+      } else {
+        console.error("โหลดรายชื่อผู้ดูแลระบบไม่สำเร็จ", adminsResult.reason);
+
+        await Swal.fire({
+          icon: "error",
+          title: "โหลดข้อมูลไม่สำเร็จ",
+          text: "ไม่สามารถโหลดรายชื่อผู้ดูแลระบบได้",
+        });
+
+        if (cancelled) return;
+      }
+
+      if (cancelled) return;
+
+      if (currentAdminResult.status === "fulfilled") {
+        setCurrentAdminId(currentAdminResult.value.data?.adminId ?? null);
+      } else {
+        console.error(
+          "โหลดข้อมูล Admin ปัจจุบันไม่สำเร็จ",
+          currentAdminResult.reason,
+        );
+        setCurrentAdminId(null);
+      }
+    };
+
+    void initialize();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const openCreate = () => {
     setEditing(null);
-
-    setForm({
-      username: "",
-      password: "",
-      name: "",
-      position: "",
-    });
-
+    setForm({ ...initialForm });
     setShowModal(true);
   };
 
-  // =====================================================
-  // OPEN EDIT
-  // =====================================================
-
   const openEdit = (admin: Admin) => {
-    // firstAdmin แก้ไขทุกคนได้
-    // Admin ทั่วไปแก้ไขเฉพาะตัวเอง
     if (!isSuperAdmin && admin.adminId !== currentAdminId) {
-      Swal.fire({
+      void Swal.fire({
         icon: "warning",
         title: "ไม่มีสิทธิ์",
         text: "คุณสามารถแก้ไขได้เฉพาะข้อมูลของตัวเอง",
@@ -181,41 +200,31 @@ export default function CreateAdmin() {
     }
 
     setEditing(admin);
-
     setForm({
       username: admin.username || "",
       password: "",
       name: admin.name || "",
       position: admin.position || "",
     });
-
     setShowModal(true);
   };
 
-  // =====================================================
-  // CHANGE FORM
-  // =====================================================
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
     setForm((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
   };
-
-  // =====================================================
-  // SAVE
-  // =====================================================
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      // ================= EDIT =================
-
-      if (isEdit) {
-        if (!isSuperAdmin && editing?.adminId !== currentAdminId) {
-          Swal.fire({
+      if (isEdit && editing) {
+        if (!isSuperAdmin && editing.adminId !== currentAdminId) {
+          await Swal.fire({
             icon: "warning",
             title: "ไม่มีสิทธิ์",
             text: "คุณสามารถแก้ไขได้เฉพาะข้อมูลของตัวเอง",
@@ -224,16 +233,12 @@ export default function CreateAdmin() {
           return;
         }
 
-        await api.put(`/admin/${editing!.adminId}`, {
+        await api.put(`/admin/${editing.adminId}`, {
           username: form.username,
           name: form.name,
           position: form.position,
         });
-      }
-
-      // ================= CREATE =================
-      else {
-        // ทุก Admin สามารถเพิ่มสมาชิกได้
+      } else {
         await api.post("/admin/register", form);
       }
 
@@ -246,35 +251,27 @@ export default function CreateAdmin() {
 
       setShowModal(false);
       setEditing(null);
+      setForm({ ...initialForm });
 
-      setForm({
-        username: "",
-        password: "",
-        name: "",
-        position: "",
-      });
+      await Promise.all([loadAdmins(false), loadCurrentAdmin()]);
+    } catch (error: unknown) {
+      console.error("บันทึกข้อมูลผู้ดูแลระบบไม่สำเร็จ", error);
 
-      await loadAdmins();
-      await loadCurrentAdmin();
-    } catch (err: any) {
-      console.error(err);
+      const message = axios.isAxiosError<{ error?: string }>(error)
+        ? error.response?.data?.error
+        : undefined;
 
-      Swal.fire({
+      await Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
-        text: err.response?.data?.error || "ไม่สามารถบันทึกข้อมูลได้",
+        text: message || "ไม่สามารถบันทึกข้อมูลได้",
       });
     }
   };
 
-  // =====================================================
-  // DELETE
-  // =====================================================
-
   const removeAdmin = async (adminId: string) => {
-    // เฉพาะ firstAdmin
     if (!isSuperAdmin) {
-      Swal.fire({
+      await Swal.fire({
         icon: "warning",
         title: "ไม่มีสิทธิ์",
         text: "เฉพาะ Super Admin เท่านั้นที่สามารถลบสมาชิกได้",
@@ -283,9 +280,8 @@ export default function CreateAdmin() {
       return;
     }
 
-    // ห้ามลบตัวเอง
     if (adminId === currentAdminId) {
-      Swal.fire({
+      await Swal.fire({
         icon: "warning",
         title: "ไม่สามารถลบตัวเองได้",
         text: "ไม่สามารถลบบัญชีของตัวเองได้",
@@ -294,8 +290,8 @@ export default function CreateAdmin() {
       return;
     }
 
-    const confirm = await Swal.fire({
-      title: "ลบสมาชิก ?",
+    const confirmation = await Swal.fire({
+      title: "ลบสมาชิก?",
       text: "เมื่อลบแล้วจะไม่สามารถเรียกคืนข้อมูลได้",
       icon: "warning",
       showCancelButton: true,
@@ -305,7 +301,7 @@ export default function CreateAdmin() {
       cancelButtonColor: "#6b7280",
     });
 
-    if (!confirm.isConfirmed) return;
+    if (!confirmation.isConfirmed) return;
 
     try {
       await api.delete(`/admin/${adminId}`);
@@ -318,43 +314,31 @@ export default function CreateAdmin() {
         showConfirmButton: false,
       });
 
-      await loadAdmins();
-    } catch (error: any) {
-      console.error(error);
+      await loadAdmins(false);
+    } catch (error: unknown) {
+      console.error("ลบสมาชิกไม่สำเร็จ", error);
 
-      Swal.fire({
+      const message = axios.isAxiosError<{ error?: string }>(error)
+        ? error.response?.data?.error
+        : undefined;
+
+      await Swal.fire({
         icon: "error",
         title: "ลบไม่สำเร็จ",
-        text: error.response?.data?.error || "เกิดข้อผิดพลาดขณะลบข้อมูล",
+        text: message || "เกิดข้อผิดพลาดขณะลบข้อมูล",
       });
     }
   };
 
-  // =====================================================
-  // CLOSE MODAL
-  // =====================================================
-
   const closeModal = () => {
     setShowModal(false);
     setEditing(null);
-
-    setForm({
-      username: "",
-      password: "",
-      name: "",
-      position: "",
-    });
+    setForm({ ...initialForm });
   };
-
-  // =====================================================
-  // RENDER
-  // =====================================================
 
   return (
     <div className="main-content min-h-screen bg-gray-50 px-3 py-4 sm:px-5 lg:px-6">
       <div className="mx-auto w-full max-w-[1500px] px-1 sm:px-4">
-        {/* ================= HEADER ================= */}
-
         <div className="mb-5 overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] shadow-lg">
           <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
             <div className="flex items-center gap-3">
@@ -383,8 +367,6 @@ export default function CreateAdmin() {
           </div>
         </div>
 
-        {/* ================= SUMMARY ================= */}
-
         <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
@@ -397,7 +379,6 @@ export default function CreateAdmin() {
 
                 <p className="text-xl font-bold text-gray-800">
                   {admins.length}
-
                   <span className="ml-1 text-sm font-medium text-gray-400">
                     คน
                   </span>
@@ -427,8 +408,6 @@ export default function CreateAdmin() {
           </div>
         </div>
 
-        {/* ================= ADD MEMBER ================= */}
-
         <div className="mb-5 flex justify-end">
           <button
             type="button"
@@ -440,11 +419,7 @@ export default function CreateAdmin() {
           </button>
         </div>
 
-        {/* ================= MAIN CARD ================= */}
-
         <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-          {/* ================= DESKTOP ================= */}
-
           {isTable ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
@@ -453,23 +428,18 @@ export default function CreateAdmin() {
                     <th className="w-[80px] border border-gray-700 px-4 py-3 text-center">
                       #
                     </th>
-
                     <th className="border border-gray-700 px-4 py-3 text-left">
                       Username
                     </th>
-
                     <th className="border border-gray-700 px-4 py-3 text-left">
                       ชื่อ
                     </th>
-
                     <th className="border border-gray-700 px-4 py-3 text-left">
                       ตำแหน่ง
                     </th>
-
                     <th className="w-[100px] border border-gray-700 px-4 py-3 text-center">
                       แก้ไข
                     </th>
-
                     <th className="w-[100px] border border-gray-700 px-4 py-3 text-center">
                       ลบ
                     </th>
@@ -487,32 +457,28 @@ export default function CreateAdmin() {
                       </td>
                     </tr>
                   ) : (
-                    admins.map((a, i) => (
+                    admins.map((admin, index) => (
                       <tr
-                        key={a.adminId}
+                        key={admin.adminId}
                         className="transition hover:bg-gray-50"
                       >
-                        {/* # */}
-
                         <td className="border border-gray-200 px-4 py-3 text-center font-semibold text-gray-500">
-                          {i + 1}
+                          {index + 1}
                         </td>
-
-                        {/* USERNAME */}
 
                         <td className="border border-gray-200 px-4 py-3">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-gray-800">
-                              {a.username}
+                              {admin.username}
                             </span>
 
-                            {a.adminId === firstAdminId && (
+                            {admin.adminId === firstAdminId && (
                               <span className="rounded-full bg-red-100 px-2 py-1 text-[10px] font-bold text-red-700">
                                 SUPER
                               </span>
                             )}
 
-                            {a.adminId === currentAdminId && (
+                            {admin.adminId === currentAdminId && (
                               <span className="rounded-full bg-blue-100 px-2 py-1 text-[10px] font-bold text-blue-700">
                                 ฉัน
                               </span>
@@ -520,25 +486,20 @@ export default function CreateAdmin() {
                           </div>
                         </td>
 
-                        {/* NAME */}
-
                         <td className="border border-gray-200 px-4 py-3 text-gray-700">
-                          {a.name || "-"}
+                          {admin.name || "-"}
                         </td>
 
-                        {/* POSITION */}
-
                         <td className="border border-gray-200 px-4 py-3 text-gray-700">
-                          {a.position || "-"}
+                          {admin.position || "-"}
                         </td>
-
-                        {/* ================= EDIT ================= */}
 
                         <td className="border border-gray-200 px-4 py-3 text-center">
-                          {isSuperAdmin || a.adminId === currentAdminId ? (
+                          {isSuperAdmin || admin.adminId === currentAdminId ? (
                             <button
                               type="button"
-                              onClick={() => openEdit(a)}
+                              onClick={() => openEdit(admin)}
+                              aria-label={`แก้ไข ${admin.username}`}
                               className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white transition hover:bg-amber-600 active:scale-95"
                             >
                               ✏️
@@ -548,13 +509,12 @@ export default function CreateAdmin() {
                           )}
                         </td>
 
-                        {/* ================= DELETE ================= */}
-
                         <td className="border border-gray-200 px-4 py-3 text-center">
-                          {isSuperAdmin && a.adminId !== currentAdminId ? (
+                          {isSuperAdmin && admin.adminId !== currentAdminId ? (
                             <button
                               type="button"
-                              onClick={() => removeAdmin(a.adminId)}
+                              onClick={() => removeAdmin(admin.adminId)}
+                              aria-label={`ลบ ${admin.username}`}
                               className="rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-700 active:scale-95"
                             >
                               🗑️
@@ -570,8 +530,6 @@ export default function CreateAdmin() {
               </table>
             </div>
           ) : (
-            /* ================= MOBILE ================= */
-
             <div className="p-3 sm:p-5">
               {admins.length === 0 ? (
                 <div className="py-10 text-center text-gray-400">
@@ -579,13 +537,11 @@ export default function CreateAdmin() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {admins.map((a, index) => (
+                  {admins.map((admin, index) => (
                     <div
-                      key={a.adminId}
+                      key={admin.adminId}
                       className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                     >
-                      {/* CARD HEADER */}
-
                       <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-3">
                         <div className="flex items-center gap-2">
                           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#800020]/10 text-xs font-bold text-[#800020]">
@@ -598,21 +554,19 @@ export default function CreateAdmin() {
                         </div>
 
                         <div className="flex items-center gap-1">
-                          {a.adminId === firstAdminId && (
+                          {admin.adminId === firstAdminId && (
                             <span className="rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-bold text-red-700">
                               SUPER
                             </span>
                           )}
 
-                          {a.adminId === currentAdminId && (
+                          {admin.adminId === currentAdminId && (
                             <span className="rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-bold text-blue-700">
                               ฉัน
                             </span>
                           )}
                         </div>
                       </div>
-
-                      {/* CARD BODY */}
 
                       <div className="p-4">
                         <div className="mb-4">
@@ -621,7 +575,7 @@ export default function CreateAdmin() {
                           </p>
 
                           <p className="break-all text-base font-bold text-gray-800">
-                            {a.username}
+                            {admin.username}
                           </p>
                         </div>
 
@@ -631,7 +585,7 @@ export default function CreateAdmin() {
                           </p>
 
                           <p className="mt-1 text-sm font-semibold text-gray-700">
-                            {a.name || "-"}
+                            {admin.name || "-"}
                           </p>
                         </div>
 
@@ -641,37 +595,26 @@ export default function CreateAdmin() {
                           </p>
 
                           <p className="mt-1 text-sm font-semibold text-gray-700">
-                            {a.position || "-"}
+                            {admin.position || "-"}
                           </p>
                         </div>
 
-                        {/* ================= ACTIONS ================= */}
-
                         <div className="flex gap-2">
-                          {/* แก้ไข:
-                              Super Admin = ทุกคน
-                              Admin = ตัวเอง
-                          */}
-
-                          {(isSuperAdmin || a.adminId === currentAdminId) && (
+                          {(isSuperAdmin ||
+                            admin.adminId === currentAdminId) && (
                             <button
                               type="button"
-                              onClick={() => openEdit(a)}
+                              onClick={() => openEdit(admin)}
                               className="flex min-h-[44px] flex-1 items-center justify-center rounded-xl bg-amber-500 text-sm font-bold text-white transition hover:bg-amber-600 active:scale-95"
                             >
                               ✏️ แก้ไข
                             </button>
                           )}
 
-                          {/* ลบ:
-                              Super Admin = คนอื่น
-                              ตัวเอง = ไม่มี
-                          */}
-
-                          {isSuperAdmin && a.adminId !== currentAdminId && (
+                          {isSuperAdmin && admin.adminId !== currentAdminId && (
                             <button
                               type="button"
-                              onClick={() => removeAdmin(a.adminId)}
+                              onClick={() => removeAdmin(admin.adminId)}
                               className="flex min-h-[44px] flex-1 items-center justify-center rounded-xl bg-red-600 text-sm font-bold text-white transition hover:bg-red-700 active:scale-95"
                             >
                               🗑️ ลบ
@@ -688,15 +631,9 @@ export default function CreateAdmin() {
         </div>
       </div>
 
-      {/* =====================================================
-          MODAL
-      ===================================================== */}
-
       {showModal && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 px-3 py-5">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-2xl">
-            {/* MODAL HEADER */}
-
             <div className="flex items-center justify-between bg-[#800020] px-5 py-4">
               <div>
                 <h2 className="text-lg font-bold text-white">
@@ -713,61 +650,68 @@ export default function CreateAdmin() {
               <button
                 type="button"
                 onClick={closeModal}
+                aria-label="ปิดหน้าต่าง"
                 className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-lg text-white transition hover:bg-white/20"
               >
                 ×
               </button>
             </div>
 
-            {/* FORM */}
-
             <form onSubmit={submit}>
               <div className="space-y-4 p-5">
-                {/* USERNAME */}
-
                 <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                  <label
+                    htmlFor="admin-username"
+                    className="mb-1.5 block text-sm font-semibold text-gray-700"
+                  >
                     Username
                   </label>
 
                   <input
+                    id="admin-username"
                     name="username"
                     value={form.username}
                     onChange={handleChange}
                     placeholder="กรอก Username"
+                    autoComplete="username"
                     required
                     className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10"
                   />
                 </div>
 
-                {/* PASSWORD */}
-
                 {!isEdit && (
                   <div>
-                    <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                    <label
+                      htmlFor="admin-password"
+                      className="mb-1.5 block text-sm font-semibold text-gray-700"
+                    >
                       Password
                     </label>
 
                     <input
+                      id="admin-password"
                       type="password"
                       name="password"
                       value={form.password}
                       onChange={handleChange}
                       placeholder="กรอก Password"
+                      autoComplete="new-password"
                       required
                       className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10"
                     />
                   </div>
                 )}
 
-                {/* NAME */}
-
                 <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                  <label
+                    htmlFor="admin-name"
+                    className="mb-1.5 block text-sm font-semibold text-gray-700"
+                  >
                     ชื่อ
                   </label>
 
                   <input
+                    id="admin-name"
                     name="name"
                     value={form.name}
                     onChange={handleChange}
@@ -776,14 +720,16 @@ export default function CreateAdmin() {
                   />
                 </div>
 
-                {/* POSITION */}
-
                 <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-gray-700">
+                  <label
+                    htmlFor="admin-position"
+                    className="mb-1.5 block text-sm font-semibold text-gray-700"
+                  >
                     ตำแหน่ง
                   </label>
 
                   <input
+                    id="admin-position"
                     name="position"
                     value={form.position}
                     onChange={handleChange}
@@ -792,8 +738,6 @@ export default function CreateAdmin() {
                   />
                 </div>
               </div>
-
-              {/* MODAL FOOTER */}
 
               <div className="flex gap-2 border-t border-gray-100 bg-gray-50 px-5 py-4">
                 <button

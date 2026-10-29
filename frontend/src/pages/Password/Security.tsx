@@ -1,4 +1,5 @@
 // src/pages/Password/Security.tsx
+import axios from "axios";
 import { useState } from "react";
 import api from "../../api/axios";
 import Swal from "sweetalert2";
@@ -40,7 +41,7 @@ export default function Security() {
       return;
     }
 
-    if (password.newPassword.length <= 6) {
+    if (password.newPassword.length < 6) {
       Swal.fire({
         icon: "warning",
         title: "รหัสผ่านใหม่ต้องมากกว่า 6 ตัวอักษร",
@@ -61,10 +62,14 @@ export default function Security() {
 
       await logout();
       navigate("/", { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = axios.isAxiosError<{ error?: string }>(err)
+        ? err.response?.data?.error
+        : undefined;
+
       Swal.fire({
         icon: "error",
-        title: err.response?.data?.error || "เกิดข้อผิดพลาด",
+        title: message || "เกิดข้อผิดพลาด",
       });
     }
   };

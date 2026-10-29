@@ -820,12 +820,6 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* ท้ายหน้า */}
-        <footer className="mt-6 border-t border-gray-200 pt-4">
-          <p className="text-center text-[10px] text-gray-400 sm:text-xs">
-            ระบบจัดการข้อมูลและเอกสาร
-          </p>
-        </footer>
       </main>
     </div>
   );

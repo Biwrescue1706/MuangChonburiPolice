@@ -88,14 +88,10 @@ export default function PersonPage() {
           </div>
         </div>
 
-        {/* =====================================================
-            FORM
-        ===================================================== */}
+        {/* FORM */}
 
         <form onSubmit={handleSubmit}>
-          {/* ===================================================
-              BASIC INFO
-          =================================================== */}
+          {/* BASIC INFO*/}
 
           <section className="mb-5 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50 px-5 py-4">
@@ -137,10 +133,7 @@ export default function PersonPage() {
             </div>
           </section>
 
-          {/* ===================================================
-              ADDITIONAL INFO
-          =================================================== */}
-
+          {/* ADDITIONAL INFO*/}
           <section className="mb-5 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50 px-5 py-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
@@ -184,10 +177,7 @@ export default function PersonPage() {
             </div>
           </section>
 
-          {/* ===================================================
-              RECEIPT
-          =================================================== */}
-
+          {/* RECEIPT*/}
           <section className="mb-5 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
             <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50 px-5 py-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
@@ -231,9 +221,7 @@ export default function PersonPage() {
             </div>
           </section>
 
-          {/* ===================================================
-              ACTIONS
-          =================================================== */}
+          {/* ACTIONS*/}
 
           <div className="sticky bottom-0 z-20 -mx-3 border-t border-gray-200 bg-white/95 px-3 py-3 shadow-[0_-4px_15px_rgba(0,0,0,0.06)] backdrop-blur sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6">
             <div className="mx-auto flex w-full max-w-[1400px] flex-col-reverse gap-2 sm:flex-row sm:justify-end">

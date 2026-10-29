@@ -1,5 +1,5 @@
 // src/pages/Profile.tsx
-
+import axios from "axios";
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { toast } from "../utils/toast";
@@ -124,10 +124,17 @@ export default function Profile() {
 
       // กลับหน้า Login
       window.location.href = "/";
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
 
-      toast("error", error.response?.data?.error || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
+      const message = axios.isAxiosError<{ error?: string }>(error)
+        ? error.response?.data?.error
+        : undefined;
+
+      toast(
+        "error",
+        message || "เปลี่ยนรหัสผ่านไม่สำเร็จ",
+      );
     } finally {
       setChangingPassword(false);
     }
