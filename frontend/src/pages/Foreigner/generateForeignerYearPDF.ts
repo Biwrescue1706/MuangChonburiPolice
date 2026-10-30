@@ -1,4 +1,4 @@
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument, rgb, type PDFPage, type PDFFont } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import type { Foreigner } from "../../types/foreigner";
 
@@ -7,6 +7,23 @@ type Column = {
   label: string;
   width: number;
   group?: string;
+};
+
+/**
+ * รองรับฟิลด์ตาม Foreigner type ปัจจุบัน
+ * และฟิลด์เดิมที่อาจยังมีข้อมูลอยู่
+ */
+type ForeignerPDFRecord = Foreigner & {
+  typeOfRequest?: string | null;
+  requestDate?: string | Date | null;
+  expireBeforeRenewal?: string | null;
+
+  applicationType?: string | null;
+  applicationDate?: string | Date | null;
+  expirationDate?: string | null;
+
+  certificateNo?: string | null;
+  petitionDate?: string | Date | null;
 };
 
 const MONTHS = [
@@ -25,8 +42,10 @@ const MONTHS = [
   "ธ.ค.",
 ];
 
-function formatThaiDate(value: string | null | undefined) {
-  if (!value) return "";
+function formatThaiDate(value: string | Date | null | undefined): string {
+  if (value === null || value === undefined || value === "") {
+    return "";
+  }
 
   const text = String(value).trim();
   const match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
@@ -44,20 +63,22 @@ function formatThaiDate(value: string | null | undefined) {
   return text;
 }
 
-function getFullName(data: Foreigner) {
-  if (data.fullName) return data.fullName;
+function getFullName(data: ForeignerPDFRecord): string {
+  if (data.fullName) {
+    return data.fullName;
+  }
 
   return [data.prefix, data.firstName, data.lastName].filter(Boolean).join(" ");
 }
 
-function formatMoney(value: string | number | null | undefined) {
+function formatMoney(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === "") {
     return "";
   }
 
   const number = Number(value);
 
-  if (Number.isNaN(number)) {
+  if (!Number.isFinite(number)) {
     return String(value);
   }
 
@@ -67,8 +88,10 @@ function formatMoney(value: string | number | null | undefined) {
   });
 }
 
-function getDomicile(data: Foreigner) {
-  if (data.domicile) return data.domicile;
+function getDomicile(data: ForeignerPDFRecord): string {
+  if (data.domicile) {
+    return data.domicile;
+  }
 
   return [
     data.houseNo,
@@ -82,17 +105,23 @@ function getDomicile(data: Foreigner) {
     .join(" ");
 }
 
-function getApplicationType(value: string | null | undefined) {
-  if (!value) return "";
-
-  if (value === "ชนิดที่ 1") return "ชนิดที่ 1";
-  if (value === "ชนิดที่ 2") return "ชนิดที่ 2";
+function getApplicationType(value: string | null | undefined): string {
+  if (!value) {
+    return "";
+  }
 
   return value;
 }
 
-function wrapText(text: string, font: any, maxWidth: number, size: number) {
-  if (!text) return [];
+function wrapText(
+  text: string,
+  font: PDFFont,
+  maxWidth: number,
+  size: number,
+): string[] {
+  if (!text) {
+    return [];
+  }
 
   const lines: string[] = [];
 
@@ -127,20 +156,24 @@ function wrapText(text: string, font: any, maxWidth: number, size: number) {
 }
 
 function drawTextCentered(
-  page: any,
+  page: PDFPage,
   value: string,
   x: number,
   y: number,
   width: number,
   height: number,
-  font: any,
+  font: PDFFont,
   size: number,
-) {
-  if (!value) return;
+): void {
+  if (!value) {
+    return;
+  }
 
   const lines = wrapText(value, font, width - 6, size);
 
-  if (!lines.length) return;
+  if (lines.length === 0) {
+    return;
+  }
 
   const lineHeight = size + 2;
   const maxLines = Math.max(1, Math.floor((height - 4) / lineHeight));
@@ -182,15 +215,15 @@ function drawTextCentered(
 }
 
 function drawCell(
-  page: any,
+  page: PDFPage,
   x: number,
   y: number,
   width: number,
   height: number,
   value: string,
-  font: any,
+  font: PDFFont,
   size: number,
-) {
+): void {
   page.drawRectangle({
     x,
     y,
@@ -206,7 +239,7 @@ function drawCell(
 export async function generateForeignerYearPDF(
   data: Foreigner[],
   year: number,
-) {
+): Promise<void> {
   if (!data || data.length === 0) {
     throw new Error(`ไม่พบข้อมูลบุคคลในปี พ.ศ. ${year}`);
   }
@@ -218,19 +251,18 @@ export async function generateForeignerYearPDF(
   }
 
   const fontBytes = await fontResponse.arrayBuffer();
-
   const pdfDoc = await PDFDocument.create();
 
   pdfDoc.registerFontkit(fontkit);
 
   const font = await pdfDoc.embedFont(fontBytes);
 
-  const boldFont = await pdfDoc.embedFont(fontBytes);
+  // ใช้ฟอนต์เดียวกันสำหรับหัวตาราง
+  const boldFont = font;
 
   const A4_LANDSCAPE: [number, number] = [841.89, 595.28];
 
   const pageWidth = A4_LANDSCAPE[0];
-
   const pageHeight = A4_LANDSCAPE[1];
 
   const marginLeft = 10;
@@ -243,8 +275,6 @@ export async function generateForeignerYearPDF(
   const titleHeight = 25;
   const groupHeaderHeight = 22;
   const subHeaderHeight = 30;
-
-  // ขนาดแถวข้อมูล
   const rowHeight = 65;
 
   const columns: Column[] = [
@@ -379,7 +409,7 @@ export async function generateForeignerYearPDF(
     },
   ];
 
-  const drawHeader = (page: any, topY: number) => {
+  const drawHeader = (page: PDFPage, topY: number): void => {
     const bottomY = topY - groupHeaderHeight - subHeaderHeight;
 
     let x = marginLeft;
@@ -417,7 +447,7 @@ export async function generateForeignerYearPDF(
       );
 
       const groupLabel =
-        groups.find((group) => group.key === column.group)?.label || "";
+        groups.find((group) => group.key === column.group)?.label ?? "";
 
       drawCell(
         page,
@@ -451,7 +481,11 @@ export async function generateForeignerYearPDF(
     });
   };
 
-  const getValue = (item: Foreigner, key: string, index: number): string => {
+  const getValue = (
+    item: ForeignerPDFRecord,
+    key: string,
+    index: number,
+  ): string => {
     switch (key) {
       case "no":
         return String(index + 1);
@@ -489,13 +523,13 @@ export async function generateForeignerYearPDF(
         return getDomicile(item);
 
       case "applicationType":
-        return getApplicationType(item.applicationType);
+        return getApplicationType(item.typeOfRequest || item.applicationType);
 
       case "applicationDate":
-        return formatThaiDate(item.applicationDate);
+        return formatThaiDate(item.requestDate || item.applicationDate);
 
       case "expirationDate":
-        return formatThaiDate(item.expirationDate);
+        return formatThaiDate(item.expireBeforeRenewal || item.expirationDate);
 
       case "amount":
         return formatMoney(item.amount);
@@ -513,26 +547,23 @@ export async function generateForeignerYearPDF(
         return item.certificateNo || "";
 
       case "petitionDate":
-        return formatThaiDate(
-          item.petitionDate ? String(item.petitionDate).slice(0, 10) : "",
-        );
+        return formatThaiDate(item.petitionDate);
 
       default:
         return "";
     }
   };
 
-  let page: any = null;
   let currentY = 0;
   let globalIndex = 0;
 
-  const createPage = () => {
-    page = pdfDoc.addPage(A4_LANDSCAPE);
+  const createPage = (): PDFPage => {
+    const newPage = pdfDoc.addPage(A4_LANDSCAPE);
 
     currentY = pageHeight - marginTop;
 
     drawTextCentered(
-      page,
+      newPage,
       `รายงานข้อมูลบุคคลต่างด้าว ปี พ.ศ. ${year}`,
       0,
       currentY - titleHeight,
@@ -543,22 +574,25 @@ export async function generateForeignerYearPDF(
     );
 
     currentY -= titleHeight + 4;
-
     currentY -= 13;
 
-    drawHeader(page, currentY);
+    drawHeader(newPage, currentY);
 
     currentY -= groupHeaderHeight + subHeaderHeight;
+
+    return newPage;
   };
 
-  createPage();
+  let page = createPage();
 
-  data.forEach((item) => {
+  data.forEach((foreigner) => {
     if (currentY - rowHeight < marginBottom) {
-      createPage();
+      page = createPage();
     }
 
     let x = marginLeft;
+
+    const item: ForeignerPDFRecord = foreigner;
 
     columns.forEach((column) => {
       const value = getValue(item, column.key, globalIndex);
@@ -578,33 +612,26 @@ export async function generateForeignerYearPDF(
     });
 
     currentY -= rowHeight;
-
     globalIndex++;
   });
 
   const result = await pdfDoc.save();
 
-  const arrayBuffer = new ArrayBuffer(result.byteLength);
-
-  new Uint8Array(arrayBuffer).set(result);
-
-  const blob = new Blob([arrayBuffer], {
+  const blob = new Blob([new Uint8Array(result)], {
     type: "application/pdf",
   });
 
   const url = URL.createObjectURL(blob);
-
   const link = document.createElement("a");
 
   link.href = url;
-
   link.download = `รายงานบุคคลต่างด้าว_ปี_${year}.pdf`;
 
   document.body.appendChild(link);
-
   link.click();
-
   document.body.removeChild(link);
 
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  window.setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
 }

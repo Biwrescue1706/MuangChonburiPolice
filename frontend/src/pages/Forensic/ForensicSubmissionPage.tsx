@@ -1,6 +1,5 @@
-// src/pages/Forensic/ForensicSubmissionPage.tsx
-
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import axios from "axios";
 import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -19,26 +18,26 @@ interface StatusHistoryItem {
   person: Person;
 }
 
+interface StatusHistoryResponse {
+  data?: StatusHistoryItem[];
+}
+
+interface ApiErrorResponse {
+  error?: string;
+}
+
 export default function ForensicSubmissionPage() {
   const today = new Date().toISOString().split("T")[0];
 
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
-
-  const navigate = useNavigate();
-
   const [loading, setLoading] = useState(false);
   const [persons, setPersons] = useState<Person[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [submissionNo, setSubmissionNo] = useState("");
+  const [isCardView, setIsCardView] = useState(() => window.innerWidth < 1280);
 
-  // ต่ำกว่า 1280px = Card
-  // ตั้งแต่ 1280px = Table
-  const [isCardView, setIsCardView] = useState(window.innerWidth < 1280);
-
-  // =========================================================
-  // RESPONSIVE
-  // =========================================================
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -52,72 +51,62 @@ export default function ForensicSubmissionPage() {
     };
   }, []);
 
-  // =========================================================
-  // FETCH DATA
-  // =========================================================
+  const fetchData = useCallback(
+    async (selectedStartDate: string, selectedEndDate: string) => {
+      try {
+        setLoading(true);
 
-  const fetchData = async (
-    selectedStartDate: string,
-    selectedEndDate: string,
-  ) => {
-    try {
-      setLoading(true);
+        const res = await api.get<StatusHistoryResponse>(
+          "/status-history/range",
+          {
+            params: {
+              startDate: selectedStartDate,
+              endDate: selectedEndDate,
+            },
+          },
+        );
 
-      const res = await api.get("/status-history/range", {
-        params: {
-          startDate: selectedStartDate,
-          endDate: selectedEndDate,
-        },
-      });
+        const data = (res.data.data ?? [])
+          .map((item) => item.person)
+          .filter((person): person is Person => Boolean(person));
 
-      const data = (res.data.data || [])
-        .map((item: StatusHistoryItem) => item.person)
-        .filter(Boolean);
+        const uniquePersons = data.filter(
+          (person, index, self) =>
+            index ===
+            self.findIndex((item) => item.personId === person.personId),
+        );
 
-      const uniquePersons = data.filter(
-        (person: Person, index: number, self: Person[]) =>
-          index === self.findIndex((p) => p.personId === person.personId),
-      );
+        uniquePersons.sort((a, b) => {
+          const bookA = Number(a.receiptBookNo || 0);
+          const bookB = Number(b.receiptBookNo || 0);
 
-      uniquePersons.sort((a: Person, b: Person) => {
-        const bookA = Number(a.receiptBookNo || 0);
+          if (bookA !== bookB) {
+            return bookA - bookB;
+          }
 
-        const bookB = Number(b.receiptBookNo || 0);
+          const noA = Number(a.receiptNo || 0);
+          const noB = Number(b.receiptNo || 0);
 
-        if (bookA !== bookB) {
-          return bookA - bookB;
-        }
+          return noA - noB;
+        });
 
-        const noA = Number(a.receiptNo || 0);
+        setPersons(uniquePersons);
+        setSelectedIds([]);
+      } catch (err: unknown) {
+        console.error("โหลดข้อมูลไม่สำเร็จ:", err);
 
-        const noB = Number(b.receiptNo || 0);
-
-        return noA - noB;
-      });
-
-      setPersons(uniquePersons);
-      setSelectedIds([]);
-    } catch (err) {
-      console.error("โหลดข้อมูลไม่สำเร็จ:", err);
-
-      setPersons([]);
-      setSelectedIds([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // =========================================================
-  // INITIAL LOAD
-  // =========================================================
+        setPersons([]);
+        setSelectedIds([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
-    fetchData(startDate, endDate);
-  }, []);
-
-  // =========================================================
-  // SELECT PERSON
-  // =========================================================
+    void fetchData(today, today);
+  }, [fetchData, today]);
 
   const togglePerson = (personId: string) => {
     setSelectedIds((prev) =>
@@ -127,10 +116,6 @@ export default function ForensicSubmissionPage() {
     );
   };
 
-  // =========================================================
-  // SELECT ALL
-  // =========================================================
-
   const toggleAll = () => {
     if (selectedIds.length === persons.length) {
       setSelectedIds([]);
@@ -138,10 +123,6 @@ export default function ForensicSubmissionPage() {
       setSelectedIds(persons.map((person) => person.personId));
     }
   };
-
-  // =========================================================
-  // GENERATE PDF
-  // =========================================================
 
   const handleGenerate = async () => {
     try {
@@ -183,22 +164,22 @@ export default function ForensicSubmissionPage() {
       });
 
       navigate("/forensic-submission/list");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
+
+      const errorMessage = axios.isAxiosError<ApiErrorResponse>(err)
+        ? err.response?.data?.error
+        : undefined;
 
       await Swal.fire({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
-        text: err?.response?.data?.error || "ไม่สามารถสร้างรายการได้",
+        text: errorMessage || "ไม่สามารถสร้างรายการได้",
         confirmButtonText: "ตกลง",
         confirmButtonColor: "#800020",
       });
     }
   };
-
-  // =========================================================
-  // LOADING
-  // =========================================================
 
   const LoadingView = () => (
     <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white">
@@ -209,10 +190,6 @@ export default function ForensicSubmissionPage() {
       </p>
     </div>
   );
-
-  // =========================================================
-  // EMPTY
-  // =========================================================
 
   const EmptyView = () => (
     <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 text-center">
@@ -242,17 +219,9 @@ export default function ForensicSubmissionPage() {
     </div>
   );
 
-  // =========================================================
-  // PAGE
-  // =========================================================
-
   return (
     <div className="main-content px-3 py-4 sm:px-4">
       <div className="mx-auto w-full max-w-[1600px]">
-        {/* =====================================================
-            HEADER
-        ===================================================== */}
-
         <div className="mb-4 overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] px-5 py-5 text-white shadow-lg sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -295,10 +264,6 @@ export default function ForensicSubmissionPage() {
           </div>
         </div>
 
-        {/* =====================================================
-            CONTROL PANEL
-        ===================================================== */}
-
         <div className="mb-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#800020]/10 text-[#800020]">
@@ -331,8 +296,6 @@ export default function ForensicSubmissionPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 lg:items-end">
-            {/* START DATE */}
-
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-gray-600">
                 วันที่เริ่มต้น
@@ -345,8 +308,6 @@ export default function ForensicSubmissionPage() {
                 className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-800 outline-none transition focus:border-[#800020] focus:bg-white focus:ring-2 focus:ring-[#800020]/10"
               />
             </div>
-
-            {/* END DATE */}
 
             <div>
               <label className="mb-1.5 block text-xs font-semibold text-gray-600">
@@ -361,11 +322,9 @@ export default function ForensicSubmissionPage() {
               />
             </div>
 
-            {/* SEARCH */}
-
             <button
               type="button"
-              onClick={() => fetchData(startDate, endDate)}
+              onClick={() => void fetchData(startDate, endDate)}
               disabled={loading}
               className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -394,11 +353,9 @@ export default function ForensicSubmissionPage() {
               )}
             </button>
 
-            {/* GENERATE */}
-
             <button
               type="button"
-              onClick={handleGenerate}
+              onClick={() => void handleGenerate()}
               disabled={loading || persons.length === 0}
               className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#800020] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#650017] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -421,8 +378,6 @@ export default function ForensicSubmissionPage() {
             </button>
           </div>
 
-          {/* SUBMISSION NUMBER */}
-
           <div className="mt-4">
             <label className="mb-1.5 block text-xs font-semibold text-gray-600">
               เลขหนังสือนำส่ง
@@ -437,10 +392,6 @@ export default function ForensicSubmissionPage() {
             />
           </div>
         </div>
-
-        {/* =====================================================
-            SELECT SUMMARY
-        ===================================================== */}
 
         <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -482,10 +433,6 @@ export default function ForensicSubmissionPage() {
           </div>
         </div>
 
-        {/* =====================================================
-            SELECT BUTTONS
-        ===================================================== */}
-
         <div className="mb-3 flex flex-wrap gap-2">
           <button
             type="button"
@@ -523,19 +470,11 @@ export default function ForensicSubmissionPage() {
           )}
         </div>
 
-        {/* =====================================================
-            CONTENT
-        ===================================================== */}
-
         {loading ? (
           <LoadingView />
         ) : persons.length === 0 ? (
           <EmptyView />
         ) : isCardView ? (
-          /* ===================================================
-             CARD VIEW
-          =================================================== */
-
           <div className="flex flex-col gap-3">
             {persons.map((person, index) => {
               const selected = selectedIds.includes(person.personId);
@@ -558,8 +497,6 @@ export default function ForensicSubmissionPage() {
 
                   <div className="p-4 pl-5 sm:p-5 sm:pl-6">
                     <div className="flex items-start gap-3">
-                      {/* CHECKBOX */}
-
                       <div className="pt-1">
                         <input
                           type="checkbox"
@@ -567,16 +504,13 @@ export default function ForensicSubmissionPage() {
                           onChange={() => togglePerson(person.personId)}
                           onClick={(e) => e.stopPropagation()}
                           className="h-5 w-5 cursor-pointer accent-[#800020]"
+                          aria-label={`เลือก ${person.fullName}`}
                         />
                       </div>
-
-                      {/* NUMBER */}
 
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-xs font-bold text-gray-500">
                         {index + 1}
                       </div>
-
-                      {/* NAME */}
 
                       <div className="min-w-0 flex-1">
                         <h3 className="break-words text-base font-bold text-gray-900">
@@ -588,16 +522,12 @@ export default function ForensicSubmissionPage() {
                         </p>
                       </div>
 
-                      {/* SELECTED */}
-
                       {selected && (
                         <span className="shrink-0 rounded-full bg-[#800020]/10 px-3 py-1 text-[10px] font-bold text-[#800020]">
                           เลือกแล้ว
                         </span>
                       )}
                     </div>
-
-                    {/* DETAILS */}
 
                     <div className="mt-4 ml-[84px] space-y-3">
                       <div>
@@ -642,10 +572,6 @@ export default function ForensicSubmissionPage() {
             })}
           </div>
         ) : (
-          /* ===================================================
-             TABLE VIEW
-          =================================================== */
-
           <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
             <div className="w-full overflow-x-auto">
               <table className="w-full min-w-[1000px] border-collapse text-sm">
@@ -660,6 +586,7 @@ export default function ForensicSubmissionPage() {
                         }
                         onChange={toggleAll}
                         className="h-4 w-4 cursor-pointer accent-[#800020]"
+                        aria-label="เลือกบุคคลทั้งหมด"
                       />
                     </th>
 
@@ -710,6 +637,7 @@ export default function ForensicSubmissionPage() {
                             checked={selected}
                             onChange={() => togglePerson(person.personId)}
                             className="h-4 w-4 cursor-pointer accent-[#800020]"
+                            aria-label={`เลือก ${person.fullName}`}
                           />
                         </td>
 

@@ -1,49 +1,54 @@
-// src/pages/Forensic/ForensicSubmissionListPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import Swal from "sweetalert2";
 
+interface ForensicSubmission {
+  submissionId: string;
+  submissionNo?: string | null;
+  submissionDate?: string | null;
+  persons?: unknown[];
+}
+
 export default function ForensicSubmissionListPage() {
   const navigate = useNavigate();
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<ForensicSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1200);
 
-  // Load data
   useEffect(() => {
-    fetchData();
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1200);
+    };
 
-    const handleResize = () => setIsDesktop(window.innerWidth >= 1200);
     window.addEventListener("resize", handleResize);
 
-    return () => window.removeEventListener("resize", handleResize);
+    const loadData = async () => {
+      try {
+        const res = await api.get("/forensic-submission");
+        const result = res?.data?.data ?? res?.data;
+
+        setData(Array.isArray(result) ? result : []);
+      } catch (error: unknown) {
+        console.error("LOAD FORENSIC SUBMISSION ERROR:", error);
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadData();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
-  const fetchData = async () => {
-  try {
-    setLoading(true);
-
-    const res = await api.get("/forensic-submission");
-
-    console.log("FORENSIC SUBMISSION RESPONSE:", res.data);
-
-    const result = res?.data?.data ?? res?.data;
-
-    setData(Array.isArray(result) ? result : []);
-  } catch (err) {
-    console.error("LOAD FORENSIC SUBMISSION ERROR:", err);
-    setData([]);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // Date
-  const formatThaiDate = (dateString: string) => {
+  const formatThaiDate = (dateString?: string | null) => {
     if (!dateString) return "-";
 
     const date = new Date(dateString);
+
     if (Number.isNaN(date.getTime())) return "-";
 
     return date.toLocaleDateString("th-TH", {
@@ -53,7 +58,6 @@ export default function ForensicSubmissionListPage() {
     });
   };
 
-  // Delete
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
       title: "ต้องการลบรายการนี้ใช่หรือไม่?",
@@ -71,6 +75,7 @@ export default function ForensicSubmissionListPage() {
 
     try {
       await api.delete(`/forensic-submission/${id}`);
+
       setData((prev) => prev.filter((item) => item.submissionId !== id));
 
       await Swal.fire({
@@ -80,8 +85,8 @@ export default function ForensicSubmissionListPage() {
         showConfirmButton: false,
         timer: 1500,
       });
-    } catch (error) {
-      console.error(error);
+    } catch (error: unknown) {
+      console.error("DELETE FORENSIC SUBMISSION ERROR:", error);
 
       await Swal.fire({
         title: "ลบข้อมูลไม่สำเร็จ",
@@ -93,7 +98,6 @@ export default function ForensicSubmissionListPage() {
     }
   };
 
-  // Loading
   if (loading) {
     return (
       <div className="main-content min-h-screen bg-gray-50 px-3 py-5 sm:px-4 lg:px-6">
@@ -112,7 +116,6 @@ export default function ForensicSubmissionListPage() {
   return (
     <div className="main-content min-h-screen bg-gray-50 px-3 py-4 sm:px-4 lg:px-6">
       <div className="mx-auto w-full max-w-[1400px] px-4">
-        {/* Header */}
         <div className="mb-5 overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] shadow-lg">
           <div className="px-5 py-5 sm:px-7">
             <div className="flex items-center gap-3">
@@ -146,7 +149,6 @@ export default function ForensicSubmissionListPage() {
           </div>
         </div>
 
-        {/* Summary */}
         <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
@@ -204,7 +206,7 @@ export default function ForensicSubmissionListPage() {
                 <p className="text-xs text-gray-400">จำนวนบุคคลทั้งหมด</p>
                 <p className="text-xl font-bold text-gray-800">
                   {data.reduce(
-                    (total, item) => total + (item.persons?.length || 0),
+                    (total, item) => total + (item.persons?.length ?? 0),
                     0,
                   )}
                   <span className="ml-1 text-sm font-medium text-gray-400">
@@ -216,7 +218,6 @@ export default function ForensicSubmissionListPage() {
           </div>
         </div>
 
-        {/* Empty */}
         {data.length === 0 ? (
           <div className="rounded-2xl border border-gray-100 bg-white px-6 py-14 text-center shadow-sm">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-400">
@@ -292,7 +293,7 @@ export default function ForensicSubmissionListPage() {
 
                       <td className="border border-gray-200 px-4 py-3 text-center">
                         <span className="inline-flex min-w-[50px] justify-center rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
-                          {item.persons?.length || 0} คน
+                          {item.persons?.length ?? 0} คน
                         </span>
                       </td>
 
@@ -397,7 +398,7 @@ export default function ForensicSubmissionListPage() {
                         จำนวนรายชื่อ
                       </p>
                       <p className="mt-1 text-sm font-bold text-blue-600">
-                        {item.persons?.length || 0} คน
+                        {item.persons?.length ?? 0} คน
                       </p>
                     </div>
                   </div>
