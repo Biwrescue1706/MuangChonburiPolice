@@ -46,7 +46,6 @@ interface GeneratePDFData {
 export const generatePDF = async (
   p: GeneratePDFData,
 ): Promise<void> => {
-  // โหลดแบบพิมพ์ PDF
   const templateResponse = await fetch("/แบบพิมพ์มือ.pdf");
 
   if (!templateResponse.ok) {
@@ -58,7 +57,6 @@ export const generatePDF = async (
 
   pdfDoc.registerFontkit(fontkit);
 
-  // โหลดฟอนต์ปกติ
   const fontResponse = await fetch("/fonts/THSarabunNew.ttf");
 
   if (!fontResponse.ok) {
@@ -68,7 +66,6 @@ export const generatePDF = async (
   const fontBytes = await fontResponse.arrayBuffer();
   const font = await pdfDoc.embedFont(fontBytes);
 
-  // โหลดฟอนต์ตัวหนา
   const fontBoldResponse = await fetch(
     "/fonts/THSarabunNew-Bold.ttf",
   );
@@ -101,9 +98,48 @@ export const generatePDF = async (
       .trim()
       .replace(/\s+/g, "-");
 
+  // รักษาวันที่ตามส่วนวันที่ต้นทาง ไม่แปลงผ่านเขตเวลา
+  const formatFingerprintDate = (
+    value: string | number | null | undefined,
+  ): string => {
+    if (value === null || value === undefined || value === "") {
+      return "-";
+    }
+
+    const text = String(value).trim();
+
+    const match = text.match(
+      /^(\d{4})-(\d{2})-(\d{2})(?:$|T|\s)/,
+    );
+
+    if (!match) {
+      return text;
+    }
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    if (
+      date.getUTCFullYear() !== year ||
+      date.getUTCMonth() !== month - 1 ||
+      date.getUTCDate() !== day
+    ) {
+      return text;
+    }
+
+    const thaiMonth = new Intl.DateTimeFormat("th-TH", {
+      month: "long",
+      timeZone: "UTC",
+    }).format(date);
+
+    return `${day} ${thaiMonth} ${year + 543}`;
+  };
+
   const fixY = (y: number): number => 842 - y;
 
-  // วาดข้อความลง PDF
   const draw = (
     page: PDFPage,
     text: string | number | null | undefined,
@@ -122,8 +158,8 @@ export const generatePDF = async (
     });
   };
 
-  // ================= PAGE 1 =================
-  draw(page1, p.fingerprintDate, 270, -800);
+  // PAGE 1
+  draw(page1, formatFingerprintDate(p.fingerprintDate), 270, -800);
   draw(page1, p.organizationName, 825, -800);
 
   if (p.prefix === "นาย") {
@@ -144,13 +180,10 @@ export const generatePDF = async (
   draw(page1, p.fullNameWithRank, 210, -510);
   draw(page1, p.rank, 175, -480);
 
-  // ================= PAGE 2 =================
-
-  // จุดประสงค์
+  // PAGE 2
   draw(page2, p.purpose, 210, -875);
   draw(page2, p.requestingAgency, 270, -840);
 
-  // บัตรประชาชน
   draw(page2, p.citizenId, 180, -720, {
     size: 40,
     font: fontBold,
@@ -168,46 +201,35 @@ export const generatePDF = async (
     });
   }
 
-  // ชื่อ
   draw(page2, p.fullName, 225, -440, {
     size: 32,
     font: fontBold,
   });
 
-  // วันเกิด
   draw(page2, p.birthDay, 120, -405);
   draw(page2, p.birthMonth, 300, -405);
   draw(page2, p.birthYear, 500, -405);
 
-  // สัญชาติ
   draw(page2, p.nationality, 120, -375);
   draw(page2, p.ethnicity, 410, -375);
 
-  // ส่วนสูง / น้ำหนัก
   draw(page2, p.height, 100, -335);
   draw(page2, p.weight, 430, -335);
 
-  // รูปร่าง
   draw(page2, p.bodyType, 110, -300);
   draw(page2, p.skinColor, 400, -300);
 
-  // ตำหนิ
   draw(page2, p.distinguishingMarks, 250, -275);
 
-  // ชื่อด้านขวา
   draw(page2, p.fullName, 950, -240);
 
-  // พฤติกรรม
   draw(page2, p.behavior, 300, -200);
 
-  // ที่อยู่
   draw(page2, p.address, 135, -140);
 
-  // อาชีพ
   draw(page2, p.occupation, 110, -70);
   draw(page2, p.workplaceAddress, 150, -40);
 
-  // ครอบครัว
   draw(page2, p.father, 190, -4);
   draw(page2, p.mother, 200, 35);
   draw(page2, p.spouse, 245, 65);
@@ -216,7 +238,6 @@ export const generatePDF = async (
   draw(page2, p.fullNameOrg, 260, 170);
   draw(page2, p.position, 240, 210);
 
-  // ใบเสร็จ
   draw(page2, p.receiptBookNo, 720, -58);
   draw(page2, p.receiptNo, 1050, -58);
   draw(page2, p.receiptDate, 730, -20);
@@ -228,10 +249,8 @@ export const generatePDF = async (
   draw(page2, p.rank, 900, 155);
   draw(page2, p.fullNameOrg, 950, 190);
 
-  // บันทึก PDF
   const pdfBytes = await pdfDoc.save();
 
-  // แปลง Uint8Array เป็น ArrayBuffer สำหรับ Blob
   const pdfArrayBuffer = new ArrayBuffer(pdfBytes.byteLength);
   new Uint8Array(pdfArrayBuffer).set(pdfBytes);
 
@@ -239,7 +258,6 @@ export const generatePDF = async (
     type: "application/pdf",
   });
 
-  // ดาวน์โหลด PDF
   const url = URL.createObjectURL(blob);
 
   const fileName = `${clean(p.receiptBookNo)}-${clean(
@@ -254,5 +272,5 @@ export const generatePDF = async (
   link.click();
   link.remove();
 
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
