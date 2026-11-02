@@ -1,266 +1,276 @@
-// src/pages/Person/PersonPage.tsx
+// src/utils/generatePDF.ts
+import {
+  PDFDocument,
+  type PDFPage,
+  type PDFFont,
+} from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
 
-import { useNavigate } from "react-router-dom";
-import usePersonForm from "../../hooks/usePersonForm";
-
-import BasicInfo from "../../components/person/BasicInfo";
-import AdditionalInfo from "../../components/person/AdditionalInfo";
-import ReceiptInfo from "../../components/person/ReceiptInfo";
-
-export default function PersonPage() {
-  const navigate = useNavigate();
-
-  const {
-    form,
-    setForm,
-    handleChange,
-    handleSubmit,
-    receiptNumbers,
-    months,
-    years,
-    nationalities,
-    ethnicities,
-    bodyTypes,
-    skinColors,
-    filteredHeights,
-    filteredWeights,
-    filteredDays,
-  } = usePersonForm(navigate);
-
-  return (
-    <div className="main-content min-h-screen bg-gray-50 px-3 py-4 sm:px-4 lg:px-6">
-      <div className="mx-auto px-4 w-full max-w-[1400px]">
-        {/* HEADER */}
-        <div className="mb-5">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="mb-3 flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-[#8f2946] px-5 text-lg font-bold text-white transition hover:bg-[#9f3453] active:scale-[0.98] max-[1199px]:flex min-[1200px]:hidden"
-          >
-            <svg
-              width="27"
-              height="27"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M19 12H5" />
-              <path d="M12 19l-7-7 7-7" />
-            </svg>
-            กลับหน้าเดิม
-          </button>
-
-          <div className="overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] shadow-lg">
-            <div className="px-5 py-5 sm:px-7 sm:py-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white shadow-sm sm:h-14 sm:w-14">
-                  <svg
-                    width="27"
-                    height="27"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M20 21a8 8 0 0 0-16 0" />
-                    <circle cx="12" cy="7" r="4" />
-                    <path d="M19 8v6" />
-                    <path d="M16 11h6" />
-                  </svg>
-                </div>
-
-                <div className="min-w-0">
-                  <h1 className="text-xl font-bold text-white sm:text-2xl">
-                    สร้างข้อมูลบุคคล
-                  </h1>
-
-                  <p className="mt-1 text-xs text-white/70 sm:text-sm">
-                    บันทึกข้อมูลบุคคลสำหรับการพิมพ์มือตรวจประวัติ
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* FORM */}
-
-        <form onSubmit={handleSubmit}>
-          {/* BASIC INFO*/}
-
-          <section className="mb-5 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-            <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50 px-5 py-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#800020]/10 text-[#800020]">
-                <svg
-                  width="19"
-                  height="19"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 21a8 8 0 0 1 16 0" />
-                </svg>
-              </div>
-
-              <div>
-                <h2 className="text-sm font-bold text-gray-800 sm:text-base">
-                  ข้อมูลพื้นฐาน
-                </h2>
-
-                <p className="text-[10px] text-gray-400">
-                  ข้อมูลส่วนบุคคลและข้อมูลประจำตัว
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 sm:p-6">
-              <BasicInfo
-                form={form}
-                filteredDays={filteredDays}
-                months={months}
-                years={years}
-                handleChange={handleChange}
-              />
-            </div>
-          </section>
-
-          {/* ADDITIONAL INFO*/}
-          <section className="mb-5 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-            <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50 px-5 py-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                <svg
-                  width="19"
-                  height="19"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2v20" />
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-              </div>
-
-              <div>
-                <h2 className="text-sm font-bold text-gray-800 sm:text-base">
-                  ข้อมูลเพิ่มเติม
-                </h2>
-
-                <p className="text-[10px] text-gray-400">
-                  ข้อมูลลักษณะบุคคลและรายละเอียดเพิ่มเติม
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 sm:p-6">
-              <AdditionalInfo
-                form={form}
-                handleChange={handleChange}
-                nationalities={nationalities}
-                ethnicities={ethnicities}
-                bodyTypes={bodyTypes}
-                skinColors={skinColors}
-                filteredHeights={filteredHeights}
-                filteredWeights={filteredWeights}
-              />
-            </div>
-          </section>
-
-          {/* RECEIPT*/}
-          <section className="mb-5 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-            <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50 px-5 py-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-                <svg
-                  width="19"
-                  height="19"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M6 2h12v20l-3-2-3 2-3-2-3 2z" />
-                  <path d="M9 7h6" />
-                  <path d="M9 11h6" />
-                  <path d="M9 15h3" />
-                </svg>
-              </div>
-
-              <div>
-                <h2 className="text-sm font-bold text-gray-800 sm:text-base">
-                  ข้อมูลใบเสร็จ
-                </h2>
-
-                <p className="text-[10px] text-gray-400">
-                  ข้อมูลเล่มใบเสร็จ เลขที่ และวันที่
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 sm:p-6">
-              <ReceiptInfo
-                form={form}
-                handleChange={handleChange}
-                receiptNumbers={receiptNumbers}
-                setForm={setForm}
-                months={months}
-                years={years}
-              />
-            </div>
-          </section>
-
-          {/* ACTIONS*/}
-
-          <div className="sticky bottom-0 z-20 -mx-3 border-t border-gray-200 bg-white/95 px-3 py-3 shadow-[0_-4px_15px_rgba(0,0,0,0.06)] backdrop-blur sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6">
-            <div className="mx-auto flex w-full max-w-[1400px] flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              {/* CANCEL */}
-
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="h-11 w-full rounded-xl border border-gray-200 bg-white px-6 text-sm font-bold text-gray-600 transition hover:bg-gray-50 active:scale-[0.98] sm:w-auto"
-              >
-                ยกเลิก
-              </button>
-
-              {/* SAVE */}
-
-              <button
-                type="submit"
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#800020] px-7 text-sm font-bold text-white shadow-sm transition hover:bg-[#650017] active:scale-[0.98] sm:w-auto"
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                  <polyline points="17 21 17 13 7 13 7 21" />
-                  <polyline points="7 3 7 8 15 8" />
-                </svg>
-                บันทึกข้อมูล
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+interface GeneratePDFData {
+  fingerprintDate?: string | number | null;
+  organizationName?: string | number | null;
+  prefix?: string | null;
+  fullName?: string | number | null;
+  birthDate?: string | number | null;
+  fullNameWithRank?: string | number | null;
+  rank?: string | number | null;
+  purpose?: string | number | null;
+  requestingAgency?: string | number | null;
+  citizenId?: string | number | null;
+  birthDay?: string | number | null;
+  birthMonth?: string | number | null;
+  birthYear?: string | number | null;
+  nationality?: string | number | null;
+  ethnicity?: string | number | null;
+  height?: string | number | null;
+  weight?: string | number | null;
+  bodyType?: string | number | null;
+  skinColor?: string | number | null;
+  distinguishingMarks?: string | number | null;
+  behavior?: string | number | null;
+  address?: string | number | null;
+  occupation?: string | number | null;
+  workplaceAddress?: string | number | null;
+  father?: string | number | null;
+  mother?: string | number | null;
+  spouse?: string | number | null;
+  fullNameOrg?: string | number | null;
+  position?: string | number | null;
+  receiptBookNo?: string | number | null;
+  receiptNo?: string | number | null;
+  receiptDate?: string | number | null;
+  money?: string | number | null;
+  moneyText?: string | number | null;
 }
+
+export const generatePDF = async (
+  p: GeneratePDFData,
+): Promise<void> => {
+  const templateResponse = await fetch("/แบบพิมพ์มือ.pdf");
+
+  if (!templateResponse.ok) {
+    throw new Error("ไม่สามารถโหลดแบบพิมพ์มือ.pdf ได้");
+  }
+
+  const templateBytes = await templateResponse.arrayBuffer();
+  const pdfDoc = await PDFDocument.load(templateBytes);
+
+  pdfDoc.registerFontkit(fontkit);
+
+  const fontResponse = await fetch("/fonts/THSarabunNew.ttf");
+
+  if (!fontResponse.ok) {
+    throw new Error("ไม่สามารถโหลดฟอนต์ THSarabunNew.ttf ได้");
+  }
+
+  const fontBytes = await fontResponse.arrayBuffer();
+  const font = await pdfDoc.embedFont(fontBytes);
+
+  const fontBoldResponse = await fetch(
+    "/fonts/THSarabunNew-Bold.ttf",
+  );
+
+  if (!fontBoldResponse.ok) {
+    throw new Error("ไม่สามารถโหลดฟอนต์ THSarabunNew-Bold.ttf ได้");
+  }
+
+  const fontBoldBytes = await fontBoldResponse.arrayBuffer();
+  const fontBold = await pdfDoc.embedFont(fontBoldBytes);
+
+  const [page1, page2] = pdfDoc.getPages();
+
+  if (!page1 || !page2) {
+    throw new Error("ไฟล์ PDF ต้องมีอย่างน้อย 2 หน้า");
+  }
+
+  const safe = (
+    value: string | number | null | undefined,
+  ): string =>
+    value === null || value === undefined || value === ""
+      ? "-"
+      : String(value);
+
+  const clean = (
+    value: string | number | null | undefined,
+  ): string =>
+    safe(value)
+      .replace(/[\\/:*?"<>|]/g, "")
+      .trim()
+      .replace(/\s+/g, "-");
+
+  // รักษาวันที่ตามส่วนวันที่ต้นทาง ไม่แปลงผ่านเขตเวลา
+  const formatFingerprintDate = (
+    value: string | number | null | undefined,
+  ): string => {
+    if (value === null || value === undefined || value === "") {
+      return "-";
+    }
+
+    const text = String(value).trim();
+
+    const match = text.match(
+      /^(\d{4})-(\d{2})-(\d{2})(?:$|T|\s)/,
+    );
+
+    if (!match) {
+      return text;
+    }
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    if (
+      date.getUTCFullYear() !== year ||
+      date.getUTCMonth() !== month - 1 ||
+      date.getUTCDate() !== day
+    ) {
+      return text;
+    }
+
+    const thaiMonth = new Intl.DateTimeFormat("th-TH", {
+      month: "long",
+      timeZone: "UTC",
+    }).format(date);
+
+    return `${day} ${thaiMonth} ${year + 543}`;
+  };
+
+  const fixY = (y: number): number => 842 - y;
+
+  const draw = (
+    page: PDFPage,
+    text: string | number | null | undefined,
+    x: number,
+    y: number,
+    options?: {
+      size?: number;
+      font?: PDFFont;
+    },
+  ): void => {
+    page.drawText(safe(text), {
+      x,
+      y: fixY(y),
+      size: options?.size ?? 28,
+      font: options?.font ?? font,
+    });
+  };
+
+  // PAGE 1
+  draw(page1, formatFingerprintDate(p.fingerprintDate), 270, -800);
+  draw(page1, p.organizationName, 825, -800);
+
+  if (p.prefix === "นาย") {
+    draw(page1, "/", 340, -760, {
+      size: 60,
+      font: fontBold,
+    });
+  } else {
+    draw(page1, "/", 475, -760, {
+      size: 60,
+      font: fontBold,
+    });
+  }
+
+  draw(page1, p.fullName, 350, -730);
+  draw(page1, p.birthDate, 800, -760);
+
+  draw(page1, p.fullNameWithRank, 210, -510);
+  draw(page1, p.rank, 175, -480);
+
+  // PAGE 2
+  draw(page2, p.purpose, 210, -875);
+  draw(page2, p.requestingAgency, 270, -840);
+
+  draw(page2, p.citizenId, 180, -720, {
+    size: 40,
+    font: fontBold,
+  });
+
+  if (p.prefix === "นาย") {
+    draw(page2, "/", 150, -470, {
+      size: 60,
+      font: fontBold,
+    });
+  } else {
+    draw(page2, "/", 325, -470, {
+      size: 60,
+      font: fontBold,
+    });
+  }
+
+  draw(page2, p.fullName, 225, -440, {
+    size: 32,
+    font: fontBold,
+  });
+
+  draw(page2, p.birthDay, 120, -405);
+  draw(page2, p.birthMonth, 300, -405);
+  draw(page2, p.birthYear, 500, -405);
+
+  draw(page2, p.nationality, 120, -375);
+  draw(page2, p.ethnicity, 410, -375);
+
+  draw(page2, p.height, 100, -335);
+  draw(page2, p.weight, 430, -335);
+
+  draw(page2, p.bodyType, 110, -300);
+  draw(page2, p.skinColor, 400, -300);
+
+  draw(page2, p.distinguishingMarks, 250, -275);
+
+  draw(page2, p.fullName, 950, -240);
+
+  draw(page2, p.behavior, 300, -200);
+
+  draw(page2, p.address, 135, -140);
+
+  draw(page2, p.occupation, 110, -70);
+  draw(page2, p.workplaceAddress, 150, -40);
+
+  draw(page2, p.father, 190, -4);
+  draw(page2, p.mother, 200, 35);
+  draw(page2, p.spouse, 245, 65);
+
+  draw(page2, p.rank, 215, 140);
+  draw(page2, p.fullNameOrg, 260, 170);
+  draw(page2, p.position, 240, 210);
+
+  draw(page2, p.receiptBookNo, 720, -58);
+  draw(page2, p.receiptNo, 1050, -58);
+  draw(page2, p.receiptDate, 730, -20);
+
+  draw(page2, p.money, 730, 15);
+  draw(page2, p.moneyText, 920, 15);
+
+  draw(page2, p.organizationName, 700, 80);
+  draw(page2, p.rank, 900, 155);
+  draw(page2, p.fullNameOrg, 950, 190);
+
+  const pdfBytes = await pdfDoc.save();
+
+  const pdfArrayBuffer = new ArrayBuffer(pdfBytes.byteLength);
+  new Uint8Array(pdfArrayBuffer).set(pdfBytes);
+
+  const blob = new Blob([pdfArrayBuffer], {
+    type: "application/pdf",
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const fileName = `${clean(p.receiptBookNo)}-${clean(
+    p.receiptNo,
+  )}-${clean(p.fullName)}.pdf`;
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
