@@ -1,4 +1,3 @@
-
 // src/utils/generateForensicPdf.ts
 
 import {
@@ -100,10 +99,6 @@ function formatThaiDate(dateString?: string): string {
   return parts[0] || "";
 }
 
-/**
- * รองรับข้อมูลหน่วยงานที่ API ส่งกลับมาเป็น Array,
- * Object โดยตรง หรือ Object ที่มี data ห่ออยู่
- */
 function getOrganization(
   responseData: unknown,
 ): OrganizationData | null {
@@ -111,9 +106,8 @@ function getOrganization(
     return null;
   }
 
-  const response = responseData as Record<string, unknown>;
-
   let organization: unknown = responseData;
+  const response = responseData as Record<string, unknown>;
 
   if (Array.isArray(responseData)) {
     organization = responseData[0];
@@ -133,9 +127,6 @@ function getOrganization(
   return organization as OrganizationData;
 }
 
-/**
- * ดึงข้อมูลผู้กำกับจากโครงสร้างข้อมูลที่รองรับ
- */
 function getCommander(
   organization: OrganizationData | null,
 ): CommanderData | null {
@@ -143,12 +134,21 @@ function getCommander(
 
   const org = organization as Record<string, unknown>;
 
+  const nestedOrganization =
+    org.organization &&
+    typeof org.organization === "object"
+      ? (org.organization as Record<string, unknown>)
+      : null;
+
+  const nestedData =
+    org.data && typeof org.data === "object"
+      ? (org.data as Record<string, unknown>)
+      : null;
+
   const possibleCommander =
     org.commander ??
-    (org.organization as Record<string, unknown> | undefined)
-      ?.commander ??
-    (org.data as Record<string, unknown> | undefined)
-      ?.commander;
+    nestedOrganization?.commander ??
+    nestedData?.commander;
 
   if (
     possibleCommander &&
@@ -160,10 +160,6 @@ function getCommander(
   return null;
 }
 
-/**
- * โหลดลายเซ็นและแปลงเป็น PNG ก่อนฝังลง PDF
- * รองรับภาพที่เบราว์เซอร์สามารถอ่านได้ เช่น PNG, JPEG และ WebP
- */
 async function loadSignatureImage(
   pdfDoc: PDFDocument,
   imageUrl: string,
@@ -208,15 +204,13 @@ async function loadSignatureImage(
     return pdfDoc.embedJpg(imageBytes);
   }
 
-  // แปลงภาพรูปแบบอื่นเป็น PNG ด้วย Canvas
   const mimeType = contentType.startsWith("image/")
     ? contentType.split(";")[0]
     : "image/png";
 
-  const imageBlob = new Blob(
-    [new Uint8Array(imageBytes)],
-    { type: mimeType },
-  );
+  const imageBlob = new Blob([imageBytes], {
+    type: mimeType,
+  });
 
   let bitmap: ImageBitmap | null = null;
 
@@ -230,27 +224,37 @@ async function loadSignatureImage(
     const context = canvas.getContext("2d");
 
     if (!context) {
-      throw new Error("ไม่สามารถสร้าง Canvas สำหรับรูปลายเซ็นได้");
+      throw new Error(
+        "ไม่สามารถสร้าง Canvas สำหรับรูปลายเซ็นได้",
+      );
     }
 
     context.drawImage(bitmap, 0, 0);
 
-    const pngBlob = await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error("แปลงรูปลายเซ็นเป็น PNG ไม่สำเร็จ"));
-        }
-      }, "image/png");
-    });
+    const pngBlob = await new Promise<Blob>(
+      (resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(
+              new Error("แปลงรูปลายเซ็นเป็น PNG ไม่สำเร็จ"),
+            );
+          }
+        }, "image/png");
+      },
+    );
 
     const pngBuffer = await pngBlob.arrayBuffer();
 
-    return await pdfDoc.embedPng(new Uint8Array(pngBuffer));
-  } catch (error) {
+    return await pdfDoc.embedPng(
+      new Uint8Array(pngBuffer),
+    );
+  } catch (error: unknown) {
     if (error instanceof Error) {
-      throw new Error(`ไม่สามารถอ่านรูปลายเซ็นได้: ${error.message}`);
+      throw new Error(
+        `ไม่สามารถอ่านรูปลายเซ็นได้: ${error.message}`,
+      );
     }
 
     throw new Error("ไม่สามารถอ่านรูปลายเซ็นได้");
@@ -259,9 +263,6 @@ async function loadSignatureImage(
   }
 }
 
-/**
- * วาดลายเซ็นโดยรักษาสัดส่วนภาพ
- */
 function drawSignature(
   page: PDFPage,
   signatureImage: PDFImage,
@@ -286,7 +287,6 @@ function drawSignature(
 }
 
 async function drawForensicPage(
-  pdfDoc: PDFDocument,
   page: PDFPage,
   data: ForensicPdfData,
   font: PDFFont,
@@ -645,12 +645,6 @@ export async function generateForensicPdf(
     console.log("Organization:", organization);
     console.log("Commander:", commander);
 
-    if (!commander) {
-      console.warn(
-        "ไม่พบข้อมูล commander จาก API /organization ตรวจสอบโครงสร้างข้อมูลใน Console",
-      );
-    }
-
     // โหลดภาพลายเซ็น
     let signatureImage: PDFImage | null = null;
 
@@ -662,7 +656,7 @@ export async function generateForensicPdf(
           pdfDoc,
           signatureUrl,
         );
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Signature Error:", error);
 
         await Swal.fire({
@@ -679,6 +673,12 @@ export async function generateForensicPdf(
     } else {
       console.warn(
         "ไม่พบ signatureImage ในข้อมูล commander",
+      );
+    }
+
+    if (!commander) {
+      console.warn(
+        "ไม่พบข้อมูล commander จาก API /organization",
       );
     }
 
@@ -734,8 +734,8 @@ export async function generateForensicPdf(
           persons: personPages[pageIndex],
         };
 
+        // ส่งเฉพาะพารามิเตอร์ที่ฟังก์ชันใช้งาน
         await drawForensicPage(
-          pdfDoc,
           page,
           pageData,
           font,
@@ -848,4 +848,3 @@ export async function generateForensicPdf(
     });
   }
 }
-
