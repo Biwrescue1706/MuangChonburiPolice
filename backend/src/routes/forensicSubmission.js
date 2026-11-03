@@ -75,13 +75,15 @@ router.post("/create", async (req, res) => {
         throw error;
       }
 
-      // Only accept persons currently in status 1.
+      // รองรับบุคคลที่มีสถานะ 1 และ 2
       const eligiblePersons = await tx.person.findMany({
         where: {
           personId: {
             in: uniquePersonIds,
           },
-          status: 1,
+          status: {
+            in: [1, 2],
+          },
         },
         select: {
           personId: true,
@@ -118,12 +120,15 @@ router.post("/create", async (req, res) => {
         },
       });
 
+      // อัปเดตสถานะทั้งผู้ที่มีสถานะ 1 และ 2 ให้เป็น 2
       const updated = await tx.person.updateMany({
         where: {
           personId: {
             in: uniquePersonIds,
           },
-          status: 1,
+          status: {
+            in: [1, 2],
+          },
         },
         data: {
           status: 2,
@@ -132,7 +137,6 @@ router.post("/create", async (req, res) => {
         },
       });
 
-      // Guard against a concurrent status change.
       if (updated.count !== uniquePersonIds.length) {
         const error = new Error(
           "สถานะบุคคลมีการเปลี่ยนแปลง กรุณาโหลดข้อมูลใหม่แล้วลองอีกครั้ง"
@@ -158,7 +162,6 @@ router.post("/create", async (req, res) => {
       });
     }
 
-    // Prisma unique constraint violation
     if (err.code === "P2002") {
       return res.status(409).json({
         success: false,
