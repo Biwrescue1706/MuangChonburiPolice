@@ -141,13 +141,15 @@ auth.get("/verify", async (req, res) => {
     if (
       typeof decoded !== "object" ||
       decoded === null ||
-      typeof decoded.adminId !== "string"
+      !("adminId" in decoded) ||
+      !["string", "number"].includes(typeof decoded.adminId) ||
+      decoded.adminId === ""
     ) {
       return res.status(401).json({
         error: "Invalid session",
       });
     }
-
+    
     const adminUser = await neonPrisma.admin.findUnique({
       where: {
         adminId: decoded.adminId,
