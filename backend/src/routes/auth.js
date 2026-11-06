@@ -1,4 +1,4 @@
-
+// routes/auth.js
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -8,28 +8,33 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 const auth = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const IS_PROD = process.env.NODE_ENV === "production";
 const TOKEN_EXPIRES_IN = "90m";
 const COOKIE_MAX_AGE = 90 * 60 * 1000;
 const MIN_PASSWORD_LENGTH = 12;
 const MAX_PASSWORD_BYTES = 72;
 const BCRYPT_ROUNDS = 12;
 
-const COOKIE_OPTIONS = {
+const BASE_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: IS_PROD,
-  sameSite: "lax",
-  ...(IS_PROD && {
-    domain: ".smartdorm-biwboong.shop",
-  }),
+  secure: true,
+  domain: ".smartdorm-biwboong.shop",
   path: "/",
+};
+
+const getCookieOptions = (req) => {
+  const origin = req.get("origin") || "";
+  const isLocal = /^http:\/\/localhost(:\d+)?$/.test(origin);
+
+  return {
+    ...BASE_COOKIE_OPTIONS,
+    sameSite: isLocal ? "none" : "lax",
+  };
 };
 
 if (!JWT_SECRET || Buffer.byteLength(JWT_SECRET, "utf8") < 32) {
   throw new Error("JWT_SECRET must be configured securely");
 }
 
-// ตรวจสอบว่ารหัสผ่านมีความยาวตามนโยบายและไม่เกินขนาดที่ bcrypt รองรับ
 function isValidNewPassword(password) {
   return (
     typeof password === "string" &&
@@ -38,7 +43,6 @@ function isValidNewPassword(password) {
   );
 }
 
-// ตรวจสอบ username ก่อนนำไปค้นหาในฐานข้อมูล
 function isValidUsername(username) {
   return (
     typeof username === "string" &&
@@ -47,7 +51,6 @@ function isValidUsername(username) {
   );
 }
 
-// บันทึกเฉพาะรายละเอียดข้อผิดพลาดที่ไม่เปิดเผยข้อมูลลับ
 function logError(operation, error) {
   console.error(operation, {
     code: error?.code,
@@ -79,10 +82,9 @@ auth.post("/login", async (req, res) => {
       },
     });
 
-    // ใช้ข้อความเดียวกันเมื่อไม่พบบัญชีหรือรหัสผ่านไม่ถูกต้อง
     if (
       !adminUser ||
-      !(await bcrypt.compare(password, adminUser?.password ?? ""))
+      !(await bcrypt.compare(password, adminUser.password ?? ""))
     ) {
       return res.status(401).json({
         error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
@@ -101,7 +103,7 @@ auth.post("/login", async (req, res) => {
     );
 
     res.cookie("token", token, {
-      ...COOKIE_OPTIONS,
+      ...getCookieOptions(req),
       maxAge: COOKIE_MAX_AGE,
     });
 
@@ -145,11 +147,13 @@ auth.get("/verify", async (req, res) => {
       !["string", "number"].includes(typeof decoded.adminId) ||
       decoded.adminId === ""
     ) {
+      res.clearCookie("token", getCookieOptions(req));
+
       return res.status(401).json({
         error: "Invalid session",
       });
     }
-    
+
     const adminUser = await neonPrisma.admin.findUnique({
       where: {
         adminId: decoded.adminId,
@@ -163,18 +167,20 @@ auth.get("/verify", async (req, res) => {
     });
 
     if (!adminUser) {
-      res.clearCookie("token", COOKIE_OPTIONS);
+      res.clearCookie("token", getCookieOptions(req));
 
       return res.status(401).json({
         error: "Invalid session",
       });
     }
 
-    return res.json({
+    return res.status(200).json({
       admin: adminUser,
     });
-  } catch {
-    res.clearCookie("token", COOKIE_OPTIONS);
+  } catch (error) {
+    logError("Verify failed", error);
+
+    res.clearCookie("token", getCookieOptions(req));
 
     return res.status(401).json({
       error: "Invalid or expired session",
@@ -183,10 +189,10 @@ auth.get("/verify", async (req, res) => {
 });
 
 // Logout
-auth.post("/logout", (_req, res) => {
-  res.clearCookie("token", COOKIE_OPTIONS);
+auth.post("/logout", (req, res) => {
+  res.clearCookie("token", getCookieOptions(req));
 
-  return res.json({
+  return res.status(200).json({
     message: "ออกจากระบบสำเร็จ",
   });
 });
@@ -250,10 +256,9 @@ auth.put("/change-password", authMiddleware, async (req, res) => {
       },
     });
 
-    // ล้าง cookie ปัจจุบันเพื่อให้ผู้ใช้เข้าสู่ระบบใหม่หลังเปลี่ยนรหัสผ่าน
-    res.clearCookie("token", COOKIE_OPTIONS);
+    res.clearCookie("token", getCookieOptions(req));
 
-    return res.json({
+    return res.status(200).json({
       message: "เปลี่ยนรหัสผ่านสำเร็จ กรุณาเข้าสู่ระบบใหม่",
     });
   } catch (error) {
@@ -265,14 +270,14 @@ auth.put("/change-password", authMiddleware, async (req, res) => {
   }
 });
 
-// ปิดการตรวจสอบบัญชีผ่านระบบลืมรหัสผ่านเพื่อป้องกันการเปิดเผย username
+// Forgot password check
 auth.post("/forgot/check", (_req, res) => {
   return res.status(410).json({
     error: "ระบบกู้คืนบัญชียังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ",
   });
 });
 
-// ปิดการรีเซ็ตรหัสผ่านที่ไม่มีขั้นตอนยืนยันตัวตน
+// Forgot password reset
 auth.put("/forgot/reset", (_req, res) => {
   return res.status(410).json({
     error: "ระบบกู้คืนบัญชียังไม่พร้อมใช้งาน กรุณาติดต่อผู้ดูแลระบบ",
