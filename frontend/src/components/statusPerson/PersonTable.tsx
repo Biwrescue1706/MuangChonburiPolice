@@ -145,11 +145,11 @@ export default function PersonTable({
       )}
 
       <div className="w-full overflow-x-auto">
-        <table className="w-full min-w-[1250px] table-fixed border-collapse text-sm">
+        <table className="w-full min-w-[800px] table-fixed border-collapse text-sm">
           <colgroup>
             {selectMode && <col className="w-[38px]" />}
             <col className="w-[38px]" />
-            <col className="w-[125px]" />
+            <col className="w-[100px]" />
             <col className="w-[145px]" />
             <col className="w-[145px]" />
             <col className="w-[55px]" />
