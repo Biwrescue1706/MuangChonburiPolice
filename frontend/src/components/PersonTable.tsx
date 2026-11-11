@@ -1,8 +1,5 @@
-// src/components/PersonTable.tsx
-
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-
 import {
   formatThaiDate,
   renderStatus,
@@ -11,16 +8,91 @@ import {
   getStatusButtonStyle,
 } from "../utils/personHelper";
 
+type Person = {
+  personId: string;
+  fullName?: string | null;
+  purpose?: string | null;
+  requestingAgency?: string | null;
+  receiptBookNo?: string | null;
+  receiptNo?: string | null;
+  receiptDate?: string | null;
+  status: number;
+  priority?: number | null;
+  returnDate?: string | null;
+  deleteAt?: string | null;
+};
+
 interface Props {
-  persons: any[];
+  persons: Person[];
   loading: boolean;
   selectMode: boolean;
   selectedIds: string[];
   toggleSelect: (id: string, status: number) => void;
   handleSelectAll: () => void;
-  handleDelete: (p: any) => void;
-  handleUpdateStatus: (p: any) => void;
-  handleExportPDF: (p: any) => void;
+  handleDelete: (person: Person) => void;
+  handleUpdateStatus: (person: Person) => void;
+  handleExportPDF: (person: Person) => void;
+}
+
+type IconProps = {
+  type: "eye" | "pdf" | "edit" | "delete";
+  size?: number;
+};
+
+function Icon({ type, size = 17 }: IconProps) {
+  const commonProps = {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
+  switch (type) {
+    case "eye":
+      return (
+        <svg {...commonProps}>
+          <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+          <circle cx="12" cy="12" r="2.5" />
+        </svg>
+      );
+
+    case "pdf":
+      return (
+        <svg {...commonProps}>
+          <path d="M6 3.5h8l4 4V20H6z" />
+          <path d="M14 3.5V8h4" />
+          <path d="M9 13h1.5a1.5 1.5 0 0 0 0-3H9v6" />
+          <path d="M13 10v6" />
+          <path d="M13 10h1.5a2 2 0 0 1 0 4H13" />
+        </svg>
+      );
+
+    case "edit":
+      return (
+        <svg {...commonProps}>
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z" />
+        </svg>
+      );
+
+    case "delete":
+      return (
+        <svg {...commonProps}>
+          <path d="M4 7h16" />
+          <path d="M9 7V4h6v3" />
+          <path d="M7 7l1 14h8l1-14" />
+          <path d="M10 11v6" />
+          <path d="M14 11v6" />
+        </svg>
+      );
+
+    default:
+      return null;
+  }
 }
 
 export default function PersonTable({
@@ -36,115 +108,23 @@ export default function PersonTable({
 }: Props) {
   const navigate = useNavigate();
 
-  const hasReturnDate = persons.some(
-    (p) => p.status === 4,
-  );
+  const hasReturnDate = persons.some((person) => person.status === 4);
 
   const hasDeleteDate = persons.some(
-    (p) => p.status === 4 && p.deleteAt,
+    (person) => person.status === 4 && person.deleteAt,
   );
 
-  const hasSendButton = persons.some(
-    (p) => p.status < 4,
-  );
+  const hasSendButton = persons.some((person) => person.status < 4);
 
-  // =========================================================
-  // ICON
-  // =========================================================
-  const Icon = ({
-    type,
-    size = 17,
-  }: {
-    type: string;
-    size?: number;
-  }) => {
-    if (type === "eye") {
-      return (
-        <svg
-          width={size}
-          height={size}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
-          <circle cx="12" cy="12" r="2.5" />
-        </svg>
-      );
-    }
+  const selectablePersons = persons.filter((person) => person.status < 4);
 
-    if (type === "pdf") {
-      return (
-        <svg
-          width={size}
-          height={size}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 3.5h8l4 4V20H6z" />
-          <path d="M14 3.5V8h4" />
-          <path d="M9 13h1.5a1.5 1.5 0 0 0 0-3H9v6" />
-          <path d="M13 10v6" />
-          <path d="M13 10h1.5a2 2 0 0 1 0 4H13" />
-        </svg>
-      );
-    }
+  const allSelected =
+    selectablePersons.length > 0 &&
+    selectablePersons.every((person) => selectedIds.includes(person.personId));
 
-    if (type === "edit") {
-      return (
-        <svg
-          width={size}
-          height={size}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z" />
-        </svg>
-      );
-    }
-
-    if (type === "delete") {
-      return (
-        <svg
-          width={size}
-          height={size}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 7h16" />
-          <path d="M9 7V4h6v3" />
-          <path d="M7 7l1 14h8l1-14" />
-          <path d="M10 11v6" />
-          <path d="M14 11v6" />
-        </svg>
-      );
-    }
-
-    return null;
-  };
-
-  // =========================================================
-  // PDF
-  // =========================================================
-  const exportPDF = (p: any) => {
-    if (p.status < 1) {
-      Swal.fire({
+  const exportPDF = (person: Person) => {
+    if (person.status < 1) {
+      void Swal.fire({
         icon: "warning",
         title: "ไม่สามารถดำเนินการได้",
         text: "กรุณากดปุ่ม 'เตรียมเอกสารส่ง พฐ' ก่อน",
@@ -155,28 +135,14 @@ export default function PersonTable({
       return;
     }
 
-    handleExportPDF(p);
+    handleExportPDF(person);
   };
 
-  // =========================================================
-  // LOADING
-  // =========================================================
   if (loading) {
     return (
       <div className="w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
         <div className="flex min-h-[300px] flex-col items-center justify-center">
-          <div
-            className="
-              h-10
-              w-10
-              animate-spin
-              rounded-full
-              border-4
-              border-gray-200
-              border-t-[#800020]
-            "
-          />
-
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-[#800020]" />
           <p className="mt-4 text-sm font-semibold text-gray-500">
             กำลังโหลดข้อมูล...
           </p>
@@ -185,39 +151,10 @@ export default function PersonTable({
     );
   }
 
-  // =========================================================
-  // EMPTY
-  // =========================================================
   if (persons.length === 0) {
     return (
-      <div
-        className="
-          flex
-          min-h-[300px]
-          flex-col
-          items-center
-          justify-center
-          rounded-2xl
-          border
-          border-gray-100
-          bg-white
-          px-5
-          text-center
-          shadow-sm
-        "
-      >
-        <div
-          className="
-            flex
-            h-16
-            w-16
-            items-center
-            justify-center
-            rounded-2xl
-            bg-gray-50
-            text-gray-300
-          "
-        >
+      <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white px-5 text-center shadow-sm">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-50 text-gray-300">
           <svg
             width="30"
             height="30"
@@ -235,9 +172,7 @@ export default function PersonTable({
           </svg>
         </div>
 
-        <p className="mt-4 text-base font-bold text-gray-700">
-          ไม่พบข้อมูล
-        </p>
+        <p className="mt-4 text-base font-bold text-gray-700">ไม่พบข้อมูล</p>
 
         <p className="mt-1 text-xs text-gray-400">
           ไม่มีรายการที่ตรงกับเงื่อนไข
@@ -247,80 +182,20 @@ export default function PersonTable({
   }
 
   return (
-    <div
-      className="
-        w-full
-        overflow-hidden
-        rounded-2xl
-        border
-        border-gray-100
-        bg-white
-        shadow-sm
-      "
-    >
-      {/* =====================================================
-          TABLE SCROLL
-      ===================================================== */}
-      <div
-        className="
-          w-full
-          overflow-x-auto
-          [scrollbar-width:thin]
-        "
-      >
-        <table
-          className="
-            w-full
-            min-w-[1500px]
-            border-collapse
-            text-sm
-          "
-        >
-          {/* =================================================
-              HEADER
-          ================================================= */}
+    <div className="w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="w-full overflow-x-auto [scrollbar-width:thin]">
+        <table className="w-full min-w-[1500px] border-collapse text-sm">
           <thead>
-            <tr
-              className="
-                border-b
-                border-[#650017]
-                bg-gradient-to-r
-                from-[#720019]
-                to-[#800020]
-                text-white
-              "
-            >
+            <tr className="border-b border-[#650017] bg-gradient-to-r from-[#720019] to-[#800020] text-white">
               {selectMode && (
-                <th
-                  className="
-                    sticky
-                    left-0
-                    z-20
-                    w-[55px]
-                    border-r
-                    border-white/10
-                    bg-[#720019]
-                    px-3
-                    py-4
-                  "
-                >
+                <th className="sticky left-0 z-20 w-[55px] border-r border-white/10 bg-[#720019] px-3 py-4">
                   <label className="flex cursor-pointer items-center justify-center">
                     <input
                       type="checkbox"
-                      checked={
-                        selectedIds.length ===
-                          persons.filter(
-                            (p) => p.status < 4,
-                          ).length &&
-                        persons.length > 0
-                      }
+                      checked={allSelected}
                       onChange={handleSelectAll}
-                      className="
-                        h-4
-                        w-4
-                        cursor-pointer
-                        accent-[#800020]
-                      "
+                      className="h-4 w-4 cursor-pointer accent-[#800020]"
+                      aria-label="เลือกข้อมูลทั้งหมด"
                     />
                   </label>
                 </th>
@@ -354,7 +229,7 @@ export default function PersonTable({
                 ลงวันที่
               </th>
 
-              <th className="min-w-[180px] px-4 py-4 text-center text-xs font-bold">
+              <th className="min-w-[180px] px-3 py-4 text-center text-xs font-bold">
                 สถานะ
               </th>
 
@@ -398,320 +273,167 @@ export default function PersonTable({
             </tr>
           </thead>
 
-          {/* =================================================
-              BODY
-          ================================================= */}
           <tbody>
-            {persons.map((p, i) => {
-              const selected = selectedIds.includes(
-                p.personId,
-              );
+            {persons.map((person, index) => {
+              const selected = selectedIds.includes(person.personId);
 
               return (
                 <tr
-                  key={p.personId}
-                  className={`
-                    border-b
-                    border-gray-100
-                    transition-colors
-
-                    ${
-                      selected
-                        ? "bg-[#800020]/5"
-                        : i % 2 === 0
-                          ? "bg-white"
-                          : "bg-gray-50/70"
-                    }
-
-                    hover:bg-[#800020]/5
-                  `}
+                  key={person.personId}
+                  className={`border-b border-gray-100 transition-colors ${
+                    selected
+                      ? "bg-[#800020]/5"
+                      : index % 2 === 0
+                        ? "bg-white"
+                        : "bg-gray-50/70"
+                  } hover:bg-[#800020]/5`}
                 >
-                  {/* SELECT */}
                   {selectMode && (
-                    <td
-                      className="
-                        sticky
-                        left-0
-                        z-10
-                        border-r
-                        border-gray-100
-                        px-3
-                        py-3
-                        text-center
-                        backdrop-blur-sm
-                      "
-                    >
-                      {p.status < 4 && (
+                    <td className="sticky left-0 z-10 border-r border-gray-100 px-3 py-3 text-center backdrop-blur-sm">
+                      {person.status < 4 && (
                         <input
                           type="checkbox"
                           checked={selected}
                           onChange={() =>
-                            toggleSelect(
-                              p.personId,
-                              p.status,
-                            )
+                            toggleSelect(person.personId, person.status)
                           }
-                          className="
-                            h-4
-                            w-4
-                            cursor-pointer
-                            accent-[#800020]
-                          "
+                          className="h-4 w-4 cursor-pointer accent-[#800020]"
+                          aria-label={`เลือก ${person.fullName || person.personId}`}
                         />
                       )}
                     </td>
                   )}
 
-                  {/* NUMBER */}
                   <td className="px-3 py-4 text-center text-xs font-semibold text-gray-500">
-                    {i + 1}
+                    {index + 1}
                   </td>
 
-                  {/* NAME */}
                   <td className="px-4 py-4 text-left">
                     <div className="max-w-[190px]">
                       <p className="break-words text-sm font-bold leading-5 text-gray-900">
-                        {p.fullName || "-"}
+                        {person.fullName || "-"}
                       </p>
 
                       <p className="mt-1 text-[9px] text-gray-400">
-                        ID: {p.personId || "-"}
+                        ID: {person.personId || "-"}
                       </p>
                     </div>
                   </td>
 
-                  {/* PURPOSE */}
-                  <td
-                    className="
-                      max-w-[230px]
-                      whitespace-normal
-                      break-words
-                      px-4
-                      py-4
-                      text-left
-                      text-xs
-                      leading-5
-                      text-gray-700
-                    "
-                  >
-                    {p.purpose || "-"}
+                  <td className="max-w-[230px] whitespace-normal break-words px-4 py-4 text-left text-xs leading-5 text-gray-700">
+                    {person.purpose || "-"}
                   </td>
 
-                  {/* AGENCY */}
-                  <td
-                    className="
-                      max-w-[210px]
-                      whitespace-normal
-                      break-words
-                      px-4
-                      py-4
-                      text-left
-                      text-xs
-                      leading-5
-                      text-gray-700
-                    "
-                  >
-                    {p.requestingAgency || "-"}
+                  <td className="max-w-[210px] whitespace-normal break-words px-4 py-4 text-left text-xs leading-5 text-gray-700">
+                    {person.requestingAgency || "-"}
                   </td>
 
-                  {/* BOOK */}
                   <td className="px-3 py-4 text-center text-sm font-bold text-gray-800">
-                    {p.receiptBookNo || "-"}
+                    {person.receiptBookNo || "-"}
                   </td>
 
-                  {/* RECEIPT NO */}
                   <td className="px-3 py-4 text-center text-sm font-bold text-gray-800">
-                    {p.receiptNo || "-"}
+                    {person.receiptNo || "-"}
                   </td>
 
-                  {/* DATE */}
                   <td className="whitespace-nowrap px-3 py-4 text-center text-xs font-semibold text-gray-600">
-                    {formatThaiDate(p.receiptDate)}
+                    {formatThaiDate(person.receiptDate)}
                   </td>
 
-                  {/* STATUS */}
                   <td className="px-4 py-4 text-center">
                     <div className="inline-flex min-w-[150px] justify-center">
-                      {renderStatus(p.status)}
+                      {renderStatus(person.status)}
                     </div>
                   </td>
 
-                  {/* PRIORITY */}
                   <td className="px-3 py-4 text-center">
-                    {renderPriority(p.priority ?? 0)}
+                    {renderPriority(person.priority ?? 0)}
                   </td>
 
-                  {/* RETURN DATE */}
                   {hasReturnDate && (
                     <td className="whitespace-nowrap px-3 py-4 text-center text-xs font-semibold text-red-600">
-                      {p.status === 4
-                        ? formatThaiDate(
-                            p.returnDate,
-                          )
+                      {person.status === 4
+                        ? formatThaiDate(person.returnDate)
                         : "-"}
                     </td>
                   )}
 
-                  {/* DELETE DATE */}
                   {hasDeleteDate && (
                     <td className="whitespace-nowrap px-3 py-4 text-center text-xs font-semibold text-red-600">
-                      {p.status === 4 && p.deleteAt
-                        ? formatThaiDate(
-                            p.deleteAt,
-                          )
+                      {person.status === 4 && person.deleteAt
+                        ? formatThaiDate(person.deleteAt)
                         : "-"}
                     </td>
                   )}
 
-                  {/* VIEW */}
                   <td className="px-2 py-4 text-center">
                     <button
                       type="button"
-                      onClick={() =>
-                        navigate(
-                          `/person/${p.personId}`,
-                        )
-                      }
+                      onClick={() => navigate(`/person/${person.personId}`)}
                       title="ดูข้อมูล"
-                      className="
-                        inline-flex
-                        h-9
-                        w-9
-                        items-center
-                        justify-center
-                        rounded-lg
-                        bg-blue-50
-                        text-blue-600
-                        transition
-                        hover:bg-blue-100
-                        active:scale-95
-                      "
+                      aria-label="ดูข้อมูล"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition hover:bg-blue-100 active:scale-95"
                     >
                       <Icon type="eye" />
                     </button>
                   </td>
 
-                  {/* PDF */}
                   <td className="px-2 py-4 text-center">
                     <button
                       type="button"
-                      onClick={() => exportPDF(p)}
+                      onClick={() => exportPDF(person)}
                       title="PDF แบบพิมพ์มือ"
-                      className="
-                        inline-flex
-                        h-9
-                        items-center
-                        justify-center
-                        gap-1.5
-                        rounded-lg
-                        bg-indigo-50
-                        px-3
-                        text-[10px]
-                        font-bold
-                        text-indigo-700
-                        transition
-                        hover:bg-indigo-100
-                        active:scale-95
-                      "
+                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-indigo-50 px-3 text-[10px] font-bold text-indigo-700 transition hover:bg-indigo-100 active:scale-95"
                     >
                       <Icon type="pdf" />
                       PDF
                     </button>
                   </td>
 
-                  {/* EDIT */}
                   <td className="px-2 py-4 text-center">
-                    {p.status < 4 ? (
+                    {person.status < 4 ? (
                       <button
                         type="button"
                         onClick={() =>
-                          navigate(
-                            `/person/edit/${p.personId}`,
-                          )
+                          navigate(`/person/edit/${person.personId}`)
                         }
                         title="แก้ไข"
-                        className="
-                          inline-flex
-                          h-9
-                          w-9
-                          items-center
-                          justify-center
-                          rounded-lg
-                          bg-amber-50
-                          text-amber-600
-                          transition
-                          hover:bg-amber-100
-                          active:scale-95
-                        "
+                        aria-label="แก้ไข"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600 transition hover:bg-amber-100 active:scale-95"
                       >
                         <Icon type="edit" />
                       </button>
                     ) : (
-                      <span className="text-xs text-gray-300">
-                        -
-                      </span>
+                      <span className="text-xs text-gray-300">-</span>
                     )}
                   </td>
 
-                  {/* DELETE */}
                   <td className="px-2 py-4 text-center">
                     <button
                       type="button"
-                      onClick={() => handleDelete(p)}
+                      onClick={() => handleDelete(person)}
                       title="ลบ"
-                      className="
-                        inline-flex
-                        h-9
-                        w-9
-                        items-center
-                        justify-center
-                        rounded-lg
-                        bg-red-50
-                        text-red-600
-                        transition
-                        hover:bg-red-100
-                        active:scale-95
-                      "
+                      aria-label="ลบ"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600 transition hover:bg-red-100 active:scale-95"
                     >
                       <Icon type="delete" />
                     </button>
                   </td>
 
-                  {/* SEND */}
                   {hasSendButton && (
                     <td className="px-2 py-4 text-center">
-                      {p.status < 4 ? (
+                      {person.status < 4 ? (
                         <button
                           type="button"
-                          onClick={() =>
-                            handleUpdateStatus(p)
-                          }
-                          className={`
-                            inline-flex
-                            min-w-[120px]
-                            items-center
-                            justify-center
-                            rounded-lg
-                            px-3
-                            py-2
-                            text-[10px]
-                            font-bold
-                            transition
-                            active:scale-[0.98]
-
-                            ${getStatusButtonStyle(
-                              p.status,
-                            )}
-                          `}
+                          onClick={() => handleUpdateStatus(person)}
+                          className={`inline-flex min-w-[120px] items-center justify-center rounded-lg px-3 py-2 text-[10px] font-bold transition active:scale-[0.98] ${getStatusButtonStyle(
+                            person.status,
+                          )}`}
                         >
-                          {getStatusButton(
-                            p.status,
-                          )}
+                          {getStatusButton(person.status)}
                         </button>
                       ) : (
-                        <span className="text-xs text-gray-300">
-                          -
-                        </span>
+                        <span className="text-xs text-gray-300">-</span>
                       )}
                     </td>
                   )}
@@ -722,25 +444,7 @@ export default function PersonTable({
         </table>
       </div>
 
-      {/* =====================================================
-          FOOTER
-      ===================================================== */}
-      <div
-        className="
-          flex
-          flex-col
-          gap-2
-          border-t
-          border-gray-100
-          bg-gray-50
-          px-4
-          py-3
-
-          min-[768px]:flex-row
-          min-[768px]:items-center
-          min-[768px]:justify-between
-        "
-      >
+      <div className="flex flex-col gap-2 border-t border-gray-100 bg-gray-50 px-4 py-3 min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between">
         <p className="text-[10px] text-gray-400">
           แสดงข้อมูลทั้งหมด{" "}
           <span className="font-bold text-gray-600">

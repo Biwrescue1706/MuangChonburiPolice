@@ -6,7 +6,7 @@ import {
 } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
-interface GeneratePDFData {
+export interface GeneratePDFData {
   fingerprintDate?: string | number | null;
   organizationName?: string | number | null;
   prefix?: string | null;

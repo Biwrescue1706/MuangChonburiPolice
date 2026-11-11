@@ -11,16 +11,30 @@ import {
   getStatusButtonStyle,
 } from "../../utils/personHelper";
 
+interface Person {
+  personId: string;
+  fullName?: string | null;
+  purpose?: string | null;
+  requestingAgency?: string | null;
+  receiptBookNo?: string | number | null;
+  receiptNo?: string | number | null;
+  receiptDate?: string | null;
+  status: number;
+  priority?: number | null;
+  returnDate?: string | null;
+  deleteAt?: string | null;
+}
+
 interface Props {
-  persons: any[];
+  persons: Person[];
   loading: boolean;
   selectMode: boolean;
   selectedIds: string[];
   toggleSelect: (id: string, status: number) => void;
   handleSelectAll: () => void;
-  handleDelete: (p: any) => void;
-  handleUpdateStatus: (p: any) => void;
-  handleExportPDF: (p: any) => void;
+  handleDelete: (person: Person) => void;
+  handleUpdateStatus: (person: Person) => void;
+  handleExportPDF: (person: Person) => void;
 }
 
 function ActionButton({
@@ -61,9 +75,16 @@ export default function PersonTable({
 }: Props) {
   const navigate = useNavigate();
 
-  const hasReturnDate = persons.some((p) => p.status === 4);
-  const hasDeleteDate = persons.some((p) => p.status === 4 && p.deleteAt);
-  const hasSendButton = persons.some((p) => p.status < 4);
+  const selectablePersons = persons.filter((person) => person.status < 4);
+  const selectedSelectableCount = selectablePersons.filter((person) =>
+    selectedIds.includes(person.personId),
+  ).length;
+
+  const hasReturnDate = persons.some((person) => person.status === 4);
+  const hasDeleteDate = persons.some(
+    (person) => person.status === 4 && person.deleteAt,
+  );
+  const hasSendButton = persons.some((person) => person.status < 4);
 
   return (
     <div className="w-full overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-lg">
@@ -84,11 +105,11 @@ export default function PersonTable({
                 <th className="w-[4%] border border-gray-700 px-2 py-3">
                   <input
                     type="checkbox"
+                    aria-label="เลือกข้อมูลทั้งหมด"
                     className="h-4 w-4 cursor-pointer accent-blue-600"
                     checked={
-                      persons.length > 0 &&
-                      selectedIds.length ===
-                        persons.filter((p) => p.status < 4).length
+                      selectablePersons.length > 0 &&
+                      selectedSelectableCount === selectablePersons.length
                     }
                     onChange={handleSelectAll}
                   />
@@ -143,7 +164,9 @@ export default function PersonTable({
                 ดูรายละเอียด
               </th>
 
-              <th className="w-[5%] border border-gray-700 px-2 py-3">PDF แบบ พิมพ์มือ</th>
+              <th className="w-[5%] border border-gray-700 px-2 py-3">
+                PDF แบบพิมพ์มือ
+              </th>
 
               {hasSendButton && (
                 <th className="w-[5%] border border-gray-700 px-2 py-3">
@@ -190,99 +213,105 @@ export default function PersonTable({
             )}
 
             {!loading &&
-              persons.map((p, i) => (
-                <tr key={p.personId} className="transition hover:bg-blue-50">
+              persons.map((person, index) => (
+                <tr
+                  key={person.personId}
+                  className="transition hover:bg-blue-50"
+                >
                   {selectMode && (
                     <td className="border border-gray-200 px-2 py-3 text-center">
-                      {p.status < 4 && (
+                      {person.status < 4 && (
                         <input
                           type="checkbox"
+                          aria-label={`เลือก ${person.fullName || "รายการนี้"}`}
                           className="h-4 w-4 cursor-pointer accent-blue-600"
-                          checked={selectedIds.includes(p.personId)}
-                          onChange={() => toggleSelect(p.personId, p.status)}
+                          checked={selectedIds.includes(person.personId)}
+                          onChange={() =>
+                            toggleSelect(person.personId, person.status)
+                          }
                         />
                       )}
                     </td>
                   )}
 
                   <td className="border border-gray-200 px-2 py-3 text-center font-semibold text-gray-600">
-                    {i + 1}
+                    {index + 1}
                   </td>
 
                   <td className="border border-gray-200 px-2 py-3 text-left font-semibold text-gray-800">
                     <div
                       className="line-clamp-2 break-words"
-                      title={p.fullName || ""}
+                      title={person.fullName || ""}
                     >
-                      {p.fullName || "-"}
+                      {person.fullName || "-"}
                     </div>
                   </td>
 
                   <td className="border border-gray-200 px-2 py-3 text-left">
                     <div
                       className="line-clamp-2 break-words"
-                      title={p.purpose || ""}
+                      title={person.purpose || ""}
                     >
-                      {p.purpose || "-"}
+                      {person.purpose || "-"}
                     </div>
                   </td>
 
                   <td className="border border-gray-200 px-2 py-3 text-left">
                     <div
                       className="line-clamp-2 break-words"
-                      title={p.requestingAgency || ""}
+                      title={person.requestingAgency || ""}
                     >
-                      {p.requestingAgency || "-"}
+                      {person.requestingAgency || "-"}
                     </div>
                   </td>
 
                   <td className="border border-gray-200 px-2 py-3 text-center font-semibold">
-                    {p.receiptBookNo || "-"}
+                    {person.receiptBookNo || "-"}
                   </td>
 
                   <td className="border border-gray-200 px-2 py-3 text-center font-semibold">
-                    {p.receiptNo || "-"}
+                    {person.receiptNo || "-"}
                   </td>
 
                   <td className="border border-gray-200 px-2 py-3 text-center">
-                    {formatThaiDate(p.receiptDate)}
+                    {formatThaiDate(person.receiptDate)}
                   </td>
 
                   <td className="border border-gray-200 px-2 py-3 text-center">
-                    {renderStatus(p.status)}
+                    {renderStatus(person.status)}
                   </td>
 
                   <td className="border border-gray-200 px-2 py-3 text-center">
-                    {renderPriority(p.priority ?? 0)}
+                    {renderPriority(person.priority ?? 0)}
                   </td>
 
                   {hasReturnDate && (
                     <td className="border border-gray-200 px-2 py-3 text-center">
-                      {p.status === 4 ? formatThaiDate(p.returnDate) : "-"}
+                      {person.status === 4
+                        ? formatThaiDate(person.returnDate)
+                        : "-"}
                     </td>
                   )}
 
                   {hasDeleteDate && (
                     <td className="border border-gray-200 px-2 py-3 text-center">
-                      {p.status === 4 && p.deleteAt
-                        ? formatThaiDate(p.deleteAt)
+                      {person.status === 4 && person.deleteAt
+                        ? formatThaiDate(person.deleteAt)
                         : "-"}
                     </td>
                   )}
 
-                  {/* ดูรายละเอียด */}
                   <td className="border border-gray-200 px-2 py-3 text-center">
                     <div className="flex justify-center">
                       <ActionButton
                         icon={<Eye size={18} />}
                         label="ดูรายละเอียด"
                         className="bg-sky-500 hover:bg-sky-600"
-                        onClick={() => navigate(`/person/${p.personId}`)}
+                        onClick={() => navigate(`/person/${person.personId}`)}
                       />
                     </div>
                   </td>
 
-                  {/* PDF */}
                   <td className="border border-gray-200 px-2 py-3 text-center">
                     <div className="flex justify-center">
                       <ActionButton
@@ -290,8 +319,8 @@ export default function PersonTable({
                         label="PDF แบบพิมพ์มือ"
                         className="bg-blue-600 hover:bg-blue-700"
                         onClick={() => {
-                          if (p.status < 1) {
-                            Swal.fire({
+                          if (person.status < 1) {
+                            void Swal.fire({
                               icon: "warning",
                               title: "ไม่สามารถดำเนินการได้",
                               text: "กรุณากดปุ่ม 'เตรียมเอกสารส่ง พฐ' ก่อน",
@@ -300,23 +329,22 @@ export default function PersonTable({
                             return;
                           }
 
-                          handleExportPDF(p);
+                          handleExportPDF(person);
                         }}
                       />
                     </div>
                   </td>
 
-                  {/* แก้ไข */}
                   {hasSendButton && (
                     <td className="border border-gray-200 px-2 py-3 text-center">
                       <div className="flex justify-center">
-                        {p.status < 4 ? (
+                        {person.status < 4 ? (
                           <ActionButton
                             icon={<Pencil size={18} />}
                             label="แก้ไข"
                             className="bg-amber-500 hover:bg-amber-600"
                             onClick={() =>
-                              navigate(`/person/edit/${p.personId}`)
+                              navigate(`/person/edit/${person.personId}`)
                             }
                           />
                         ) : (
@@ -326,33 +354,31 @@ export default function PersonTable({
                     </td>
                   )}
 
-                  {/* ลบ */}
                   <td className="border border-gray-200 px-2 py-3 text-center">
                     <div className="flex justify-center">
                       <ActionButton
                         icon={<Trash2 size={18} />}
                         label="ลบ"
                         className="bg-red-600 hover:bg-red-700"
-                        onClick={() => handleDelete(p)}
+                        onClick={() => handleDelete(person)}
                       />
                     </div>
                   </td>
 
-                  {/* ส่ง */}
                   {hasSendButton && (
                     <td className="border border-gray-200 px-2 py-3 text-center">
                       <div className="flex justify-center">
-                        {p.status < 4 ? (
+                        {person.status < 4 ? (
                           <button
                             type="button"
                             className={`flex min-w-[62px] flex-col items-center justify-center gap-1 rounded-lg px-2 py-2 text-xs font-bold text-white shadow-sm transition hover:brightness-95 active:scale-95 ${getStatusButtonStyle(
-                              p.status,
+                              person.status,
                             )}`}
-                            onClick={() => handleUpdateStatus(p)}
+                            onClick={() => handleUpdateStatus(person)}
                           >
                             <Send size={18} />
                             <span className="whitespace-nowrap text-[10px] leading-tight">
-                              {getStatusButton(p.status)}
+                              {getStatusButton(person.status)}
                             </span>
                           </button>
                         ) : null}

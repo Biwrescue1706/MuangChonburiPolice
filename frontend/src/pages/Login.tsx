@@ -1,7 +1,7 @@
-
+//src/pages/Login.tsx
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import { toast } from "../utils/toast";
 
 export default function Login() {
@@ -32,9 +32,7 @@ export default function Login() {
       await login(username.trim(), password);
     } catch (err: unknown) {
       const errorMessage =
-        typeof err === "object" &&
-        err !== null &&
-        "response" in err
+        typeof err === "object" && err !== null && "response" in err
           ? (
               err as {
                 response?: {
@@ -46,10 +44,7 @@ export default function Login() {
             ).response?.data?.error
           : undefined;
 
-      toast(
-        "error",
-        errorMessage || "เข้าสู่ระบบไม่สำเร็จ"
-      );
+      toast("error", errorMessage || "เข้าสู่ระบบไม่สำเร็จ");
     } finally {
       setLoading(false);
     }
@@ -58,9 +53,7 @@ export default function Login() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f4f5f6] px-4 py-8 sm:px-6">
       <div className="w-full max-w-[1000px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_12px_40px_rgba(25,25,25,0.07)]">
-
         <div className="grid min-h-[580px] grid-cols-1 min-[900px]:grid-cols-[0.92fr_1.08fr]">
-
           {/* Information panel */}
           <section className="relative hidden overflow-hidden bg-[#71001d] p-10 text-white min-[900px]:flex min-[900px]:flex-col min-[900px]:justify-between min-[1100px]:p-12">
             <div className="pointer-events-none absolute -right-28 -top-24 h-80 w-80 rounded-full border border-white/[0.10]" />
@@ -100,9 +93,7 @@ export default function Login() {
               </p>
 
               <div className="mt-8 border-t border-white/15 pt-5">
-                <p className="text-sm font-medium">
-                  งานนโยบายและแผน
-                </p>
+                <p className="text-sm font-medium">งานนโยบายและแผน</p>
                 <p className="mt-1 text-xs text-white/60">
                   ระบบบริหารจัดการข้อมูลและเอกสาร
                 </p>
@@ -116,7 +107,6 @@ export default function Login() {
 
           {/* Login panel */}
           <section className="flex flex-col justify-center px-6 py-9 sm:px-10 sm:py-12 min-[1100px]:px-14">
-
             {/* Mobile logo */}
             <div className="mb-8 flex items-center gap-3 min-[900px]:hidden">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white">
@@ -152,7 +142,6 @@ export default function Login() {
             </div>
 
             <form onSubmit={submit} className="space-y-5">
-
               {/* Username */}
               <div>
                 <label
@@ -328,9 +317,7 @@ export default function Login() {
               <p className="text-xs leading-6 text-gray-400">
                 ระบบสำหรับการปฏิบัติงานภายในหน่วยงาน
               </p>
-              <p className="mt-1 text-xs text-gray-400">
-                สภ.เมืองชลบุรี
-              </p>
+              <p className="mt-1 text-xs text-gray-400">สภ.เมืองชลบุรี</p>
             </div>
           </section>
         </div>

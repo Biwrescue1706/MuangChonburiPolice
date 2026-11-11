@@ -1,7 +1,6 @@
-// src/components/Nav.tsx
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useEffect, useState } from "react";
+import { useAuth } from "../context/useAuth";
+import { useState } from "react";
 
 type MenuChild = {
   path: string;
@@ -100,13 +99,7 @@ const morePaths = [
   "/settings",
 ];
 
-function MenuIcon({
-  type,
-  size = 21,
-}: {
-  type: string;
-  size?: number;
-}) {
+function MenuIcon({ type, size = 21 }: { type: string; size?: number }) {
   const common = {
     width: size,
     height: size,
@@ -260,36 +253,14 @@ export default function Nav() {
   const location = useLocation();
 
   const [openMenus, setOpenMenus] = useState<string[]>([]);
-  const [selectedMenu, setSelectedMenu] =
-    useState<MenuItem | null>(null);
+  const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null);
 
-  const isActive = (path: string) =>
-    location.pathname === path;
+  const isActive = (path: string) => location.pathname === path;
 
   const hasActiveChild = (item: MenuItem) =>
-    item.children?.some(
-      (child) => location.pathname === child.path,
-    ) ?? false;
+    item.children?.some((child) => location.pathname === child.path) ?? false;
 
   const isMoreActive = morePaths.includes(location.pathname);
-
-  useEffect(() => {
-    const activeParent = menuItems.find(
-      (item) => item.children && hasActiveChild(item),
-    );
-
-    if (activeParent) {
-      setOpenMenus((prev) =>
-        prev.includes(activeParent.label)
-          ? prev
-          : [...prev, activeParent.label],
-      );
-    }
-  }, [location.pathname]);
-
-  useEffect(() => {
-    setSelectedMenu(null);
-  }, [location.pathname]);
 
   const go = (path: string) => {
     setSelectedMenu(null);
@@ -314,9 +285,7 @@ export default function Nav() {
       return;
     }
 
-    const item = menuItems.find(
-      (menu) => menu.label === label,
-    );
+    const item = menuItems.find((menu) => menu.label === label);
 
     if (item) {
       setSelectedMenu(item);
@@ -332,9 +301,7 @@ export default function Nav() {
   const shortText = (text: string = "", max = 18) => {
     if (!text) return "-";
 
-    return text.length > max
-      ? `${text.substring(0, max)}...`
-      : text;
+    return text.length > max ? `${text.substring(0, max)}...` : text;
   };
 
   const mobileMenuItems = menuItems.filter(
@@ -389,9 +356,7 @@ export default function Nav() {
       );
     }
 
-    const active = item.path
-      ? isActive(item.path)
-      : hasActiveChild(item);
+    const active = item.path ? isActive(item.path) : hasActiveChild(item);
 
     return (
       <button
@@ -406,9 +371,7 @@ export default function Nav() {
       >
         <span
           className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
-            active
-              ? "bg-[#800020] text-white"
-              : "bg-gray-100 text-gray-600"
+            active ? "bg-[#800020] text-white" : "bg-gray-100 text-gray-600"
           }`}
         >
           <MenuIcon type={item.icon} size={21} />
@@ -430,7 +393,6 @@ export default function Nav() {
 
   return (
     <>
-      {/* Desktop Topbar: tablet and above */}
       <header className="fixed left-0 top-0 z-40 hidden h-[58px] w-full items-center border-b border-white/10 bg-[#800020] text-white shadow-sm min-[768px]:flex">
         <div className="flex h-full w-full items-center pl-[260px] pr-6">
           <button
@@ -473,7 +435,6 @@ export default function Nav() {
         </div>
       </header>
 
-      {/* Desktop Sidebar */}
       <aside className="fixed bottom-0 left-0 top-0 z-30 hidden w-[240px] flex-col border-r border-gray-200 bg-white min-[768px]:flex">
         <button
           type="button"
@@ -506,7 +467,7 @@ export default function Nav() {
           {menuItems.map((item) => {
             if (item.children) {
               const parentActive = hasActiveChild(item);
-              const isOpen = openMenus.includes(item.label);
+              const isOpen = openMenus.includes(item.label) || parentActive;
 
               return (
                 <div key={item.label} className="space-y-1">
@@ -646,7 +607,6 @@ export default function Nav() {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation: below 768px */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] min-[768px]:hidden">
         <div className="mx-auto grid h-[64px] max-w-xl grid-cols-4">
           {[
@@ -675,31 +635,26 @@ export default function Nav() {
 
             if (navItem.path) {
               active = isActive(navItem.path);
-            } else if (navItem.menu === "บุคคลตรวจ") {
+            } else if (
+              navItem.menu === "บุคคลตรวจ" ||
+              navItem.menu === "ส่ง ศพฐ."
+            ) {
               const item = menuItems.find(
-                (menu) => menu.label === "บุคคลตรวจ",
-              );
-              active = item ? hasActiveChild(item) : false;
-            } else if (navItem.menu === "ส่ง ศพฐ.") {
-              const item = menuItems.find(
-                (menu) => menu.label === "ส่ง ศพฐ.",
+                (menu) => menu.label === navItem.menu,
               );
               active = item ? hasActiveChild(item) : false;
             } else {
               active = isMoreActive;
             }
 
-            const sheetOpen =
-              selectedMenu?.label === navItem.menu;
+            const sheetOpen = selectedMenu?.label === navItem.menu;
 
             return (
               <button
                 key={navItem.label}
                 type="button"
                 aria-label={navItem.label}
-                aria-expanded={
-                  navItem.menu ? sheetOpen : undefined
-                }
+                aria-expanded={navItem.menu ? sheetOpen : undefined}
                 onClick={() => {
                   if (navItem.path) {
                     go(navItem.path);
@@ -708,9 +663,7 @@ export default function Nav() {
                   }
                 }}
                 className={`relative flex flex-col items-center justify-center gap-1 transition-colors ${
-                  active || sheetOpen
-                    ? "text-[#800020]"
-                    : "text-gray-500"
+                  active || sheetOpen ? "text-[#800020]" : "text-gray-500"
                 }`}
               >
                 {(active || sheetOpen) && (
@@ -719,9 +672,7 @@ export default function Nav() {
 
                 <span
                   className={`flex h-8 w-11 items-center justify-center rounded-xl ${
-                    active || sheetOpen
-                      ? "bg-[#800020]/[0.07]"
-                      : ""
+                    active || sheetOpen ? "bg-[#800020]/[0.07]" : ""
                   }`}
                 >
                   <MenuIcon type={navItem.icon} size={21} />
@@ -729,9 +680,7 @@ export default function Nav() {
 
                 <span
                   className={`text-[10px] ${
-                    active || sheetOpen
-                      ? "font-bold"
-                      : "font-medium"
+                    active || sheetOpen ? "font-bold" : "font-medium"
                   }`}
                 >
                   {navItem.label}
@@ -742,7 +691,6 @@ export default function Nav() {
         </div>
       </nav>
 
-      {/* Mobile Menu Selection Sheet */}
       {selectedMenu && (
         <div className="fixed inset-0 z-[70] min-[768px]:hidden">
           <button
@@ -809,7 +757,6 @@ export default function Nav() {
         </div>
       )}
 
-      {/* Page Content */}
       <main className="min-h-screen pb-[calc(80px+env(safe-area-inset-bottom))] min-[768px]:ml-[240px] min-[768px]:pb-0 min-[768px]:pt-[58px]">
         <Outlet />
       </main>

@@ -57,14 +57,11 @@ export default function ForgotCheck() {
 
   return (
     <div className="min-h-screen overflow-hidden bg-gradient-to-br from-[#250008] via-[#5c0017] to-[#800020]">
-
-      {/* =====================================================
+      {/* 
           TOP HEADER
-      ===================================================== */}
+       */}
       <header className="fixed left-0 top-0 z-50 w-full border-b border-white/10 bg-[#700019] shadow-lg">
-
         <div className="relative mx-auto flex h-[64px] w-full max-w-[1200px] items-center px-4">
-
           {/* Back */}
           <button
             type="button"
@@ -103,8 +100,8 @@ export default function ForgotCheck() {
 
           {/* Center Logo */}
           <div className="absolute left-1/2 flex -translate-x-1/2 items-center">
-
-            <div className="
+            <div
+              className="
               flex
               h-10
               w-10
@@ -113,7 +110,8 @@ export default function ForgotCheck() {
               rounded-full
               bg-white
               shadow-md
-            ">
+            "
+            >
               <img
                 src="/muangchonburi.webp"
                 alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
@@ -123,7 +121,6 @@ export default function ForgotCheck() {
 
             {/* Header Text */}
             <div className="ml-2 hidden min-[480px]:block">
-
               <p className="whitespace-nowrap text-sm font-bold leading-tight text-white">
                 งานพิมพ์มือตรวจประวัติ
               </p>
@@ -131,18 +128,16 @@ export default function ForgotCheck() {
               <p className="mt-0.5 text-[10px] text-white/70">
                 งานนโยบายและแผน
               </p>
-
             </div>
-
           </div>
-
         </div>
       </header>
 
-      {/* =====================================================
+      {/* 
           MAIN
-      ===================================================== */}
-      <main className="
+       */}
+      <main
+        className="
         flex
         min-h-screen
         items-center
@@ -154,12 +149,13 @@ export default function ForgotCheck() {
         min-[480px]:px-6
         min-[768px]:px-8
         min-[1200px]:px-10
-      ">
-
+      "
+      >
         {/* =================================================
             CARD
         ================================================= */}
-        <section className="
+        <section
+          className="
           w-full
           max-w-[440px]
           overflow-hidden
@@ -172,12 +168,13 @@ export default function ForgotCheck() {
           min-[768px]:max-w-[500px]
 
           min-[1200px]:max-w-[540px]
-        ">
-
+        "
+        >
           {/* =================================================
               TOP BURGUNDY
           ================================================= */}
-          <div className="
+          <div
+            className="
             relative
             overflow-hidden
             bg-gradient-to-br
@@ -191,10 +188,11 @@ export default function ForgotCheck() {
 
             min-[480px]:px-10
             min-[768px]:pb-16
-          ">
-
+          "
+          >
             {/* Decoration */}
-            <div className="
+            <div
+              className="
               pointer-events-none
               absolute
               -right-24
@@ -204,9 +202,11 @@ export default function ForgotCheck() {
               rounded-full
               border
               border-white/10
-            " />
+            "
+            />
 
-            <div className="
+            <div
+              className="
               pointer-events-none
               absolute
               -bottom-36
@@ -216,10 +216,12 @@ export default function ForgotCheck() {
               rounded-full
               border
               border-white/10
-            " />
+            "
+            />
 
             {/* Logo */}
-            <div className="
+            <div
+              className="
               relative
               mx-auto
               flex
@@ -238,8 +240,8 @@ export default function ForgotCheck() {
 
               min-[768px]:h-[125px]
               min-[768px]:w-[125px]
-            ">
-
+            "
+            >
               <img
                 src="/muangchonburi.webp"
                 alt="ตราสถานีตำรวจภูธรเมืองชลบุรี"
@@ -255,11 +257,11 @@ export default function ForgotCheck() {
                   min-[768px]:w-[98px]
                 "
               />
-
             </div>
 
             {/* Small Title */}
-            <p className="
+            <p
+              className="
               relative
               mt-7
               text-xs
@@ -267,12 +269,14 @@ export default function ForgotCheck() {
               uppercase
               tracking-[0.2em]
               text-white/70
-            ">
+            "
+            >
               Forgot Password
             </p>
 
             {/* Main Title */}
-            <h1 className="
+            <h1
+              className="
               relative
               mt-3
               text-2xl
@@ -281,12 +285,14 @@ export default function ForgotCheck() {
 
               min-[480px]:text-3xl
               min-[768px]:text-4xl
-            ">
+            "
+            >
               ตรวจสอบบัญชีผู้ใช้
             </h1>
 
             {/* Description */}
-            <p className="
+            <p
+              className="
               relative
               mx-auto
               mt-3
@@ -296,18 +302,19 @@ export default function ForgotCheck() {
               text-white/75
 
               min-[480px]:text-base
-            ">
+            "
+            >
               กรุณากรอก Username เพื่อค้นหาบัญชี
               <br />
               และดำเนินการตั้งรหัสผ่านใหม่
             </p>
-
           </div>
 
           {/* =================================================
               FORM AREA
           ================================================= */}
-          <div className="
+          <div
+            className="
             relative
             -mt-7
             rounded-t-[30px]
@@ -320,10 +327,9 @@ export default function ForgotCheck() {
             min-[480px]:pb-10
 
             min-[768px]:px-10
-          ">
-
+          "
+          >
             <form onSubmit={checkUser}>
-
               {/* Username Label */}
               <label
                 htmlFor="username"
@@ -342,9 +348,9 @@ export default function ForgotCheck() {
 
               {/* Input */}
               <div className="relative w-full">
-
                 {/* Icon */}
-                <div className="
+                <div
+                  className="
                   pointer-events-none
                   absolute
                   left-4
@@ -357,8 +363,8 @@ export default function ForgotCheck() {
                   items-center
                   justify-center
                   text-[#800020]
-                ">
-
+                "
+                >
                   <svg
                     width="21"
                     height="21"
@@ -372,7 +378,6 @@ export default function ForgotCheck() {
                     <circle cx="12" cy="8" r="3.5" />
                     <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
                   </svg>
-
                 </div>
 
                 <input
@@ -409,7 +414,6 @@ export default function ForgotCheck() {
                     focus:ring-[#800020]/10
                   "
                 />
-
               </div>
 
               {/* Submit */}
@@ -445,10 +449,10 @@ export default function ForgotCheck() {
                   disabled:opacity-60
                 "
               >
-
                 {loading ? (
                   <>
-                    <span className="
+                    <span
+                      className="
                       h-5
                       w-5
                       animate-spin
@@ -456,14 +460,13 @@ export default function ForgotCheck() {
                       border-2
                       border-white/30
                       border-t-white
-                    " />
-
+                    "
+                    />
                     กำลังตรวจสอบ...
                   </>
                 ) : (
                   <>
                     ตรวจสอบบัญชี
-
                     <svg
                       width="20"
                       height="20"
@@ -479,9 +482,7 @@ export default function ForgotCheck() {
                     </svg>
                   </>
                 )}
-
               </button>
-
             </form>
 
             {/* Back Login */}
@@ -505,7 +506,6 @@ export default function ForgotCheck() {
                 min-[480px]:text-base
               "
             >
-
               <svg
                 width="18"
                 height="18"
@@ -519,14 +519,10 @@ export default function ForgotCheck() {
                 <path d="M19 12H5" />
                 <path d="m12 19-7-7 7-7" />
               </svg>
-
               กลับหน้าเข้าสู่ระบบ
-
             </button>
           </div>
-
         </section>
-
       </main>
     </div>
   );

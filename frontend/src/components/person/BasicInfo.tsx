@@ -1,48 +1,92 @@
 // src/components/person/BasicInfo.tsx
 
+import type { ChangeEvent } from "react";
+
+interface BasicInfoForm {
+  prefix?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  birthDay?: string | number | null;
+  birthMonth?: string | number | null;
+  birthYear?: string | number | null;
+  fingerprintDay?: string | number | null;
+  fingerprintMonth?: string | number | null;
+  fingerprintYear?: string | number | null;
+}
+
+interface BasicInfoProps {
+  form: BasicInfoForm;
+  handleChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  filteredDays: (string | number)[];
+  months: (string | number)[];
+  years: (string | number)[];
+}
+
 export default function BasicInfo({
   form,
   handleChange,
   filteredDays,
   months,
   years,
-}: any) {
+}: BasicInfoProps) {
   const inputClass =
-    "h-11 w-full rounded-xl border border-white/20 bg-white px-3 text-sm font-medium text-gray-800 outline-none transition-all duration-200 placeholder:text-gray-400 hover:border-white/50 focus:border-white focus:ring-4 focus:ring-white/20";
+    "h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-800 outline-none transition-all duration-200 placeholder:font-normal placeholder:text-slate-400 hover:border-[#800020]/50 hover:bg-white focus:border-[#800020] focus:bg-white focus:ring-4 focus:ring-[#800020]/10";
 
-  const labelClass =
-    "mb-1.5 block text-xs font-bold text-white";
+  const labelClass = "mb-2 block text-sm font-bold text-slate-700";
 
   const cardClass =
-    "overflow-hidden rounded-2xl border border-[#800020] bg-[#800020] shadow-lg shadow-[#800020]/15";
+    "overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.05)] transition-shadow duration-300 hover:shadow-[0_8px_28px_rgba(15,23,42,0.09)]";
 
   const headerClass =
-    "flex items-center gap-3 border-b border-white/10 bg-[#70001c] px-5 py-4";
+    "flex items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-white via-slate-50 to-slate-100/70 px-5 py-4";
 
-  const iconClass =
-    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white shadow-sm";
+  const sectionTitleClass = "text-base font-extrabold tracking-tight text-slate-800";
+
+  const sectionDescriptionClass = "mt-0.5 text-xs font-medium text-slate-500";
+
+  const iconBox = (color: string) =>
+    `flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${color} shadow-sm`;
+
+  const fieldBox = "rounded-xl p-1 transition-colors";
+
+  const requiredMark = <span className="ml-1 text-rose-500">*</span>;
 
   return (
-    <div className="space-y-5">
-      {/* ข้อมูลบุคคล */}
-      <section className={cardClass}>
+    <div className="space-y-6">
+      <section className={`${cardClass} border-l-4 border-l-[#800020]`}>
         <div className={headerClass}>
-          <div className={iconClass}>
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <div className={iconBox("bg-[#800020]/10 text-[#800020]")}>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <circle cx="12" cy="8" r="3.5" />
               <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
             </svg>
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">ข้อมูลบุคคล</h3>
-            <p className="mt-0.5 text-[11px] text-white/60">ข้อมูลเกี่ยวกับบุคคล</p>
+            <h3 className={sectionTitleClass}>ข้อมูลบุคคล</h3>
+            <p className={sectionDescriptionClass}>
+              ข้อมูลชื่อและนามสกุลของบุคคล
+            </p>
           </div>
+          <span className="ml-auto rounded-full bg-[#800020]/10 px-3 py-1 text-[11px] font-bold text-[#800020]">
+            PERSONAL
+          </span>
         </div>
 
-        <div className="p-5">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12">
-            <div className="lg:col-span-2">
-              <label htmlFor="prefix" className={labelClass}>คำนำหน้า</label>
+        <div className="p-5 sm:p-6">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-12">
+            <div className={`${fieldBox} lg:col-span-2`}>
+              <label htmlFor="prefix" className={labelClass}>
+                คำนำหน้า
+              </label>
               <input
                 id="prefix"
                 list="prefix-list"
@@ -60,9 +104,9 @@ export default function BasicInfo({
               </datalist>
             </div>
 
-            <div className="lg:col-span-5">
+            <div className={`${fieldBox} lg:col-span-5`}>
               <label htmlFor="firstName" className={labelClass}>
-                ชื่อ <span className="text-red-300">*</span>
+                ชื่อ{requiredMark}
               </label>
               <input
                 id="firstName"
@@ -75,9 +119,9 @@ export default function BasicInfo({
               />
             </div>
 
-            <div className="lg:col-span-5">
+            <div className={`${fieldBox} lg:col-span-5`}>
               <label htmlFor="lastName" className={labelClass}>
-                นามสกุล <span className="text-red-300">*</span>
+                นามสกุล{requiredMark}
               </label>
               <input
                 id="lastName"
@@ -93,11 +137,19 @@ export default function BasicInfo({
         </div>
       </section>
 
-      {/* วันเดือนปีเกิด */}
-      <section className={cardClass}>
+      <section className={`${cardClass} border-l-4 border-l-blue-500`}>
         <div className={headerClass}>
-          <div className={iconClass}>
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <div className={iconBox("bg-blue-50 text-blue-600")}>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <rect x="4" y="5" width="16" height="15" rx="2" />
               <path d="M8 3v4" />
               <path d="M16 3v4" />
@@ -105,66 +157,77 @@ export default function BasicInfo({
             </svg>
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">วันเดือนปีเกิด</h3>
-            <p className="mt-0.5 text-[11px] text-white/60">ข้อมูลวันเกิดของบุคคล</p>
+            <h3 className={sectionTitleClass}>วันเดือนปีเกิด</h3>
+            <p className={sectionDescriptionClass}>
+              ระบุวัน เดือน และปีเกิดของบุคคล
+            </p>
           </div>
+          <span className="ml-auto rounded-full bg-blue-50 px-3 py-1 text-[11px] font-bold text-blue-600">
+            BIRTH DATE
+          </span>
         </div>
 
-        <div className="p-5">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div>
-              <label htmlFor="birthDay" className={labelClass}>วันเกิด</label>
+        <div className="p-5 sm:p-6">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <div className={fieldBox}>
+              <label htmlFor="birthDay" className={labelClass}>
+                วันเกิด
+              </label>
               <input
                 id="birthDay"
                 list="day-list"
                 name="birthDay"
                 className={inputClass}
-                value={form.birthDay || ""}
+                value={form.birthDay ?? ""}
                 onChange={handleChange}
-                placeholder="วัน"
+                placeholder="เลือกวัน"
                 autoComplete="off"
               />
               <datalist id="day-list">
-                {filteredDays.map((d: any) => (
-                  <option key={d} value={d} />
+                {filteredDays.map((day) => (
+                  <option key={day} value={day} />
                 ))}
               </datalist>
             </div>
 
-            <div>
-              <label htmlFor="birthMonth" className={labelClass}>เดือนเกิด</label>
+            <div className={fieldBox}>
+              <label htmlFor="birthMonth" className={labelClass}>
+                เดือนเกิด
+              </label>
               <input
                 id="birthMonth"
                 list="month-list"
                 name="birthMonth"
                 className={inputClass}
-                value={form.birthMonth || ""}
+                value={form.birthMonth ?? ""}
                 onChange={handleChange}
-                placeholder="เดือน"
+                placeholder="เลือกเดือน"
                 autoComplete="off"
               />
               <datalist id="month-list">
-                {months.map((m: any) => (
-                  <option key={m} value={m} />
+                {months.map((month) => (
+                  <option key={month} value={month} />
                 ))}
               </datalist>
             </div>
 
-            <div>
-              <label htmlFor="birthYear" className={labelClass}>ปีเกิด</label>
+            <div className={fieldBox}>
+              <label htmlFor="birthYear" className={labelClass}>
+                ปีเกิด
+              </label>
               <input
                 id="birthYear"
                 list="year-list"
                 name="birthYear"
                 className={inputClass}
-                value={form.birthYear || ""}
+                value={form.birthYear ?? ""}
                 onChange={handleChange}
                 placeholder="พ.ศ."
                 autoComplete="off"
               />
               <datalist id="year-list">
-                {years.map((y: any) => (
-                  <option key={y} value={y} />
+                {years.map((year) => (
+                  <option key={year} value={year} />
                 ))}
               </datalist>
             </div>
@@ -172,11 +235,19 @@ export default function BasicInfo({
         </div>
       </section>
 
-      {/* วันพิมพ์ลายนิ้วมือ */}
-      <section className={cardClass}>
+      <section className={`${cardClass} border-l-4 border-l-emerald-500`}>
         <div className={headerClass}>
-          <div className={iconClass}>
-            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <div className={iconBox("bg-emerald-50 text-emerald-600")}>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M12 3a7 7 0 0 0-7 7" />
               <path d="M12 6a4 4 0 0 0-4 4" />
               <path d="M12 9a1 1 0 0 0-1 1v5" />
@@ -187,14 +258,19 @@ export default function BasicInfo({
             </svg>
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">วันพิมพ์ลายนิ้วมือ</h3>
-            <p className="mt-0.5 text-[11px] text-white/60">ข้อมูลวันที่พิมพ์ลายนิ้วมือ</p>
+            <h3 className={sectionTitleClass}>วันพิมพ์ลายนิ้วมือ</h3>
+            <p className={sectionDescriptionClass}>
+              ระบุวันที่ดำเนินการพิมพ์ลายนิ้วมือ
+            </p>
           </div>
+          <span className="ml-auto rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700">
+            FINGERPRINT
+          </span>
         </div>
 
-        <div className="p-5">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div>
+        <div className="p-5 sm:p-6">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <div className={fieldBox}>
               <label htmlFor="fingerprintDay" className={labelClass}>
                 วันพิมพ์ลายนิ้วมือ
               </label>
@@ -203,19 +279,19 @@ export default function BasicInfo({
                 list="fp-day-list"
                 name="fingerprintDay"
                 className={inputClass}
-                value={form.fingerprintDay || ""}
+                value={form.fingerprintDay ?? ""}
                 onChange={handleChange}
-                placeholder="วัน"
+                placeholder="เลือกวัน"
                 autoComplete="off"
               />
               <datalist id="fp-day-list">
-                {filteredDays.map((d: any) => (
-                  <option key={d} value={d} />
+                {filteredDays.map((day) => (
+                  <option key={day} value={day} />
                 ))}
               </datalist>
             </div>
 
-            <div>
+            <div className={fieldBox}>
               <label htmlFor="fingerprintMonth" className={labelClass}>
                 เดือนพิมพ์ลายนิ้วมือ
               </label>
@@ -224,19 +300,19 @@ export default function BasicInfo({
                 list="fp-month-list"
                 name="fingerprintMonth"
                 className={inputClass}
-                value={form.fingerprintMonth || ""}
+                value={form.fingerprintMonth ?? ""}
                 onChange={handleChange}
-                placeholder="เดือน"
+                placeholder="เลือกเดือน"
                 autoComplete="off"
               />
               <datalist id="fp-month-list">
-                {months.map((m: any) => (
-                  <option key={m} value={m} />
+                {months.map((month) => (
+                  <option key={month} value={month} />
                 ))}
               </datalist>
             </div>
 
-            <div>
+            <div className={fieldBox}>
               <label htmlFor="fingerprintYear" className={labelClass}>
                 ปีพิมพ์ลายนิ้วมือ
               </label>
@@ -245,14 +321,14 @@ export default function BasicInfo({
                 list="fp-year-list"
                 name="fingerprintYear"
                 className={inputClass}
-                value={form.fingerprintYear || ""}
+                value={form.fingerprintYear ?? ""}
                 onChange={handleChange}
                 placeholder="พ.ศ."
                 autoComplete="off"
               />
               <datalist id="fp-year-list">
-                {years.map((y: any) => (
-                  <option key={y} value={y} />
+                {years.map((year) => (
+                  <option key={year} value={year} />
                 ))}
               </datalist>
             </div>

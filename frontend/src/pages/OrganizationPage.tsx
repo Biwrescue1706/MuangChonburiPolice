@@ -1,3 +1,4 @@
+// src/pages/OrganizationPage.tsx
 import { useCallback, useEffect, useState } from "react";
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import api from "../api/axios";
@@ -35,8 +36,35 @@ function toFormState(value: unknown): FormState {
   return result;
 }
 
+function getOrganizationRecord(payload: unknown): OrganizationData | null {
+  if (Array.isArray(payload)) {
+    const first = payload[0];
+    return first && typeof first === "object" && !Array.isArray(first)
+      ? (first as OrganizationData)
+      : null;
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const record = payload as Record<string, unknown>;
+
+  if (record.organization && typeof record.organization === "object") {
+    return getOrganizationRecord(record.organization);
+  }
+
+  if (record.data !== undefined) {
+    return getOrganizationRecord(record.data);
+  }
+
+  return payload as OrganizationData;
+}
+
 function getImageUrl(value: FormValue): string | undefined {
-  return typeof value === "string" && value.length > 0 ? value : undefined;
+  return typeof value === "string" && value.length > 0
+    ? value
+    : undefined;
 }
 
 export default function OrganizationPage() {
@@ -45,6 +73,9 @@ export default function OrganizationPage() {
   const [commanderForm, setCommanderForm] = useState<FormState>({});
   const [financeForm, setFinanceForm] = useState<FormState>({});
 
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<ModalType | null>(null);
   const [signatureFile, setSignatureFile] = useState<File | null>(null);
@@ -52,7 +83,7 @@ export default function OrganizationPage() {
   const orgId = org?.organizationId;
 
   const applyOrganizationData = useCallback(
-    (data: OrganizationData | undefined) => {
+    (data: OrganizationData | null) => {
       if (!data) {
         setOrg(null);
         setOrgForm({});
@@ -71,32 +102,32 @@ export default function OrganizationPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await api.get<OrganizationData[]>("/organization");
-      applyOrganizationData(res.data[0]);
-    } catch {
-      toast("error", "โหลดข้อมูลไม่สำเร็จ");
+      setLoadError(false);
+
+      const res = await api.get<unknown>("/organization");
+      const organization = getOrganizationRecord(res.data);
+
+      if (!organization) {
+        applyOrganizationData(null);
+        setLoadError(true);
+        return false;
+      }
+
+      applyOrganizationData(organization);
+      return true;
+    } catch (error) {
+      console.error("Load organization error:", error);
+      applyOrganizationData(null);
+      setLoadError(true);
+      return false;
+    } finally {
+      setLoading(false);
     }
   }, [applyOrganizationData]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    api
-      .get<OrganizationData[]>("/organization")
-      .then((res) => {
-        if (cancelled) return;
-        applyOrganizationData(res.data[0]);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          toast("error", "โหลดข้อมูลไม่สำเร็จ");
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [applyOrganizationData]);
+    void fetchData();
+  }, [fetchData]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement>,
@@ -133,7 +164,8 @@ export default function OrganizationPage() {
       toast("success", "บันทึกหน่วยงานสำเร็จ");
       await fetchData();
       closeModal();
-    } catch {
+    } catch (error) {
+      console.error("Save organization error:", error);
       toast("error", "บันทึกไม่สำเร็จ");
     }
   };
@@ -167,7 +199,8 @@ export default function OrganizationPage() {
       toast("success", "บันทึกผู้กำกับสำเร็จ");
       await fetchData();
       closeModal();
-    } catch {
+    } catch (error) {
+      console.error("Save commander error:", error);
       toast("error", "บันทึกไม่สำเร็จ");
     }
   };
@@ -183,20 +216,51 @@ export default function OrganizationPage() {
       toast("success", "บันทึกการเงินสำเร็จ");
       await fetchData();
       closeModal();
-    } catch {
+    } catch (error) {
+      console.error("Save finance error:", error);
       toast("error", "บันทึกไม่สำเร็จ");
     }
   };
 
-  if (!org) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 px-4 py-8">
         <div className="mx-auto max-w-6xl">
           <div className="flex min-h-[300px] items-center justify-center rounded-3xl bg-white shadow-sm">
             <div className="text-center">
               <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-[#800020]" />
-              <p className="font-semibold text-gray-500">กำลังโหลดข้อมูล...</p>
+              <p className="font-semibold text-gray-500">
+                กำลังโหลดข้อมูล...
+              </p>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !org) {
+    return (
+      <div className="min-h-screen bg-gray-50 px-4 py-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl bg-white p-6 text-center shadow-sm">
+            <div className="mb-3 text-4xl">⚠️</div>
+            <h2 className="text-lg font-bold text-gray-800">
+              ไม่สามารถโหลดข้อมูลหน่วยงานได้
+            </h2>
+            <p className="mt-2 text-sm text-gray-500">
+              กรุณาตรวจสอบการเชื่อมต่อหรือข้อมูลที่ได้รับจากเซิร์ฟเวอร์
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setLoading(true);
+                void fetchData();
+              }}
+              className="mt-5 rounded-xl bg-[#800020] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#650019]"
+            >
+              ลองโหลดอีกครั้ง
+            </button>
           </div>
         </div>
       </div>
@@ -305,7 +369,9 @@ export default function OrganizationPage() {
                 </div>
 
                 <div className="rounded-2xl bg-gray-50 p-4">
-                  <p className="text-xs font-semibold text-gray-400">ตำแหน่ง</p>
+                  <p className="text-xs font-semibold text-gray-400">
+                    ตำแหน่ง
+                  </p>
 
                   <p className="mt-1 break-words text-sm font-semibold text-gray-800">
                     {card.position}

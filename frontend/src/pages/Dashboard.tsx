@@ -1,8 +1,6 @@
-
- // src/pages/Dashboard.tsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import api from "../api/axios";
 
 type Summary = {
@@ -52,72 +50,91 @@ const summaryCards = [
     key: "all" as const,
     href: "/person/history",
     icon: "all",
-    color: "text-[#800020]",
-    bg: "bg-[#f8e9ee]",
-    bar: "bg-[#800020]",
+    color: "text-white",
+    bg: "bg-gradient-to-br from-[#a00036] to-[#650020]",
+    bar: "bg-[#a00036]",
+    cardBg: "bg-gradient-to-br from-[#fff7fa] to-white",
+    border: "border-[#edc5d2]",
   },
   {
     title: "รอส่ง ศพฐ.",
     key: "s0" as const,
     href: "/person/history?status=0",
     icon: "wait",
-    color: "text-amber-700",
-    bg: "bg-amber-50",
+    color: "text-white",
+    bg: "bg-gradient-to-br from-[#f59e0b] to-[#c45b08]",
     bar: "bg-amber-500",
+    cardBg: "bg-gradient-to-br from-[#fffaf0] to-white",
+    border: "border-[#f5dfb2]",
   },
   {
     title: "เตรียมเอกสารส่ง ศพฐ. แล้ว",
     key: "s1" as const,
     href: "/person/history?status=1",
     icon: "document",
-    color: "text-blue-700",
-    bg: "bg-blue-50",
-    bar: "bg-blue-500",
+    color: "text-white",
+    bg: "bg-gradient-to-br from-[#4388ef] to-[#2451b8]",
+    bar: "bg-blue-600",
+    cardBg: "bg-gradient-to-br from-[#f3f7ff] to-white",
+    border: "border-[#c9dafa]",
   },
   {
     title: "ส่ง ศพฐ. แล้ว",
     key: "s2" as const,
     href: "/person/history?status=2",
     icon: "send",
-    color: "text-sky-700",
-    bg: "bg-sky-50",
+    color: "text-white",
+    bg: "bg-gradient-to-br from-[#22a6d5] to-[#08769f]",
     bar: "bg-sky-500",
+    cardBg: "bg-gradient-to-br from-[#effaff] to-white",
+    border: "border-[#bde7f5]",
   },
   {
     title: "รับจาก ศพฐ. แล้ว",
     key: "s3" as const,
     href: "/person/history?status=3",
     icon: "check",
-    color: "text-emerald-700",
-    bg: "bg-emerald-50",
+    color: "text-white",
+    bg: "bg-gradient-to-br from-[#20b47b] to-[#08764e]",
     bar: "bg-emerald-500",
+    cardBg: "bg-gradient-to-br from-[#effcf6] to-white",
+    border: "border-[#bcebd5]",
   },
   {
     title: "ส่งคืนต้นสังกัด",
     key: "s4" as const,
     href: "/person/history?status=4",
     icon: "return",
-    color: "text-violet-700",
-    bg: "bg-violet-50",
-    bar: "bg-violet-500",
+    color: "text-white",
+    bg: "bg-gradient-to-br from-[#9255e8] to-[#6026ad]",
+    bar: "bg-violet-600",
+    cardBg: "bg-gradient-to-br from-[#f8f3ff] to-white",
+    border: "border-[#dfcef9]",
   },
 ];
 
 const menuGroups = [
   {
-    title: "ตรวจประวัติส่วนตัวเพื่อตรวจประวัติ",
+    title: "ตรวจประวัติบุคคล",
     description: "จัดการข้อมูลและตรวจสอบประวัติบุคคล",
     icon: "user",
+    theme: {
+      bg: "bg-gradient-to-br from-[#a00036] to-[#650020]",
+      soft: "bg-[#fff0f4]",
+      text: "text-[#8b1239]",
+      border: "border-[#f0cbd7]",
+      hover: "group-hover:bg-[#fff5f8]",
+    },
     menus: [
       {
         title: "เพิ่มข้อมูลบุคคล",
-        description: "บันทึกข้อมูลบุคคลใหม่",
+        description: "บันทึกข้อมูลบุคคลใหม่เข้าสู่ระบบ",
         href: "/person/create",
         icon: "user-plus",
       },
       {
         title: "ประวัติบุคคล",
-        description: "ดูและจัดการข้อมูลประวัติบุคคล",
+        description: "ตรวจสอบและจัดการข้อมูลประวัติบุคคล",
         href: "/person/history",
         icon: "history",
       },
@@ -125,8 +142,15 @@ const menuGroups = [
   },
   {
     title: "หนังสือส่ง ศพฐ.",
-    description: "จัดทำและตรวจสอบเอกสารนำส่ง",
+    description: "จัดทำหนังสือและตรวจสอบเอกสารนำส่ง",
     icon: "files",
+    theme: {
+      bg: "bg-gradient-to-br from-[#3479e8] to-[#1947a3]",
+      soft: "bg-[#edf4ff]",
+      text: "text-[#2459b7]",
+      border: "border-[#cbdcf8]",
+      hover: "group-hover:bg-[#f3f7ff]",
+    },
     menus: [
       {
         title: "ออกเลขหนังสือ ศพฐ.",
@@ -136,13 +160,13 @@ const menuGroups = [
       },
       {
         title: "รายการหนังสือส่ง ศพฐ.",
-        description: "ตรวจสอบรายการหนังสือนำส่ง",
+        description: "ตรวจสอบรายการหนังสือที่นำส่งแล้ว",
         href: "/forensic-submission/list",
         icon: "files",
       },
       {
         title: "สแกนเอกสาร",
-        description: "สแกนและจัดการเอกสาร",
+        description: "สแกนและจัดเก็บเอกสารในระบบ",
         href: "/forensic-scan",
         icon: "scan",
       },
@@ -152,6 +176,13 @@ const menuGroups = [
     title: "ประวัติบุคคลต่างด้าว",
     description: "จัดการข้อมูลและประวัติบุคคลต่างด้าว",
     icon: "users",
+    theme: {
+      bg: "bg-gradient-to-br from-[#20a77c] to-[#08724f]",
+      soft: "bg-[#eafaf3]",
+      text: "text-[#087c56]",
+      border: "border-[#bee9d6]",
+      hover: "group-hover:bg-[#f0fcf6]",
+    },
     menus: [
       {
         title: "เพิ่มบุคคลต่างด้าว",
@@ -161,26 +192,33 @@ const menuGroups = [
       },
       {
         title: "ประวัติต่างด้าว",
-        description: "ดูและจัดการประวัติบุคคลต่างด้าว",
+        description: "ตรวจสอบและจัดการประวัติบุคคลต่างด้าว",
         href: "/foreigner",
         icon: "users",
       },
     ],
   },
   {
-    title: "ข้อมูลส่วนบุคคลและข้อมูลหน่วยงาน",
+    title: "ข้อมูลส่วนบุคคลและหน่วยงาน",
     description: "จัดการโปรไฟล์และข้อมูลหน่วยงาน",
     icon: "building",
+    theme: {
+      bg: "bg-gradient-to-br from-[#8c62d9] to-[#5633a0]",
+      soft: "bg-[#f3efff]",
+      text: "text-[#6742b0]",
+      border: "border-[#d9cef5]",
+      hover: "group-hover:bg-[#f8f5ff]",
+    },
     menus: [
       {
         title: "โปรไฟล์บุคคล",
-        description: "ดูและจัดการโปรไฟล์บุคคล",
+        description: "ดูและจัดการข้อมูลโปรไฟล์ส่วนบุคคล",
         href: "/profile",
         icon: "user",
       },
       {
         title: "ข้อมูลหน่วยงาน",
-        description: "ดูและจัดการข้อมูลหน่วยงาน",
+        description: "ดูและจัดการข้อมูลของหน่วยงาน",
         href: "/organization",
         icon: "building",
       },
@@ -188,20 +226,14 @@ const menuGroups = [
   },
 ];
 
-function Icon({
-  name,
-  size = 22,
-}: {
-  name: string;
-  size?: number;
-}) {
+function Icon({ name, size = 22 }: { name: string; size?: number }) {
   const common = {
     width: size,
     height: size,
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: 1.7,
+    strokeWidth: 1.8,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     "aria-hidden": true as const,
@@ -215,7 +247,6 @@ function Icon({
           <path d="M8 9h8M8 13h8M8 17h5" />
         </svg>
       );
-
     case "wait":
     case "clock":
       return (
@@ -224,7 +255,6 @@ function Icon({
           <path d="M12 7v5l3 2" />
         </svg>
       );
-
     case "document":
       return (
         <svg {...common}>
@@ -232,7 +262,6 @@ function Icon({
           <path d="M14 3.5V8h4M9 12h6M9 15.5h6" />
         </svg>
       );
-
     case "send":
       return (
         <svg {...common}>
@@ -240,7 +269,6 @@ function Icon({
           <path d="M21 3 10 13" />
         </svg>
       );
-
     case "check":
       return (
         <svg {...common}>
@@ -248,7 +276,6 @@ function Icon({
           <path d="m8.5 12 2.3 2.4 4.8-5" />
         </svg>
       );
-
     case "return":
       return (
         <svg {...common}>
@@ -256,7 +283,6 @@ function Icon({
           <path d="M4 11h10a5 5 0 0 1 5 5v2" />
         </svg>
       );
-
     case "user-plus":
       return (
         <svg {...common}>
@@ -264,7 +290,6 @@ function Icon({
           <path d="M2.5 20c.5-3.5 2.8-5.5 6.5-5.5 2 0 3.6.6 4.7 1.7M19 8v6M16 11h6" />
         </svg>
       );
-
     case "history":
       return (
         <svg {...common}>
@@ -272,7 +297,6 @@ function Icon({
           <path d="M3 3v5h5M12 7v5l3 2" />
         </svg>
       );
-
     case "users":
       return (
         <svg {...common}>
@@ -280,7 +304,6 @@ function Icon({
           <path d="M3 20v-1a6 6 0 0 1 12 0v1M16 5.5a3 3 0 0 1 0 5.8M18 14a4 4 0 0 1 3 4v2" />
         </svg>
       );
-
     case "file-plus":
       return (
         <svg {...common}>
@@ -288,7 +311,6 @@ function Icon({
           <path d="M14 3.5V8h4M9 13h6M12 10v6" />
         </svg>
       );
-
     case "files":
       return (
         <svg {...common}>
@@ -296,14 +318,12 @@ function Icon({
           <path d="M4 7v14h11M10 9h5M10 13h5M10 17h4" />
         </svg>
       );
-
     case "scan":
       return (
         <svg {...common}>
           <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10" />
         </svg>
       );
-
     case "building":
       return (
         <svg {...common}>
@@ -311,7 +331,6 @@ function Icon({
           <path d="M8 9h1M12 9h1M16 9h1M8 12h1M12 12h1M16 12h1" />
         </svg>
       );
-
     case "user":
       return (
         <svg {...common}>
@@ -319,14 +338,12 @@ function Icon({
           <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
         </svg>
       );
-
     case "arrow":
       return (
         <svg {...common}>
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
       );
-
     default:
       return null;
   }
@@ -364,6 +381,7 @@ function getPersonName(person: PersonRecord): string {
 function getPersonStatus(person: PersonRecord): number {
   const value = person.status ?? person.personStatus;
   const status = Number(value);
+
   return Number.isInteger(status) ? status : -1;
 }
 
@@ -398,32 +416,38 @@ function getStatusInfo(status: number) {
     case 0:
       return {
         label: "รอส่ง ศพฐ.",
-        className: "bg-amber-50 text-amber-700",
+        className: "bg-amber-100 text-amber-900 ring-1 ring-amber-300",
+        dot: "bg-amber-600",
       };
     case 1:
       return {
         label: "เตรียมเอกสารส่ง ศพฐ. แล้ว",
-        className: "bg-blue-50 text-blue-700",
+        className: "bg-blue-100 text-blue-900 ring-1 ring-blue-300",
+        dot: "bg-blue-600",
       };
     case 2:
       return {
         label: "ส่ง ศพฐ. แล้ว",
-        className: "bg-sky-50 text-sky-700",
+        className: "bg-sky-100 text-sky-900 ring-1 ring-sky-300",
+        dot: "bg-sky-600",
       };
     case 3:
       return {
         label: "รับจาก ศพฐ. แล้ว",
-        className: "bg-emerald-50 text-emerald-700",
+        className: "bg-emerald-100 text-emerald-900 ring-1 ring-emerald-300",
+        dot: "bg-emerald-600",
       };
     case 4:
       return {
         label: "ส่งคืนต้นสังกัด",
-        className: "bg-violet-50 text-violet-700",
+        className: "bg-violet-100 text-violet-900 ring-1 ring-violet-300",
+        dot: "bg-violet-600",
       };
     default:
       return {
         label: "ไม่ระบุสถานะ",
-        className: "bg-gray-100 text-gray-600",
+        className: "bg-gray-100 text-gray-800 ring-1 ring-gray-300",
+        dot: "bg-gray-500",
       };
   }
 }
@@ -499,11 +523,15 @@ export default function Dashboard() {
 
         const sorted = [...list].sort((a, b) => {
           const dateA = new Date(
-            String(a.createdAt ?? a.created_at ?? a.requestDate ?? a.date ?? ""),
+            String(
+              a.createdAt ?? a.created_at ?? a.requestDate ?? a.date ?? "",
+            ),
           ).getTime();
 
           const dateB = new Date(
-            String(b.createdAt ?? b.created_at ?? b.requestDate ?? b.date ?? ""),
+            String(
+              b.createdAt ?? b.created_at ?? b.requestDate ?? b.date ?? "",
+            ),
           ).getTime();
 
           return (
@@ -533,95 +561,124 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f5f6f8] text-gray-800">
-      <main className="mx-auto w-full max-w-[1440px] px-3 py-4 sm:px-5 sm:py-5 lg:px-8">
-        {/* ส่วนหัว */}
-        <header className="mb-5 flex flex-col gap-3 border-b border-gray-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="min-h-screen bg-[#eef1f6] text-[#252b35]">
+      <main className="mx-auto w-full max-w-[1480px] px-4 py-6 sm:px-6 lg:px-9 lg:py-8">
+        <header className="mb-7 flex flex-col gap-4 border-b border-[#d9dfe9] pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#800020] sm:text-xs">
-              Dashboard
-            </p>
+            <div className="mb-2 flex items-center gap-2">
+              <span className="h-[3px] w-8 rounded-full bg-[#a00036]" />
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8b1239]">
+                Mueang Chonburi Police Station
+              </p>
+            </div>
 
-            <h1 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+            <h1 className="text-2xl font-bold tracking-tight text-[#202b40] sm:text-3xl">
               หน้าหลัก
             </h1>
 
-            <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-              ภาพรวมข้อมูลและเมนูการทำงานของระบบ
+            <p className="mt-2 text-sm text-[#536176]">
+              ภาพรวมข้อมูลและการดำเนินงานภายในระบบ
             </p>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5 sm:max-w-xs sm:px-4">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f8e9ee] text-[#800020]">
-              <Icon name="user" size={20} />
+          <div className="flex w-full items-center gap-3 rounded-xl border border-[#dce2ec] bg-white px-4 py-3 shadow-sm sm:w-auto sm:min-w-[270px]">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#a00036] to-[#650020] text-white shadow-sm">
+              <Icon name="user" size={23} />
             </div>
 
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-gray-800">
+              <p className="truncate text-base font-bold text-[#26344a]">
                 {admin?.name || admin?.username || "เจ้าหน้าที่"}
               </p>
-              <p className="mt-0.5 truncate text-xs text-gray-500">
+              <p className="mt-1 truncate text-sm text-[#647188]">
                 {admin?.position || "ไม่ระบุตำแหน่ง"}
               </p>
             </div>
+
+            <span className="ml-auto h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 ring-4 ring-emerald-100" />
           </div>
         </header>
 
-        {/* ข้อความต้อนรับและเวลา */}
-        <section className="mb-6 grid grid-cols-1 gap-3 lg:grid-cols-[1fr_320px]">
-          <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5">
-            <p className="text-xs text-gray-500 sm:text-sm">
-              ยินดีต้อนรับกลับมา
-            </p>
+        <section className="mb-9 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px]">
+          <div className="relative flex min-h-[195px] flex-col justify-center overflow-hidden rounded-xl bg-gradient-to-r from-[#172942] via-[#203d60] to-[#31567a] px-6 py-8 text-white shadow-[0_8px_25px_rgba(23,41,66,0.18)] sm:px-9">
+            <div className="absolute -right-12 -top-28 h-72 w-72 rounded-full border-[35px] border-white/[0.06]" />
+            <div className="absolute -right-3 top-12 h-36 w-36 rounded-full border border-white/[0.12]" />
+            <div className="absolute bottom-0 right-1/4 h-32 w-32 rounded-full bg-[#c5a15e]/10 blur-2xl" />
 
-            <h2 className="mt-1 text-lg font-bold text-gray-900 sm:text-xl">
-              {admin?.name || "เจ้าหน้าที่"}
-            </h2>
+            <div className="relative z-10 max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#d9bd83]/30 bg-[#d9bd83]/10 px-3 py-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#e6c77f]" />
+                <p className="text-xs font-semibold text-[#f1dcae]">
+                  ยินดีต้อนรับกลับมา
+                </p>
+              </div>
 
-            <p className="mt-1.5 text-xs leading-5 text-gray-500 sm:text-sm">
-              จัดการข้อมูลบุคคล ตรวจสอบสถานะเอกสาร และดำเนินงานผ่านเมนูต่าง ๆ
-              ได้จากหน้าหลักนี้
-            </p>
-          </div>
+              <h2 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">
+                {admin?.name || "เจ้าหน้าที่"}
+              </h2>
 
-          <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#800020] text-white">
-              <Icon name="clock" size={21} />
+              <p className="mt-3 max-w-xl text-sm leading-7 text-[#e1e9f3]">
+                จัดการข้อมูลบุคคล ตรวจสอบสถานะเอกสาร และดำเนินงานผ่านเมนูต่าง ๆ
+                ได้จากหน้าหลักนี้
+              </p>
             </div>
 
-            <div className="min-w-0">
-              <p className="text-xs text-gray-500">วันและเวลาประเทศไทย</p>
-              <p className="mt-1 text-xs font-semibold leading-5 text-gray-800 sm:text-sm">
+            <div className="absolute bottom-0 left-0 h-1 w-28 bg-gradient-to-r from-[#e6c77f] to-transparent" />
+          </div>
+
+          <div className="relative overflow-hidden rounded-xl border border-[#dce2ec] bg-white p-5 shadow-sm">
+            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#e9f1ff] opacity-70" />
+
+            <div className="relative flex items-center justify-between">
+              <p className="text-sm font-bold text-[#3d4c62]">
+                วันและเวลาประเทศไทย
+              </p>
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#4388ef] to-[#2451b8] text-white shadow-sm">
+                <Icon name="clock" size={22} />
+              </div>
+            </div>
+
+            <div className="relative mt-6">
+              <p className="text-base font-bold leading-7 text-[#26344a]">
                 {thaiTime || "กำลังโหลดเวลา..."}
               </p>
+            </div>
+
+            <div className="relative mt-5 h-1 overflow-hidden rounded-full bg-[#e9eff8]">
+              <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-[#4388ef] to-[#7cb5ff]" />
             </div>
           </div>
         </section>
 
-        {/* สรุปสถานะ */}
         <section>
-          <div className="mb-3 flex items-end justify-between gap-3">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-base font-bold text-gray-900 sm:text-lg">
-                สรุปสถานะข้อมูล
-              </h2>
-              <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-                จำนวนรายการบุคคลแยกตามสถานะ
+              <div className="flex items-center gap-2">
+                <span className="h-6 w-1 rounded-full bg-[#a00036]" />
+                <h2 className="text-xl font-bold text-[#202b40] sm:text-2xl">
+                  สรุปสถานะข้อมูล
+                </h2>
+              </div>
+
+              <p className="mt-2 text-sm text-[#536176]">
+                จำนวนรายการบุคคลแยกตามขั้นตอนการดำเนินงาน
               </p>
             </div>
 
             <Link
               to="/person/history"
-              className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-[#800020] hover:text-[#a00029] sm:text-sm"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#e6cbd4] bg-white px-4 py-2.5 text-sm font-bold text-[#8b1239] shadow-sm transition hover:border-[#a00036] hover:bg-[#fff1f5]"
             >
-              ดูทั้งหมด
-              <Icon name="arrow" size={15} />
+              ดูรายการทั้งหมด
+              <Icon name="arrow" size={17} />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
             {summaryCards.map((item) => {
               const value = summary[item.key];
+
               const percentage =
                 summary.all > 0
                   ? Math.min((value / summary.all) * 100, 100)
@@ -631,186 +688,257 @@ export default function Dashboard() {
                 <Link
                   key={item.key}
                   to={item.href}
-                  className="group rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-[#c99aa8] hover:bg-[#fffdfd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2"
+                  className={`group relative overflow-hidden rounded-xl border ${item.border} ${item.cardBg} p-5 shadow-[0_3px_10px_rgba(30,45,70,0.05)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_12px_28px_rgba(30,45,70,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#800020] focus-visible:ring-offset-2 sm:p-6`}
                 >
+                  <div
+                    className={`absolute left-0 top-0 h-full w-1 ${item.bar}`}
+                  />
+
                   <div className="flex items-start justify-between gap-3">
-                    <p className="min-h-10 flex-1 text-sm font-medium leading-5 text-gray-600">
+                    <p className="min-h-12 flex-1 text-base font-bold leading-7 text-[#303b4e]">
                       {item.title}
                     </p>
 
                     <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${item.bg} ${item.color}`}
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${item.bg} ${item.color} shadow-sm transition-transform group-hover:scale-110`}
                     >
-                      <Icon name={item.icon} size={20} />
+                      <Icon name={item.icon} size={24} />
                     </div>
                   </div>
 
-                  <div className="mt-2 flex items-end justify-between gap-2">
-                    <p className="text-3xl font-bold tabular-nums tracking-tight text-gray-900">
+                  <div className="mt-5 flex items-end justify-between gap-2">
+                    <p className="text-4xl font-bold leading-none tracking-tight text-[#202b40] tabular-nums sm:text-[42px]">
                       {value.toLocaleString("th-TH")}
                     </p>
 
-                    <span className="mb-1 text-[10px] text-gray-400 transition-colors group-hover:text-[#800020] sm:text-xs">
+                    <span className="mb-1 inline-flex items-center gap-1 text-sm font-bold text-[#536176] transition-colors group-hover:text-[#800020]">
                       ดูรายละเอียด
+                      <Icon name="arrow" size={15} />
                     </span>
                   </div>
 
-                  <div className="mt-3 h-1 overflow-hidden rounded-full bg-gray-100">
+                  <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#e6eaf0]">
                     <div
-                      className={`h-full rounded-full transition-all duration-500 ${item.bar}`}
+                      className={`h-full rounded-full transition-all duration-700 ${item.bar}`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
+
+                  <p className="mt-3 text-sm font-semibold text-[#536176]">
+                    {percentage.toFixed(1)}% ของข้อมูลทั้งหมด
+                  </p>
                 </Link>
               );
             })}
           </div>
         </section>
 
-        {/* รายการบุคคลล่าสุด */}
-        <section className="mt-6">
-          <div className="mb-3 flex items-end justify-between gap-3">
+        <section className="mt-10">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-base font-bold text-gray-900 sm:text-lg">
-                รายการบุคคลล่าสุด
-              </h2>
-              <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-                แสดงข้อมูลล่าสุดที่บันทึกในระบบ
+              <div className="flex items-center gap-2">
+                <span className="h-6 w-1 rounded-full bg-[#3479e8]" />
+                <h2 className="text-xl font-bold text-[#202b40] sm:text-2xl">
+                  รายการบุคคลล่าสุด
+                </h2>
+              </div>
+
+              <p className="mt-2 text-sm text-[#536176]">
+                รายการข้อมูลที่บันทึกไว้ในระบบ
               </p>
             </div>
 
             <Link
               to="/person/history"
-              className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-[#800020] hover:text-[#a00029] sm:text-sm"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#cbdcf8] bg-white px-4 py-2.5 text-sm font-bold text-[#2459b7] shadow-sm transition hover:bg-[#edf4ff]"
             >
-              ดูทั้งหมด
-              <Icon name="arrow" size={15} />
+              ดูประวัติทั้งหมด
+              <Icon name="arrow" size={17} />
             </Link>
           </div>
 
           {loadingRecords ? (
-            <div className="rounded-xl border border-gray-200 bg-white px-4 py-10 text-center text-sm text-gray-500">
-              กำลังโหลดข้อมูล...
+            <div className="rounded-xl border border-[#dce2ec] bg-white px-4 py-16 text-center shadow-sm">
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-[3px] border-[#dce8fb] border-t-[#3479e8]" />
+              <p className="mt-4 text-sm font-semibold text-[#536176]">
+                กำลังโหลดข้อมูล...
+              </p>
             </div>
           ) : recentRecords.length === 0 ? (
-            <div className="rounded-xl border border-gray-200 bg-white px-4 py-10 text-center">
-              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-400">
-                <Icon name="files" size={21} />
+            <div className="rounded-xl border border-[#dce2ec] bg-white px-4 py-16 text-center shadow-sm">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-[#edf4ff] text-[#3479e8]">
+                <Icon name="files" size={26} />
               </div>
-              <p className="text-sm font-medium text-gray-700">
+
+              <p className="mt-4 text-base font-bold text-[#303b4e]">
                 ยังไม่มีข้อมูลบุคคล
               </p>
-              <p className="mt-1 text-xs text-gray-500">
+
+              <p className="mt-2 text-sm text-[#536176]">
                 เมื่อมีการบันทึกข้อมูล รายการจะแสดงที่นี่
               </p>
+
+              <Link
+                to="/person/create"
+                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#a00036] to-[#650020] px-5 py-3 text-sm font-bold text-white shadow-md transition hover:brightness-110"
+              >
+                <Icon name="user-plus" size={18} />
+                เพิ่มข้อมูลบุคคล
+              </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-              {recentRecords.map((person, index) => {
-                const recordId =
-                  person.id ??
-                  person.ID ??
-                  person.personId ??
-                  person.personID ??
-                  person.P_ID;
+            <div className="overflow-hidden rounded-xl border border-[#dce2ec] bg-white shadow-sm">
+              <div className="hidden grid-cols-[1fr_200px_220px] border-b border-[#e3e8f0] bg-[#f3f6fb] px-6 py-4 text-sm font-bold text-[#35445b] sm:grid">
+                <span>ชื่อ - นามสกุล</span>
+                <span>วันที่บันทึก</span>
+                <span>สถานะ</span>
+              </div>
 
-                const status = getStatusInfo(getPersonStatus(person));
+              <div className="divide-y divide-[#e7ebf1]">
+                {recentRecords.map((person, index) => {
+                  const recordId =
+                    person.id ??
+                    person.ID ??
+                    person.personId ??
+                    person.personID ??
+                    person.P_ID;
 
-                return (
-                  <article
-                    key={recordId != null ? String(recordId) : `person-${index}`}
-                    className="rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-[#d9b7c1]"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold leading-6 text-gray-900">
-                          {getPersonName(person)}
-                        </p>
+                  const status = getStatusInfo(getPersonStatus(person));
 
-                        <p className="mt-1 text-xs text-gray-500">
-                          วันที่: {getPersonDate(person)}
-                        </p>
+                  return (
+                    <article
+                      key={
+                        recordId != null ? String(recordId) : `person-${index}`
+                      }
+                      className="grid grid-cols-1 gap-3 px-4 py-4 transition-colors hover:bg-[#f7f9fd] sm:grid-cols-[1fr_200px_220px] sm:items-center sm:px-6"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#f8e9ef] to-[#f0d6e0] text-base font-bold text-[#8b1239]">
+                          {getPersonName(person).charAt(0)}
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="truncate text-base font-bold text-[#303b4e]">
+                            {getPersonName(person)}
+                          </p>
+
+                          <p className="mt-1 text-sm text-[#536176] sm:hidden">
+                            วันที่: {getPersonDate(person)}
+                          </p>
+                        </div>
                       </div>
 
-                      <span
-                        className={`max-w-[48%] shrink-0 rounded-full px-2.5 py-1 text-[10px] font-medium leading-4 sm:text-xs ${status.className}`}
-                      >
-                        {status.label}
-                      </span>
-                    </div>
+                      <p className="hidden text-sm font-medium text-[#536176] sm:block">
+                        {getPersonDate(person)}
+                      </p>
 
-                    <Link
-                      to={
-                        recordId != null
-                          ? `/person/${encodeURIComponent(String(recordId))}`
-                          : "/person/history"
-                      }
-                      className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-[#800020] transition-colors hover:border-[#800020] hover:bg-[#fff8fa] sm:text-sm"
-                    >
-                      ดูรายละเอียด
-                      <Icon name="arrow" size={16} />
-                    </Link>
-                  </article>
-                );
-              })}
+                      <div className="flex items-center justify-between gap-3 sm:justify-start">
+                        <span
+                          className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold ${status.className}`}
+                        >
+                          <span
+                            className={`h-2 w-2 rounded-full ${status.dot}`}
+                          />
+                          {status.label}
+                        </span>
+
+                        <Link
+                          to={
+                            recordId != null
+                              ? `/person/${encodeURIComponent(String(recordId))}`
+                              : "/person/history"
+                          }
+                          className="inline-flex shrink-0 items-center gap-1.5 text-sm font-bold text-[#2459b7] transition-colors hover:text-[#123b89]"
+                        >
+                          รายละเอียด
+                          <Icon name="arrow" size={16} />
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
             </div>
           )}
         </section>
 
-        {/* เมนูการทำงาน แบ่ง 4 หมวด */}
-        <section className="mt-6 sm:mt-8">
-          <div className="mb-3">
-            <h2 className="text-base font-bold text-gray-900 sm:text-lg">
-              เมนูการทำงาน
-            </h2>
-            <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-              เลือกหมวดหมู่และเมนูเพื่อเข้าสู่การทำงาน
+        <section className="mt-10">
+          <div className="mb-5">
+            <div className="flex items-center gap-2">
+              <span className="h-6 w-1 rounded-full bg-[#20a77c]" />
+              <h2 className="text-xl font-bold text-[#202b40] sm:text-2xl">
+                เมนูการทำงาน
+              </h2>
+            </div>
+
+            <p className="mt-2 text-sm text-[#536176]">
+              เลือกหมวดหมู่เพื่อเข้าสู่ระบบงานที่ต้องการ
             </p>
           </div>
 
-          <div className="space-y-4 sm:space-y-5">
-            {menuGroups.map((group) => (
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            {menuGroups.map((group, groupIndex) => (
               <section
                 key={group.title}
-                className="rounded-xl border border-gray-200 bg-white p-3 sm:p-5"
+                className="overflow-hidden rounded-xl border border-[#dce2ec] bg-white shadow-[0_3px_10px_rgba(30,45,70,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_25px_rgba(30,45,70,0.09)]"
               >
-                <div className="mb-3 flex items-start gap-3 border-b border-gray-100 pb-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f8e9ee] text-[#800020]">
-                    <Icon name={group.icon} size={20} />
+                <div className="relative flex items-center gap-4 overflow-hidden border-b border-[#e5e9f0] bg-[#f8f9fc] px-5 py-5 sm:px-6">
+                  <div
+                    className={`absolute left-0 top-0 h-full w-1.5 ${group.theme.bg}`}
+                  />
+
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${group.theme.bg} text-white shadow-md`}
+                  >
+                    <Icon name={group.icon} size={25} />
                   </div>
 
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-bold leading-6 text-gray-900 sm:text-base">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base font-bold leading-7 text-[#26344a] sm:text-lg">
                       {group.title}
                     </h3>
-                    <p className="mt-0.5 text-xs leading-5 text-gray-500">
+
+                    <p className="mt-1 text-sm leading-6 text-[#536176]">
                       {group.description}
                     </p>
                   </div>
+
+                  <span
+                    className={`hidden text-xl font-bold tabular-nums sm:block ${group.theme.text} opacity-70`}
+                  >
+                    {String(groupIndex + 1).padStart(2, "0")}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-2.5 min-[480px]:grid-cols-2 lg:grid-cols-3">
+                <div className="divide-y divide-[#e5e9f0]">
                   {group.menus.map((item) => (
                     <Link
                       key={item.href}
                       to={item.href}
-                      className="group flex min-w-0 items-center gap-3 rounded-lg border border-gray-100 bg-[#fafafa] p-3 transition-colors hover:border-[#c99aa8] hover:bg-[#fff8fa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#800020]"
+                      className={`group flex min-w-0 items-center gap-4 px-5 py-5 transition-colors ${group.theme.hover} sm:px-6 sm:py-6`}
                     >
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-[#800020] ring-1 ring-gray-100 transition-colors group-hover:bg-[#800020] group-hover:text-white">
-                        <Icon name={item.icon} size={19} />
+                      <div
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#e2e7ef] bg-[#f7f8fb] text-[#536176] transition-all group-hover:border-transparent ${group.theme.text} group-hover:${group.theme.soft}`}
+                      >
+                        <Icon name={item.icon} size={22} />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold leading-5 text-gray-800 sm:text-sm">
+                        <p
+                          className={`text-base font-bold leading-7 text-[#303b4e] transition-colors ${group.theme.text}`}
+                        >
                           {item.title}
                         </p>
-                        <p className="mt-0.5 text-[10px] leading-4 text-gray-500 sm:text-xs">
+
+                        <p className="mt-1 text-sm leading-6 text-[#536176]">
                           {item.description}
                         </p>
                       </div>
 
-                      <div className="shrink-0 text-gray-300 transition-colors group-hover:text-[#800020]">
-                        <Icon name="arrow" size={16} />
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#8793a5] transition-all group-hover:translate-x-1 ${group.theme.text} group-hover:${group.theme.soft}`}
+                      >
+                        <Icon name="arrow" size={19} />
                       </div>
                     </Link>
                   ))}
@@ -819,7 +947,6 @@ export default function Dashboard() {
             ))}
           </div>
         </section>
-
       </main>
     </div>
   );

@@ -7,6 +7,241 @@ import {
   getStatusButton,
 } from "../utils/personHelper";
 
+type Person = {
+  personId: string;
+  fullName?: string | null;
+  receiptBookNo?: string | null;
+  receiptNo?: string | null;
+  receiptDate?: string | null;
+  purpose?: string | null;
+  requestingAgency?: string | null;
+  status: number;
+  priority?: number | null;
+  returnDate?: string | null;
+  deleteAt?: string | null;
+};
+
+type PersonCardListProps = {
+  persons: Person[];
+  loading: boolean;
+  selectMode: boolean;
+  selectedIds: string[];
+  toggleSelect: (personId: string, status: number) => void;
+  handleDelete: (person: Person) => void;
+  handleUpdateStatus: (person: Person) => void;
+  handleExportPDF: (person: Person) => void;
+};
+
+type IconProps = {
+  type:
+    | "receipt"
+    | "calendar"
+    | "building"
+    | "document"
+    | "eye"
+    | "pdf"
+    | "edit"
+    | "delete"
+    | "arrow";
+  size?: number;
+};
+
+function Icon({ type, size = 18 }: IconProps) {
+  if (type === "receipt") {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M6 3.5h12v17l-2.5-1.5-3.5 1.5-3.5-1.5L6 20.5z" />
+        <path d="M9 8h6" />
+        <path d="M9 11.5h6" />
+        <path d="M9 15h4" />
+      </svg>
+    );
+  }
+
+  if (type === "calendar") {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="4" y="5" width="16" height="15" rx="2" />
+        <path d="M8 3v4" />
+        <path d="M16 3v4" />
+        <path d="M4 9h16" />
+      </svg>
+    );
+  }
+
+  if (type === "building") {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M4 21V5l8-2v18" />
+        <path d="M12 8h8v13" />
+        <path d="M7 8h2" />
+        <path d="M7 12h2" />
+        <path d="M7 16h2" />
+        <path d="M15 12h2" />
+        <path d="M15 16h2" />
+      </svg>
+    );
+  }
+
+  if (type === "document") {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M6 3.5h8l4 4V20H6z" />
+        <path d="M14 3.5V8h4" />
+        <path d="M9 12h6" />
+        <path d="M9 15.5h6" />
+      </svg>
+    );
+  }
+
+  if (type === "eye") {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+        <circle cx="12" cy="12" r="2.5" />
+      </svg>
+    );
+  }
+
+  if (type === "pdf") {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M6 3.5h8l4 4V20H6z" />
+        <path d="M14 3.5V8h4" />
+        <path d="M9 13h1.5a1.5 1.5 0 0 0 0-3H9v6" />
+        <path d="M13 10v6" />
+        <path d="M13 10h1.5a2 2 0 0 1 0 4H13" />
+      </svg>
+    );
+  }
+
+  if (type === "edit") {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z" />
+      </svg>
+    );
+  }
+
+  if (type === "delete") {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M4 7h16" />
+        <path d="M9 7V4h6v3" />
+        <path d="M7 7l1 14h8l1-14" />
+        <path d="M10 11v6" />
+        <path d="M14 11v6" />
+      </svg>
+    );
+  }
+
+  if (type === "arrow") {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M5 12h13" />
+        <path d="m13 6 6 6-6 6" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="8.5" />
+    </svg>
+  );
+}
+
 export default function PersonCardList({
   persons,
   loading,
@@ -16,138 +251,35 @@ export default function PersonCardList({
   handleDelete,
   handleUpdateStatus,
   handleExportPDF,
-}: any) {
+}: PersonCardListProps) {
   const navigate = useNavigate();
 
-  // SORT
   const sortedPersons = [...persons].sort((a, b) => {
     if (a.receiptBookNo !== b.receiptBookNo) {
       return (a.receiptBookNo || "").localeCompare(b.receiptBookNo || "");
     }
+
     return (a.receiptNo || "").localeCompare(b.receiptNo || "", undefined, {
       numeric: true,
     });
   });
 
-  // ICON
-  const Icon = ({ type, size = 18 }: { type: string; size?: number }) => {
-    if (type === "receipt") {
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 3.5h12v17l-2.5-1.5-3.5 1.5-3.5-1.5L6 20.5z" />
-          <path d="M9 8h6" />
-          <path d="M9 11.5h6" />
-          <path d="M9 15h4" />
-        </svg>
-      );
-    }
-
-    if (type === "calendar") {
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="4" y="5" width="16" height="15" rx="2" />
-          <path d="M8 3v4" />
-          <path d="M16 3v4" />
-          <path d="M4 9h16" />
-        </svg>
-      );
-    }
-
-    if (type === "building") {
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 21V5l8-2v18" />
-          <path d="M12 8h8v13" />
-          <path d="M7 8h2" />
-          <path d="M7 12h2" />
-          <path d="M7 16h2" />
-          <path d="M15 12h2" />
-          <path d="M15 16h2" />
-        </svg>
-      );
-    }
-
-    if (type === "document") {
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 3.5h8l4 4V20H6z" />
-          <path d="M14 3.5V8h4" />
-          <path d="M9 12h6" />
-          <path d="M9 15.5h6" />
-        </svg>
-      );
-    }
-
-    if (type === "eye") {
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
-          <circle cx="12" cy="12" r="2.5" />
-        </svg>
-      );
-    }
-
-    if (type === "pdf") {
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 3.5h8l4 4V20H6z" />
-          <path d="M14 3.5V8h4" />
-          <path d="M9 13h1.5a1.5 1.5 0 0 0 0-3H9v6" />
-          <path d="M13 10v6" />
-          <path d="M13 10h1.5a2 2 0 0 1 0 4H13" />
-        </svg>
-      );
-    }
-
-    if (type === "edit") {
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z" />
-        </svg>
-      );
-    }
-
-    if (type === "delete") {
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M4 7h16" />
-          <path d="M9 7V4h6v3" />
-          <path d="M7 7l1 14h8l1-14" />
-          <path d="M10 11v6" />
-          <path d="M14 11v6" />
-        </svg>
-      );
-    }
-
-    if (type === "arrow") {
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 12h13" />
-          <path d="m13 6 6 6-6 6" />
-        </svg>
-      );
-    }
-
-    return (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="8.5" />
-      </svg>
-    );
-  };
-
-  // LOADING
   if (loading) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((item) => (
-          <div key={item} className="animate-pulse rounded-2xl border border-[#800020]/20 bg-[#800020] p-5 shadow-sm">
+          <div
+            key={item}
+            className="animate-pulse rounded-2xl border border-[#800020]/20 bg-[#800020] p-5 shadow-sm"
+          >
             <div className="h-5 w-1/2 rounded bg-white/20" />
+
             <div className="mt-4 space-y-3">
               <div className="h-4 w-3/4 rounded bg-white/10" />
               <div className="h-4 w-2/3 rounded bg-white/10" />
               <div className="h-4 w-1/2 rounded bg-white/10" />
             </div>
+
             <div className="mt-5 grid grid-cols-2 gap-2">
               <div className="h-10 rounded-xl bg-white/10" />
               <div className="h-10 rounded-xl bg-white/10" />
@@ -158,22 +290,25 @@ export default function PersonCardList({
     );
   }
 
-  // EMPTY
   if (persons.length === 0) {
     return (
       <div className="flex min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#800020]/20 bg-[#800020]/5 px-5 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#800020]/10 text-[#800020] shadow-sm">
           <Icon type="document" size={30} />
         </div>
+
         <h3 className="mt-4 text-base font-bold text-[#800020]">ไม่พบข้อมูล</h3>
-        <p className="mt-1 text-xs text-gray-400">ไม่พบรายการที่ตรงกับเงื่อนไขการค้นหา</p>
+
+        <p className="mt-1 text-xs text-gray-400">
+          ไม่พบรายการที่ตรงกับเงื่อนไขการค้นหา
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {sortedPersons.map((p: any) => {
+      {sortedPersons.map((p) => {
         const selected = selectedIds.includes(p.personId);
 
         return (
@@ -185,7 +320,6 @@ export default function PersonCardList({
                 : "border-[#800020]/40"
             }`}
           >
-            {/* TOP ACCENT */}
             <div
               className={`absolute left-0 top-0 h-1.5 w-full ${
                 p.status === 0
@@ -201,7 +335,6 @@ export default function PersonCardList({
             />
 
             <div className="p-4 min-[480px]:p-5">
-              {/* HEADER */}
               <div className="flex items-start gap-3">
                 {selectMode && p.status < 4 && (
                   <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-white/20 bg-white/10 transition hover:bg-white/20">
@@ -215,7 +348,16 @@ export default function PersonCardList({
                 )}
 
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white shadow-sm">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <circle cx="12" cy="8" r="3.5" />
                     <path d="M4.5 20c.7-3.2 3.3-5 7.5-5s6.8 1.8 7.5 5" />
                   </svg>
@@ -225,47 +367,63 @@ export default function PersonCardList({
                   <h3 className="truncate text-base font-bold text-white min-[480px]:text-lg">
                     {p.fullName || "-"}
                   </h3>
+
                   <p className="mt-0.5 text-[10px] text-white/50">
                     รหัสบุคคล : {p.personId || "-"}
                   </p>
                 </div>
               </div>
 
-              {/* RECEIPT */}
               <div className="mt-5 rounded-xl border border-white/10 bg-black/10 p-3">
                 <div className="mb-3 flex items-center gap-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white shadow-sm">
                     <Icon type="receipt" size={17} />
                   </div>
+
                   <p className="text-xs font-bold text-white">ใบเสร็จรับเงิน</p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-3">
                   <div className="rounded-lg bg-white/10 px-3 py-2.5">
-                    <p className="text-[9px] font-semibold text-white/45">เล่มใบเสร็จ</p>
-                    <p className="mt-0.5 text-sm font-bold text-white">{p.receiptBookNo || "-"}</p>
+                    <p className="text-[9px] font-semibold text-white/45">
+                      เล่มใบเสร็จ
+                    </p>
+                    <p className="mt-0.5 text-sm font-bold text-white">
+                      {p.receiptBookNo || "-"}
+                    </p>
                   </div>
 
                   <div className="rounded-lg bg-white/10 px-3 py-2.5">
-                    <p className="text-[9px] font-semibold text-white/45">เลขที่</p>
-                    <p className="mt-0.5 text-sm font-bold text-white">{p.receiptNo || "-"}</p>
+                    <p className="text-[9px] font-semibold text-white/45">
+                      เลขที่
+                    </p>
+                    <p className="mt-0.5 text-sm font-bold text-white">
+                      {p.receiptNo || "-"}
+                    </p>
                   </div>
 
                   <div className="rounded-lg bg-white/10 px-3 py-2.5">
-                    <p className="text-[9px] font-semibold text-white/45">วันที่พิมพ์มือ</p>
-                    <p className="mt-0.5 text-xs font-bold text-white">{formatThaiDate(p.receiptDate)}</p>
+                    <p className="text-[9px] font-semibold text-white/45">
+                      วันที่พิมพ์มือ
+                    </p>
+                    <p className="mt-0.5 text-xs font-bold text-white">
+                      {formatThaiDate(p.receiptDate)}
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* DETAILS */}
               <div className="mt-4 space-y-3">
                 <div className="flex gap-3">
                   <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-400/15 text-blue-200">
                     <Icon type="document" size={16} />
                   </div>
+
                   <div className="min-w-0">
-                    <p className="text-[10px] font-semibold text-white/45">เรื่องที่ขออนุญาต</p>
+                    <p className="text-[10px] font-semibold text-white/45">
+                      เรื่องที่ขออนุญาต
+                    </p>
+
                     <p className="mt-0.5 break-words text-sm font-semibold leading-5 text-white">
                       {p.purpose || "-"}
                     </p>
@@ -276,8 +434,12 @@ export default function PersonCardList({
                   <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-400/15 text-purple-200">
                     <Icon type="building" size={16} />
                   </div>
+
                   <div className="min-w-0">
-                    <p className="text-[10px] font-semibold text-white/45">หน่วยงาน</p>
+                    <p className="text-[10px] font-semibold text-white/45">
+                      หน่วยงาน
+                    </p>
+
                     <p className="mt-0.5 break-words text-sm font-semibold leading-5 text-white">
                       {p.requestingAgency || "-"}
                     </p>
@@ -285,41 +447,58 @@ export default function PersonCardList({
                 </div>
               </div>
 
-              {/* STATUS */}
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-semibold text-white/45">สถานะ</span>
-                  <span className="text-xs font-bold">{renderStatus(p.status)}</span>
+                  <span className="text-[10px] font-semibold text-white/45">
+                    สถานะ
+                  </span>
+
+                  <span className="text-xs font-bold">
+                    {renderStatus(p.status)}
+                  </span>
                 </div>
 
                 <span className="h-3 w-px bg-white/20" />
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-semibold text-white/45">ความเร่งด่วน</span>
-                  <span className="text-xs font-bold">{renderPriority(p.priority ?? 0)}</span>
+                  <span className="text-[10px] font-semibold text-white/45">
+                    ความเร่งด่วน
+                  </span>
+
+                  <span className="text-xs font-bold">
+                    {renderPriority(p.priority ?? 0)}
+                  </span>
                 </div>
               </div>
 
-              {/* RETURN INFORMATION */}
               {p.status === 4 && (
                 <div className="mt-4 rounded-xl border border-red-300/20 bg-red-500/10 p-3">
                   <div className="flex flex-col gap-2 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between">
                     <div>
-                      <p className="text-[9px] font-bold uppercase tracking-wider text-red-200/70">วันที่คืน</p>
-                      <p className="mt-0.5 text-sm font-bold text-red-100">{formatThaiDate(p.returnDate)}</p>
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-red-200/70">
+                        วันที่คืน
+                      </p>
+
+                      <p className="mt-0.5 text-sm font-bold text-red-100">
+                        {formatThaiDate(p.returnDate)}
+                      </p>
                     </div>
 
                     {p.deleteAt && (
                       <div className="min-[480px]:text-right">
-                        <p className="text-[9px] font-bold uppercase tracking-wider text-red-200/70">วันหมดอายุเอกสาร</p>
-                        <p className="mt-0.5 text-sm font-bold text-red-100">{formatThaiDate(p.deleteAt)}</p>
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-red-200/70">
+                          วันหมดอายุเอกสาร
+                        </p>
+
+                        <p className="mt-0.5 text-sm font-bold text-red-100">
+                          {formatThaiDate(p.deleteAt)}
+                        </p>
                       </div>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* ACTIONS */}
               <div className="mt-5 grid grid-cols-2 gap-2 min-[640px]:grid-cols-4">
                 <button
                   type="button"
@@ -360,7 +539,6 @@ export default function PersonCardList({
                 </button>
               </div>
 
-              {/* STATUS UPDATE */}
               {p.status < 4 && (
                 <button
                   type="button"

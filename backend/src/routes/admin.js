@@ -6,12 +6,12 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const admin = Router();
 
-const MAX_PAGE_SIZE = 100;
-const MIN_PASSWORD_LENGTH = 12;
-const MAX_PASSWORD_LENGTH = 128;
+// const MAX_PAGE_SIZE = 100;
+const MIN_PASSWORD_LENGTH = 6;
+const MAX_PASSWORD_LENGTH = 18;
 const MAX_USERNAME_LENGTH = 50;
-const MAX_NAME_LENGTH = 100;
-const MAX_POSITION_LENGTH = 100;
+const MAX_NAME_LENGTH = 150;
+const MAX_POSITION_LENGTH = 150;
 
 // ตรวจสอบ username และข้อความที่รับจาก client
 function isValidText(value, maxLength) {

@@ -1,11 +1,130 @@
-//src/hooks/usePersonForm.ts
+// src/hooks/usePersonForm.ts
 import { useEffect, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import type { NavigateFunction } from "react-router-dom";
+import type { AxiosError } from "axios";
 import api from "../api/axios";
 import { toast } from "../utils/toast";
 
-export default function usePersonForm(navigate: any) {
-  const currentYear = new Date().getFullYear();
-  const currentYearTH = currentYear + 543;
+interface PersonForm {
+  [key: string]: string | number | null;
+  prefix: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  citizenId: string;
+  nationality: string;
+  ethnicity: string;
+  bodyType: string;
+  skinColor: string;
+  behavior: string;
+  distinguishingMarks: string;
+  father: string;
+  mother: string;
+  spouse: string;
+  money: number;
+  moneyText: string;
+  weight: number | null;
+  height: number | null;
+  workplaceAddress: string;
+  occupation: string;
+  address: string;
+  purpose: string;
+  requestingAgency: string;
+  birthDay: string;
+  birthMonth: string;
+  birthYear: string;
+  fingerprintDay: string;
+  fingerprintMonth: string;
+  fingerprintYear: string;
+  receiptDay: string;
+  receiptMonth: string;
+  receiptYear: string;
+  fingerprintDate: string;
+  receiptDate: string;
+  priority: number;
+  status: number;
+  receiptBookNo: string;
+  receiptNo: string;
+}
+
+interface ApiErrorResponse {
+  error?: string;
+}
+
+interface ReceiptResponse {
+  bookNo?: string | number;
+  usedNumbers?: number[];
+}
+
+const ALL_RECEIPT_NUMBERS = Array.from({ length: 50 }, (_, index) => index + 1);
+
+const getAvailableReceiptNumbers = (usedNumbers: number[]) =>
+  ALL_RECEIPT_NUMBERS.filter((number) => !usedNumbers.includes(number));
+
+const MONTHS = [
+  "มกราคม",
+  "กุมภาพันธ์",
+  "มีนาคม",
+  "เมษายน",
+  "พฤษภาคม",
+  "มิถุนายน",
+  "กรกฎาคม",
+  "สิงหาคม",
+  "กันยายน",
+  "ตุลาคม",
+  "พฤศจิกายน",
+  "ธันวาคม",
+];
+
+const getTodayTH = () => {
+  const now = new Date();
+
+  return {
+    day: String(now.getDate()),
+    month: MONTHS[now.getMonth()],
+    year: String(now.getFullYear() + 543),
+  };
+};
+
+const isLeapYear = (yearBE: string) => {
+  const yearAD = Number(yearBE) - 543;
+
+  if (yearAD % 400 === 0) return true;
+  if (yearAD % 100 === 0) return false;
+
+  return yearAD % 4 === 0;
+};
+
+const getDaysInMonth = (month: string, year?: string) => {
+  if (!month) return 31;
+
+  if (month === "กุมภาพันธ์") {
+    return year && isLeapYear(year) ? 29 : 28;
+  }
+
+  if (["เมษายน", "มิถุนายน", "กันยายน", "พฤศจิกายน"].includes(month)) {
+    return 30;
+  }
+
+  return 31;
+};
+
+const convertMoneyToText = (amount: number) => {
+  if (!amount) return "";
+  if (amount === 100) return "หนึ่งร้อยบาทถ้วน";
+
+  return `${amount}บาทถ้วน`;
+};
+
+const isEmpty = (value: unknown): boolean =>
+  value === undefined ||
+  value === null ||
+  value === "" ||
+  (typeof value === "number" && Number.isNaN(value));
+
+export default function usePersonForm(navigate: NavigateFunction) {
+  const currentYearTH = new Date().getFullYear() + 543;
 
   const [receiptNumbers, setReceiptNumbers] = useState<number[]>([]);
 
@@ -14,7 +133,7 @@ export default function usePersonForm(navigate: any) {
 
   const years = Array.from(
     { length: maxYear - minYear + 1 },
-    (_, i) => maxYear - i,
+    (_, index) => maxYear - index,
   );
 
   const nationalities = ["ไทย", "ลาว", "กัมพูชา", "พม่า", "จีน", "อื่นๆ"];
@@ -22,44 +141,17 @@ export default function usePersonForm(navigate: any) {
   const bodyTypes = ["ผอม", "สันทัด", "ท้วม", "อ้วน"];
   const skinColors = ["ขาว", "ขาวเหลือง", "สองสี", "ดำแดง", "ดำ"];
 
-  const heights = Array.from({ length: 121 }, (_, i) => i + 100);
-  const weights = Array.from({ length: 151 }, (_, i) => i + 30);
-  const allReceiptNumbers = Array.from({ length: 50 }, (_, i) => i + 1);
-
-  const months = [
-    "มกราคม",
-    "กุมภาพันธ์",
-    "มีนาคม",
-    "เมษายน",
-    "พฤษภาคม",
-    "มิถุนายน",
-    "กรกฎาคม",
-    "สิงหาคม",
-    "กันยายน",
-    "ตุลาคม",
-    "พฤศจิกายน",
-    "ธันวาคม",
-  ];
-
-  // 🔥 function วันนี้ (ไทย)
-  const getTodayTH = () => {
-    const now = new Date();
-
-    const day = now.getDate();
-    const monthIndex = now.getMonth();
-    const year = now.getFullYear() + 543;
-
-    return {
-      day: day.toString(),
-      month: months[monthIndex],
-      year: year.toString(),
-    };
-  };
+  const heights = Array.from({ length: 121 }, (_, index) => index + 100);
+  const weights = Array.from({ length: 151 }, (_, index) => index + 30);
 
   const today = getTodayTH();
 
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState<PersonForm>({
     prefix: "นาย",
+    firstName: "",
+    lastName: "",
+    fullName: "",
+    citizenId: "",
     nationality: "ไทย",
     ethnicity: "ไทย",
     bodyType: "สันทัด",
@@ -75,173 +167,149 @@ export default function usePersonForm(navigate: any) {
     height: null,
     workplaceAddress: "",
     occupation: "",
-
-    // 🔥 birth
+    address: "",
+    purpose: "",
+    requestingAgency: "",
     birthDay: "",
     birthMonth: "",
     birthYear: "",
-
-    // 🔥 fingerprint (ใส่อัตโนมัติ)
     fingerprintDay: today.day,
     fingerprintMonth: today.month,
     fingerprintYear: today.year,
-
-    // 🔥 receipt (ใส่อัตโนมัติ)
     receiptDay: today.day,
     receiptMonth: today.month,
     receiptYear: today.year,
-
-    // 🔥 final string
     fingerprintDate: "",
     receiptDate: "",
-
     priority: 0,
     status: 0,
     receiptBookNo: "",
     receiptNo: "",
   });
 
-  // ================= RECEIPT =================
-
   useEffect(() => {
     const fetchReceipts = async () => {
       try {
-        const res = await api.get("/receipt/latest");
+        const response = await api.get<ReceiptResponse>("/receipt/latest");
 
-        const bookNo = res.data?.bookNo ?? "";
-        const usedNumbers = Array.isArray(res.data?.usedNumbers)
-          ? res.data.usedNumbers
+        const bookNo = String(response.data?.bookNo ?? "");
+        const usedNumbers = Array.isArray(response.data?.usedNumbers)
+          ? response.data.usedNumbers
           : [];
 
-        setForm((prev: any) => {
-          if (prev.receiptBookNo === bookNo) return prev;
-          return { ...prev, receiptBookNo: bookNo };
+        setForm((previous) => {
+          if (previous.receiptBookNo === bookNo) return previous;
+
+          return {
+            ...previous,
+            receiptBookNo: bookNo,
+          };
         });
 
-        const available = allReceiptNumbers.filter(
-          (n) => !usedNumbers.includes(n),
-        );
-
-        setReceiptNumbers(available);
+        setReceiptNumbers(getAvailableReceiptNumbers(usedNumbers));
       } catch {
         setReceiptNumbers([]);
       }
     };
 
-    fetchReceipts();
+    void fetchReceipts();
   }, []);
 
   useEffect(() => {
     if (!form.receiptBookNo) return;
 
+    let cancelled = false;
+
     const fetchUsedNumbers = async () => {
       try {
-        const res = await api.get(`/receipt/used/${form.receiptBookNo}`);
-
-        const usedNumbers = Array.isArray(res.data?.usedNumbers)
-          ? res.data.usedNumbers
-          : [];
-
-        const available = allReceiptNumbers.filter(
-          (n) => !usedNumbers.includes(n),
+        const response = await api.get<ReceiptResponse>(
+          `/receipt/used/${encodeURIComponent(form.receiptBookNo)}`,
         );
 
-        setReceiptNumbers(available);
+        const usedNumbers = Array.isArray(response.data?.usedNumbers)
+          ? response.data.usedNumbers
+          : [];
+
+        if (!cancelled) {
+          setReceiptNumbers(getAvailableReceiptNumbers(usedNumbers));
+        }
       } catch {
-        setReceiptNumbers(allReceiptNumbers);
+        if (!cancelled) {
+          setReceiptNumbers(ALL_RECEIPT_NUMBERS);
+        }
       }
     };
 
-    fetchUsedNumbers();
+    void fetchUsedNumbers();
+
+    return () => {
+      cancelled = true;
+    };
   }, [form.receiptBookNo]);
 
-  // ================= UTIL =================
-
-  const isLeapYear = (yearBE: string) => {
-    const yearAD = Number(yearBE) - 543;
-    if (yearAD % 400 === 0) return true;
-    if (yearAD % 100 === 0) return false;
-    return yearAD % 4 === 0;
-  };
-
-  const getDaysInMonth = (month: string, year?: string) => {
-    if (!month) return 31;
-    if (month === "กุมภาพันธ์") {
-      return year && isLeapYear(year) ? 29 : 28;
-    }
-    if (["เมษายน", "มิถุนายน", "กันยายน", "พฤศจิกายน"].includes(month)) {
-      return 30;
-    }
-    return 31;
-  };
-
-  const convertMoneyToText = (amount: number) => {
-    if (!amount) return "";
-    if (amount === 100) return "หนึ่งร้อยบาทถ้วน";
-    return amount + "บาทถ้วน";
-  };
-
-  const isEmpty = (value: any) => {
-    return (
-      value === undefined ||
-      value === null ||
-      value === "" ||
-      (typeof value === "number" && isNaN(value))
-    );
-  };
-
-  // ================= FILTER =================
-
-  const filteredHeights = heights.filter((h) =>
-    form.height ? String(h).startsWith(form.height) : true,
+  const filteredHeights = heights.filter((height) =>
+    form.height !== null && form.height !== 0
+      ? String(height).startsWith(String(form.height))
+      : true,
   );
 
-  const filteredWeights = weights.filter((w) =>
-    form.weight ? String(w).startsWith(form.weight) : true,
+  const filteredWeights = weights.filter((weight) =>
+    form.weight !== null && form.weight !== 0
+      ? String(weight).startsWith(String(form.weight))
+      : true,
   );
 
   const maxDay = getDaysInMonth(form.birthMonth, form.birthYear);
-  const filteredDays = Array.from({ length: maxDay }, (_, i) => i + 1);
 
-  // ================= HANDLE CHANGE =================
+  const filteredDays = Array.from({ length: maxDay }, (_, index) => index + 1);
 
-  const handleChange = (e: any) => {
-    const { name, value } = e.target;
+  const handleChange = (
+    event: ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
+    const { name, value } = event.target;
 
     if (name === "citizenId") {
-      const onlyNumber = value.replace(/\D/g, "").slice(0, 13);
-      setForm((prev: any) => ({ ...prev, citizenId: onlyNumber }));
+      const onlyNumbers = value.replace(/\D/g, "").slice(0, 13);
+
+      setForm((previous) => ({
+        ...previous,
+        citizenId: onlyNumbers,
+      }));
+
       return;
     }
 
     if (name === "money") {
-      const num = Number(value);
-      setForm((prev: any) => ({
-        ...prev,
-        money: num,
-        moneyText: convertMoneyToText(num),
+      const amount = Number(value);
+
+      setForm((previous) => ({
+        ...previous,
+        money: amount,
+        moneyText: convertMoneyToText(amount),
       }));
+
       return;
     }
 
-    if (["weight", "height"].includes(name)) {
-      setForm((prev: any) => ({
-        ...prev,
+    if (name === "weight" || name === "height") {
+      setForm((previous) => ({
+        ...previous,
         [name]: value === "" ? null : Number(value),
       }));
+
       return;
     }
 
-    setForm((prev: any) => ({
-      ...prev,
+    setForm((previous) => ({
+      ...previous,
       [name]: value,
     }));
   };
 
-  // ================= SUBMIT =================
-
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
     const fingerprintDate =
       form.fingerprintDay && form.fingerprintMonth && form.fingerprintYear
@@ -257,7 +325,7 @@ export default function usePersonForm(navigate: any) {
       .filter(Boolean)
       .join(" ");
 
-    const finalForm = {
+    const finalForm: PersonForm = {
       ...form,
       fullName,
       fingerprintDate,
@@ -296,9 +364,11 @@ export default function usePersonForm(navigate: any) {
       "receiptDay",
       "receiptMonth",
       "receiptYear",
-    ];
+    ] as const;
 
-    const missingFields = requiredFields.filter((f) => isEmpty(finalForm[f]));
+    const missingFields = requiredFields.filter((field) =>
+      isEmpty(finalForm[field]),
+    );
 
     if (missingFields.length > 0) {
       toast(
@@ -306,23 +376,30 @@ export default function usePersonForm(navigate: any) {
         "กรอกข้อมูลไม่ครบ",
         `ยังขาด ${missingFields.length} ช่อง`,
       );
+
       return;
     }
 
-    if (!finalForm.citizenId || finalForm.citizenId.length !== 13) {
+    if (
+      typeof finalForm.citizenId !== "string" ||
+      finalForm.citizenId.length !== 13
+    ) {
       toast("warning", "เลขบัตรประชาชนต้องเป็น 13 หลัก");
       return;
     }
 
     try {
       await api.post("/person", finalForm);
+
       toast("success", "บันทึกสำเร็จ");
       navigate("/person/history");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as AxiosError<ApiErrorResponse>;
+
       toast(
         "error",
         "ผิดพลาด",
-        err.response?.data?.error || "ไม่สามารถบันทึกได้",
+        error.response?.data?.error || "ไม่สามารถบันทึกได้",
       );
     }
   };
@@ -333,7 +410,7 @@ export default function usePersonForm(navigate: any) {
     handleChange,
     handleSubmit,
     receiptNumbers,
-    months,
+    months: MONTHS,
     years,
     nationalities,
     ethnicities,

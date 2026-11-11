@@ -1,46 +1,40 @@
-// src/context/AuthContext.tsx
-import { createContext, useContext, useEffect, useState } from "react";
+//src/context/AuthContext.tsx
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import api from "../api/axios";
 import { toast } from "../utils/toast";
+import { AuthContext } from "./authContext";
+import type { Admin } from "./authContext";
 
-type Admin = {
-  adminId: string;
-  username: string;
-  name: string;
-  position: string;
+type AuthProviderProps = {
+  children: ReactNode;
 };
 
-type AuthType = {
-  admin: Admin | null;
-  loading: boolean;
-  login: (u: string, p: string) => Promise<void>;
-  logout: () => Promise<void>;
-  verify: () => Promise<void>; // 🔥 เพิ่มไว้เรียกใช้เองได้
-};
-
-const AuthContext = createContext<AuthType>({} as AuthType);
-
-export const AuthProvider = ({ children }: any) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const verify = async () => {
+  const verify = useCallback(async () => {
     try {
       const res = await api.get("/auth/verify");
-      setAdmin(res.data.admin);
-    } catch (err: any) {
-      if (err.response?.status !== 401) {
+      setAdmin(res.data.admin ?? null);
+    } catch (err: unknown) {
+      const error = err as {
+        response?: { status?: number };
+      };
+
+      if (error.response?.status !== 401) {
         console.error("Verify error:", err);
       }
+
       setAdmin(null);
     } finally {
-      setLoading(false); // 🔥 กัน loading ค้าง
+      setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    verify();
-  }, []);
+    void verify();
+  }, [verify]);
 
   const login = async (username: string, password: string) => {
     try {
@@ -55,13 +49,23 @@ export const AuthProvider = ({ children }: any) => {
         `ยินดีต้อนรับ ${res.data.admin?.name || username}`,
       );
 
-      await verify(); // 🔥 sync state หลัง login
-    } catch (err: any) {
+      await verify();
+
+      if (!res.data.admin) {
+        throw new Error("ไม่พบข้อมูลผู้ใช้งานหลังเข้าสู่ระบบ");
+      }
+    } catch (err: unknown) {
+      const error = err as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
+
       toast(
         "error",
         "เข้าสู่ระบบไม่สำเร็จ",
-        err.response?.data?.error || "เกิดข้อผิดพลาด",
+        error.response?.data?.error || error.message || "เกิดข้อผิดพลาด",
       );
+
       throw err;
     }
   };
@@ -83,12 +87,10 @@ export const AuthProvider = ({ children }: any) => {
         loading,
         login,
         logout,
-        verify, // 🔥 export ออกไปใช้ได้
+        verify,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

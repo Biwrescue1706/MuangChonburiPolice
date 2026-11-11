@@ -1,13 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 import Swal from "sweetalert2";
 import api from "../../api/axios";
-
-interface DateParts {
-  day: string;
-  month: string;
-  year: string;
-}
 
 interface FormData {
   year: string;
@@ -37,441 +32,403 @@ interface FormData {
 }
 
 interface ForeignerData {
-  id: string;
-  sequenceNo: number | null;
-  year: number | null;
-  foreignerIdNo: string | null;
-  prefix: string | null;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  age: number | null;
-  nationality: string | null;
-  ethnicity: string | null;
-  certificateRegistrationNo: string | null;
-  certificateDate: string | null;
-  district: string | null;
-  province: string | null;
-  policeStation: string | null;
-  policeProvince: string | null;
-  houseNo: string | null;
-  moo: string | null;
-  road: string | null;
-  subdistrict: string | null;
-  domicileDistrict: string | null;
-  domicileProvince: string | null;
-  domicile: string | null;
-  applicationType: string | null;
-  applicationDate: string | null;
-  expirationDate: string | null;
-  previousExpirationDate: string | null;
-  amount: number | null;
-  amountText: string | null;
-  receiptBookNo: string | null;
-  receiptNo: string | null;
-  receiptDate: string | null;
-  certificateNo: string | null;
-  petitionDate: string | null;
+  id: string | number;
+  sequenceNo?: number | string;
+  year?: number | string;
+  foreignerIdNo?: string | null;
+  prefix?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  fullName?: string | null;
+  age?: number | string | null;
+  nationality?: string | null;
+  ethnicity?: string | null;
+  certificateRegistrationNo?: string | null;
+  certificateDate?: string | null;
+  district?: string | null;
+  province?: string | null;
+  policeStation?: string | null;
+  policeProvince?: string | null;
+  houseNo?: string | null;
+  moo?: string | null;
+  road?: string | null;
+  subdistrict?: string | null;
+  domicileDistrict?: string | null;
+  domicileProvince?: string | null;
+  domicile?: string | null;
+  applicationType?: string | null;
+  applicationDate?: string | null;
+  expirationDate?: string | null;
+  previousExpirationDate?: string | null;
+  amount?: number | string | null;
+  amountText?: string | null;
+  receiptBookNo?: string | null;
+  receiptNo?: string | null;
+  receiptDate?: string | null;
+  certificateNo?: string | null;
+  petitionDate?: string | null;
 }
 
-const MONTHS = [
-  { value: "01", label: "ม.ค." },
-  { value: "02", label: "ก.พ." },
-  { value: "03", label: "มี.ค." },
-  { value: "04", label: "เม.ย." },
-  { value: "05", label: "พ.ค." },
-  { value: "06", label: "มิ.ย." },
-  { value: "07", label: "ก.ค." },
-  { value: "08", label: "ส.ค." },
-  { value: "09", label: "ก.ย." },
-  { value: "10", label: "ต.ค." },
-  { value: "11", label: "พ.ย." },
-  { value: "12", label: "ธ.ค." },
+interface ApiResponse<T> {
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
+const EMPTY_FORM: FormData = {
+  year: "",
+  foreignerIdNo: "",
+  prefix: "",
+  firstName: "",
+  lastName: "",
+  age: "",
+  nationality: "",
+  ethnicity: "",
+  certificateRegistrationNo: "",
+  district: "",
+  province: "",
+  policeStation: "",
+  policeProvince: "",
+  houseNo: "",
+  moo: "",
+  road: "",
+  subdistrict: "",
+  domicileDistrict: "",
+  domicileProvince: "",
+  applicationType: "",
+  amount: "",
+  receiptBookNo: "",
+  receiptNo: "",
+  certificateNo: "",
+};
+
+type DateField =
+  | "certificateDate"
+  | "applicationDate"
+  | "expirationDate"
+  | "previousExpirationDate"
+  | "receiptDate"
+  | "petitionDate";
+
+type DateState = Record<DateField, string>;
+
+const EMPTY_DATES: DateState = {
+  certificateDate: "",
+  applicationDate: "",
+  expirationDate: "",
+  previousExpirationDate: "",
+  receiptDate: "",
+  petitionDate: "",
+};
+
+const MONTHS_TH = [
+  "ม.ค.",
+  "ก.พ.",
+  "มี.ค.",
+  "เม.ย.",
+  "พ.ค.",
+  "มิ.ย.",
+  "ก.ค.",
+  "ส.ค.",
+  "ก.ย.",
+  "ต.ค.",
+  "พ.ย.",
+  "ธ.ค.",
 ];
 
-const CHONBURI_DISTRICTS = [
-  "เมืองชลบุรี",
-  "บ้านบึง",
-  "หนองใหญ่",
-  "บางละมุง",
-  "พานทอง",
-  "พนัสนิคม",
-  "ศรีราชา",
-  "เกาะจันทร์",
-  "สัตหีบ",
-  "บ่อทอง",
-  "เกาะสีชัง",
-];
+/**
+ * แปลงวันที่ที่ได้รับจาก API เป็น YYYY-MM-DD
+ * รองรับวันที่ ISO และวันที่ภาษาไทยรูปแบบ d MMM. YYYY
+ */
+function toDateInputValue(value?: string | null): string {
+  if (!value) return "";
 
-// แปลงวันที่จาก Backend
-function stringToDateParts(value: string | null | undefined): DateParts {
-  if (!value) {
-    return { day: "", month: "", year: "" };
+  const input = value.trim();
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(input)) {
+    return input.slice(0, 10);
   }
 
-  const text = String(value).replace(/\s+/g, " ").trim();
-
-  const isoMatch = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-
-  if (isoMatch) {
-    const ceYear = Number(isoMatch[1]);
-    const month = Number(isoMatch[2]);
-    const day = Number(isoMatch[3]);
-
-    return {
-      day: String(day),
-      month: String(month).padStart(2, "0"),
-      year: String(ceYear + 543),
-    };
-  }
-
-  const thaiMatch = text.match(/^(\d{1,2})\s+(.+?)\s+(\d{4})$/);
+  const thaiMatch = input.match(/^(\d{1,2})\s+([ก-๙.]+)\s+(\d{4})$/);
 
   if (thaiMatch) {
     const day = Number(thaiMatch[1]);
-    const monthText = thaiMatch[2].trim();
-    const year = Number(thaiMatch[3]);
+    const monthText = thaiMatch[2].replace(/\./g, "");
+    let year = Number(thaiMatch[3]);
 
-    const foundMonth = MONTHS.find((item) => item.label === monthText);
+    const monthIndex = MONTHS_TH.findIndex(
+      (month) => month.replace(/\./g, "") === monthText,
+    );
 
-    if (foundMonth) {
-      return {
-        day: String(day),
-        month: foundMonth.value,
-        year: String(year),
-      };
+    if (monthIndex !== -1) {
+      if (year > 2400) year -= 543;
+
+      return `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(
+        day,
+      ).padStart(2, "0")}`;
     }
   }
 
-  return { day: "", month: "", year: "" };
+  // รองรับวันที่ที่ JavaScript สามารถอ่านได้
+  const parsed = new Date(input);
+
+  if (!Number.isNaN(parsed.getTime())) {
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  }
+
+  return "";
 }
 
-// แปลงวันที่เป็น String
-function datePartsToString(value: DateParts): string {
-  if (!value.day && !value.month && !value.year) {
-    return "";
+function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError<ApiResponse<unknown>>(error)) {
+    return (
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      error.message ||
+      "เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์"
+    );
   }
 
-  if (!value.day || !value.month || !value.year) {
-    throw new Error("กรุณากรอก วัน เดือน และปี ให้ครบถ้วน");
+  if (error instanceof Error) {
+    return error.message;
   }
 
-  const day = Number(value.day);
-  const month = Number(value.month);
-  const buddhistYear = Number(value.year);
-
-  if (!Number.isInteger(day) || day < 1 || day > 31) {
-    throw new Error("วันที่ไม่ถูกต้อง");
-  }
-
-  if (!Number.isInteger(month) || month < 1 || month > 12) {
-    throw new Error("เดือนไม่ถูกต้อง");
-  }
-
-  if (
-    !Number.isInteger(buddhistYear) ||
-    buddhistYear < 2400 ||
-    buddhistYear > 2700
-  ) {
-    throw new Error("ปี พ.ศ. ไม่ถูกต้อง");
-  }
-
-  const ceYear = buddhistYear - 543;
-  const lastDay = new Date(ceYear, month, 0).getDate();
-
-  if (day > lastDay) {
-    throw new Error("วันที่ไม่ถูกต้องสำหรับเดือนที่เลือก");
-  }
-
-  const monthData = MONTHS.find(
-    (item) => item.value === String(month).padStart(2, "0"),
-  );
-
-  if (!monthData) {
-    throw new Error("เดือนไม่ถูกต้อง");
-  }
-
-  return `${day} ${monthData.label} ${buddhistYear}`;
+  return "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
 }
 
-// แปลงวันที่เป็น ISO สำหรับ petitionDate
-function datePartsToISO(value: DateParts): string | null {
-  if (!value.day && !value.month && !value.year) {
-    return null;
-  }
-
-  if (!value.day || !value.month || !value.year) {
-    throw new Error("กรุณากรอก วัน เดือน และปี ให้ครบถ้วน");
-  }
-
-  const day = Number(value.day);
-  const month = Number(value.month);
-  const buddhistYear = Number(value.year);
-  const ceYear = buddhistYear - 543;
-
-  if (
-    !Number.isInteger(day) ||
-    day < 1 ||
-    day > new Date(ceYear, month, 0).getDate()
-  ) {
-    throw new Error("วันที่ไม่ถูกต้อง");
-  }
-
-  if (!Number.isInteger(month) || month < 1 || month > 12) {
-    throw new Error("เดือนไม่ถูกต้อง");
-  }
-
-  if (
-    !Number.isInteger(buddhistYear) ||
-    buddhistYear < 2400 ||
-    buddhistYear > 2700
-  ) {
-    throw new Error("ปี พ.ศ. ไม่ถูกต้อง");
-  }
-
-  return `${ceYear}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
-// ช่องกรอกวันที่
-function DateInput({
+function InputField({
   label,
+  value,
+  onChange,
   required = false,
+  placeholder,
+  type = "text",
+  min,
+  step,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+  placeholder?: string;
+  type?: string;
+  min?: string;
+  step?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+        {label}
+        {required && <span className="ml-1 text-red-500">*</span>}
+      </span>
+
+      <input
+        type={type}
+        value={value}
+        required={required}
+        placeholder={placeholder ?? `กรอก${label}`}
+        min={min}
+        step={step}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+      />
+    </label>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+  required = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: string[];
+  required?: boolean;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+        {label}
+        {required && <span className="ml-1 text-red-500">*</span>}
+      </span>
+
+      <select
+        value={value}
+        required={required}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+      >
+        <option value="">-- เลือก{label} --</option>
+
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function DateFieldInput({
+  label,
   value,
   onChange,
 }: {
   label: string;
-  required?: boolean;
-  value: DateParts;
-  onChange: (value: DateParts) => void;
+  value: string;
+  onChange: (value: string) => void;
 }) {
   return (
-    <div>
-      <label className="mb-2 block text-sm font-medium text-slate-700">
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
-        {required && <span className="ml-1 text-red-500">*</span>}
-      </label>
+      </span>
 
-      <div className="grid grid-cols-3 gap-2">
-        <select
-          required={required}
-          value={value.day}
-          onChange={(e) =>
-            onChange({
-              day: e.target.value,
-              month: value.month,
-              year: value.year,
-            })
-          }
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
-        >
-          <option value="">วัน</option>
-          {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
-            <option key={day} value={String(day)}>
-              {day}
-            </option>
-          ))}
-        </select>
-
-        <select
-          required={required}
-          value={value.month}
-          onChange={(e) =>
-            onChange({
-              day: value.day,
-              month: e.target.value,
-              year: value.year,
-            })
-          }
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
-        >
-          <option value="">เดือน</option>
-          {MONTHS.map((month) => (
-            <option key={month.value} value={month.value}>
-              {month.label}
-            </option>
-          ))}
-        </select>
-
-        <input
-          required={required}
-          type="number"
-          inputMode="numeric"
-          min="2400"
-          max="2700"
-          value={value.year}
-          onChange={(e) =>
-            onChange({
-              day: value.day,
-              month: value.month,
-              year: e.target.value,
-            })
-          }
-          placeholder="พ.ศ."
-          className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
-        />
-      </div>
-    </div>
+      <input
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+      />
+    </label>
   );
 }
 
-// กล่อง Section
 function Section({
   title,
+  description,
   children,
 }: {
   title: string;
+  description?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-      <h2 className="mb-5 border-l-4 border-[#800020] pl-3 text-lg font-bold text-[#800020]">
-        {title}
-      </h2>
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+      <div className="mb-5 border-b border-slate-100 pb-4">
+        <h2 className="text-base font-semibold text-slate-800 sm:text-lg">
+          {title}
+        </h2>
+
+        {description && (
+          <p className="mt-1 text-sm text-slate-500">{description}</p>
+        )}
+      </div>
+
       {children}
     </section>
   );
 }
 
-const inputClass =
-  "w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none transition focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10";
-
 export default function EditForeigner() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { id } = useParams();
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [sequenceNo, setSequenceNo] = useState<number | null>(null);
+  const [form, setForm] = useState<FormData>(EMPTY_FORM);
+  const [dates, setDates] = useState<DateState>(EMPTY_DATES);
+  const [sequenceNo, setSequenceNo] = useState<string>("");
+  const [domicile, setDomicile] = useState<string>("");
+  const [amountText, setAmountText] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [saving, setSaving] = useState<boolean>(false);
 
-  const [form, setForm] = useState<FormData>({
-    year: String(new Date().getFullYear() + 543),
-    foreignerIdNo: "",
-    prefix: "",
-    firstName: "",
-    lastName: "",
-    age: "",
-    nationality: "",
-    ethnicity: "",
-    certificateRegistrationNo: "",
-    district: "",
-    province: "ชลบุรี",
-    policeStation: "",
-    policeProvince: "ชลบุรี",
-    houseNo: "",
-    moo: "",
-    road: "",
-    subdistrict: "",
-    domicileDistrict: "",
-    domicileProvince: "ชลบุรี",
-    applicationType: "",
-    amount: "",
-    receiptBookNo: "",
-    receiptNo: "",
-    certificateNo: "",
-  });
+  const updateField = useCallback((field: keyof FormData, value: string) => {
+    setForm((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  }, []);
 
-  const [certificateDate, setCertificateDate] = useState<DateParts>({
-    day: "",
-    month: "",
-    year: "",
-  });
+  const updateDate = useCallback((field: DateField, value: string) => {
+    setDates((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  }, []);
 
-  const [applicationDate, setApplicationDate] = useState<DateParts>({
-    day: "",
-    month: "",
-    year: "",
-  });
-
-  const [expirationDate, setExpirationDate] = useState<DateParts>({
-    day: "",
-    month: "",
-    year: "",
-  });
-
-  const [previousExpirationDate, setPreviousExpirationDate] =
-    useState<DateParts>({
-      day: "",
-      month: "",
-      year: "",
-    });
-
-  const [receiptDate, setReceiptDate] = useState<DateParts>({
-    day: "",
-    month: "",
-    year: "",
-  });
-
-  const [petitionDate, setPetitionDate] = useState<DateParts>({
-    day: "",
-    month: "",
-    year: "",
-  });
-
-  useEffect(() => {
+  const loadData = useCallback(async () => {
     if (!id) {
-      navigate("/foreigner");
+      navigate("/foreigner", { replace: true });
       return;
     }
 
-    loadData();
-  }, [id]);
+    setLoading(true);
 
-  const loadData = async () => {
     try {
-      setLoading(true);
+      const response = await api.get<ApiResponse<ForeignerData>>(
+        `/foreigner/${id}`,
+      );
 
-      const response = await api.get(`/foreigner/${id}`);
-      const data: ForeignerData = response.data.data;
+      // รองรับทั้ง response รูปแบบ { data: {...} }
+      // และ response ที่ส่งข้อมูลรายการมาโดยตรง
+      const result = response.data?.data ?? response.data;
 
-      setSequenceNo(data.sequenceNo);
+      if (!result || typeof result !== "object" || !("id" in result)) {
+        throw new Error("ไม่พบข้อมูลบุคคลต่างด้าว");
+      }
+
+      const person = result as ForeignerData;
+
+      setSequenceNo(
+        person.sequenceNo !== undefined && person.sequenceNo !== null
+          ? String(person.sequenceNo)
+          : "",
+      );
 
       setForm({
-        year:
-          data.year !== null && data.year !== undefined
-            ? String(data.year)
-            : String(new Date().getFullYear() + 543),
-        foreignerIdNo: data.foreignerIdNo || "",
-        prefix: data.prefix || "",
-        firstName: data.firstName || "",
-        lastName: data.lastName || "",
-        age:
-          data.age !== null && data.age !== undefined ? String(data.age) : "",
-        nationality: data.nationality || "",
-        ethnicity: data.ethnicity || "",
-        certificateRegistrationNo: data.certificateRegistrationNo || "",
-        district: data.district || "",
-        province: data.province || "ชลบุรี",
-        policeStation: data.policeStation || "",
-        policeProvince: data.policeProvince || "ชลบุรี",
-        houseNo: data.houseNo || "",
-        moo: data.moo || "",
-        road: data.road || "",
-        subdistrict: data.subdistrict || "",
-        domicileDistrict: data.domicileDistrict || "",
-        domicileProvince: data.domicileProvince || "ชลบุรี",
-        applicationType: data.applicationType || "",
-        amount:
-          data.amount !== null && data.amount !== undefined
-            ? String(data.amount)
-            : "",
-        receiptBookNo: data.receiptBookNo || "",
-        receiptNo: data.receiptNo || "",
-        certificateNo: data.certificateNo || "",
+        year: String(person.year ?? ""),
+        foreignerIdNo: person.foreignerIdNo ?? "",
+        prefix: person.prefix ?? "",
+        firstName: person.firstName ?? "",
+        lastName: person.lastName ?? "",
+        age: person.age != null ? String(person.age) : "",
+        nationality: person.nationality ?? "",
+        ethnicity: person.ethnicity ?? "",
+        certificateRegistrationNo: person.certificateRegistrationNo ?? "",
+        district: person.district ?? "",
+        province: person.province ?? "",
+        policeStation: person.policeStation ?? "",
+        policeProvince: person.policeProvince ?? "",
+        houseNo: person.houseNo ?? "",
+        moo: person.moo ?? "",
+        road: person.road ?? "",
+        subdistrict: person.subdistrict ?? "",
+        domicileDistrict: person.domicileDistrict ?? "",
+        domicileProvince: person.domicileProvince ?? "",
+        applicationType: person.applicationType ?? "",
+        amount: person.amount != null ? String(person.amount) : "",
+        receiptBookNo: person.receiptBookNo ?? "",
+        receiptNo: person.receiptNo ?? "",
+        certificateNo: person.certificateNo ?? "",
       });
 
-      setCertificateDate(stringToDateParts(data.certificateDate));
-      setApplicationDate(stringToDateParts(data.applicationDate));
-      setExpirationDate(stringToDateParts(data.expirationDate));
-      setPreviousExpirationDate(stringToDateParts(data.previousExpirationDate));
-      setReceiptDate(stringToDateParts(data.receiptDate));
-      setPetitionDate(stringToDateParts(data.petitionDate));
-    } catch (error) {
-      console.error("GET FOREIGNER ERROR:", error);
+      setDates({
+        certificateDate: toDateInputValue(person.certificateDate),
+        applicationDate: toDateInputValue(person.applicationDate),
+        expirationDate: toDateInputValue(person.expirationDate),
+        previousExpirationDate: toDateInputValue(person.previousExpirationDate),
+        receiptDate: toDateInputValue(person.receiptDate),
+        petitionDate: toDateInputValue(person.petitionDate),
+      });
+
+      setDomicile(person.domicile ?? "");
+      setAmountText(person.amountText ?? "");
+    } catch (error: unknown) {
+      console.error("Load foreigner error:", error);
 
       await Swal.fire({
         icon: "error",
         title: "โหลดข้อมูลไม่สำเร็จ",
-        text: "ไม่สามารถโหลดข้อมูลคนต่างด้าวได้",
+        text: getErrorMessage(error),
         confirmButtonText: "ตกลง",
       });
 
@@ -479,215 +436,137 @@ export default function EditForeigner() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
 
-  const change = (key: keyof FormData, value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
-
-  const validate = () => {
-    if (!form.prefix.trim()) {
-      throw new Error("กรุณากรอกคำนำหน้า");
+  useEffect(() => {
+    if (!id) {
+      navigate("/foreigner", { replace: true });
+      return;
     }
 
-    if (!form.firstName.trim()) {
-      throw new Error("กรุณากรอกชื่อ");
+    void loadData();
+  }, [id, navigate, loadData]);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!id) {
+      await Swal.fire({
+        icon: "error",
+        title: "ไม่พบรหัสรายการ",
+        text: "กรุณากลับไปเลือกข้อมูลที่ต้องการแก้ไขใหม่",
+      });
+
+      return;
     }
 
-    if (!form.lastName.trim()) {
-      throw new Error("กรุณากรอกนามสกุล");
-    }
+    if (!form.firstName.trim() || !form.lastName.trim()) {
+      await Swal.fire({
+        icon: "warning",
+        title: "กรอกข้อมูลไม่ครบ",
+        text: "กรุณากรอกชื่อและนามสกุล",
+      });
 
-    if (!form.age.trim()) {
-      throw new Error("กรุณากรอกอายุ");
+      return;
     }
-
-    if (!Number.isInteger(Number(form.age)) || Number(form.age) < 0) {
-      throw new Error("อายุไม่ถูกต้อง");
-    }
-
-    if (!form.nationality.trim()) {
-      throw new Error("กรุณากรอกสัญชาติ");
-    }
-
-    if (!form.ethnicity.trim()) {
-      throw new Error("กรุณากรอกเชื้อชาติ");
-    }
-
-    if (!form.certificateRegistrationNo.trim()) {
-      throw new Error("กรุณากรอกเลขทะเบียนของใบสำคัญ");
-    }
-
-    if (!form.district.trim()) {
-      throw new Error("กรุณากรอกออกให้ ณ อำเภอ");
-    }
-
-    if (!form.province.trim()) {
-      throw new Error("กรุณากรอกออกให้ ณ จังหวัด");
-    }
-
-    if (!form.policeStation.trim()) {
-      throw new Error("กรุณากรอกสถานีตำรวจ");
-    }
-
-    if (!form.policeProvince.trim()) {
-      throw new Error("กรุณากรอกจังหวัดของสถานีตำรวจ");
-    }
-
-    if (!form.houseNo.trim()) {
-      throw new Error("กรุณากรอกบ้านเลขที่");
-    }
-
-    if (!form.subdistrict.trim()) {
-      throw new Error("กรุณากรอกตำบล");
-    }
-
-    if (!form.domicileDistrict.trim()) {
-      throw new Error("กรุณากรอกอำเภอของภูมิลำเนา");
-    }
-
-    if (!form.domicileProvince.trim()) {
-      throw new Error("กรุณากรอกจังหวัดของภูมิลำเนา");
-    }
-
-    if (!form.applicationType.trim()) {
-      throw new Error("กรุณากรอกชนิดการขอรับ");
-    }
-
-    if (!form.amount.trim()) {
-      throw new Error("กรุณากรอกจำนวนเงิน");
-    }
-
-    if (!Number.isInteger(Number(form.amount)) || Number(form.amount) < 0) {
-      throw new Error("จำนวนเงินต้องเป็นจำนวนเต็ม");
-    }
-
-    if (!form.receiptBookNo.trim()) {
-      throw new Error("กรุณากรอกใบเสร็จเล่มที่");
-    }
-
-    if (!form.receiptNo.trim()) {
-      throw new Error("กรุณากรอกใบเสร็จเลขที่");
-    }
-
-    datePartsToString(certificateDate);
-    datePartsToString(applicationDate);
-    datePartsToString(receiptDate);
 
     if (
-      previousExpirationDate.day ||
-      previousExpirationDate.month ||
-      previousExpirationDate.year
+      form.amount.trim() !== "" &&
+      (!Number.isFinite(Number(form.amount)) || Number(form.amount) < 0)
     ) {
-      datePartsToString(previousExpirationDate);
+      await Swal.fire({
+        icon: "warning",
+        title: "จำนวนเงินไม่ถูกต้อง",
+        text: "กรุณากรอกจำนวนเงินเป็นตัวเลขตั้งแต่ 0 ขึ้นไป",
+      });
+
+      return;
     }
-  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    if (
+      form.age.trim() !== "" &&
+      (!Number.isFinite(Number(form.age)) || Number(form.age) < 0)
+    ) {
+      await Swal.fire({
+        icon: "warning",
+        title: "อายุไม่ถูกต้อง",
+        text: "กรุณากรอกอายุเป็นตัวเลขตั้งแต่ 0 ขึ้นไป",
+      });
 
-    if (!id || saving) return;
+      return;
+    }
+
+    setSaving(true);
 
     try {
-      validate();
-
-      setSaving(true);
-
-      const certificateDateValue = datePartsToString(certificateDate);
-
-      const applicationDateValue = datePartsToString(applicationDate);
-
-      const expirationDateValue = datePartsToString(expirationDate);
-
-      const previousExpirationDateValue = datePartsToString(
-        previousExpirationDate,
-      );
-
-      const receiptDateValue = datePartsToString(receiptDate);
-
-      const petitionDateValue = datePartsToISO(petitionDate);
-
-      const domicileParts = [
-        form.houseNo.trim(),
-        form.moo.trim() ? `หมู่ ${form.moo.trim()}` : "",
-        form.road.trim(),
-        form.subdistrict.trim() ? `ตำบล${form.subdistrict.trim()}` : "",
-        form.domicileDistrict.trim()
-          ? `อำเภอ${form.domicileDistrict.trim()}`
-          : "",
-        form.domicileProvince.trim(),
-      ].filter(Boolean);
+      const fullName = [
+        form.prefix.trim(),
+        form.firstName.trim(),
+        form.lastName.trim(),
+      ]
+        .filter(Boolean)
+        .join(" ");
 
       const payload = {
-        year: Number(form.year),
-        foreignerIdNo: form.foreignerIdNo.trim() || null,
+        year: form.year.trim(),
+        foreignerIdNo: form.foreignerIdNo.trim(),
         prefix: form.prefix.trim(),
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
-        fullName: [
-          form.prefix.trim(),
-          form.firstName.trim(),
-          form.lastName.trim(),
-        ]
-          .filter(Boolean)
-          .join(" "),
-        age: Number(form.age),
+        fullName,
+        age: form.age.trim() === "" ? null : Number(form.age),
         nationality: form.nationality.trim(),
         ethnicity: form.ethnicity.trim(),
         certificateRegistrationNo: form.certificateRegistrationNo.trim(),
-        certificateDate: certificateDateValue || null,
+
+        certificateDate: dates.certificateDate || null,
+
         district: form.district.trim(),
         province: form.province.trim(),
         policeStation: form.policeStation.trim(),
         policeProvince: form.policeProvince.trim(),
+
         houseNo: form.houseNo.trim(),
-        moo: form.moo.trim() || null,
-        road: form.road.trim() || null,
+        moo: form.moo.trim(),
+        road: form.road.trim(),
         subdistrict: form.subdistrict.trim(),
         domicileDistrict: form.domicileDistrict.trim(),
         domicileProvince: form.domicileProvince.trim(),
-        domicile: domicileParts.join(" "),
+        domicile: domicile.trim(),
+
         applicationType: form.applicationType.trim(),
-        applicationDate: applicationDateValue || null,
-        expirationDate: expirationDateValue || null,
-        previousExpirationDate: previousExpirationDateValue || null,
-        amount: Number(form.amount),
-        amountText: null,
+        applicationDate: dates.applicationDate || null,
+        expirationDate: dates.expirationDate || null,
+        previousExpirationDate: dates.previousExpirationDate || null,
+
+        amount: form.amount.trim() === "" ? null : Number(form.amount),
+        amountText: amountText.trim(),
+
         receiptBookNo: form.receiptBookNo.trim(),
         receiptNo: form.receiptNo.trim(),
-        receiptDate: receiptDateValue || null,
-        certificateNo: form.certificateNo.trim() || null,
-        petitionDate: petitionDateValue,
-      };
+        receiptDate: dates.receiptDate || null,
 
-      console.log("UPDATE FOREIGNER PAYLOAD:", payload);
+        certificateNo: form.certificateNo.trim(),
+        petitionDate: dates.petitionDate || null,
+      };
 
       await api.put(`/foreigner/${id}`, payload);
 
       await Swal.fire({
         icon: "success",
-        title: "แก้ไขข้อมูลสำเร็จ",
-        text: "บันทึกข้อมูลเรียบร้อยแล้ว",
-        confirmButtonText: "ตกลง",
+        title: "บันทึกสำเร็จ",
+        text: "แก้ไขข้อมูลบุคคลต่างด้าวเรียบร้อยแล้ว",
+        confirmButtonText: "ดูรายละเอียด",
       });
 
       navigate(`/foreigner/${id}`);
-    } catch (error: any) {
-      console.error("UPDATE FOREIGNER ERROR:", error);
-
-      const message =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "ไม่สามารถแก้ไขข้อมูลได้";
+    } catch (error: unknown) {
+      console.error("Update foreigner error:", error);
 
       await Swal.fire({
         icon: "error",
-        title: "แก้ไขข้อมูลไม่สำเร็จ",
-        text: message,
+        title: "บันทึกไม่สำเร็จ",
+        text: getErrorMessage(error),
         confirmButtonText: "ตกลง",
       });
     } finally {
@@ -697,498 +576,333 @@ export default function EditForeigner() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="rounded-2xl bg-white px-6 py-5 shadow-sm">
-          <div className="text-sm text-slate-500">กำลังโหลดข้อมูล...</div>
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" />
+          <p className="mt-4 text-sm text-slate-500">กำลังโหลดข้อมูล...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 md:px-6">
+    <div className="min-h-screen bg-slate-50 px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6">
-          <button
-            type="button"
-            onClick={() => navigate(`/foreigner/${id}`)}
-            className="mb-3 text-sm font-medium text-slate-500 hover:text-[#800020]"
-          >
-            ← กลับรายละเอียด
-          </button>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-[#800020]">
-                แก้ไขข้อมูลคนต่างด้าว
-              </h1>
-
-              <p className="mt-1 text-sm text-slate-500">
-                ลำดับ {sequenceNo ?? "-"}
-              </p>
-            </div>
-
-            <div className="rounded-xl bg-[#800020]/10 px-4 py-2 text-sm font-semibold text-[#800020]">
-              ปี พ.ศ. {form.year}
-            </div>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Section title="ข้อมูลบุคคล">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  รหัสประจำตัวคนต่างด้าว
-                </label>
-
-                <input
-                  type="text"
-                  value={form.foreignerIdNo}
-                  onChange={(e) => change("foreignerIdNo", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  คำนำหน้า
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.prefix}
-                  onChange={(e) => change("prefix", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ชื่อ
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.firstName}
-                  onChange={(e) => change("firstName", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  นามสกุล
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.lastName}
-                  onChange={(e) => change("lastName", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  อายุ
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  step="1"
-                  value={form.age}
-                  onChange={(e) => change("age", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  สัญชาติ
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.nationality}
-                  onChange={(e) => change("nationality", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  เชื้อชาติ
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.ethnicity}
-                  onChange={(e) => change("ethnicity", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </Section>
-
-          <Section title="ใบสำคัญ">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  เลขทะเบียนของใบสำคัญ
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.certificateRegistrationNo}
-                  onChange={(e) =>
-                    change("certificateRegistrationNo", e.target.value)
-                  }
-                  className={inputClass}
-                />
-              </div>
-
-              <DateInput
-                label="วัน เดือน ปี ของใบสำคัญ"
-                required
-                value={certificateDate}
-                onChange={setCertificateDate}
-              />
-            </div>
-          </Section>
-
-          <Section title="ออกให้ ณ">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ออกให้ ณ อำเภอ
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  list="district-options"
-                  type="text"
-                  required
-                  value={form.district}
-                  onChange={(e) => change("district", e.target.value)}
-                  placeholder="เลือกหรือกรอกอำเภอ"
-                  className={inputClass}
-                />
-
-                <datalist id="district-options">
-                  {CHONBURI_DISTRICTS.map((district) => (
-                    <option key={district} value={district} />
-                  ))}
-                </datalist>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ออกให้ ณ จังหวัด
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.province}
-                  onChange={(e) => change("province", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </Section>
-
-          <Section title="สถานีตำรวจ">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  สถานีตำรวจ
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.policeStation}
-                  onChange={(e) => change("policeStation", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  จังหวัดของสถานีตำรวจ
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.policeProvince}
-                  onChange={(e) => change("policeProvince", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </Section>
-
-          <Section title="ภูมิลำเนา">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  บ้านเลขที่
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.houseNo}
-                  onChange={(e) => change("houseNo", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  หมู่
-                </label>
-
-                <input
-                  type="text"
-                  value={form.moo}
-                  onChange={(e) => change("moo", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ถนน
-                </label>
-
-                <input
-                  type="text"
-                  value={form.road}
-                  onChange={(e) => change("road", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ตำบล
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.subdistrict}
-                  onChange={(e) => change("subdistrict", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  อำเภอ
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  list="domicile-district-options"
-                  type="text"
-                  required
-                  value={form.domicileDistrict}
-                  onChange={(e) => change("domicileDistrict", e.target.value)}
-                  placeholder="เลือกหรือกรอกอำเภอ"
-                  className={inputClass}
-                />
-
-                <datalist id="domicile-district-options">
-                  {CHONBURI_DISTRICTS.map((district) => (
-                    <option key={district} value={district} />
-                  ))}
-                </datalist>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  จังหวัดของภูมิลำเนา
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.domicileProvince}
-                  onChange={(e) => change("domicileProvince", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </Section>
-
-          <Section title="การขอรับ / ขอรับใบแทน / ขอต่ออายุ">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ชนิดการขอรับ
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  list="application-type-options"
-                  type="text"
-                  required
-                  value={form.applicationType}
-                  onChange={(e) => change("applicationType", e.target.value)}
-                  placeholder="เลือกหรือกรอกชนิด"
-                  className={inputClass}
-                />
-
-                <datalist id="application-type-options">
-                  <option value="ชนิดที่ 1" />
-                  <option value="ชนิดที่ 2" />
-                </datalist>
-              </div>
-
-              <DateInput
-                label="วัน เดือน ปี ที่ขอรับ / ขอรับใบแทน / ขอต่ออายุ"
-                required
-                value={applicationDate}
-                onChange={setApplicationDate}
-              />
-
-              <DateInput
-                label="วันหมดอายุก่อนต่ออายุ"
-                value={previousExpirationDate}
-                onChange={setPreviousExpirationDate}
-              />
-
-              <DateInput
-                label="วันหมดอายุ"
-                value={expirationDate}
-                onChange={setExpirationDate}
-              />
-            </div>
-          </Section>
-
-          <Section title="ค่าธรรมเนียมและใบเสร็จรับเงิน">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  จำนวนเงิน
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  step="1"
-                  value={form.amount}
-                  onChange={(e) => change("amount", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ใบเสร็จเล่มที่
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.receiptBookNo}
-                  onChange={(e) => change("receiptBookNo", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ใบเสร็จเลขที่
-                  <span className="ml-1 text-red-500">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  required
-                  value={form.receiptNo}
-                  onChange={(e) => change("receiptNo", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <DateInput
-                label="วัน เดือน ปี ของใบเสร็จ"
-                required
-                value={receiptDate}
-                onChange={setReceiptDate}
-              />
-            </div>
-          </Section>
-
-          <Section title="ข้อมูลอื่น ๆ">
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ใบสำคัญ
-                </label>
-
-                <input
-                  type="text"
-                  value={form.certificateNo}
-                  onChange={(e) => change("certificateNo", e.target.value)}
-                  className={inputClass}
-                />
-              </div>
-
-              <DateInput
-                label="วันที่ยื่นคำร้อง"
-                value={petitionDate}
-                onChange={setPetitionDate}
-              />
-            </div>
-          </Section>
-
-          <div className="flex flex-col-reverse gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:justify-end">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
             <button
               type="button"
-              disabled={saving}
               onClick={() => navigate(`/foreigner/${id}`)}
-              className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-blue-600"
             >
-              ยกเลิก
+              <span aria-hidden="true">←</span>
+              กลับไปหน้ารายละเอียด
             </button>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-xl bg-[#800020] px-7 py-3 text-sm font-semibold text-white hover:bg-[#660019] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {saving ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
-            </button>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              แก้ไขข้อมูลบุคคลต่างด้าว
+            </h1>
+
+            <p className="mt-2 text-sm text-slate-500">
+              แก้ไขรายละเอียดและตรวจสอบข้อมูลก่อนบันทึก
+            </p>
+          </div>
+
+          {sequenceNo && (
+            <div className="inline-flex w-fit items-center rounded-xl border border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-700">
+              เลขลำดับทะเบียน: <strong className="ml-2">{sequenceNo}</strong>
+            </div>
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <Section
+            title="ข้อมูลส่วนบุคคล"
+            description="ข้อมูลระบุตัวบุคคลและข้อมูลสัญชาติ"
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <InputField
+                label="ปี"
+                value={form.year}
+                onChange={(value) => updateField("year", value)}
+                placeholder="เช่น 2569"
+              />
+
+              <InputField
+                label="เลขประจำตัวคนต่างด้าว"
+                value={form.foreignerIdNo}
+                onChange={(value) => updateField("foreignerIdNo", value)}
+              />
+
+              <SelectField
+                label="คำนำหน้า"
+                value={form.prefix}
+                onChange={(value) => updateField("prefix", value)}
+                options={["นาย", "นาง", "นางสาว", "เด็กชาย", "เด็กหญิง"]}
+              />
+
+              <InputField
+                label="ชื่อ"
+                value={form.firstName}
+                onChange={(value) => updateField("firstName", value)}
+                required
+              />
+
+              <InputField
+                label="นามสกุล"
+                value={form.lastName}
+                onChange={(value) => updateField("lastName", value)}
+                required
+              />
+
+              <InputField
+                label="อายุ"
+                value={form.age}
+                onChange={(value) => updateField("age", value)}
+                type="number"
+                min="0"
+              />
+
+              <InputField
+                label="สัญชาติ"
+                value={form.nationality}
+                onChange={(value) => updateField("nationality", value)}
+              />
+
+              <InputField
+                label="เชื้อชาติ"
+                value={form.ethnicity}
+                onChange={(value) => updateField("ethnicity", value)}
+              />
+            </div>
+          </Section>
+
+          <Section
+            title="ข้อมูลหนังสือรับรอง"
+            description="รายละเอียดเลขทะเบียนและวันที่ออกหนังสือรับรอง"
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <InputField
+                label="เลขทะเบียนหนังสือรับรอง"
+                value={form.certificateRegistrationNo}
+                onChange={(value) =>
+                  updateField("certificateRegistrationNo", value)
+                }
+              />
+
+              <DateFieldInput
+                label="วันที่ออกหนังสือรับรอง"
+                value={dates.certificateDate}
+                onChange={(value) => updateDate("certificateDate", value)}
+              />
+
+              <InputField
+                label="เลขที่หนังสือรับรอง"
+                value={form.certificateNo}
+                onChange={(value) => updateField("certificateNo", value)}
+              />
+            </div>
+          </Section>
+
+          <Section
+            title="ข้อมูลหน่วยงานและสถานีตำรวจ"
+            description="ข้อมูลอำเภอ จังหวัด และสถานีตำรวจที่เกี่ยวข้อง"
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <InputField
+                label="อำเภอ"
+                value={form.district}
+                onChange={(value) => updateField("district", value)}
+              />
+
+              <InputField
+                label="จังหวัด"
+                value={form.province}
+                onChange={(value) => updateField("province", value)}
+              />
+
+              <InputField
+                label="สถานีตำรวจ"
+                value={form.policeStation}
+                onChange={(value) => updateField("policeStation", value)}
+              />
+
+              <InputField
+                label="จังหวัดของสถานีตำรวจ"
+                value={form.policeProvince}
+                onChange={(value) => updateField("policeProvince", value)}
+              />
+            </div>
+          </Section>
+
+          <Section
+            title="ข้อมูลที่อยู่"
+            description="ที่อยู่และภูมิลำเนาของบุคคลต่างด้าว"
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <InputField
+                label="บ้านเลขที่"
+                value={form.houseNo}
+                onChange={(value) => updateField("houseNo", value)}
+              />
+
+              <InputField
+                label="หมู่ที่"
+                value={form.moo}
+                onChange={(value) => updateField("moo", value)}
+              />
+
+              <InputField
+                label="ถนน"
+                value={form.road}
+                onChange={(value) => updateField("road", value)}
+              />
+
+              <InputField
+                label="ตำบล"
+                value={form.subdistrict}
+                onChange={(value) => updateField("subdistrict", value)}
+              />
+
+              <InputField
+                label="อำเภอภูมิลำเนา"
+                value={form.domicileDistrict}
+                onChange={(value) => updateField("domicileDistrict", value)}
+              />
+
+              <InputField
+                label="จังหวัดภูมิลำเนา"
+                value={form.domicileProvince}
+                onChange={(value) => updateField("domicileProvince", value)}
+              />
+
+              <div className="sm:col-span-2 lg:col-span-3">
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-medium text-slate-700">
+                    ภูมิลำเนา
+                  </span>
+
+                  <textarea
+                    value={domicile}
+                    onChange={(event) => setDomicile(event.target.value)}
+                    rows={3}
+                    placeholder="กรอกข้อมูลภูมิลำเนา"
+                    className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  />
+                </label>
+              </div>
+            </div>
+          </Section>
+
+          <Section
+            title="ข้อมูลคำขอและวันหมดอายุ"
+            description="ประเภทคำขอ วันที่ยื่นคำขอ และข้อมูลการต่ออายุ"
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <SelectField
+                label="ประเภทคำขอ"
+                value={form.applicationType}
+                onChange={(value) => updateField("applicationType", value)}
+                options={[
+                  "ขอหนังสือรับรอง",
+                  "ต่ออายุหนังสือรับรอง",
+                  "ขอใบแทนหนังสือรับรอง",
+                  "อื่น ๆ",
+                ]}
+              />
+
+              <DateFieldInput
+                label="วันที่ยื่นคำขอ"
+                value={dates.applicationDate}
+                onChange={(value) => updateDate("applicationDate", value)}
+              />
+
+              <DateFieldInput
+                label="วันหมดอายุ"
+                value={dates.expirationDate}
+                onChange={(value) => updateDate("expirationDate", value)}
+              />
+
+              <DateFieldInput
+                label="วันหมดอายุเดิมก่อนต่ออายุ"
+                value={dates.previousExpirationDate}
+                onChange={(value) =>
+                  updateDate("previousExpirationDate", value)
+                }
+              />
+
+              <DateFieldInput
+                label="วันที่คำร้อง"
+                value={dates.petitionDate}
+                onChange={(value) => updateDate("petitionDate", value)}
+              />
+            </div>
+          </Section>
+
+          <Section
+            title="ข้อมูลค่าธรรมเนียมและใบเสร็จ"
+            description="จำนวนเงินและข้อมูลอ้างอิงใบเสร็จ"
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <InputField
+                label="จำนวนเงิน"
+                value={form.amount}
+                onChange={(value) => updateField("amount", value)}
+                type="number"
+                min="0"
+                step="0.01"
+              />
+
+              <InputField
+                label="จำนวนเงินตัวอักษร"
+                value={amountText}
+                onChange={setAmountText}
+                placeholder="เช่น หนึ่งร้อยบาทถ้วน"
+              />
+
+              <InputField
+                label="เล่มที่ใบเสร็จ"
+                value={form.receiptBookNo}
+                onChange={(value) => updateField("receiptBookNo", value)}
+              />
+
+              <InputField
+                label="เลขที่ใบเสร็จ"
+                value={form.receiptNo}
+                onChange={(value) => updateField("receiptNo", value)}
+              />
+
+              <DateFieldInput
+                label="วันที่ออกใบเสร็จ"
+                value={dates.receiptDate}
+                onChange={(value) => updateDate("receiptDate", value)}
+              />
+            </div>
+          </Section>
+
+          <div className="sticky bottom-0 z-10 -mx-3 border-t border-slate-200 bg-white/95 px-3 py-4 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none">
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => navigate(`/foreigner/${id}`)}
+                disabled={saving}
+                className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-32"
+              >
+                ยกเลิก
+              </button>
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-40"
+              >
+                {saving && (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                )}
+
+                {saving ? "กำลังบันทึก..." : "บันทึกการแก้ไข"}
+              </button>
+            </div>
           </div>
         </form>
       </div>

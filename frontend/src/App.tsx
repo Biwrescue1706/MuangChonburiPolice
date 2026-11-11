@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Nav from "./components/Nav";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthProvider";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import GuestRoute from "./routes/GuestRoute";
 
