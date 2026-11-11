@@ -258,7 +258,7 @@ export default function PersonCard({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   className="flex min-h-[58px] items-center justify-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-3 text-sm font-bold text-sky-700 transition hover:border-sky-300 hover:bg-sky-100 active:scale-[0.98]"
@@ -280,39 +280,41 @@ export default function PersonCard({
                   ดูข้อมูลส่วนบุคคล
                 </button>
 
-                <button
-                  type="button"
-                  className="flex min-h-[58px] items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3 text-sm font-bold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 active:scale-[0.98]"
-                  onClick={() => {
-                    if (person.status < 1) {
-                      void Swal.fire({
-                        icon: "warning",
-                        title: "ไม่สามารถดำเนินการได้",
-                        text: "กรุณากดปุ่ม 'เตรียมเอกสารส่ง พฐ' ก่อน",
-                        confirmButtonText: "ตกลง",
-                        confirmButtonColor: "#800020",
-                      });
-                      return;
-                    }
+                {person.status < 2 && (
+                  <button
+                    type="button"
+                    className="flex min-h-[58px] items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-3 text-sm font-bold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100 active:scale-[0.98]"
+                    onClick={() => {
+                      if (person.status < 1) {
+                        void Swal.fire({
+                          icon: "warning",
+                          title: "ไม่สามารถดำเนินการได้",
+                          text: "กรุณากดปุ่ม 'เตรียมเอกสารส่ง พฐ' ก่อน",
+                          confirmButtonText: "ตกลง",
+                          confirmButtonColor: "#800020",
+                        });
+                        return;
+                      }
 
-                    handleExportPDF(person);
-                  }}
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                      handleExportPDF(person);
+                    }}
                   >
-                    <path d="M6 3h9l4 4v14H6z" />
-                    <path d="M14 3v5h5M9 13h6M9 17h6" />
-                  </svg>
-                  PDF แบบพิมพ์มือ
-                </button>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M6 3h9l4 4v14H6z" />
+                      <path d="M14 3v5h5M9 13h6M9 17h6" />
+                    </svg>
+                    PDF แบบพิมพ์มือ
+                  </button>
+                )}
 
                 {person.status < 4 && (
                   <button
