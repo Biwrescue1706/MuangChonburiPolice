@@ -14,6 +14,7 @@ const years = Array.from(
   { length: maxYear - minYear + 1 },
   (_, i) => maxYear - i,
 );
+
 const months = [
   "มกราคม",
   "กุมภาพันธ์",
@@ -28,6 +29,7 @@ const months = [
   "พฤศจิกายน",
   "ธันวาคม",
 ];
+
 const heights = Array.from({ length: 121 }, (_, i) => i + 100);
 const weights = Array.from({ length: 151 }, (_, i) => i + 30);
 
@@ -62,6 +64,7 @@ const splitDate = (value: string) => {
   if (!value) return {};
   const parts = value.split(" ");
   if (parts.length !== 3) return {};
+
   return {
     day: parts[0],
     month: parts[1],
@@ -75,25 +78,45 @@ const buildThaiDate = (day?: string, month?: string, year?: string) => {
 };
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-rose-400 focus:ring-4 focus:ring-rose-100";
 
-const labelClass = "mb-1.5 block text-sm font-semibold text-slate-700";
+const labelClass = "mb-2 block text-sm font-semibold text-slate-700";
 
 function SectionCard({
   title,
+  subtitle,
+  number,
   color,
   children,
 }: {
   title: string;
+  subtitle?: string;
+  number: string;
   color: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className={`px-5 py-4 ${color}`}>
-        <h2 className="text-base font-bold text-white">{title}</h2>
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
+      <div className="flex items-center gap-4 border-b border-slate-100 px-5 py-5 md:px-6">
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white shadow-sm ${color}`}
+        >
+          {number}
+        </div>
+
+        <div className="min-w-0">
+          <h2 className="text-base font-bold text-slate-800 md:text-lg">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="mt-0.5 text-xs text-slate-500 md:text-sm">
+              {subtitle}
+            </p>
+          )}
+        </div>
       </div>
-      <div className="p-5">{children}</div>
+
+      <div className="p-5 md:p-6">{children}</div>
     </section>
   );
 }
@@ -110,6 +133,26 @@ function Field({
   return (
     <div className={className}>
       <label className={labelClass}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function DateGroup({
+  title,
+  color,
+  children,
+}: {
+  title: string;
+  color: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 md:p-5">
+      <div className="mb-4 flex items-center gap-2">
+        <span className={`h-2 w-2 rounded-full ${color}`} />
+        <h3 className="text-sm font-bold text-slate-700">{title}</h3>
+      </div>
       {children}
     </div>
   );
@@ -158,6 +201,7 @@ type PersonForm = {
 export default function PersonEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [form, setForm] = useState<PersonForm>({});
   const [original, setOriginal] = useState<PersonForm>({});
   const [loading, setLoading] = useState(false);
@@ -165,6 +209,7 @@ export default function PersonEditPage() {
   const fetchPerson = useCallback(async () => {
     try {
       setLoading(true);
+
       const res = await api.get(`/person/${id}`);
       const data = res.data.data;
 
@@ -209,9 +254,11 @@ export default function PersonEditPage() {
   const birthDays = Array.from({ length: maxBirthDay }, (_, i) =>
     String(i + 1).padStart(2, "0"),
   );
+
   const fingerprintDays = Array.from({ length: maxFingerprintDay }, (_, i) =>
     String(i + 1).padStart(2, "0"),
   );
+
   const receiptDays = Array.from({ length: maxReceiptDay }, (_, i) =>
     String(i + 1).padStart(2, "0"),
   );
@@ -295,7 +342,7 @@ export default function PersonEditPage() {
       showCancelButton: true,
       confirmButtonText: "บันทึก",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#2563eb",
+      confirmButtonColor: "#881337",
       cancelButtonColor: "#64748b",
     });
 
@@ -349,44 +396,77 @@ export default function PersonEditPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-slate-50">
-        <div className="flex items-center gap-3 rounded-2xl bg-white px-6 py-4 shadow-sm">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
-          <span className="text-sm font-medium text-slate-600">
-            กำลังโหลด...
-          </span>
+      <div className="flex min-h-[65vh] items-center justify-center bg-slate-50">
+        <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-7 py-5 shadow-sm">
+          <div className="h-6 w-6 animate-spin rounded-full border-[3px] border-rose-100 border-t-rose-800" />
+          <div>
+            <p className="text-sm font-bold text-slate-700">กำลังโหลดข้อมูล</p>
+            <p className="mt-0.5 text-xs text-slate-400">กรุณารอสักครู่...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-5 md:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f6f7f9] px-3 py-5 sm:px-5 md:px-7 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-blue-600">
-              PERSON MANAGEMENT
-            </p>
-            <h1 className="mt-1 text-2xl font-bold text-slate-800 md:text-3xl">
-              แก้ไขข้อมูลบุคคล
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              แก้ไขและปรับปรุงข้อมูลบุคคลในระบบ
-            </p>
+        <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-[#501326] via-[#721b36] to-[#912d49] px-5 py-6 text-white shadow-md md:px-8 md:py-8">
+          <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full border-[28px] border-white/5" />
+          <div className="pointer-events-none absolute -bottom-24 right-36 h-48 w-48 rounded-full bg-white/5" />
+
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="mb-3 flex items-center gap-2">
+                <span className="rounded-md bg-white/15 px-2.5 py-1 text-[10px] font-bold tracking-[0.18em] text-rose-100">
+                  PERSON MANAGEMENT
+                </span>
+                <span className="h-1 w-1 rounded-full bg-amber-300" />
+                <span className="text-xs text-rose-100/80">
+                  ระบบจัดการข้อมูลบุคคล
+                </span>
+              </div>
+
+              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+                แก้ไขข้อมูลบุคคล
+              </h1>
+
+              <p className="mt-2 text-sm text-rose-100/80">
+                ตรวจสอบและปรับปรุงรายละเอียดข้อมูลบุคคลในระบบ
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20 sm:self-center"
+            >
+              <span aria-hidden="true">←</span>
+              กลับหน้าก่อนหน้า
+            </button>
+          </div>
+        </div>
+
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="text-sm font-semibold text-slate-700">
+              แบบฟอร์มแก้ไขข้อมูล
+            </span>
           </div>
 
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-100"
-          >
-            ← กลับ
-          </button>
+          <p className="text-xs text-slate-400">
+            กรุณาตรวจสอบความถูกต้องก่อนบันทึก
+          </p>
         </div>
 
         <div className="space-y-5">
-          <SectionCard title="ข้อมูลพื้นฐาน" color="bg-blue-600">
+          <SectionCard
+            number="01"
+            title="ข้อมูลพื้นฐาน"
+            subtitle="รายละเอียดชื่อและข้อมูลวันที่สำคัญ"
+            color="bg-gradient-to-br from-blue-600 to-blue-800"
+          >
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Field label="คำนำหน้า">
                 <input
@@ -409,6 +489,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.firstName || ""}
                   onChange={handleChange}
+                  placeholder="กรอกชื่อ"
                 />
               </Field>
 
@@ -418,118 +499,124 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.lastName || ""}
                   onChange={handleChange}
+                  placeholder="กรอกนามสกุล"
                 />
               </Field>
             </div>
 
-            <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-              <p className="mb-4 text-sm font-bold text-slate-700">
-                วันเดือนปีเกิด
-              </p>
+            <div className="mt-6 space-y-4">
+              <DateGroup title="วันเดือนปีเกิด" color="bg-blue-500">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <Field label="วัน">
+                    <input
+                      list="birth-day-list"
+                      name="birthDay"
+                      className={inputClass}
+                      value={form.birthDay || ""}
+                      onChange={handleChange}
+                      placeholder="เลือกวัน"
+                    />
+                    <datalist id="birth-day-list">
+                      {birthDays.map((d) => (
+                        <option key={d} value={d} />
+                      ))}
+                    </datalist>
+                  </Field>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <Field label="วัน">
-                  <input
-                    list="birth-day-list"
-                    name="birthDay"
-                    className={inputClass}
-                    value={form.birthDay || ""}
-                    onChange={handleChange}
-                  />
-                  <datalist id="birth-day-list">
-                    {birthDays.map((d) => (
-                      <option key={d} value={d} />
-                    ))}
-                  </datalist>
-                </Field>
+                  <Field label="เดือน">
+                    <input
+                      list="birth-month-list"
+                      name="birthMonth"
+                      className={inputClass}
+                      value={form.birthMonth || ""}
+                      onChange={handleChange}
+                      placeholder="เลือกเดือน"
+                    />
+                    <datalist id="birth-month-list">
+                      {months.map((m) => (
+                        <option key={m} value={m} />
+                      ))}
+                    </datalist>
+                  </Field>
 
-                <Field label="เดือน">
-                  <input
-                    list="birth-month-list"
-                    name="birthMonth"
-                    className={inputClass}
-                    value={form.birthMonth || ""}
-                    onChange={handleChange}
-                  />
-                  <datalist id="birth-month-list">
-                    {months.map((m) => (
-                      <option key={m} value={m} />
-                    ))}
-                  </datalist>
-                </Field>
+                  <Field label="ปี พ.ศ.">
+                    <input
+                      list="birth-year-list"
+                      name="birthYear"
+                      className={inputClass}
+                      value={form.birthYear || ""}
+                      onChange={handleChange}
+                      placeholder="กรอกปี พ.ศ."
+                    />
+                    <datalist id="birth-year-list">
+                      {years.map((y) => (
+                        <option key={y} value={y} />
+                      ))}
+                    </datalist>
+                  </Field>
+                </div>
+              </DateGroup>
 
-                <Field label="ปี">
-                  <input
-                    list="birth-year-list"
-                    name="birthYear"
-                    className={inputClass}
-                    value={form.birthYear || ""}
-                    onChange={handleChange}
-                  />
-                  <datalist id="birth-year-list">
-                    {years.map((y) => (
-                      <option key={y} value={y} />
-                    ))}
-                  </datalist>
-                </Field>
-              </div>
-            </div>
+              <DateGroup title="วันพิมพ์ลายนิ้วมือ" color="bg-violet-500">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <Field label="วัน">
+                    <input
+                      list="fp-day-list"
+                      name="fingerprintDay"
+                      className={inputClass}
+                      value={form.fingerprintDay || ""}
+                      onChange={handleChange}
+                      placeholder="เลือกวัน"
+                    />
+                    <datalist id="fp-day-list">
+                      {fingerprintDays.map((d) => (
+                        <option key={d} value={d} />
+                      ))}
+                    </datalist>
+                  </Field>
 
-            <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-              <p className="mb-4 text-sm font-bold text-slate-700">
-                วันพิมพ์ลายนิ้วมือ
-              </p>
+                  <Field label="เดือน">
+                    <input
+                      list="fp-month-list"
+                      name="fingerprintMonth"
+                      className={inputClass}
+                      value={form.fingerprintMonth || ""}
+                      onChange={handleChange}
+                      placeholder="เลือกเดือน"
+                    />
+                    <datalist id="fp-month-list">
+                      {months.map((m) => (
+                        <option key={m} value={m} />
+                      ))}
+                    </datalist>
+                  </Field>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <Field label="วัน">
-                  <input
-                    list="fp-day-list"
-                    name="fingerprintDay"
-                    className={inputClass}
-                    value={form.fingerprintDay || ""}
-                    onChange={handleChange}
-                  />
-                  <datalist id="fp-day-list">
-                    {fingerprintDays.map((d) => (
-                      <option key={d} value={d} />
-                    ))}
-                  </datalist>
-                </Field>
-
-                <Field label="เดือน">
-                  <input
-                    list="fp-month-list"
-                    name="fingerprintMonth"
-                    className={inputClass}
-                    value={form.fingerprintMonth || ""}
-                    onChange={handleChange}
-                  />
-                  <datalist id="fp-month-list">
-                    {months.map((m) => (
-                      <option key={m} value={m} />
-                    ))}
-                  </datalist>
-                </Field>
-
-                <Field label="ปี">
-                  <input
-                    list="fp-year-list"
-                    name="fingerprintYear"
-                    className={inputClass}
-                    value={form.fingerprintYear || ""}
-                    onChange={handleChange}
-                  />
-                  <datalist id="fp-year-list">
-                    {years.map((y) => (
-                      <option key={y} value={y} />
-                    ))}
-                  </datalist>
-                </Field>
-              </div>
+                  <Field label="ปี พ.ศ.">
+                    <input
+                      list="fp-year-list"
+                      name="fingerprintYear"
+                      className={inputClass}
+                      value={form.fingerprintYear || ""}
+                      onChange={handleChange}
+                      placeholder="กรอกปี พ.ศ."
+                    />
+                    <datalist id="fp-year-list">
+                      {years.map((y) => (
+                        <option key={y} value={y} />
+                      ))}
+                    </datalist>
+                  </Field>
+                </div>
+              </DateGroup>
             </div>
           </SectionCard>
 
-          <SectionCard title="ขอตรวจสอบประวัติบุคคลเพื่อ" color="bg-slate-700">
+          <SectionCard
+            number="02"
+            title="รายละเอียดการขอตรวจสอบ"
+            subtitle="ข้อมูลวัตถุประสงค์และหน่วยงานที่ร้องขอ"
+            color="bg-gradient-to-br from-slate-600 to-slate-800"
+          >
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Field label="ตรวจสอบประวัติเพื่อ">
                 <input
@@ -537,6 +624,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.purpose || ""}
                   onChange={handleChange}
+                  placeholder="ระบุวัตถุประสงค์"
                 />
               </Field>
 
@@ -546,12 +634,18 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.requestingAgency || ""}
                   onChange={handleChange}
+                  placeholder="ระบุชื่อหน่วยงาน"
                 />
               </Field>
             </div>
           </SectionCard>
 
-          <SectionCard title="ข้อมูลเพิ่มเติม" color="bg-cyan-600">
+          <SectionCard
+            number="03"
+            title="ข้อมูลเพิ่มเติม"
+            subtitle="ข้อมูลส่วนบุคคล ลักษณะรูปพรรณ และที่อยู่"
+            color="bg-gradient-to-br from-cyan-600 to-teal-700"
+          >
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Field label="เลขบัตรประชาชน">
                 <input
@@ -566,7 +660,11 @@ export default function PersonEditPage() {
                       citizenId: e.target.value.replace(/\D/g, ""),
                     })
                   }
+                  placeholder="เลขบัตรประชาชน 13 หลัก"
                 />
+                <p className="mt-1.5 text-xs text-slate-400">
+                  {(form.citizenId || "").length}/13 หลัก
+                </p>
               </Field>
 
               <Field label="สัญชาติ">
@@ -576,6 +674,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.nationality || ""}
                   onChange={handleChange}
+                  placeholder="เลือกหรือกรอกสัญชาติ"
                 />
                 <datalist id="nationality-list">
                   {nationalities.map((n) => (
@@ -591,6 +690,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.ethnicity || ""}
                   onChange={handleChange}
+                  placeholder="เลือกหรือกรอกเชื้อชาติ"
                 />
                 <datalist id="ethnicity-list">
                   {ethnicities.map((e) => (
@@ -599,7 +699,7 @@ export default function PersonEditPage() {
                 </datalist>
               </Field>
 
-              <Field label="ส่วนสูง">
+              <Field label="ส่วนสูง (เซนติเมตร)">
                 <input
                   type="number"
                   list="height-list"
@@ -607,6 +707,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.height || ""}
                   onChange={handleChange}
+                  placeholder="ระบุส่วนสูง"
                 />
                 <datalist id="height-list">
                   {filteredHeights.map((h) => (
@@ -615,7 +716,7 @@ export default function PersonEditPage() {
                 </datalist>
               </Field>
 
-              <Field label="น้ำหนัก">
+              <Field label="น้ำหนัก (กิโลกรัม)">
                 <input
                   type="number"
                   list="weight-list"
@@ -623,6 +724,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.weight || ""}
                   onChange={handleChange}
+                  placeholder="ระบุน้ำหนัก"
                 />
                 <datalist id="weight-list">
                   {filteredWeights.map((w) => (
@@ -638,6 +740,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.bodyType || ""}
                   onChange={handleChange}
+                  placeholder="เลือกรูปร่าง"
                 />
                 <datalist id="body-type-list">
                   {bodyTypes.map((b) => (
@@ -653,6 +756,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.skinColor || ""}
                   onChange={handleChange}
+                  placeholder="เลือกสีผิว"
                 />
                 <datalist id="skin-color-list">
                   {skinColors.map((s) => (
@@ -667,6 +771,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.distinguishingMarks || ""}
                   onChange={handleChange}
+                  placeholder="ระบุตำหนิหรือลักษณะพิเศษ"
                 />
               </Field>
 
@@ -676,6 +781,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.behavior || ""}
                   onChange={handleChange}
+                  placeholder="ระบุรายละเอียด"
                 />
               </Field>
 
@@ -685,6 +791,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.address || ""}
                   onChange={handleChange}
+                  placeholder="ระบุที่อยู่ปัจจุบัน"
                 />
               </Field>
 
@@ -694,6 +801,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.occupation || ""}
                   onChange={handleChange}
+                  placeholder="ระบุอาชีพ"
                 />
               </Field>
 
@@ -703,6 +811,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.workplaceAddress || ""}
                   onChange={handleChange}
+                  placeholder="ระบุสถานที่ทำงาน"
                 />
               </Field>
 
@@ -712,6 +821,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.father || ""}
                   onChange={handleChange}
+                  placeholder="ชื่อ-นามสกุลบิดา"
                 />
               </Field>
 
@@ -721,6 +831,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.mother || ""}
                   onChange={handleChange}
+                  placeholder="ชื่อ-นามสกุลมารดา"
                 />
               </Field>
 
@@ -730,12 +841,18 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.spouse || ""}
                   onChange={handleChange}
+                  placeholder="ชื่อ-นามสกุลคู่สมรส"
                 />
               </Field>
             </div>
           </SectionCard>
 
-          <SectionCard title="ข้อมูลใบเสร็จ" color="bg-emerald-600">
+          <SectionCard
+            number="04"
+            title="ข้อมูลใบเสร็จและสถานะ"
+            subtitle="รายละเอียดใบเสร็จ ความเร่งด่วน และขั้นตอนดำเนินการ"
+            color="bg-gradient-to-br from-emerald-600 to-green-800"
+          >
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Field label="เล่มที่">
                 <input
@@ -743,6 +860,7 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.receiptBookNo || ""}
                   onChange={handleChange}
+                  placeholder="ระบุเลขเล่ม"
                 />
               </Field>
 
@@ -752,16 +870,18 @@ export default function PersonEditPage() {
                   className={inputClass}
                   value={form.receiptNo || ""}
                   onChange={handleChange}
+                  placeholder="ระบุเลขที่ใบเสร็จ"
                 />
               </Field>
 
-              <Field label="จำนวนเงิน">
+              <Field label="จำนวนเงิน (บาท)">
                 <input
                   type="number"
                   name="money"
                   className={inputClass}
                   value={form.money || ""}
                   onChange={handleChange}
+                  placeholder="ระบุจำนวนเงิน"
                 />
               </Field>
 
@@ -790,60 +910,68 @@ export default function PersonEditPage() {
               </Field>
             </div>
 
-            <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-              <p className="mb-4 text-sm font-bold text-slate-700">
-                วันที่ใบเสร็จ
-              </p>
+            <div className="mt-6">
+              <DateGroup title="วันที่ใบเสร็จ" color="bg-emerald-500">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <Field label="วัน">
+                    <input
+                      list="receipt-day-list"
+                      name="receiptDay"
+                      className={inputClass}
+                      value={form.receiptDay || ""}
+                      onChange={handleChange}
+                      placeholder="เลือกวัน"
+                    />
+                    <datalist id="receipt-day-list">
+                      {receiptDays.map((d) => (
+                        <option key={d} value={d} />
+                      ))}
+                    </datalist>
+                  </Field>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <Field label="วัน">
-                  <input
-                    list="receipt-day-list"
-                    name="receiptDay"
-                    className={inputClass}
-                    value={form.receiptDay || ""}
-                    onChange={handleChange}
-                  />
-                  <datalist id="receipt-day-list">
-                    {receiptDays.map((d) => (
-                      <option key={d} value={d} />
-                    ))}
-                  </datalist>
-                </Field>
+                  <Field label="เดือน">
+                    <input
+                      list="receipt-month-list"
+                      name="receiptMonth"
+                      className={inputClass}
+                      value={form.receiptMonth || ""}
+                      onChange={handleChange}
+                      placeholder="เลือกเดือน"
+                    />
+                    <datalist id="receipt-month-list">
+                      {months.map((m) => (
+                        <option key={m} value={m} />
+                      ))}
+                    </datalist>
+                  </Field>
 
-                <Field label="เดือน">
-                  <input
-                    list="receipt-month-list"
-                    name="receiptMonth"
-                    className={inputClass}
-                    value={form.receiptMonth || ""}
-                    onChange={handleChange}
-                  />
-                  <datalist id="receipt-month-list">
-                    {months.map((m) => (
-                      <option key={m} value={m} />
-                    ))}
-                  </datalist>
-                </Field>
-
-                <Field label="ปี">
-                  <input
-                    list="receipt-year-list"
-                    name="receiptYear"
-                    className={inputClass}
-                    value={form.receiptYear || ""}
-                    onChange={handleChange}
-                  />
-                  <datalist id="receipt-year-list">
-                    {years.map((y) => (
-                      <option key={y} value={y} />
-                    ))}
-                  </datalist>
-                </Field>
-              </div>
+                  <Field label="ปี พ.ศ.">
+                    <input
+                      list="receipt-year-list"
+                      name="receiptYear"
+                      className={inputClass}
+                      value={form.receiptYear || ""}
+                      onChange={handleChange}
+                      placeholder="กรอกปี พ.ศ."
+                    />
+                    <datalist id="receipt-year-list">
+                      {years.map((y) => (
+                        <option key={y} value={y} />
+                      ))}
+                    </datalist>
+                  </Field>
+                </div>
+              </DateGroup>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 md:p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                <h3 className="text-sm font-bold text-slate-700">
+                  สถานะการดำเนินงาน
+                </h3>
+              </div>
+
               <Field label="สถานะ">
                 <select
                   name="status"
@@ -867,24 +995,30 @@ export default function PersonEditPage() {
           </SectionCard>
         </div>
 
-        <div className="sticky bottom-0 z-10 mt-6 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="rounded-xl border border-slate-200 bg-white px-6 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100"
-            >
-              ยกเลิก
-            </button>
+        <div className="sticky bottom-0 z-20 mt-6 border-t border-slate-200 bg-white/95 px-4 py-4 shadow-[0_-5px_20px_rgba(15,23,42,0.06)] backdrop-blur-md sm:rounded-2xl sm:border sm:px-5">
+          <div className="mx-auto flex max-w-7xl flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="hidden text-xs text-slate-400 md:block">
+              ตรวจสอบข้อมูลให้ครบถ้วนก่อนกดบันทึก
+            </p>
 
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading}
-              className="rounded-xl bg-blue-600 px-7 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
-            </button>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+              >
+                ยกเลิก
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="rounded-xl bg-gradient-to-r from-[#68172f] to-[#8d2948] px-8 py-3 text-sm font-bold text-white shadow-md shadow-rose-900/15 transition hover:-translate-y-0.5 hover:from-[#541126] hover:to-[#76203a] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
