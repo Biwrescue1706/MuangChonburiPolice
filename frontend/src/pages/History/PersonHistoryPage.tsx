@@ -1,83 +1,26 @@
-//src/pages/History/PersonHistoryPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Search,
+  RotateCcw,
+  ArrowLeft,
+  Users,
+  Clock3,
+  FileText,
+  Send,
+  CheckCircle2,
+  LayoutGrid,
+  List,
+  Check,
+  ChevronRight,
+  ClipboardList,
+  Sparkles,
+} from "lucide-react";
 import usePersonHistory from "../../hooks/usePersonHistory";
 import useSelection from "../../hooks/useSelection";
 import usePersonActions from "../../hooks/usePersonActions";
 import PersonCard from "../../components/statusPerson/PersonCard";
 import PersonTable from "../../components/statusPerson/PersonTable";
-
-type IconProps = {
-  type: string;
-  size?: number;
-};
-
-function Icon({ type, size = 20 }: IconProps) {
-  const common = {
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.8,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-
-  if (type === "grid") {
-    return (
-      <svg {...common}>
-        <rect x="4" y="4" width="6" height="6" rx="1" />
-        <rect x="14" y="4" width="6" height="6" rx="1" />
-        <rect x="4" y="14" width="6" height="6" rx="1" />
-        <rect x="14" y="14" width="6" height="6" rx="1" />
-      </svg>
-    );
-  }
-
-  if (type === "clock") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="8.5" />
-        <path d="M12 7v5l3 2" />
-      </svg>
-    );
-  }
-
-  if (type === "document") {
-    return (
-      <svg {...common}>
-        <path d="M6 3.5h8l4 4V20H6z" />
-        <path d="M14 3.5V8h4M9 12h6M9 15.5h6" />
-      </svg>
-    );
-  }
-
-  if (type === "send") {
-    return (
-      <svg {...common}>
-        <path d="m21 3-7.5 18-3.5-8L3 9.5z" />
-        <path d="M21 3 10 13" />
-      </svg>
-    );
-  }
-
-  if (type === "check") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="8.5" />
-        <path d="m8.5 12 2.5 2.5 4.8-5" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg {...common}>
-      <path d="m9 6-5 5 5 5" />
-      <path d="M4 11h10a5 5 0 0 1 5 5v2" />
-    </svg>
-  );
-}
 
 export default function PersonHistoryPage() {
   const navigate = useNavigate();
@@ -92,9 +35,7 @@ export default function PersonHistoryPage() {
   );
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1280);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth < 1280);
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -135,21 +76,14 @@ export default function PersonHistoryPage() {
   };
 
   const sortedPersons = [...persons].sort((a, b) => {
-    if (a.status !== b.status) {
-      return a.status - b.status;
-    }
+    if (a.status !== b.status) return a.status - b.status;
 
     const bookA = Number(a.receiptBookNo) || 0;
     const bookB = Number(b.receiptBookNo) || 0;
 
-    if (bookA !== bookB) {
-      return bookA - bookB;
-    }
+    if (bookA !== bookB) return bookA - bookB;
 
-    const noA = Number(a.receiptNo) || 0;
-    const noB = Number(b.receiptNo) || 0;
-
-    return noA - noB;
+    return (Number(a.receiptNo) || 0) - (Number(b.receiptNo) || 0);
   });
 
   const statusFilters = [
@@ -157,69 +91,87 @@ export default function PersonHistoryPage() {
       value: null,
       label: "ทั้งหมด",
       count: statusCounts.all,
-      icon: "grid",
-      active:
-        "border-[#800020] bg-[#800020] text-white shadow-lg shadow-[#800020]/20",
-      inactive:
-        "border-[#800020]/20 bg-white text-[#800020] hover:border-[#800020] hover:bg-[#800020]/5",
-      color: "text-[#800020]",
+      icon: LayoutGrid,
+      color: "rose",
     },
     {
       value: "0",
       label: "รอส่ง ศพฐ.",
       count: statusCounts.s0,
-      icon: "clock",
-      active:
-        "border-amber-500 bg-amber-500 text-white shadow-lg shadow-amber-500/20",
-      inactive:
-        "border-amber-200 bg-white text-amber-700 hover:border-amber-400 hover:bg-amber-50",
-      color: "text-amber-600",
+      icon: Clock3,
+      color: "amber",
     },
     {
       value: "1",
-      label: "เตรียมเอกสารส่ง ศพฐ. แล้ว",
+      label: "เตรียมเอกสารส่ง ศพฐ.",
       count: statusCounts.s1,
-      icon: "document",
-      active:
-        "border-cyan-600 bg-cyan-600 text-white shadow-lg shadow-cyan-600/20",
-      inactive:
-        "border-cyan-200 bg-white text-cyan-700 hover:border-cyan-400 hover:bg-cyan-50",
-      color: "text-cyan-600",
+      icon: FileText,
+      color: "cyan",
     },
     {
       value: "2",
       label: "ส่ง ศพฐ. แล้ว",
       count: statusCounts.s2,
-      icon: "send",
-      active:
-        "border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-600/20",
-      inactive:
-        "border-blue-200 bg-white text-blue-700 hover:border-blue-400 hover:bg-blue-50",
-      color: "text-blue-600",
+      icon: Send,
+      color: "blue",
     },
     {
       value: "3",
       label: "รับจาก ศพฐ. แล้ว",
       count: statusCounts.s3,
-      icon: "check",
-      active:
-        "border-emerald-600 bg-emerald-600 text-white shadow-lg shadow-emerald-600/20",
-      inactive:
-        "border-emerald-200 bg-white text-emerald-700 hover:border-emerald-400 hover:bg-emerald-50",
-      color: "text-emerald-600",
+      icon: CheckCircle2,
+      color: "emerald",
     },
     {
       value: "4",
       label: "ส่งคืนต้นสังกัดแล้ว",
       count: statusCounts.s4,
-      icon: "return",
-      active:
-        "border-rose-600 bg-rose-600 text-white shadow-lg shadow-rose-600/20",
-      inactive:
-        "border-rose-200 bg-white text-rose-700 hover:border-rose-400 hover:bg-rose-50",
-      color: "text-rose-600",
+      icon: RotateCcw,
+      color: "violet",
     },
   ];
+
+  const colorMap: Record<
+    string,
+    { active: string; inactive: string; icon: string }
+  > = {
+    rose: {
+      active: "border-rose-700 bg-rose-700 text-white shadow-rose-200",
+      inactive:
+        "border-rose-100 bg-rose-50/70 text-rose-800 hover:border-rose-300",
+      icon: "bg-rose-100 text-rose-700",
+    },
+    amber: {
+      active: "border-amber-500 bg-amber-500 text-white shadow-amber-200",
+      inactive:
+        "border-amber-100 bg-amber-50 text-amber-800 hover:border-amber-300",
+      icon: "bg-amber-100 text-amber-700",
+    },
+    cyan: {
+      active: "border-cyan-600 bg-cyan-600 text-white shadow-cyan-200",
+      inactive:
+        "border-cyan-100 bg-cyan-50 text-cyan-800 hover:border-cyan-300",
+      icon: "bg-cyan-100 text-cyan-700",
+    },
+    blue: {
+      active: "border-blue-600 bg-blue-600 text-white shadow-blue-200",
+      inactive:
+        "border-blue-100 bg-blue-50 text-blue-800 hover:border-blue-300",
+      icon: "bg-blue-100 text-blue-700",
+    },
+    emerald: {
+      active: "border-emerald-600 bg-emerald-600 text-white shadow-emerald-200",
+      inactive:
+        "border-emerald-100 bg-emerald-50 text-emerald-800 hover:border-emerald-300",
+      icon: "bg-emerald-100 text-emerald-700",
+    },
+    violet: {
+      active: "border-violet-600 bg-violet-600 text-white shadow-violet-200",
+      inactive:
+        "border-violet-100 bg-violet-50 text-violet-800 hover:border-violet-300",
+      icon: "bg-violet-100 text-violet-700",
+    },
+  };
 
   const clearSearch = () => {
     setFirstName("");
@@ -229,301 +181,288 @@ export default function PersonHistoryPage() {
   const hasSearch = firstName.trim() !== "" || lastName.trim() !== "";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-[#f8f7f8] to-blue-50/50">
-      <main className="min-h-screen px-4 pb-10 pt-6 min-[480px]:px-5 min-[768px]:px-8 min-[768px]:pt-8 min-[1200px]:px-8">
-        <div className="mx-auto w-full max-w-[1500px] px-2 sm:px-4">
+    <div className="min-h-screen bg-[#f6f7fb]">
+      <main className="mx-auto max-w-[1600px] px-3 pb-12 pt-5 sm:px-6 sm:pt-7 lg:px-8">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
+            <span>หน้าหลัก</span>
+            <ChevronRight size={14} />
+            <span className="font-semibold text-[#851b3b]">ประวัติบุคคล</span>
+          </div>
+
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="mb-4 hidden h-12 w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-[#800020] to-[#a52a4a] px-5 text-base font-bold text-white shadow-lg shadow-[#800020]/15 transition hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.98] max-[1199px]:flex"
+            className="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-[#851b3b] hover:text-[#851b3b] min-[1280px]:flex"
           >
-            <Icon type="return" size={22} />
-            กลับหน้าเดิม
+            <ArrowLeft size={17} />
+            กลับหน้าก่อนหน้า
           </button>
+        </div>
 
-          <section className="relative overflow-hidden rounded-[26px] border border-[#800020]/10 bg-gradient-to-br from-[#800020] via-[#700019] to-[#3d0010] px-5 py-7 text-white shadow-xl shadow-[#800020]/15 min-[480px]:px-7 min-[768px]:px-9 min-[768px]:py-8">
-            <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full border border-white/10" />
-            <div className="pointer-events-none absolute -right-8 -top-12 h-52 w-52 rounded-full border border-white/10" />
-            <div className="pointer-events-none absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-white/[0.05] blur-3xl" />
-            <div className="pointer-events-none absolute bottom-0 right-1/4 h-1 w-40 rounded-full bg-gradient-to-r from-transparent via-amber-300/70 to-transparent" />
+        <section className="relative mb-6 overflow-hidden rounded-[26px] bg-[#70152f] shadow-[0_12px_35px_rgba(112,21,47,0.16)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,210,160,0.22),transparent_30%),radial-gradient(circle_at_65%_110%,rgba(255,255,255,0.10),transparent_35%)]" />
+          <div className="absolute -right-12 -top-24 h-72 w-72 rounded-full border border-white/10" />
+          <div className="absolute -right-2 -top-14 h-52 w-52 rounded-full border border-white/10" />
+          <div className="absolute -bottom-28 right-[35%] h-56 w-56 rounded-full bg-[#d68b70]/10 blur-3xl" />
 
-            <div className="relative flex flex-col gap-6 min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-white/80 backdrop-blur">
-                  <Icon type="document" size={15} />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-                    PERSON HISTORY
-                  </span>
-                </div>
-
-                <h1 className="mt-4 text-2xl font-extrabold tracking-tight min-[480px]:text-3xl min-[768px]:text-4xl">
-                  ประวัติบุคคล
-                </h1>
-
-                <p className="mt-2 text-sm text-white/70">
-                  ตรวจสอบ ค้นหา และจัดการข้อมูลบุคคลทั้งหมด
-                </p>
-              </div>
-
-              <div className="flex items-center gap-4 self-start rounded-2xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur-md min-[768px]:self-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 shadow-lg shadow-black/10">
-                  <Icon type="grid" size={23} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-white/65">
-                    รายการทั้งหมด
-                  </p>
-                  <p className="mt-0.5 text-2xl font-extrabold">
-                    {statusCounts.all.toLocaleString("th-TH")}
-                    <span className="ml-1 text-xs font-medium text-white/60">
-                      รายการ
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#800020]/10 text-[#800020]">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20 20-4-4" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-base font-extrabold text-slate-800">
-                    ค้นหาข้อมูลบุคคล
-                  </h2>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    ค้นหาจากชื่อหรือชื่อสกุล
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 p-5 min-[640px]:grid-cols-2 min-[900px]:grid-cols-[1fr_1fr_auto]">
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">
-                  ชื่อ
-                </label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="ค้นหาชื่อ..."
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-800 outline-none transition placeholder:font-normal placeholder:text-slate-400 hover:border-[#800020]/40 hover:bg-white focus:border-[#800020] focus:bg-white focus:ring-4 focus:ring-[#800020]/10"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">
-                  นามสกุล
-                </label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="ค้นหานามสกุล..."
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-800 outline-none transition placeholder:font-normal placeholder:text-slate-400 hover:border-[#800020]/40 hover:bg-white focus:border-[#800020] focus:bg-white focus:ring-4 focus:ring-[#800020]/10"
-                />
-              </div>
-
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  disabled={!hasSearch}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-40 min-[900px]:w-auto"
-                >
-                  <svg
-                    width="17"
-                    height="17"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M3 12a9 9 0 1 0 3-6.7" />
-                    <path d="M3 4v6h6" />
-                  </svg>
-                  ล้าง
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section className="mt-6 flex flex-col gap-4 min-[768px]:flex-row min-[768px]:items-center min-[768px]:justify-between">
+          <div className="relative flex flex-col justify-between gap-7 p-5 sm:p-8 lg:flex-row lg:items-center lg:px-10 lg:py-9">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="h-5 w-1 rounded-full bg-[#800020]" />
-                <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#800020]">
-                  Management
-                </p>
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-semibold tracking-wider text-white/80">
+                <Sparkles size={14} />
+                PERSON MANAGEMENT
               </div>
-              <h2 className="mt-1 text-lg font-extrabold text-slate-800">
-                จัดการรายการ
-              </h2>
+
+              <h1 className="mt-4 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-[34px]">
+                ประวัติบุคคล
+              </h1>
+
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/65">
+                ตรวจสอบ ค้นหา และติดตามสถานะการดำเนินงานของข้อมูลบุคคล
+              </p>
+
+              <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-white/65">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-[#f1c58d]" />
+                  ข้อมูลบุคคลในระบบ
+                </span>
+                <span className="h-1 w-1 rounded-full bg-white/40" />
+                <span>จัดการข้อมูลได้ในหน้าเดียว</span>
+              </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex w-full items-center gap-4 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm sm:w-auto sm:min-w-[230px] sm:p-5">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#f3d9ad] text-[#75431f] shadow-lg">
+                <Users size={27} strokeWidth={1.8} />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-white/65">
+                  บุคคลทั้งหมด
+                </p>
+                <p className="mt-1 text-3xl font-bold text-white">
+                  {statusCounts.all.toLocaleString("th-TH")}
+                  <span className="ml-2 text-xs font-medium text-white/65">
+                    รายการ
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-6 rounded-2xl border border-slate-200/80 bg-white shadow-[0_3px_15px_rgba(15,23,42,0.035)]">
+          <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4 sm:px-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f8eaf0] text-[#851b3b]">
+              <Search size={19} />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-800">
+                ค้นหาข้อมูลบุคคล
+              </h2>
+              <p className="mt-1 text-xs text-slate-400">
+                ค้นหาจากชื่อและนามสกุล
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1fr_1fr_auto]">
+            <div>
+              <label className="mb-2 block text-xs font-bold text-slate-600">
+                ชื่อ
+              </label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="กรอกชื่อที่ต้องการค้นหา"
+                className="h-12 w-full rounded-xl border border-slate-200 bg-[#fafbfc] px-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-[#851b3b] focus:bg-white focus:ring-4 focus:ring-[#851b3b]/[0.07]"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-bold text-slate-600">
+                นามสกุล
+              </label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="กรอกนามสกุลที่ต้องการค้นหา"
+                className="h-12 w-full rounded-xl border border-slate-200 bg-[#fafbfc] px-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-[#851b3b] focus:bg-white focus:ring-4 focus:ring-[#851b3b]/[0.07]"
+              />
+            </div>
+
+            <div className="flex items-end">
               <button
                 type="button"
-                onClick={() => {
-                  setSelectMode((prev) => !prev);
-                  setSelectedIds([]);
-                }}
-                className={`flex h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold transition-all ${
-                  selectMode
-                    ? "bg-slate-800 text-white shadow-lg shadow-slate-800/15"
-                    : "border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50"
-                }`}
+                onClick={clearSearch}
+                disabled={!hasSearch}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-40 lg:w-auto"
               >
-                <svg
-                  width="17"
-                  height="17"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="4" y="4" width="16" height="16" rx="2" />
-                  <path d="m8 12 2.5 2.5L16 9" />
-                </svg>
-                {selectMode ? "ยกเลิกเลือก" : "เลือก"}
+                <RotateCcw size={16} />
+                ล้างข้อมูล
               </button>
-
-              {selectMode && (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleSelectAll}
-                    className="flex h-11 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-bold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
-                  >
-                    {selectedIds.length ===
-                    persons.filter((p) => p.status < 4).length
-                      ? "ยกเลิกทั้งหมด"
-                      : "เลือกทั้งหมด"}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleBulkSend}
-                    disabled={selectedIds.length === 0}
-                    className="flex h-11 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 px-4 text-sm font-bold text-white shadow-md shadow-emerald-600/15 transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Icon type="send" size={17} />
-                    อัปเดต +1 ({selectedIds.length})
-                  </button>
-                </>
-              )}
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section className="mt-5 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-base font-extrabold text-slate-800">
-                    สถานะข้อมูล
-                  </h2>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    เลือกสถานะเพื่อกรองรายการบุคคล
-                  </p>
-                </div>
-
-                {statusParam && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchParams({})}
-                    className="rounded-lg bg-[#800020]/5 px-3 py-2 text-xs font-bold text-[#800020] transition hover:bg-[#800020]/10"
-                  >
-                    ดูทั้งหมด
-                  </button>
-                )}
-              </div>
+        <section className="mb-6 rounded-2xl border border-slate-200/80 bg-white shadow-[0_3px_15px_rgba(15,23,42,0.035)]">
+          <div className="flex flex-col justify-between gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:px-6">
+            <div>
+              <h2 className="text-sm font-bold text-slate-800">
+                สถานะการดำเนินงาน
+              </h2>
+              <p className="mt-1 text-xs text-slate-400">
+                เลือกสถานะที่ต้องการดูข้อมูล
+              </p>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto p-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {statusFilters.map((filter) => {
-                const active = statusParam === filter.value;
+            {statusParam && (
+              <button
+                type="button"
+                onClick={() => setSearchParams({})}
+                className="self-start rounded-lg bg-[#f8eaf0] px-3 py-2 text-xs font-bold text-[#851b3b] transition hover:bg-[#f2dce5]"
+              >
+                ดูสถานะทั้งหมด
+              </button>
+            )}
+          </div>
 
-                return (
-                  <button
-                    key={filter.label}
-                    type="button"
-                    onClick={() => {
-                      if (filter.value === null) {
-                        setSearchParams({});
-                      } else {
-                        setSearchParams({ status: filter.value });
-                      }
-                    }}
-                    className={`flex shrink-0 items-center gap-2 rounded-xl border px-3.5 py-3 text-xs font-bold transition-all duration-200 ${
-                      active ? filter.active : filter.inactive
-                    }`}
-                  >
-                    <Icon type={filter.icon} size={17} />
-                    <span>{filter.label}</span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
-                        active
-                          ? "bg-white/20 text-white"
-                          : "bg-slate-100 text-slate-600"
+          <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3 sm:p-4 xl:grid-cols-6">
+            {statusFilters.map((filter) => {
+              const active = statusParam === filter.value;
+              const IconComponent = filter.icon;
+              const colors = colorMap[filter.color];
+
+              return (
+                <button
+                  key={filter.label}
+                  type="button"
+                  onClick={() => {
+                    if (filter.value === null) {
+                      setSearchParams({});
+                    } else {
+                      setSearchParams({ status: filter.value });
+                    }
+                  }}
+                  className={`group flex min-h-[88px] flex-col justify-between rounded-xl border p-3 text-left transition-all duration-200 ${
+                    active
+                      ? `${colors.active} shadow-md`
+                      : `${colors.inactive} hover:-translate-y-0.5 hover:shadow-sm`
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                        active ? "bg-white/20 text-white" : colors.icon
                       }`}
                     >
-                      {filter.count}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
+                      <IconComponent size={17} />
+                    </div>
 
-          <div className="mb-4 mt-7 flex flex-wrap items-center justify-between gap-3">
+                    {active && <Check size={15} />}
+                  </div>
+
+                  <div className="mt-3 flex items-end justify-between gap-1">
+                    <span className="text-[11px] font-semibold leading-4">
+                      {filter.label}
+                    </span>
+                    <span className="text-lg font-bold">
+                      {filter.count.toLocaleString("th-TH")}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section>
+          <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-lg font-extrabold text-slate-800">
-                รายการข้อมูล
-              </h2>
-              <p className="mt-1 text-xs font-medium text-slate-500">
-                พบ{" "}
-                <span className="font-extrabold text-[#800020]">
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-1 rounded-full bg-[#851b3b]" />
+                <h2 className="text-base font-bold text-slate-800">
+                  รายการข้อมูลบุคคล
+                </h2>
+              </div>
+              <p className="mt-1.5 pl-3 text-xs text-slate-500">
+                พบข้อมูลทั้งหมด{" "}
+                <span className="font-bold text-[#851b3b]">
                   {sortedPersons.length.toLocaleString("th-TH")}
                 </span>{" "}
                 รายการ
               </p>
             </div>
 
-            <div
-              className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold ${
-                isMobile
-                  ? "border-violet-200 bg-violet-50 text-violet-700"
-                  : "border-indigo-200 bg-indigo-50 text-indigo-700"
-              }`}
-            >
-              <Icon type={isMobile ? "grid" : "document"} size={16} />
-              {isMobile ? "มุมมองการ์ด" : "มุมมองตาราง"}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-500">
+                {isMobile ? <LayoutGrid size={15} /> : <List size={15} />}
+                {isMobile ? "มุมมองการ์ด" : "มุมมองตาราง"}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectMode((prev) => !prev);
+                  setSelectedIds([]);
+                }}
+                className={`flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-bold transition ${
+                  selectMode
+                    ? "bg-slate-800 text-white shadow-sm"
+                    : "border border-slate-200 bg-white text-slate-600 hover:border-[#851b3b] hover:text-[#851b3b]"
+                }`}
+              >
+                <ClipboardList size={16} />
+                {selectMode ? "ยกเลิกการเลือก" : "เลือกหลายรายการ"}
+              </button>
             </div>
           </div>
 
-          <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_5px_25px_rgba(15,23,42,0.05)]">
+          {selectMode && (
+            <div className="mb-4 flex flex-col gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                  <ClipboardList size={19} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-blue-900">
+                    เลือกรายการที่ต้องการดำเนินการ
+                  </p>
+                  <p className="mt-0.5 text-xs text-blue-700">
+                    เลือกแล้ว {selectedIds.length} รายการ
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-100"
+                >
+                  {selectedIds.length ===
+                  persons.filter((p) => p.status < 4).length
+                    ? "ยกเลิกทั้งหมด"
+                    : "เลือกทั้งหมด"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleBulkSend}
+                  disabled={selectedIds.length === 0}
+                  className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Send size={15} />
+                  อัปเดตสถานะ +1 ({selectedIds.length})
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
             {isMobile ? (
-              <div className="bg-gradient-to-b from-slate-50/70 to-white p-3 min-[480px]:p-4">
+              <div className="bg-[#f8f9fc] p-3 sm:p-4">
                 <PersonCard
                   persons={sortedPersons}
                   loading={loading}
@@ -566,8 +505,13 @@ export default function PersonHistoryPage() {
                 />
               </div>
             )}
-          </section>
-        </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-slate-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            ระบบจัดการประวัติบุคคล
+          </div>
+        </section>
       </main>
     </div>
   );
