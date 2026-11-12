@@ -1,6 +1,19 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import {
+  FileText,
+  Users,
+  ReceiptText,
+  Download,
+  AlertCircle,
+  CalendarDays,
+  Hash,
+  ClipboardList,
+  ArrowDownToLine,
+  ShieldCheck,
+  LoaderCircle,
+} from "lucide-react";
 import api from "../../api/axios";
 import { generateForensicPdf } from "../../utils/generateForensicPdf";
 import { generateForensicPdfs } from "../../utils/generateForensicPdfS";
@@ -37,18 +50,20 @@ export default function ForensicSubmissionPdfPage() {
   const { id } = useParams<{ id: string }>();
 
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState<"forensic" | "payment" | null>(
+    null,
+  );
   const [data, setData] = useState<Submission | null>(null);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, [id]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
+      setError("");
 
       if (!id) {
         setData(null);
+        setError("ไม่พบรหัสหนังสือนำส่ง");
         return;
       }
 
@@ -73,9 +88,7 @@ export default function ForensicSubmissionPdfPage() {
         const bookA = Number(a?.person?.receiptBookNo || 0);
         const bookB = Number(b?.person?.receiptBookNo || 0);
 
-        if (bookA !== bookB) {
-          return bookA - bookB;
-        }
+        if (bookA !== bookB) return bookA - bookB;
 
         const receiptA = Number(a?.person?.receiptNo || 0);
         const receiptB = Number(b?.person?.receiptNo || 0);
@@ -95,22 +108,24 @@ export default function ForensicSubmissionPdfPage() {
       }
 
       setData(null);
+      setError(
+        error instanceof Error ? error.message : "ไม่สามารถโหลดข้อมูลได้",
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   const handleGeneratePdf = async () => {
-    if (!data) {
-      return;
-    }
-
-    if (!data.submissionId) {
-      console.error("ไม่พบ submissionId");
-      return;
-    }
+    if (!data || generating) return;
 
     try {
+      setGenerating("forensic");
+
       await generateForensicPdf({
         submissionId: data.submissionId,
         submissionNo: data.submissionNo,
@@ -133,15 +148,18 @@ export default function ForensicSubmissionPdfPage() {
       });
     } catch (error: unknown) {
       console.error("Generate forensic PDF error:", error);
+      window.alert("ไม่สามารถสร้างเอกสาร PDF ได้");
+    } finally {
+      setGenerating(null);
     }
   };
 
   const handleGeneratePdf2 = async () => {
-    if (!data) {
-      return;
-    }
+    if (!data || generating) return;
 
     try {
+      setGenerating("payment");
+
       await generateForensicPdfs({
         submissionNo: data.submissionNo,
         submissionDate: data.submissionDate,
@@ -156,13 +174,14 @@ export default function ForensicSubmissionPdfPage() {
       });
     } catch (error: unknown) {
       console.error("Generate payment PDF error:", error);
+      window.alert("ไม่สามารถสร้างเอกสาร PDF ได้");
+    } finally {
+      setGenerating(null);
     }
   };
 
   const formatShortThaiDate = (dateString?: string) => {
-    if (!dateString) {
-      return "-";
-    }
+    if (!dateString) return "-";
 
     const months: Record<string, string> = {
       มกราคม: "ม.ค.",
@@ -181,9 +200,7 @@ export default function ForensicSubmissionPdfPage() {
 
     const parts = dateString.trim().split(" ");
 
-    if (parts.length !== 3) {
-      return dateString;
-    }
+    if (parts.length !== 3) return dateString;
 
     const [day, month, year] = parts;
 
@@ -192,15 +209,13 @@ export default function ForensicSubmissionPdfPage() {
 
   if (loading) {
     return (
-      <div className="main-content min-h-screen bg-gray-50 px-3 py-6 sm:px-4 lg:px-6">
-        <div className="mx-auto flex min-h-[60vh] max-w-[1400px] items-center justify-center">
-          <div className="rounded-2xl bg-white px-8 py-7 text-center shadow-sm">
-            <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-4 border-gray-200 border-t-[#800020]" />
-
-            <p className="text-sm font-semibold text-gray-600">
-              กำลังโหลดข้อมูล...
-            </p>
-          </div>
+      <div className="main-content min-h-screen bg-[#f4f6f9] px-4 py-10">
+        <div className="flex min-h-[55vh] flex-col items-center justify-center">
+          <LoaderCircle className="mb-4 h-10 w-10 animate-spin text-[#800020]" />
+          <p className="text-sm font-semibold text-gray-600">
+            กำลังโหลดข้อมูลหนังสือนำส่ง...
+          </p>
+          <p className="mt-1 text-xs text-gray-400">กรุณารอสักครู่</p>
         </div>
       </div>
     );
@@ -208,228 +223,236 @@ export default function ForensicSubmissionPdfPage() {
 
   if (!data) {
     return (
-      <div className="main-content min-h-screen bg-gray-50 px-3 py-6 sm:px-4 lg:px-6">
-        <div className="mx-auto max-w-[1200px] px-4 sm:px-8">
-          <div className="rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">
-              <svg
-                width="25"
-                height="25"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 8v4" />
-                <path d="M12 16h.01" />
-              </svg>
-            </div>
-
-            <h2 className="text-lg font-bold text-gray-800">ไม่พบข้อมูล</h2>
-
-            <p className="mt-1 text-sm text-gray-400">
-              ไม่พบข้อมูลหนังสือส่งตรวจที่ต้องการ
-            </p>
+      <div className="main-content min-h-screen bg-[#f4f6f9] px-4 py-10">
+        <div className="mx-auto max-w-xl rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">
+            <AlertCircle size={28} />
           </div>
+
+          <h2 className="text-lg font-bold text-gray-800">
+            ไม่พบข้อมูลหนังสือนำส่ง
+          </h2>
+
+          <p className="mt-2 text-sm text-gray-500">
+            {error || "ไม่พบข้อมูลที่ต้องการ กรุณาตรวจสอบอีกครั้ง"}
+          </p>
+
+          <button
+            onClick={() => void fetchData()}
+            className="mt-5 rounded-lg bg-[#800020] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#650019]"
+          >
+            โหลดข้อมูลอีกครั้ง
+          </button>
         </div>
       </div>
     );
   }
 
+  const urgentCount = data.persons.filter(
+    (item) => item.person.priority === 1,
+  ).length;
+
   return (
-    <div className="main-content min-h-screen bg-gray-50 px-3 py-4 sm:px-4 lg:px-6">
-      <div className="mx-auto w-full max-w-[1400px]">
-        <div className="mb-5 overflow-hidden rounded-2xl bg-gradient-to-r from-[#650017] to-[#800020] shadow-lg">
-          <div className="px-5 py-5 sm:px-7">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M6 2h12v20l-3-2-3 2-3-2-3 2-3 2z" />
-                    <path d="M9 7h6" />
-                    <path d="M9 11h6" />
-                    <path d="M9 15h4" />
-                  </svg>
+    <div className="main-content min-h-screen bg-[#f4f6f9] px-3 py-5 sm:px-5 lg:px-7">
+      <div className="mx-auto w-full max-w-[1450px]">
+        <div className="mb-6 overflow-hidden rounded-xl bg-[#75152b] shadow-sm">
+          <div className="relative px-5 py-6 sm:px-7 sm:py-7">
+            <div className="absolute right-0 top-0 h-full w-1/3 bg-white/[0.04]" />
+
+            <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
+                  <FileText size={29} strokeWidth={1.7} />
                 </div>
 
-                <div className="min-w-0">
-                  <h1 className="truncate text-lg font-bold text-white sm:text-xl">
-                    หนังสือ ศพฐ.
+                <div>
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="rounded bg-white/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white">
+                      FORENSIC DOCUMENT
+                    </span>
+                  </div>
+
+                  <h1 className="text-xl font-bold text-white sm:text-2xl">
+                    หนังสือนำส่งตรวจประวัติ
                   </h1>
 
-                  <p className="mt-0.5 text-xs text-white/70 sm:text-sm">
-                    รายละเอียดหนังสือนำส่งตรวจประวัติ
+                  <p className="mt-1 text-xs text-white/70 sm:text-sm">
+                    ระบบจัดการเอกสารงานตรวจประวัติบุคคล
                   </p>
                 </div>
               </div>
 
-              <div className="hidden shrink-0 text-right sm:block">
-                <p className="text-[10px] text-white/60">เลขหนังสือนำส่ง</p>
+              <div className="rounded-lg border border-white/15 bg-black/10 px-4 py-3 sm:min-w-[200px]">
+                <p className="text-xs text-white/60">เลขที่หนังสือนำส่ง</p>
 
-                <p className="text-sm font-bold text-white">
+                <p className="mt-1 text-lg font-bold text-white">
                   {data.submissionNo || "-"}
                 </p>
               </div>
             </div>
           </div>
+
+          <div className="h-1 bg-[#d4a44c]" />
         </div>
 
-        <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-400">จำนวนรายชื่อ</p>
-
-                <p className="text-xl font-bold text-gray-800">
-                  {data.persons.length}{" "}
-                  <span className="text-sm font-medium text-gray-400">คน</span>
-                </p>
-              </div>
+        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <Users size={22} />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">จำนวนรายชื่อทั้งหมด</p>
+              <p className="mt-1 text-2xl font-bold text-gray-800">
+                {data.persons.length}
+                <span className="ml-1 text-sm font-medium text-gray-400">
+                  คน
+                </span>
+              </p>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path d="M6 2h12v20l-3-2-3 2-3-2-3 2-3 2z" />
-                  <path d="M9 7h6" />
-                  <path d="M9 11h6" />
-                </svg>
-              </div>
+          <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+              <AlertCircle size={22} />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">รายการเร่งด่วน</p>
+              <p className="mt-1 text-2xl font-bold text-gray-800">
+                {urgentCount}
+                <span className="ml-1 text-sm font-medium text-gray-400">
+                  รายการ
+                </span>
+              </p>
+            </div>
+          </div>
 
-              <div>
-                <p className="text-xs text-gray-400">เลขหนังสือนำส่ง</p>
-
-                <p className="text-sm font-bold text-gray-800">
-                  {data.submissionNo || "-"}
-                </p>
-              </div>
+          <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-teal-50 text-teal-600">
+              <ClipboardList size={22} />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">เลขหนังสือนำส่ง</p>
+              <p className="mt-1 truncate text-base font-bold text-gray-800">
+                {data.submissionNo || "-"}
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="mb-5 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
-          <div className="mb-4">
-            <h2 className="text-sm font-bold text-gray-800">สร้างเอกสาร PDF</h2>
-
-            <p className="mt-1 text-xs text-gray-400">
-              เลือกรูปแบบเอกสารที่ต้องการ
-            </p>
+        <section className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+              <Download size={19} />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-800">
+                สร้างเอกสาร PDF
+              </h2>
+              <p className="mt-0.5 text-xs text-gray-500">
+                เลือกรูปแบบเอกสารที่ต้องการจัดทำ
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:p-5">
             <button
               type="button"
               onClick={handleGeneratePdf}
-              className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-[#800020] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#650017] active:scale-[0.98]"
+              disabled={generating !== null}
+              className="group flex items-center gap-4 rounded-xl border border-[#ead4d9] bg-[#fff9fa] p-4 text-left transition hover:border-[#800020] hover:bg-[#fff1f3] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <svg
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <path d="M8 13h8" />
-                <path d="M8 17h6" />
-              </svg>
-              ดาวน์โหลด PDF ส่ง ศพฐ
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#800020] text-white transition group-hover:bg-[#650019]">
+                {generating === "forensic" ? (
+                  <LoaderCircle className="animate-spin" size={23} />
+                ) : (
+                  <FileText size={23} />
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-[#75152b]">
+                  ดาวน์โหลด PDF ส่ง ศพฐ.
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  เอกสารหนังสือนำส่งตรวจประวัติ
+                </p>
+              </div>
+
+              <ArrowDownToLine className="shrink-0 text-[#800020]" size={19} />
             </button>
 
             <button
               type="button"
               onClick={handleGeneratePdf2}
-              className="flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98]"
+              disabled={generating !== null}
+              className="group flex items-center gap-4 rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-left transition hover:border-blue-400 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <svg
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2v20" />
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
-              ดาวน์โหลด PDF ส่งเงิน
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition group-hover:bg-blue-700">
+                {generating === "payment" ? (
+                  <LoaderCircle className="animate-spin" size={23} />
+                ) : (
+                  <ReceiptText size={23} />
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-blue-800">
+                  ดาวน์โหลด PDF ส่งเงิน
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  เอกสารรายละเอียดรายการรับเงิน
+                </p>
+              </div>
+
+              <ArrowDownToLine className="shrink-0 text-blue-600" size={19} />
             </button>
           </div>
-        </div>
+        </section>
 
-        <div className="hidden overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm min-[1200px]:block">
-          <div className="overflow-x-auto">
+        <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-2 border-b border-gray-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <ClipboardList size={19} />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-gray-800">
+                  รายละเอียดรายชื่อบุคคล
+                </h2>
+                <p className="mt-0.5 text-xs text-gray-500">
+                  ข้อมูลบุคคลตามหนังสือนำส่ง
+                </p>
+              </div>
+            </div>
+
+            <span className="w-fit rounded-md bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600">
+              ทั้งหมด {data.persons.length} รายการ
+            </span>
+          </div>
+
+          <div className="hidden overflow-x-auto min-[1200px]:block">
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-gray-800 text-white">
-                  <th className="w-[70px] border border-gray-700 px-3 py-3 text-center font-semibold">
+                <tr className="bg-[#f7f8fa] text-gray-600">
+                  <th className="w-[75px] border-b border-gray-200 px-4 py-4 text-center font-semibold">
                     ลำดับ
                   </th>
-
-                  <th className="border border-gray-700 px-3 py-3 text-left font-semibold">
-                    ชื่อ และ ชื่อสกุล
+                  <th className="min-w-[200px] border-b border-gray-200 px-4 py-4 text-left font-semibold">
+                    ชื่อ - นามสกุล
                   </th>
-
-                  <th className="border border-gray-700 px-3 py-3 text-left font-semibold">
+                  <th className="min-w-[200px] border-b border-gray-200 px-4 py-4 text-left font-semibold">
                     เรื่องที่ขออนุญาต
                   </th>
-
-                  <th className="w-[90px] border border-gray-700 px-3 py-3 text-center font-semibold">
+                  <th className="w-[100px] border-b border-gray-200 px-4 py-4 text-center font-semibold">
                     เล่มที่
                   </th>
-
-                  <th className="w-[90px] border border-gray-700 px-3 py-3 text-center font-semibold">
+                  <th className="w-[100px] border-b border-gray-200 px-4 py-4 text-center font-semibold">
                     เลขที่
                   </th>
-
-                  <th className="w-[120px] border border-gray-700 px-3 py-3 text-center font-semibold">
+                  <th className="w-[130px] border-b border-gray-200 px-4 py-4 text-center font-semibold">
                     ลงวันที่
                   </th>
-
-                  <th className="w-[90px] border border-gray-700 px-3 py-3 text-center font-semibold">
+                  <th className="w-[100px] border-b border-gray-200 px-4 py-4 text-center font-semibold">
                     หมายเหตุ
                   </th>
                 </tr>
@@ -439,37 +462,34 @@ export default function ForensicSubmissionPdfPage() {
                 {data.persons.map((item, index) => (
                   <tr
                     key={item.person.personId || index}
-                    className="transition hover:bg-gray-50"
+                    className="transition-colors hover:bg-[#faf8f9]"
                   >
-                    <td className="border border-gray-200 px-3 py-3 text-center">
-                      {index + 1}
+                    <td className="border-b border-gray-100 px-4 py-4 text-center text-gray-500">
+                      {String(index + 1).padStart(2, "0")}
                     </td>
-
-                    <td className="border border-gray-200 px-3 py-3 font-medium text-gray-800">
+                    <td className="border-b border-gray-100 px-4 py-4 font-semibold text-gray-800">
                       {item.person.fullName}
                     </td>
-
-                    <td className="border border-gray-200 px-3 py-3 text-gray-700">
+                    <td className="border-b border-gray-100 px-4 py-4 text-gray-600">
                       {item.person.purpose || "-"}
                     </td>
-
-                    <td className="border border-gray-200 px-3 py-3 text-center">
+                    <td className="border-b border-gray-100 px-4 py-4 text-center text-gray-700">
                       {item.person.receiptBookNo || "-"}
                     </td>
-
-                    <td className="border border-gray-200 px-3 py-3 text-center">
+                    <td className="border-b border-gray-100 px-4 py-4 text-center text-gray-700">
                       {item.person.receiptNo || "-"}
                     </td>
-
-                    <td className="border border-gray-200 px-3 py-3 text-center">
+                    <td className="border-b border-gray-100 px-4 py-4 text-center text-gray-600">
                       {formatShortThaiDate(item.person.receiptDate)}
                     </td>
-
-                    <td className="border border-gray-200 px-3 py-3 text-center">
-                      {item.person.priority === 1 && (
-                        <span className="inline-flex rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-600">
+                    <td className="border-b border-gray-100 px-4 py-4 text-center">
+                      {item.person.priority === 1 ? (
+                        <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2.5 py-1 text-xs font-bold text-red-600">
+                          <AlertCircle size={13} />
                           ด่วน
                         </span>
+                      ) : (
+                        <span className="text-gray-300">-</span>
                       )}
                     </td>
                   </tr>
@@ -477,114 +497,107 @@ export default function ForensicSubmissionPdfPage() {
               </tbody>
 
               <tfoot>
-                <tr className="bg-gray-50">
+                <tr className="bg-[#f7f8fa]">
                   <td
                     colSpan={6}
-                    className="border border-gray-200 px-3 py-3 text-right font-bold text-gray-700"
+                    className="border-t border-gray-200 px-4 py-4 text-right font-bold text-gray-600"
                   >
-                    รวมทั้งหมด
+                    รวมจำนวนรายชื่อทั้งหมด
                   </td>
-
-                  <td className="border border-gray-200 px-3 py-3 text-center font-bold text-[#800020]">
+                  <td className="border-t border-gray-200 px-4 py-4 text-center font-bold text-[#800020]">
                     {data.persons.length} คน
                   </td>
                 </tr>
               </tfoot>
             </table>
           </div>
-        </div>
 
-        <div className="mt-4 flex flex-col gap-3 min-[1200px]:hidden">
-          {data.persons.map((item, index) => (
-            <div
-              key={item.person.personId || index}
-              className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"
-            >
-              <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#800020]/10 text-xs font-bold text-[#800020]">
-                    {index + 1}
-                  </span>
+          <div className="divide-y divide-gray-100 min-[1200px]:hidden">
+            {data.persons.map((item, index) => (
+              <div
+                key={item.person.personId || index}
+                className="p-4 transition hover:bg-gray-50 sm:p-5"
+              >
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f9edf0] text-sm font-bold text-[#800020]">
+                      {index + 1}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold text-gray-400">
+                        ชื่อ - นามสกุล
+                      </p>
+                      <p className="mt-0.5 break-words text-sm font-bold text-gray-800">
+                        {item.person.fullName}
+                      </p>
+                    </div>
+                  </div>
 
-                  <span className="text-xs font-semibold text-gray-500">
-                    รายการ
-                  </span>
+                  {item.person.priority === 1 && (
+                    <span className="shrink-0 rounded-md bg-red-50 px-2.5 py-1 text-[10px] font-bold text-red-600">
+                      ด่วน
+                    </span>
+                  )}
                 </div>
 
-                {item.person.priority === 1 && (
-                  <span className="rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-bold text-red-600">
-                    ด่วน
-                  </span>
-                )}
-              </div>
-
-              <div className="space-y-3 p-4">
-                <div>
-                  <p className="mb-1 text-[10px] font-semibold text-gray-400">
-                    ชื่อ และ ชื่อสกุล
-                  </p>
-
-                  <p className="text-sm font-bold text-gray-800">
-                    {item.person.fullName}
-                  </p>
-                </div>
-
-                <div>
+                <div className="mb-3 rounded-lg bg-gray-50 p-3">
                   <p className="mb-1 text-[10px] font-semibold text-gray-400">
                     เรื่องที่ขออนุญาต
                   </p>
-
                   <p className="text-sm leading-6 text-gray-700">
                     {item.person.purpose || "-"}
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-gray-50 p-3">
-                    <p className="text-[10px] font-semibold text-gray-400">
-                      เล่มที่
-                    </p>
-
-                    <p className="mt-1 text-sm font-bold text-gray-800">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  <div className="rounded-lg border border-gray-100 p-3">
+                    <div className="mb-1 flex items-center gap-1 text-gray-400">
+                      <Hash size={12} />
+                      <span className="text-[10px]">เล่มที่</span>
+                    </div>
+                    <p className="text-sm font-bold text-gray-800">
                       {item.person.receiptBookNo || "-"}
                     </p>
                   </div>
 
-                  <div className="rounded-xl bg-gray-50 p-3">
-                    <p className="text-[10px] font-semibold text-gray-400">
-                      เลขที่
-                    </p>
-
-                    <p className="mt-1 text-sm font-bold text-gray-800">
+                  <div className="rounded-lg border border-gray-100 p-3">
+                    <div className="mb-1 flex items-center gap-1 text-gray-400">
+                      <ReceiptText size={12} />
+                      <span className="text-[10px]">เลขที่</span>
+                    </div>
+                    <p className="text-sm font-bold text-gray-800">
                       {item.person.receiptNo || "-"}
                     </p>
                   </div>
-                </div>
 
-                <div className="rounded-xl bg-gray-50 p-3">
-                  <p className="text-[10px] font-semibold text-gray-400">
-                    ลงวันที่
-                  </p>
-
-                  <p className="mt-1 text-sm font-semibold text-gray-700">
-                    {formatShortThaiDate(item.person.receiptDate)}
-                  </p>
+                  <div className="col-span-2 rounded-lg border border-gray-100 p-3 sm:col-span-1">
+                    <div className="mb-1 flex items-center gap-1 text-gray-400">
+                      <CalendarDays size={12} />
+                      <span className="text-[10px]">ลงวันที่</span>
+                    </div>
+                    <p className="text-sm font-bold text-gray-800">
+                      {formatShortThaiDate(item.person.receiptDate)}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-
-          <div className="rounded-2xl bg-[#800020]/5 px-4 py-4 text-center">
-            <span className="text-xs font-semibold text-gray-500">
-              รวมทั้งหมด{" "}
-            </span>
-
-            <span className="text-base font-bold text-[#800020]">
-              {data.persons.length}
-            </span>
-
-            <span className="text-xs font-semibold text-gray-500"> คน</span>
+            ))}
           </div>
+
+          <div className="flex flex-col items-center justify-between gap-2 border-t border-gray-100 bg-[#fafbfc] px-5 py-4 sm:flex-row">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <ShieldCheck size={15} className="text-teal-600" />
+              ข้อมูลจากระบบจัดการหนังสือนำส่ง
+            </div>
+            <p className="text-xs font-bold text-gray-700">
+              รวมทั้งหมด{" "}
+              <span className="text-[#800020]">{data.persons.length}</span> คน
+            </p>
+          </div>
+        </section>
+
+        <div className="mt-5 text-center text-[11px] text-gray-400">
+          ระบบงานตรวจประวัติบุคคล · Forensic Management System
         </div>
       </div>
     </div>

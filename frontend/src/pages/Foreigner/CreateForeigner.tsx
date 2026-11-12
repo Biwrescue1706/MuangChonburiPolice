@@ -1,8 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import api from "../../api/axios";
-import { ArrowLeft } from "lucide-react";
+import {
+  ArrowLeft,
+  ClipboardList,
+  UserRound,
+  FileBadge,
+  MapPin,
+  Building2,
+  Home,
+  FileText,
+  Receipt,
+  CalendarDays,
+  Save,
+  X,
+  LoaderCircle,
+  CheckCircle2,
+  Globe2,
+  ShieldCheck,
+  Info,
+} from "lucide-react";
 import type { DateParts, ForeignerFormData } from "../../types/foreigner";
 
 const MONTHS = [
@@ -36,6 +55,11 @@ const CHONBURI_DISTRICTS = [
 
 const CURRENT_BUDDHIST_YEAR = new Date().getFullYear() + 543;
 
+const fieldClass =
+  "block w-full min-h-[46px] rounded-xl border border-solid border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm outline-none transition duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-[#801d35] focus:ring-4 focus:ring-[#801d35]/10 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 read-only:bg-slate-50 read-only:text-slate-600";
+
+const labelClass = "mb-2 block text-sm font-semibold text-slate-700";
+
 const emptyDate = (): DateParts => ({
   day: "",
   month: "",
@@ -47,9 +71,7 @@ const datePartsToString = (
   required = false,
 ): string | null => {
   if (!value.day && !value.month && !value.year) {
-    if (required) {
-      throw new Error("กรุณากรอกวัน เดือน ปี ให้ครบ");
-    }
+    if (required) throw new Error("กรุณากรอกวัน เดือน ปี ให้ครบ");
     return null;
   }
 
@@ -61,14 +83,10 @@ const datePartsToString = (
   const year = Number(value.year);
   const monthIndex = MONTHS.indexOf(value.month);
 
-  if (monthIndex < 0) {
-    throw new Error("เดือนไม่ถูกต้อง");
-  }
-
+  if (monthIndex < 0) throw new Error("เดือนไม่ถูกต้อง");
   if (!Number.isInteger(day) || day < 1 || day > 31) {
     throw new Error("วันที่ไม่ถูกต้อง");
   }
-
   if (!Number.isInteger(year) || year < 2400 || year > 2700) {
     throw new Error("ปี พ.ศ. ไม่ถูกต้อง");
   }
@@ -87,9 +105,7 @@ const datePartsToString = (
 };
 
 const datePartsToISO = (value: DateParts): string | null => {
-  if (!value.day && !value.month && !value.year) {
-    return null;
-  }
+  if (!value.day && !value.month && !value.year) return null;
 
   if (!value.day || !value.month || !value.year) {
     throw new Error("กรุณากรอกวัน เดือน ปี ให้ครบ");
@@ -97,14 +113,21 @@ const datePartsToISO = (value: DateParts): string | null => {
 
   const day = Number(value.day);
   const month = MONTHS.indexOf(value.month) + 1;
-  const year = Number(value.year) - 543;
-
-  if (!Number.isInteger(day) || day < 1 || day > 31) {
-    throw new Error("วันที่ไม่ถูกต้อง");
-  }
+  const buddhistYear = Number(value.year);
+  const year = buddhistYear - 543;
 
   if (!Number.isInteger(month) || month < 1 || month > 12) {
     throw new Error("เดือนไม่ถูกต้อง");
+  }
+  if (
+    !Number.isInteger(buddhistYear) ||
+    buddhistYear < 2400 ||
+    buddhistYear > 2700
+  ) {
+    throw new Error("ปี พ.ศ. ไม่ถูกต้อง");
+  }
+  if (!Number.isInteger(day) || day < 1 || day > 31) {
+    throw new Error("วันที่ไม่ถูกต้อง");
   }
 
   const date = new Date(year, month - 1, day);
@@ -121,16 +144,9 @@ const datePartsToISO = (value: DateParts): string | null => {
 };
 
 const stringToDateParts = (value: string | null | undefined): DateParts => {
-  if (!value) {
-    return {
-      day: "",
-      month: "",
-      year: "",
-    };
-  }
+  if (!value) return { day: "", month: "", year: "" };
 
   const text = String(value).trim();
-
   const isoMatch = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
 
   if (isoMatch) {
@@ -151,11 +167,7 @@ const stringToDateParts = (value: string | null | undefined): DateParts => {
     };
   }
 
-  return {
-    day: "",
-    month: "",
-    year: "",
-  };
+  return { day: "", month: "", year: "" };
 };
 
 export default function CreateForeigner() {
@@ -199,11 +211,7 @@ export default function CreateForeigner() {
     useState<DateParts>(emptyDate());
 
   const [previousExpirationDate, setPreviousExpirationDate] =
-    useState<DateParts>({
-      day: "",
-      month: "",
-      year: "",
-    });
+    useState<DateParts>({ day: "", month: "", year: "" });
 
   const [receiptDate, setReceiptDate] = useState<DateParts>({
     day: "",
@@ -218,38 +226,25 @@ export default function CreateForeigner() {
   });
 
   const updateField = (field: keyof ForeignerFormData, value: string) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   useEffect(() => {
-    if (form.applicationType === "ชนิดที่ 1") {
-      setForm((prev) => ({
-        ...prev,
-        amount: "200",
-      }));
-    } else if (form.applicationType === "ชนิดที่ 2") {
-      setForm((prev) => ({
-        ...prev,
-        amount: "800",
-      }));
-    } else {
-      setForm((prev) => ({
-        ...prev,
-        amount: "",
-      }));
-    }
+    const amount =
+      form.applicationType === "ชนิดที่ 1"
+        ? "200"
+        : form.applicationType === "ชนิดที่ 2"
+          ? "800"
+          : "";
+
+    setForm((prev) => ({ ...prev, amount }));
   }, [form.applicationType]);
 
   useEffect(() => {
     const loadReceiptOptions = async () => {
       try {
         setReceiptLoading(true);
-
         const response = await api.get("/foreigner/receipt-options");
-
         const data = response.data?.data ?? response.data;
 
         const availableNos = Array.isArray(data?.receiptNos)
@@ -261,7 +256,6 @@ export default function CreateForeigner() {
         setReceiptNos(availableNos);
       } catch (error) {
         console.error("LOAD RECEIPT OPTIONS ERROR:", error);
-
         setReceiptNos([]);
 
         await Swal.fire({
@@ -287,23 +281,17 @@ export default function CreateForeigner() {
     const loadCopyData = async () => {
       try {
         setCopyLoading(true);
-
         const response = await api.get(`/foreigner/${copyId}`);
-
         const data = response.data?.data ?? response.data;
 
         setForm((prev) => ({
           ...prev,
-          year:
-            data.year !== null && data.year !== undefined
-              ? String(data.year)
-              : String(CURRENT_BUDDHIST_YEAR),
+          year: String(data.year ?? CURRENT_BUDDHIST_YEAR),
           foreignerIdNo: data.foreignerIdNo || "",
           prefix: data.prefix || "",
           firstName: data.firstName || "",
           lastName: data.lastName || "",
-          age:
-            data.age !== null && data.age !== undefined ? String(data.age) : "",
+          age: data.age != null ? String(data.age) : "",
           nationality: data.nationality || "",
           ethnicity: data.ethnicity || "",
           certificateRegistrationNo: data.certificateRegistrationNo || "",
@@ -330,15 +318,8 @@ export default function CreateForeigner() {
         }));
 
         setCertificateDate(stringToDateParts(data.certificateDate));
-
         setPreviousExpirationDate(stringToDateParts(data.expirationDate));
-
-        setReceiptDate({
-          day: "",
-          month: "",
-          year: "",
-        });
-
+        setReceiptDate({ day: "", month: "", year: "" });
         setPetitionDate(stringToDateParts(data.petitionDate));
       } catch (error) {
         console.error("COPY FOREIGNER ERROR:", error);
@@ -364,122 +345,65 @@ export default function CreateForeigner() {
     const age = Number(form.age);
     const amount = Number(form.amount);
 
-    if (!form.year.trim()) {
-      throw new Error("กรุณากรอกปี พ.ศ.");
-    }
-
+    if (!form.year.trim()) throw new Error("กรุณากรอกปี พ.ศ.");
     if (!Number.isInteger(year) || year < 2400 || year > 2700) {
       throw new Error("ปี พ.ศ. ไม่ถูกต้อง");
     }
 
-    if (!form.prefix.trim()) {
-      throw new Error("กรุณากรอกคำนำหน้า");
-    }
+    const requiredFields: [keyof ForeignerFormData, string][] = [
+      ["prefix", "คำนำหน้า"],
+      ["firstName", "ชื่อ"],
+      ["lastName", "นามสกุล"],
+      ["age", "อายุ"],
+      ["nationality", "สัญชาติ"],
+      ["ethnicity", "เชื้อชาติ"],
+      ["certificateRegistrationNo", "เลขทะเบียนของใบสำคัญ"],
+      ["district", "ออกให้ ณ อำเภอ"],
+      ["province", "ออกให้ ณ จังหวัด"],
+      ["policeStation", "สถานีตำรวจ"],
+      ["policeProvince", "จังหวัดของสถานีตำรวจ"],
+      ["houseNo", "บ้านเลขที่"],
+      ["subdistrict", "ตำบล"],
+      ["domicileDistrict", "อำเภอของภูมิลำเนา"],
+      ["domicileProvince", "จังหวัดของภูมิลำเนา"],
+      ["applicationType", "ชนิดการขอรับ"],
+      ["amount", "จำนวนเงิน"],
+      ["receiptBookNo", "ใบเสร็จเล่มที่"],
+      ["receiptNo", "ใบเสร็จเลขที่"],
+    ];
 
-    if (!form.firstName.trim()) {
-      throw new Error("กรุณากรอกชื่อ");
-    }
-
-    if (!form.lastName.trim()) {
-      throw new Error("กรุณากรอกนามสกุล");
-    }
-
-    if (!form.age.trim()) {
-      throw new Error("กรุณากรอกอายุ");
+    for (const [field, label] of requiredFields) {
+      if (!String(form[field] ?? "").trim()) {
+        throw new Error(`กรุณากรอก${label}`);
+      }
     }
 
     if (!Number.isInteger(age) || age < 0) {
       throw new Error("อายุไม่ถูกต้อง");
     }
 
-    if (!form.nationality.trim()) {
-      throw new Error("กรุณากรอกสัญชาติ");
-    }
-
-    if (!form.ethnicity.trim()) {
-      throw new Error("กรุณากรอกเชื้อชาติ");
-    }
-
-    if (!form.certificateRegistrationNo.trim()) {
-      throw new Error("กรุณากรอกเลขทะเบียนของใบสำคัญ");
-    }
-
-    if (!form.district.trim()) {
-      throw new Error("กรุณากรอกออกให้ ณ อำเภอ");
-    }
-
-    if (!form.province.trim()) {
-      throw new Error("กรุณากรอกออกให้ ณ จังหวัด");
-    }
-
-    if (!form.policeStation.trim()) {
-      throw new Error("กรุณากรอกสถานีตำรวจ");
-    }
-
-    if (!form.policeProvince.trim()) {
-      throw new Error("กรุณากรอกจังหวัดของสถานีตำรวจ");
-    }
-
-    if (!form.houseNo.trim()) {
-      throw new Error("กรุณากรอกบ้านเลขที่");
-    }
-
-    if (!form.subdistrict.trim()) {
-      throw new Error("กรุณากรอกตำบล");
-    }
-
-    if (!form.domicileDistrict.trim()) {
-      throw new Error("กรุณากรอกอำเภอของภูมิลำเนา");
-    }
-
-    if (!form.domicileProvince.trim()) {
-      throw new Error("กรุณากรอกจังหวัดของภูมิลำเนา");
-    }
-
-    if (!form.applicationType.trim()) {
-      throw new Error("กรุณากรอกชนิดการขอรับ");
-    }
-
-    if (!form.amount.trim()) {
-      throw new Error("กรุณากรอกจำนวนเงิน");
-    }
-
     if (!Number.isInteger(amount) || amount < 0) {
       throw new Error("จำนวนเงินต้องเป็นจำนวนเต็ม");
     }
 
-    if (!form.receiptBookNo.trim()) {
-      throw new Error("กรุณากรอกใบเสร็จเล่มที่");
-    }
-
-    if (!form.receiptNo.trim()) {
-      throw new Error("กรุณากรอกใบเสร็จเลขที่");
-    }
-
     datePartsToString(certificateDate, true);
-
     datePartsToString(previousExpirationDate, true);
-
     datePartsToString(receiptDate, true);
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     if (loading) return;
 
     try {
       validate();
 
       const certificateDateString = datePartsToString(certificateDate, true);
-
       const applicationDateString = datePartsToString(
         previousExpirationDate,
         true,
       );
-
       const receiptDateString = datePartsToString(receiptDate, true);
-
       const petitionDateISO = datePartsToISO(petitionDate);
 
       const domicileParts = [
@@ -535,7 +459,6 @@ export default function CreateForeigner() {
       };
 
       setLoading(true);
-
       await api.post("/foreigner", payload);
 
       await Swal.fire({
@@ -545,23 +468,23 @@ export default function CreateForeigner() {
           ? "สร้างข้อมูลใหม่จากรายการเดิมเรียบร้อยแล้ว"
           : "เพิ่มข้อมูลบุคคลต่างด้าวเรียบร้อยแล้ว",
         confirmButtonText: "ตกลง",
+        confirmButtonColor: "#801d35",
       });
 
       navigate("/foreigner");
     } catch (error: any) {
       console.error("CREATE FOREIGNER ERROR:", error);
 
-      const message =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "เกิดข้อผิดพลาดในการบันทึกข้อมูล";
-
       await Swal.fire({
         icon: "error",
         title: "บันทึกไม่สำเร็จ",
-        text: message,
+        text:
+          error?.response?.data?.error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "เกิดข้อผิดพลาดในการบันทึกข้อมูล",
         confirmButtonText: "ตกลง",
+        confirmButtonColor: "#801d35",
       });
     } finally {
       setLoading(false);
@@ -570,77 +493,115 @@ export default function CreateForeigner() {
 
   if (copyLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="rounded-xl bg-white px-6 py-5 shadow-sm">
-          <div className="text-sm text-gray-500">กำลังโหลดข้อมูลเดิม...</div>
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+          <LoaderCircle className="animate-spin text-[#801d35]" size={22} />
+          <span className="text-sm font-medium text-slate-600">
+            กำลังโหลดข้อมูลเดิม...
+          </span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-slate-100 px-3 py-5 sm:px-5 md:px-7 md:py-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8">
+        <div className="mb-5">
           <button
             type="button"
             onClick={() => navigate("/foreigner")}
-            className="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-[#800020] hover:bg-[#800020] hover:text-white"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-[#801d35] hover:bg-[#801d35] hover:text-white"
           >
             <ArrowLeft size={17} />
             กลับหน้าประวัติ
           </button>
         </div>
 
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-[#800020] md:text-3xl">
-            {copyId
-              ? "สร้างข้อมูลบุคคลต่างด้าวใหม่"
-              : "เพิ่มข้อมูลบุคคลต่างด้าว"}
-          </h1>
+        <div className="relative mb-7 overflow-hidden rounded-2xl bg-gradient-to-r from-[#681329] via-[#801d35] to-[#a33b51] px-5 py-7 text-white shadow-md sm:px-7">
+          <div className="absolute -right-10 -top-16 h-56 w-56 rounded-full border-[24px] border-white/5" />
+          <div className="absolute -bottom-24 right-32 h-48 w-48 rounded-full bg-white/5" />
 
-          <p className="mt-2 text-sm font-medium text-slate-500">
-            {copyId
-              ? "ข้อมูลถูกนำมาจากรายการเดิม สามารถแก้ไขก่อนบันทึกได้"
-              : "เพิ่มข้อมูลบุคคลต่างด้าวเข้าสู่ระบบ"}
-          </p>
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 shadow-inner">
+              <ShieldCheck size={30} />
+            </div>
+
+            <div>
+              <p className="mb-1 text-xs font-semibold tracking-[0.15em] text-white/70">
+                FOREIGNER INFORMATION SYSTEM
+              </p>
+              <h1 className="text-xl font-bold sm:text-2xl">
+                {copyId
+                  ? "สร้างข้อมูลบุคคลต่างด้าวใหม่"
+                  : "เพิ่มข้อมูลบุคคลต่างด้าว"}
+              </h1>
+              <p className="mt-1 text-sm text-white/75">
+                {copyId
+                  ? "ข้อมูลถูกนำมาจากรายการเดิม สามารถแก้ไขก่อนบันทึกได้"
+                  : "กรอกข้อมูลให้ครบถ้วนเพื่อบันทึกเข้าสู่ระบบ"}
+              </p>
+            </div>
+
+            <div className="sm:ml-auto">
+              <div className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold">
+                <CalendarDays size={16} />
+                ปี พ.ศ. {form.year}
+              </div>
+            </div>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Section title="ข้อมูลรายการ">
-            <Input
-              label="ปี พ.ศ."
-              required
-              type="number"
-              min="2400"
-              max="2700"
-              value={form.year}
-              onChange={(e) => updateField("year", e.target.value.slice(0, 4))}
-            />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <Section
+            number="01"
+            title="ข้อมูลรายการ"
+            description="กำหนดปีที่ใช้จัดเก็บข้อมูล"
+            icon={ClipboardList}
+            color="rose"
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Input
+                label="ปี พ.ศ."
+                required
+                type="number"
+                min="2400"
+                max="2700"
+                value={form.year}
+                onChange={(e) =>
+                  updateField("year", e.target.value.slice(0, 4))
+                }
+              />
+            </div>
           </Section>
 
-          <Section title="ข้อมูลบุคคล">
-            <div className="grid gap-5 md:grid-cols-3">
+          <Section
+            number="02"
+            title="ข้อมูลบุคคล"
+            description="รายละเอียดและข้อมูลประจำตัวบุคคลต่างด้าว"
+            icon={UserRound}
+            color="blue"
+          >
+            <div className="grid gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
               <Input
                 label="เลขรหัสคนต่างด้าว"
                 value={form.foreignerIdNo}
                 onChange={(e) => updateField("foreignerIdNo", e.target.value)}
+                placeholder="กรอกเลขรหัส"
               />
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  คำนำหน้า <span className="text-red-600">*</span>
+                <label className={labelClass}>
+                  คำนำหน้า <Required />
                 </label>
-
                 <input
                   list="prefix-options"
                   required
                   value={form.prefix}
                   onChange={(e) => updateField("prefix", e.target.value)}
                   placeholder="เลือกหรือกรอกคำนำหน้า"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
+                  className={fieldClass}
                 />
-
                 <datalist id="prefix-options">
                   <option value="นาย" />
                   <option value="นาง" />
@@ -655,15 +616,15 @@ export default function CreateForeigner() {
                 required
                 value={form.firstName}
                 onChange={(e) => updateField("firstName", e.target.value)}
+                placeholder="กรอกชื่อ"
               />
-
               <Input
                 label="นามสกุล"
                 required
                 value={form.lastName}
                 onChange={(e) => updateField("lastName", e.target.value)}
+                placeholder="กรอกนามสกุล"
               />
-
               <Input
                 label="อายุ"
                 required
@@ -672,26 +633,33 @@ export default function CreateForeigner() {
                 step="1"
                 value={form.age}
                 onChange={(e) => updateField("age", e.target.value)}
+                placeholder="ระบุอายุ"
               />
-
               <Input
                 label="สัญชาติ"
                 required
                 value={form.nationality}
                 onChange={(e) => updateField("nationality", e.target.value)}
+                placeholder="กรอกสัญชาติ"
               />
-
               <Input
                 label="เชื้อชาติ"
                 required
                 value={form.ethnicity}
                 onChange={(e) => updateField("ethnicity", e.target.value)}
+                placeholder="กรอกเชื้อชาติ"
               />
             </div>
           </Section>
 
-          <Section title="ใบสำคัญ">
-            <div className="space-y-5">
+          <Section
+            number="03"
+            title="ข้อมูลใบสำคัญ"
+            description="เลขทะเบียนและวันที่ออกใบสำคัญ"
+            icon={FileBadge}
+            color="violet"
+          >
+            <div className="grid gap-5 lg:grid-cols-2">
               <Input
                 label="เลขทะเบียนของใบสำคัญ"
                 required
@@ -699,8 +667,8 @@ export default function CreateForeigner() {
                 onChange={(e) =>
                   updateField("certificateRegistrationNo", e.target.value)
                 }
+                placeholder="กรอกเลขทะเบียนของใบสำคัญ"
               />
-
               <DateInput
                 label="วัน เดือน ปี ของใบสำคัญ"
                 required
@@ -710,77 +678,95 @@ export default function CreateForeigner() {
             </div>
           </Section>
 
-          <Section title="ออกให้ ณ">
-            <div className="grid gap-5 md:grid-cols-2">
+          <Section
+            number="04"
+            title="สถานที่ออกใบสำคัญ"
+            description="ระบุอำเภอและจังหวัดที่ออกใบสำคัญ"
+            icon={MapPin}
+            color="emerald"
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
               <DistrictInput
                 label="ออกให้ ณ อำเภอ"
                 required
                 value={form.district}
                 onChange={(value) => updateField("district", value)}
               />
-
               <Input
                 label="ออกให้ ณ จังหวัด"
                 required
                 value={form.province}
                 onChange={(e) => updateField("province", e.target.value)}
+                placeholder="กรอกจังหวัด"
               />
             </div>
           </Section>
 
-          <Section title="สถานีตำรวจ">
-            <div className="grid gap-5 md:grid-cols-2">
+          <Section
+            number="05"
+            title="ข้อมูลสถานีตำรวจ"
+            description="ระบุสถานีตำรวจผู้ดำเนินการ"
+            icon={Building2}
+            color="amber"
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
               <Input
                 label="สถานีตำรวจ"
                 required
                 value={form.policeStation}
                 onChange={(e) => updateField("policeStation", e.target.value)}
+                placeholder="กรอกชื่อสถานีตำรวจ"
               />
-
               <Input
                 label="จังหวัดของสถานีตำรวจ"
                 required
                 value={form.policeProvince}
                 onChange={(e) => updateField("policeProvince", e.target.value)}
+                placeholder="กรอกจังหวัด"
               />
             </div>
           </Section>
 
-          <Section title="ภูมิลำเนา">
-            <div className="grid gap-5 md:grid-cols-2">
+          <Section
+            number="06"
+            title="ข้อมูลภูมิลำเนา"
+            description="ที่อยู่ตามภูมิลำเนาของบุคคลต่างด้าว"
+            icon={Home}
+            color="cyan"
+          >
+            <div className="grid gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
               <Input
                 label="บ้านเลขที่"
                 required
                 value={form.houseNo}
                 onChange={(e) => updateField("houseNo", e.target.value)}
+                placeholder="บ้านเลขที่"
               />
-
               <Input
                 label="หมู่"
                 value={form.moo}
                 onChange={(e) => updateField("moo", e.target.value)}
+                placeholder="หมู่ที่"
               />
-
               <Input
                 label="ถนน"
                 value={form.road}
                 onChange={(e) => updateField("road", e.target.value)}
+                placeholder="ชื่อถนน"
               />
-
               <Input
                 label="ตำบล"
                 required
                 value={form.subdistrict}
                 onChange={(e) => updateField("subdistrict", e.target.value)}
+                placeholder="กรอกตำบล"
               />
-
               <DistrictInput
                 label="อำเภอ"
                 required
                 value={form.domicileDistrict}
                 onChange={(value) => updateField("domicileDistrict", value)}
               />
-
               <Input
                 label="จังหวัดของภูมิลำเนา"
                 required
@@ -788,17 +774,23 @@ export default function CreateForeigner() {
                 onChange={(e) =>
                   updateField("domicileProvince", e.target.value)
                 }
+                placeholder="กรอกจังหวัด"
               />
             </div>
           </Section>
 
-          <Section title="การขอรับ / ขอรับใบแทน / ขอต่ออายุ">
-            <div className="space-y-5">
+          <Section
+            number="07"
+            title="ประเภทการขอรับ"
+            description="รายละเอียดการขอรับ ขอรับใบแทน หรือขอต่ออายุ"
+            icon={FileText}
+            color="indigo"
+          >
+            <div className="grid gap-5 lg:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  ชนิดการขอรับ <span className="text-red-600">*</span>
+                <label className={labelClass}>
+                  ชนิดการขอรับ <Required />
                 </label>
-
                 <input
                   list="application-type-options"
                   required
@@ -806,16 +798,14 @@ export default function CreateForeigner() {
                   onChange={(e) =>
                     updateField("applicationType", e.target.value)
                   }
-                  placeholder="เลือกหรือกรอกชนิด"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
+                  placeholder="เลือกหรือกรอกชนิดการขอรับ"
+                  className={fieldClass}
                 />
-
                 <datalist id="application-type-options">
                   <option value="ชนิดที่ 1" />
                   <option value="ชนิดที่ 2" />
                 </datalist>
               </div>
-
               <DateInput
                 label="วันหมดอายุก่อนต่ออายุ"
                 required
@@ -825,61 +815,62 @@ export default function CreateForeigner() {
             </div>
           </Section>
 
-          <Section title="ค่าธรรมเนียมและใบเสร็จ">
-            <div className="grid gap-5 md:grid-cols-2">
+          <Section
+            number="08"
+            title="ค่าธรรมเนียมและใบเสร็จ"
+            description="ข้อมูลจำนวนเงินและรายละเอียดใบเสร็จรับเงิน"
+            icon={Receipt}
+            color="orange"
+          >
+            <div className="grid gap-x-5 gap-y-5 sm:grid-cols-2">
               <Input
                 label="จำนวนเงิน"
                 required
                 type="number"
                 value={form.amount}
                 readOnly
+                placeholder="ระบบคำนวณตามชนิดการขอรับ"
               />
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  ใบเสร็จเล่มที่ <span className="text-red-600">*</span>
+                <label className={labelClass}>
+                  ใบเสร็จเล่มที่ <Required />
                 </label>
-
                 <input
-                  list="receipt-book-options"
                   required
                   value={form.receiptBookNo}
-                  onChange={(e) =>
-                    updateField("receiptBookNo", e.target.value)
-                  }
-                  placeholder="เลือกหรือกรอกเลขใบเสร็จเล่มที่"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
+                  onChange={(e) => updateField("receiptBookNo", e.target.value)}
+                  placeholder="กรอกเลขใบเสร็จเล่มที่"
+                  className={fieldClass}
                 />
-
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1.5 text-xs text-slate-500">
                   สามารถกรอกเลขใบเสร็จเล่มที่เองได้
                 </p>
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  ใบเสร็จเลขที่ <span className="text-red-600">*</span>
+                <label className={labelClass}>
+                  ใบเสร็จเลขที่ <Required />
                 </label>
-
                 <input
                   list="receipt-number-options"
                   required
                   value={form.receiptNo}
                   onChange={(e) => updateField("receiptNo", e.target.value)}
                   placeholder={
-                    receiptLoading ? "กำลังโหลด..." : "เลือกหรือกรอกเลขใบเสร็จ"
+                    receiptLoading
+                      ? "กำลังโหลดเลขใบเสร็จ..."
+                      : "เลือกหรือกรอกเลขใบเสร็จ"
                   }
                   disabled={receiptLoading}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10 disabled:bg-gray-100"
+                  className={fieldClass}
                 />
-
                 <datalist id="receipt-number-options">
                   {receiptNos.map((no) => (
                     <option key={no} value={no} />
                   ))}
                 </datalist>
-
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1.5 text-xs text-slate-500">
                   เลือกเลขที่ยังว่าง หรือกรอกเลขใบเสร็จเองได้
                 </p>
               </div>
@@ -891,16 +882,27 @@ export default function CreateForeigner() {
                 setValue={setReceiptDate}
               />
             </div>
+
+            <div className="mt-5 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <Info size={17} className="mt-0.5 shrink-0" />
+              <p>จำนวนเงินจะถูกกำหนดโดยอัตโนมัติตามชนิดการขอรับที่เลือก</p>
+            </div>
           </Section>
 
-          <Section title="ข้อมูลอื่น ๆ">
-            <div className="grid gap-5 md:grid-cols-2">
+          <Section
+            number="09"
+            title="ข้อมูลเพิ่มเติม"
+            description="ข้อมูลใบสำคัญและวันที่ยื่นคำร้อง"
+            icon={Globe2}
+            color="slate"
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
               <Input
                 label="ใบสำคัญ"
                 value={form.certificateNo}
                 onChange={(e) => updateField("certificateNo", e.target.value)}
+                placeholder="กรอกเลขที่ใบสำคัญ"
               />
-
               <DateInput
                 label="วันที่ยื่นคำร้อง"
                 value={petitionDate}
@@ -909,27 +911,36 @@ export default function CreateForeigner() {
             </div>
           </Section>
 
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => navigate("/foreigner")}
-              className="rounded-lg border border-gray-300 bg-white px-6 py-3 font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-            >
-              ยกเลิก
-            </button>
+          <div className="sticky bottom-0 z-10 -mx-3 border-t border-slate-200 bg-white/95 px-3 py-4 shadow-[0_-5px_20px_rgba(15,23,42,0.06)] backdrop-blur sm:-mx-5 sm:px-5 md:-mx-7 md:px-7">
+            <div className="mx-auto flex max-w-6xl flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => navigate("/foreigner")}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <X size={17} />
+                ยกเลิก
+              </button>
 
-            <button
-              type="submit"
-              disabled={loading || copyLoading || receiptLoading}
-              className="rounded-lg bg-[#800020] px-6 py-3 font-semibold text-white hover:bg-[#650019] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading
-                ? "กำลังบันทึก..."
-                : copyId
-                  ? "สร้างข้อมูลใหม่"
-                  : "บันทึกข้อมูล"}
-            </button>
+              <button
+                type="submit"
+                disabled={loading || copyLoading || receiptLoading}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#801d35] px-7 py-3 text-sm font-bold text-white shadow-md shadow-[#801d35]/20 transition hover:bg-[#681329] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <LoaderCircle size={18} className="animate-spin" />
+                    กำลังบันทึก...
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} />
+                    {copyId ? "สร้างข้อมูลใหม่" : "บันทึกข้อมูล"}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -937,20 +948,63 @@ export default function CreateForeigner() {
   );
 }
 
+function Required() {
+  return <span className="ml-1 text-rose-600">*</span>;
+}
+
 function Section({
+  number,
   title,
+  description,
+  icon: Icon,
+  color,
   children,
 }: {
+  number: string;
   title: string;
+  description: string;
+  icon: React.ElementType;
+  color: string;
   children: React.ReactNode;
 }) {
+  const colorStyles: Record<string, string> = {
+    rose: "bg-rose-50 text-rose-700",
+    blue: "bg-blue-50 text-blue-700",
+    violet: "bg-violet-50 text-violet-700",
+    emerald: "bg-emerald-50 text-emerald-700",
+    amber: "bg-amber-50 text-amber-700",
+    cyan: "bg-cyan-50 text-cyan-700",
+    indigo: "bg-indigo-50 text-indigo-700",
+    orange: "bg-orange-50 text-orange-700",
+    slate: "bg-slate-100 text-slate-700",
+  };
+
   return (
-    <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="border-b border-gray-200 bg-[#800020] px-5 py-3">
-        <h2 className="font-semibold text-white">{title}</h2>
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md">
+      <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-4 sm:px-5">
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${colorStyles[color] || colorStyles.slate}`}
+        >
+          <Icon size={21} strokeWidth={1.8} />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold tracking-wider text-[#801d35]">
+              {number}
+            </span>
+            <h2 className="text-base font-bold text-slate-800">{title}</h2>
+          </div>
+          <p className="mt-0.5 text-xs text-slate-400">{description}</p>
+        </div>
+
+        <CheckCircle2
+          size={17}
+          className="hidden shrink-0 text-slate-200 sm:block"
+        />
       </div>
 
-      <div className="p-5">{children}</div>
+      <div className="p-4 sm:p-5 md:p-6">{children}</div>
     </section>
   );
 }
@@ -958,22 +1012,22 @@ function Section({
 function Input({
   label,
   required,
+  className,
   ...props
 }: {
   label: string;
   required?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <div>
-      <label className="mb-2 block text-sm font-medium text-gray-700">
+    <div className="min-w-0">
+      <label className={labelClass}>
         {label}
-
-        {required && <span className="ml-1 text-red-600">*</span>}
+        {required && <Required />}
       </label>
-
       <input
         {...props}
-        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10 disabled:bg-gray-100"
+        required={required}
+        className={`${fieldClass} ${className || ""}`}
       />
     </div>
   );
@@ -995,13 +1049,11 @@ function DistrictInput({
     .replace(/[^\u0E00-\u0E7Fa-zA-Z0-9-]/g, "");
 
   return (
-    <div>
-      <label className="mb-2 block text-sm font-medium text-gray-700">
+    <div className="min-w-0">
+      <label className={labelClass}>
         {label}
-
-        {required && <span className="ml-1 text-red-600">*</span>}
+        {required && <Required />}
       </label>
-
       <input
         list={id}
         type="text"
@@ -1009,9 +1061,8 @@ function DistrictInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="เลือกหรือกรอกอำเภอ"
-        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
+        className={fieldClass}
       />
-
       <datalist id={id}>
         {CHONBURI_DISTRICTS.map((district) => (
           <option key={district} value={district} />
@@ -1033,18 +1084,14 @@ function DateInput({
   setValue: React.Dispatch<React.SetStateAction<DateParts>>;
 }) {
   const updateDate = (field: keyof DateParts, newValue: string) => {
-    setValue((prev) => ({
-      ...prev,
-      [field]: newValue,
-    }));
+    setValue((prev) => ({ ...prev, [field]: newValue }));
   };
 
   return (
-    <div>
-      <label className="mb-2 block text-sm font-medium text-gray-700">
+    <div className="min-w-0">
+      <label className={labelClass}>
         {label}
-
-        {required && <span className="ml-1 text-red-600">*</span>}
+        {required && <Required />}
       </label>
 
       <div className="grid grid-cols-3 gap-2">
@@ -1056,17 +1103,16 @@ function DateInput({
           required={required}
           value={value.day}
           onChange={(e) => updateDate("day", e.target.value.slice(0, 2))}
-          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
+          className={`${fieldClass} min-w-0 px-2 text-center`}
         />
 
         <select
           required={required}
           value={value.month}
           onChange={(e) => updateDate("month", e.target.value)}
-          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
+          className={`${fieldClass} min-w-0 px-2`}
         >
           <option value="">เดือน</option>
-
           {MONTHS.map((month) => (
             <option key={month} value={month}>
               {month}
@@ -1082,7 +1128,7 @@ function DateInput({
           required={required}
           value={value.year}
           onChange={(e) => updateDate("year", e.target.value.slice(0, 4))}
-          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#800020] focus:ring-2 focus:ring-[#800020]/10"
+          className={`${fieldClass} min-w-0 px-2 text-center`}
         />
       </div>
     </div>

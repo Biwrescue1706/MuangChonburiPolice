@@ -56,36 +56,36 @@ const STATUS_LIST = [
     value: 0,
     label: "รอส่ง ศพฐ.",
     description: "ยังไม่ได้เตรียมเอกสาร",
-    className: "bg-gray-100 text-gray-700",
-    dot: "bg-gray-500",
+    className: "bg-slate-100 text-slate-700",
+    dot: "bg-slate-500",
   },
   {
     value: 1,
     label: "เตรียมเอกสารส่ง ศพฐ. แล้ว",
     description: "เตรียมหนังสือและเอกสารเรียบร้อยแล้ว",
-    className: "bg-yellow-100 text-yellow-700",
-    dot: "bg-yellow-500",
+    className: "bg-amber-100 text-amber-800",
+    dot: "bg-amber-500",
   },
   {
     value: 2,
     label: "ส่ง ศพฐ. แล้ว",
     description: "ส่งเอกสารให้ ศพฐ. แล้ว",
-    className: "bg-blue-100 text-blue-700",
-    dot: "bg-blue-500",
+    className: "bg-sky-100 text-sky-800",
+    dot: "bg-sky-500",
   },
   {
     value: 3,
     label: "รับจาก ศพฐ. แล้ว",
     description: "ได้รับเอกสารกลับจาก ศพฐ. แล้ว",
-    className: "bg-purple-100 text-purple-700",
-    dot: "bg-purple-500",
+    className: "bg-violet-100 text-violet-800",
+    dot: "bg-violet-500",
   },
   {
     value: 4,
     label: "ส่งคืนต้นสังกัดแล้ว",
     description: "ดำเนินการเสร็จสิ้น",
-    className: "bg-green-100 text-green-700",
-    dot: "bg-green-500",
+    className: "bg-emerald-100 text-emerald-800",
+    dot: "bg-emerald-500",
   },
 ];
 
@@ -95,8 +95,8 @@ function getStatusInfo(status: number) {
       value: status,
       label: "ไม่ทราบสถานะ",
       description: "-",
-      className: "bg-gray-100 text-gray-700",
-      dot: "bg-gray-500",
+      className: "bg-slate-100 text-slate-700",
+      dot: "bg-slate-500",
     }
   );
 }
@@ -150,7 +150,6 @@ function normalizeSubmission(value: unknown): SubmissionData | null {
   }
 
   const response = value as Record<string, unknown>;
-
   const nestedData = response.data;
 
   const result =
@@ -417,18 +416,22 @@ export default function ForensicStatusPage() {
 
   if (!authorized) {
     return (
-      <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
-        <div className="mx-auto flex min-h-[70vh] max-w-lg items-center justify-center">
-          <div className="w-full rounded-3xl bg-white p-8 text-center shadow-lg">
-            <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-              <span className="text-4xl font-bold text-red-500">!</span>
+      <div className="min-h-screen bg-[#f5f3f1] p-4 sm:p-6">
+        <div className="mx-auto flex min-h-[75vh] max-w-lg items-center justify-center">
+          <div className="w-full rounded-2xl border border-stone-200 bg-white p-8 text-center shadow-sm">
+            <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-rose-50">
+              <span className="text-4xl font-bold text-[#800020]">!</span>
             </div>
 
-            <h1 className="text-xl font-bold text-gray-800">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#a36b79]">
+              Forensic Document
+            </p>
+
+            <h1 className="mt-2 text-xl font-bold text-slate-800">
               ไม่สามารถเข้าหน้านี้ได้
             </h1>
 
-            <p className="mt-3 text-sm leading-6 text-gray-500">
+            <p className="mt-3 text-sm leading-6 text-slate-500">
               กรุณาเข้าสู่หน้า
               <br />
               <span className="font-semibold text-[#800020]">สแกน QR Code</span>
@@ -439,7 +442,7 @@ export default function ForensicStatusPage() {
             <button
               type="button"
               onClick={() => navigate("/forensic-scan")}
-              className="mt-6 w-full rounded-xl bg-[#800020] px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-[#660019]"
+              className="mt-6 w-full rounded-xl bg-[#800020] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#650019]"
             >
               ไปหน้าสแกน QR Code
             </button>
@@ -447,7 +450,7 @@ export default function ForensicStatusPage() {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="mt-3 block w-full rounded-xl bg-gray-100 px-6 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
+              className="mt-3 block w-full rounded-xl bg-stone-100 px-6 py-3 text-sm font-semibold text-slate-600 transition hover:bg-stone-200"
             >
               กลับหน้าเดิม
             </button>
@@ -459,11 +462,13 @@ export default function ForensicStatusPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 p-6">
+      <div className="min-h-screen bg-[#f5f3f1] p-6">
         <div className="mx-auto flex min-h-[70vh] max-w-4xl items-center justify-center">
           <div className="text-center">
-            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-[#800020]" />
-            <p className="mt-4 text-sm text-gray-500">กำลังโหลดข้อมูล...</p>
+            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-stone-200 border-t-[#800020]" />
+            <p className="mt-4 text-sm font-medium text-slate-500">
+              กำลังโหลดข้อมูล...
+            </p>
           </div>
         </div>
       </div>
@@ -472,14 +477,14 @@ export default function ForensicStatusPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-gray-100 p-6">
+      <div className="min-h-screen bg-[#f5f3f1] p-6">
         <div className="mx-auto max-w-4xl">
-          <div className="rounded-2xl bg-white p-8 text-center shadow">
-            <p className="text-gray-500">ไม่พบข้อมูล</p>
+          <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center shadow-sm">
+            <p className="text-slate-500">ไม่พบข้อมูล</p>
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="mt-5 rounded-xl bg-[#800020] px-6 py-3 text-sm font-semibold text-white"
+              className="mt-5 rounded-xl bg-[#800020] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#650019]"
             >
               กลับหน้าเดิม
             </button>
@@ -494,42 +499,56 @@ export default function ForensicStatusPage() {
   const histories = data.statusHistories ?? [];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+    <div className="min-h-screen bg-[#f5f3f1] px-4 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-5 rounded-3xl bg-gradient-to-r from-[#650017] to-[#800020] p-5 text-white shadow-lg sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative mb-5 overflow-hidden rounded-2xl bg-[#702034] px-6 py-7 text-white shadow-md sm:px-8 sm:py-8">
+          <div className="pointer-events-none absolute -right-10 -top-16 h-64 w-64 rounded-full border-[34px] border-white/[0.06]" />
+          <div className="pointer-events-none absolute -bottom-24 right-52 h-48 w-48 rounded-full bg-[#c18a73]/20" />
+
+          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-semibold text-white/60">
-                FORENSIC SUBMISSION
-              </p>
-              <h1 className="mt-1 text-2xl font-bold sm:text-3xl">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-[#d9b17c]" />
+                <p className="text-[11px] font-bold tracking-[0.2em] text-rose-100/80">
+                  FORENSIC SUBMISSION
+                </p>
+              </div>
+
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 ตรวจสอบสถานะเอกสาร
               </h1>
-              <p className="mt-2 text-sm text-white/70">
-                ตรวจสอบความคืบหน้าของรายการส่งตรวจ ศพฐ.
+
+              <p className="mt-2 text-sm text-rose-100/80">
+                ติดตามความคืบหน้ารายการส่งตรวจ ศพฐ.
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 px-5 py-4 text-center backdrop-blur">
-              <p className="text-[10px] text-white/60">สถานะปัจจุบัน</p>
-              <p className="mt-1 text-sm font-bold">{currentStatus.label}</p>
+            <div className="relative min-w-[190px] rounded-xl border border-white/15 bg-white/10 px-5 py-4 backdrop-blur-sm">
+              <p className="text-[11px] text-rose-100/70">
+                สถานะปัจจุบัน
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <span className={`h-2.5 w-2.5 rounded-full ${currentStatus.dot}`} />
+                <p className="text-sm font-bold">{currentStatus.label}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-5">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-[#d9b7bf] hover:text-[#800020]"
           >
-            ← กลับ
+            <span>←</span>
+            กลับ
           </button>
         </div>
 
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#800020]/10 text-[#800020]">
+        <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-stone-100 px-5 py-5 sm:px-6">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f8edef] text-[#800020]">
               <svg
                 width="22"
                 height="22"
@@ -548,67 +567,77 @@ export default function ForensicStatusPage() {
             </div>
 
             <div>
-              <h2 className="font-bold text-gray-800">ข้อมูลหนังสือนำส่ง</h2>
-              <p className="text-xs text-gray-400">รายละเอียดรายการส่งตรวจ</p>
+              <h2 className="font-bold text-slate-800">ข้อมูลหนังสือนำส่ง</h2>
+              <p className="mt-1 text-xs text-slate-400">
+                รายละเอียดรายการส่งตรวจ
+              </p>
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-xs text-gray-400">เลขหนังสือนำส่ง</p>
-              <p className="mt-1 break-words font-bold text-[#800020]">
+          <div className="grid gap-3 p-5 sm:grid-cols-3 sm:p-6">
+            <div className="rounded-xl border border-[#eadde0] bg-[#fcf7f8] p-4">
+              <p className="text-xs font-medium text-slate-500">
+                เลขหนังสือนำส่ง
+              </p>
+              <p className="mt-2 break-words text-lg font-bold text-[#800020]">
                 {data.submissionNo || "-"}
               </p>
             </div>
 
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-xs text-gray-400">วันที่สร้างรายการ</p>
-              <p className="mt-1 font-semibold text-gray-800">
+            <div className="rounded-xl border border-stone-200 bg-[#faf9f7] p-4">
+              <p className="text-xs font-medium text-slate-500">
+                วันที่สร้างรายการ
+              </p>
+              <p className="mt-2 font-semibold text-slate-800">
                 {formatDate(data.submissionDate || data.createdAt)}
               </p>
             </div>
 
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-xs text-gray-400">จำนวนบุคคล</p>
-              <p className="mt-1 font-bold text-blue-600">
+            <div className="rounded-xl border border-sky-100 bg-sky-50/70 p-4">
+              <p className="text-xs font-medium text-slate-500">
+                จำนวนบุคคล
+              </p>
+              <p className="mt-2 text-lg font-bold text-sky-700">
                 {persons.length} คน
               </p>
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl border border-gray-100 bg-white p-4">
-            <p className="text-xs text-gray-400">Submission ID</p>
-            <p className="mt-1 break-all font-mono text-xs text-gray-600">
+          <div className="mx-5 mb-5 rounded-lg bg-stone-50 px-4 py-3 sm:mx-6 sm:mb-6">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Submission ID
+            </p>
+            <p className="mt-1 break-all font-mono text-xs text-slate-500">
               {data.submissionId}
             </p>
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+        <div className="mt-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-semibold text-gray-400">
+              <p className="text-xs font-semibold text-slate-400">
                 สถานะปัจจุบัน
               </p>
 
-              <div className="mt-2 flex items-center gap-3">
+              <div className="mt-2 flex flex-wrap items-center gap-3">
                 <span className={`h-3 w-3 rounded-full ${currentStatus.dot}`} />
                 <span
-                  className={`rounded-full px-4 py-2 text-sm font-bold ${currentStatus.className}`}
+                  className={`rounded-lg px-4 py-2 text-sm font-bold ${currentStatus.className}`}
                 >
                   {currentStatus.label}
                 </span>
               </div>
 
-              <p className="mt-3 text-xs text-gray-400">
+              <p className="mt-3 text-xs text-slate-400">
                 {currentStatus.description}
               </p>
             </div>
 
             {data.statusUpdatedAt && (
-              <div className="rounded-xl bg-gray-50 px-4 py-3 text-left sm:text-right">
-                <p className="text-[10px] text-gray-400">อัปเดตล่าสุด</p>
-                <p className="mt-1 text-xs font-semibold text-gray-600">
+              <div className="rounded-xl bg-stone-50 px-4 py-3 sm:text-right">
+                <p className="text-[11px] text-slate-400">อัปเดตล่าสุด</p>
+                <p className="mt-1 text-sm font-semibold text-slate-600">
                   {formatDateTime(data.statusUpdatedAt)}
                 </p>
               </div>
@@ -616,10 +645,22 @@ export default function ForensicStatusPage() {
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="font-bold text-gray-800">ความคืบหน้าสถานะ</h2>
+        <div className="mt-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="font-bold text-slate-800">
+                ความคืบหน้าการดำเนินงาน
+              </h2>
+              <p className="mt-1 text-xs text-slate-400">
+                ลำดับขั้นตอนการส่งตรวจและรับเอกสาร
+              </p>
+            </div>
+            <span className="rounded-lg bg-[#f8edef] px-3 py-1.5 text-xs font-bold text-[#800020]">
+              ขั้นตอน {Number(data.status) + 1}/5
+            </span>
+          </div>
 
-          <div className="mt-6">
+          <div className="space-y-0">
             {STATUS_LIST.map((item, index) => {
               const isCurrent = Number(data.status) === item.value;
               const isDone = Number(data.status) > item.value;
@@ -629,36 +670,45 @@ export default function ForensicStatusPage() {
                   {index !== STATUS_LIST.length - 1 && (
                     <div
                       className={`absolute left-[15px] top-8 h-[calc(100%-8px)] w-0.5 ${
-                        isDone ? "bg-[#800020]" : "bg-gray-200"
+                        isDone ? "bg-[#a65b70]" : "bg-stone-200"
                       }`}
                     />
                   )}
 
                   <div
-                    className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                    className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
                       isCurrent
                         ? "bg-[#800020] text-white ring-4 ring-[#800020]/10"
                         : isDone
-                          ? "bg-[#800020] text-white"
-                          : "bg-gray-200 text-gray-500"
+                          ? "bg-[#a65b70] text-white"
+                          : "border-2 border-stone-200 bg-white text-slate-400"
                     }`}
                   >
                     {isDone ? "✓" : index + 1}
                   </div>
 
                   <div className="pb-7">
-                    <p
-                      className={`text-sm font-bold ${
-                        isCurrent
-                          ? "text-[#800020]"
-                          : isDone
-                            ? "text-gray-700"
-                            : "text-gray-400"
-                      }`}
-                    >
-                      {item.label}
-                    </p>
-                    <p className="mt-1 text-xs text-gray-400">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p
+                        className={`text-sm font-bold ${
+                          isCurrent
+                            ? "text-[#800020]"
+                            : isDone
+                              ? "text-slate-700"
+                              : "text-slate-400"
+                        }`}
+                      >
+                        {item.label}
+                      </p>
+
+                      {isCurrent && (
+                        <span className="rounded-md bg-[#f8edef] px-2 py-0.5 text-[10px] font-bold text-[#800020]">
+                          สถานะปัจจุบัน
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="mt-1 text-xs text-slate-400">
                       {item.description}
                     </p>
                   </div>
@@ -669,11 +719,11 @@ export default function ForensicStatusPage() {
         </div>
 
         {Number(data.status) !== 4 && (
-          <div className="mt-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-            <div className="mb-4">
-              <h2 className="font-bold text-gray-800">เปลี่ยนสถานะ</h2>
-              <p className="mt-1 text-xs text-gray-400">
-                เลือกสถานะใหม่สำหรับรายการนี้
+          <div className="mt-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="mb-5">
+              <h2 className="font-bold text-slate-800">เปลี่ยนสถานะรายการ</h2>
+              <p className="mt-1 text-xs text-slate-400">
+                เลือกสถานะใหม่เพื่อบันทึกความคืบหน้าการดำเนินงาน
               </p>
             </div>
 
@@ -687,13 +737,15 @@ export default function ForensicStatusPage() {
                     type="button"
                     disabled={updating || isCurrent}
                     onClick={() => void updateStatus(item.value)}
-                    className={`rounded-xl px-3 py-3 text-xs font-bold transition ${
+                    className={`min-h-[62px] rounded-xl border px-3 py-3 text-xs font-bold transition ${
                       isCurrent
-                        ? "cursor-not-allowed bg-gray-200 text-gray-400"
-                        : "bg-[#800020] text-white hover:bg-[#650017] active:scale-[0.98]"
+                        ? "cursor-not-allowed border-[#eadde0] bg-[#f8edef] text-[#800020]"
+                        : "border-stone-200 bg-white text-slate-600 hover:border-[#c99ba7] hover:bg-[#fcf7f8] hover:text-[#800020] active:scale-[0.98]"
                     } disabled:cursor-not-allowed disabled:opacity-60`}
                   >
-                    {updating && isCurrent ? "กำลังดำเนินการ..." : item.label}
+                    {updating && isCurrent
+                      ? "กำลังดำเนินการ..."
+                      : item.label}
                   </button>
                 );
               })}
@@ -702,57 +754,59 @@ export default function ForensicStatusPage() {
         )}
 
         {Number(data.status) === 4 && (
-          <div className="mt-5 rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <span className="text-3xl font-bold text-green-600">✓</span>
-            </div>
+          <div className="mt-5 overflow-hidden rounded-2xl border border-emerald-200 bg-emerald-50">
+            <div className="flex flex-col items-center px-6 py-8 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                <span className="text-3xl font-bold">✓</span>
+              </div>
 
-            <h2 className="mt-4 text-xl font-bold text-green-700">
-              ดำเนินการเสร็จสิ้น
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              รายการนี้ส่งคืนต้นสังกัดแล้ว
-            </p>
-            <p className="mt-1 text-xs text-gray-500">
-              ไม่สามารถเปลี่ยนสถานะของรายการนี้ได้อีก
-            </p>
+              <h2 className="mt-4 text-xl font-bold text-emerald-800">
+                ดำเนินการเสร็จสิ้น
+              </h2>
+              <p className="mt-2 text-sm text-emerald-700">
+                รายการนี้ส่งคืนต้นสังกัดแล้ว
+              </p>
+              <p className="mt-1 text-xs text-emerald-600/80">
+                ไม่สามารถเปลี่ยนสถานะของรายการนี้ได้อีก
+              </p>
+            </div>
           </div>
         )}
 
-        <div className="mt-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-          <div className="flex items-center justify-between">
+        <div className="mt-5 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-100 px-5 py-5 sm:px-6">
             <div>
-              <h2 className="font-bold text-gray-800">รายชื่อบุคคล</h2>
-              <p className="mt-1 text-xs text-gray-400">
+              <h2 className="font-bold text-slate-800">รายชื่อบุคคล</h2>
+              <p className="mt-1 text-xs text-slate-400">
                 บุคคลที่อยู่ในหนังสือนำส่งฉบับนี้
               </p>
             </div>
 
-            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
-              {persons.length} คน
+            <span className="rounded-lg bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700">
+              ทั้งหมด {persons.length} คน
             </span>
           </div>
 
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[850px] border-collapse text-sm">
+          <div className="overflow-x-auto p-4 sm:p-5">
+            <table className="w-full min-w-[850px] border-separate border-spacing-0 text-sm">
               <thead>
-                <tr className="bg-gray-800 text-white">
-                  <th className="w-[70px] border border-gray-700 px-3 py-3 text-center">
+                <tr className="bg-[#702034] text-white">
+                  <th className="w-[70px] rounded-tl-lg px-3 py-3 text-center font-semibold">
                     ลำดับ
                   </th>
-                  <th className="border border-gray-700 px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-left font-semibold">
                     ชื่อ - นามสกุล
                   </th>
-                  <th className="border border-gray-700 px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-left font-semibold">
                     เลขบัตรประชาชน
                   </th>
-                  <th className="border border-gray-700 px-4 py-3 text-left">
+                  <th className="px-4 py-3 text-left font-semibold">
                     เรื่อง
                   </th>
-                  <th className="w-[100px] border border-gray-700 px-3 py-3 text-center">
+                  <th className="w-[100px] px-3 py-3 text-center font-semibold">
                     เล่มที่
                   </th>
-                  <th className="w-[100px] border border-gray-700 px-3 py-3 text-center">
+                  <th className="w-[100px] rounded-tr-lg px-3 py-3 text-center font-semibold">
                     เลขที่
                   </th>
                 </tr>
@@ -766,26 +820,26 @@ export default function ForensicStatusPage() {
                     return (
                       <tr
                         key={item.id || item.personId || index}
-                        className={`border-b border-gray-100 ${
-                          index % 2 === 0 ? "bg-white" : "bg-gray-50/70"
+                        className={`transition hover:bg-[#fcf7f8] ${
+                          index % 2 === 0 ? "bg-white" : "bg-stone-50/80"
                         }`}
                       >
-                        <td className="border border-gray-200 px-3 py-3 text-center font-semibold text-gray-500">
+                        <td className="border-b border-stone-100 px-3 py-3 text-center font-semibold text-slate-400">
                           {index + 1}
                         </td>
-                        <td className="border border-gray-200 px-4 py-3 font-semibold text-gray-800">
+                        <td className="border-b border-stone-100 px-4 py-3 font-semibold text-slate-800">
                           {person?.fullName || "-"}
                         </td>
-                        <td className="border border-gray-200 px-4 py-3 text-gray-700">
+                        <td className="border-b border-stone-100 px-4 py-3 text-slate-600">
                           {person?.citizenId || "-"}
                         </td>
-                        <td className="max-w-[350px] whitespace-normal break-words border border-gray-200 px-4 py-3 text-gray-700">
+                        <td className="max-w-[350px] whitespace-normal break-words border-b border-stone-100 px-4 py-3 text-slate-600">
                           {person?.purpose || "-"}
                         </td>
-                        <td className="border border-gray-200 px-3 py-3 text-center font-bold text-gray-700">
+                        <td className="border-b border-stone-100 px-3 py-3 text-center font-semibold text-slate-700">
                           {person?.receiptBookNo || "-"}
                         </td>
-                        <td className="border border-gray-200 px-3 py-3 text-center font-bold text-gray-700">
+                        <td className="border-b border-stone-100 px-3 py-3 text-center font-semibold text-slate-700">
                           {person?.receiptNo || "-"}
                         </td>
                       </tr>
@@ -795,7 +849,7 @@ export default function ForensicStatusPage() {
                   <tr>
                     <td
                       colSpan={6}
-                      className="border border-gray-200 px-6 py-10 text-center text-sm text-gray-400"
+                      className="px-6 py-12 text-center text-sm text-slate-400"
                     >
                       ไม่มีข้อมูลบุคคล
                     </td>
@@ -806,10 +860,12 @@ export default function ForensicStatusPage() {
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
-          <div className="mb-4">
-            <h2 className="font-bold text-gray-800">ประวัติการเปลี่ยนสถานะ</h2>
-            <p className="mt-1 text-xs text-gray-400">
+        <div className="mt-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="mb-5">
+            <h2 className="font-bold text-slate-800">
+              ประวัติการเปลี่ยนสถานะ
+            </h2>
+            <p className="mt-1 text-xs text-slate-400">
               ประวัติการดำเนินการของรายการนี้
             </p>
           </div>
@@ -823,40 +879,40 @@ export default function ForensicStatusPage() {
                 return (
                   <div
                     key={history.historyId}
-                    className="rounded-xl border border-gray-100 bg-gray-50 p-4"
+                    className="rounded-xl border border-stone-200 bg-[#faf9f7] p-4 transition hover:border-[#ddc3ca]"
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-bold ${oldStatus.className}`}
+                            className={`rounded-md px-3 py-1.5 text-xs font-bold ${oldStatus.className}`}
                           >
                             {oldStatus.label}
                           </span>
 
-                          <span className="text-gray-400">→</span>
+                          <span className="text-sm text-slate-400">→</span>
 
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-bold ${newStatus.className}`}
+                            className={`rounded-md px-3 py-1.5 text-xs font-bold ${newStatus.className}`}
                           >
                             {newStatus.label}
                           </span>
                         </div>
 
                         {history.remark && (
-                          <p className="mt-2 text-xs text-gray-500">
+                          <p className="mt-3 text-xs leading-5 text-slate-600">
                             หมายเหตุ: {history.remark}
                           </p>
                         )}
 
                         {history.changedBy && (
-                          <p className="mt-1 text-xs text-gray-400">
+                          <p className="mt-1 text-xs text-slate-400">
                             ผู้ดำเนินการ: {history.changedBy}
                           </p>
                         )}
                       </div>
 
-                      <div className="shrink-0 text-xs text-gray-400 sm:text-right">
+                      <div className="shrink-0 rounded-lg bg-white px-3 py-2 text-xs text-slate-500 sm:text-right">
                         {formatDateTime(history.changedAt)}
                       </div>
                     </div>
@@ -865,22 +921,28 @@ export default function ForensicStatusPage() {
               })}
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center">
-              <p className="text-sm text-gray-400">
+            <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 p-10 text-center">
+              <p className="text-sm text-slate-400">
                 ยังไม่มีประวัติการเปลี่ยนสถานะ
               </p>
             </div>
           )}
         </div>
 
-        <div className="mt-6 pb-8 text-center">
+        <div className="mt-6 flex justify-center pb-8">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="rounded-xl bg-gray-200 px-6 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-300"
+            className="rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-[#c99ba7] hover:bg-[#fcf7f8] hover:text-[#800020]"
           >
             ← กลับหน้าเดิม
           </button>
+        </div>
+
+        <div className="border-t border-stone-200 py-5 text-center">
+          <p className="text-[11px] font-medium tracking-wide text-slate-400">
+            ระบบจัดการเอกสารส่งตรวจ ศพฐ.
+          </p>
         </div>
       </div>
     </div>
