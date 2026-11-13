@@ -1,10 +1,9 @@
 
 // src/routes/organization.js
 import express from "express";
-import neonPrisma from "../neon.js";
+import neonPrisma from "../prisma.js";
 import multer from "multer";
 import crypto from "crypto";
-import path from "path";
 import { fileTypeFromBuffer } from "file-type";
 import { createClient } from "@supabase/supabase-js";
 import { authMiddleware } from "../middleware/authMiddleware.js";

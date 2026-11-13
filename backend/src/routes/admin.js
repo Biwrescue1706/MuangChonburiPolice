@@ -1,7 +1,7 @@
 
 import { Router } from "express";
 import bcrypt from "bcryptjs";
-import neonPrisma from "../neon.js";
+import neonPrisma from "../prisma.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const admin = Router();

@@ -18,6 +18,7 @@ import personStatusHistoryRoutes from "./routes/personStatusHistory.js";
 import forensicSubmissionRoutes from "./routes/forensicSubmission.js";
 import forensicStatusRoutes from "./routes/forensicStatus.js";
 import foreignerRoutes from "./routes/foreigner.js";
+import organizationPersonnelRoutes from "./routes/organizationPersonnel.js";
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -64,8 +65,8 @@ const apiLimiter = rateLimit({
 });
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
+  windowMs: 5 * 60 * 1000,
+  limit: 15,
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {
@@ -116,6 +117,7 @@ app.use("/api/organization", organizationRoutes);
 app.use("/api/forensic-submission", forensicSubmissionRoutes);
 app.use("/api/forensic-status", forensicStatusRoutes);
 app.use("/api/foreigner", foreignerRoutes);
+app.use("/api/organization-personnel", organizationPersonnelRoutes);
 
 async function deleteExpiredPersons() {
   try {

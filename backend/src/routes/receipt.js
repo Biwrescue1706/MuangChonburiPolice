@@ -1,6 +1,6 @@
 // src/routes/receipt.js
 import express from "express";
-import neonPrisma from "../neon.js";
+import neonPrisma from "../prisma.js";
 
 const router = express.Router();
 

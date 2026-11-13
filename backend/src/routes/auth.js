@@ -1,4 +1,4 @@
-// routes/auth.js
+
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -14,20 +14,16 @@ const MIN_PASSWORD_LENGTH = 12;
 const MAX_PASSWORD_BYTES = 72;
 const BCRYPT_ROUNDS = 12;
 
-const BASE_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: true,
-  domain: ".smartdorm-biwboong.shop",
-  path: "/",
-};
-
 const getCookieOptions = (req) => {
   const origin = req.get("origin") || "";
-  const isLocal = /^http:\/\/localhost(:\d+)?$/.test(origin);
+  const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
   return {
-    ...BASE_COOKIE_OPTIONS,
-    sameSite: isLocal ? "none" : "lax",
+    httpOnly: true,
+    secure: !isLocal,
+    sameSite: isLocal ? "lax" : "lax",
+    path: "/",
+    ...(isLocal ? {} : { domain: ".smartdorm-biwboong.shop" }),
   };
 };
 
@@ -69,17 +65,13 @@ auth.post("/login", async (req, res) => {
       password.length === 0 ||
       Buffer.byteLength(password, "utf8") > MAX_PASSWORD_BYTES
     ) {
-      return res.status(400).json({
-        error: "ข้อมูลไม่ถูกต้อง",
-      });
+      return res.status(400).json({ error: "ข้อมูลไม่ถูกต้อง" });
     }
 
     const cleanUsername = username.trim();
 
     const adminUser = await neonPrisma.admin.findUnique({
-      where: {
-        username: cleanUsername,
-      },
+      where: { username: cleanUsername },
     });
 
     if (
@@ -92,9 +84,7 @@ auth.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      {
-        adminId: adminUser.adminId,
-      },
+      { adminId: adminUser.adminId },
       JWT_SECRET,
       {
         algorithm: "HS256",
@@ -118,7 +108,6 @@ auth.post("/login", async (req, res) => {
     });
   } catch (error) {
     logError("Login failed", error);
-
     return res.status(500).json({
       error: "เกิดข้อผิดพลาดภายในระบบ",
     });
@@ -131,9 +120,7 @@ auth.get("/verify", async (req, res) => {
     const token = req.cookies?.token;
 
     if (!token) {
-      return res.status(401).json({
-        error: "Unauthorized",
-      });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     const decoded = jwt.verify(token, JWT_SECRET, {
@@ -148,16 +135,11 @@ auth.get("/verify", async (req, res) => {
       decoded.adminId === ""
     ) {
       res.clearCookie("token", getCookieOptions(req));
-
-      return res.status(401).json({
-        error: "Invalid session",
-      });
+      return res.status(401).json({ error: "Invalid session" });
     }
 
     const adminUser = await neonPrisma.admin.findUnique({
-      where: {
-        adminId: decoded.adminId,
-      },
+      where: { adminId: decoded.adminId },
       select: {
         adminId: true,
         username: true,
@@ -168,18 +150,12 @@ auth.get("/verify", async (req, res) => {
 
     if (!adminUser) {
       res.clearCookie("token", getCookieOptions(req));
-
-      return res.status(401).json({
-        error: "Invalid session",
-      });
+      return res.status(401).json({ error: "Invalid session" });
     }
 
-    return res.status(200).json({
-      admin: adminUser,
-    });
+    return res.status(200).json({ admin: adminUser });
   } catch (error) {
     logError("Verify failed", error);
-
     res.clearCookie("token", getCookieOptions(req));
 
     return res.status(401).json({
@@ -220,21 +196,15 @@ auth.put("/change-password", authMiddleware, async (req, res) => {
     }
 
     if (!req.admin?.adminId) {
-      return res.status(401).json({
-        error: "Unauthorized",
-      });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     const user = await neonPrisma.admin.findUnique({
-      where: {
-        adminId: req.admin.adminId,
-      },
+      where: { adminId: req.admin.adminId },
     });
 
     if (!user) {
-      return res.status(401).json({
-        error: "Unauthorized",
-      });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     const valid = await bcrypt.compare(oldPassword, user.password);
@@ -248,12 +218,8 @@ auth.put("/change-password", authMiddleware, async (req, res) => {
     const hash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
 
     await neonPrisma.admin.update({
-      where: {
-        adminId: user.adminId,
-      },
-      data: {
-        password: hash,
-      },
+      where: { adminId: user.adminId },
+      data: { password: hash },
     });
 
     res.clearCookie("token", getCookieOptions(req));
@@ -263,7 +229,6 @@ auth.put("/change-password", authMiddleware, async (req, res) => {
     });
   } catch (error) {
     logError("Change password failed", error);
-
     return res.status(500).json({
       error: "เกิดข้อผิดพลาดภายในระบบ",
     });

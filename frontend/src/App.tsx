@@ -14,11 +14,14 @@ import ForgotCheck from "./pages/Password/ForgotCheck";
 import ResetPassword from "./pages/Password/ResetPassword";
 import CreateAdmin from "./pages/CreateAdmin";
 import NotFound from "./pages/NotFound";
+
 import PersonPage from "./pages/Person/PersonPage";
 import PersonDetailPage from "./pages/Person/PersonDetailPage";
 import PersonHistoryPage from "./pages/History/PersonHistoryPage";
 import PersonEditPage from "./pages/Person/PersonEditPage";
+
 import OrganizationPage from "./pages/OrganizationPage";
+import OrganizationPersonnel from "./pages/organizationPersonnel";
 
 import Settings from "./pages/Settings";
 
@@ -37,19 +40,17 @@ import EditForeigner from "./pages/Foreigner/EditForeigner";
 function App() {
   return (
     <AuthProvider>
-
-      {/* Route Loading */}
       <RouteLoading />
 
       <Routes>
         {/* PUBLIC */}
         <Route
+          path="/"
           element={
             <GuestRoute>
               <Login />
             </GuestRoute>
           }
-          path="/"
         />
 
         <Route path="/forgot" element={<ForgotCheck />} />
@@ -66,78 +67,40 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
 
           <Route path="/profile" element={<Profile />} />
-
           <Route path="/security" element={<Security />} />
+          <Route path="/settings" element={<Settings />} />
 
-          <Route
-            path="/admin/create"
-            element={<CreateAdmin />}
-          />
+          <Route path="/admin/create" element={<CreateAdmin />} />
 
-          <Route
-            path="/person/create"
-            element={<PersonPage />}
-          />
+          {/* PERSON */}
+          <Route path="/person/create" element={<PersonPage />} />
+          <Route path="/person/edit/:id" element={<PersonEditPage />} />
+          <Route path="/person/history" element={<PersonHistoryPage />} />
+          <Route path="/person/:id" element={<PersonDetailPage />} />
 
+          {/* ORGANIZATION */}
+          <Route path="/organization" element={<OrganizationPage />} />
+
+          {/* ORGANIZATION PERSONNEL */}
           <Route
-            path="/organization"
-            element={<OrganizationPage />}
+            path="/organization-personnel"
+            element={<OrganizationPersonnel />}
           />
 
           {/* FORENSIC */}
-          <Route
-            path="/forensic-scan"
-            element={<ForensicScanPage />}
-          />
-
+          <Route path="/forensic-scan" element={<ForensicScanPage />} />
           <Route
             path="/forensic-status/:id"
             element={<ForensicStatusPage />}
           />
 
           {/* FOREIGNER */}
-          <Route
-            path="/foreigner"
-            element={<ForeignerHistory />}
-          />
+          <Route path="/foreigner" element={<ForeignerHistory />} />
+          <Route path="/foreigner/:id" element={<ForeignerDetail />} />
+          <Route path="/foreigner/edit/:id" element={<EditForeigner />} />
+          <Route path="/foreigner/create" element={<CreateForeigner />} />
 
-          <Route
-            path="/foreigner/:id"
-            element={<ForeignerDetail />}
-          />
-
-          <Route
-            path="/foreigner/edit/:id"
-            element={<EditForeigner />}
-          />
-
-          <Route
-            path="/foreigner/create"
-            element={<CreateForeigner />}
-          />
-
-          {/* PERSON */}
-          <Route
-            path="/person/edit/:id"
-            element={<PersonEditPage />}
-          />
-
-          <Route
-            path="/person/history"
-            element={<PersonHistoryPage />}
-          />
-
-          <Route
-            path="/settings"
-            element={<Settings />}
-          />
-
-          {/* PERSON DETAIL */}
-          <Route
-            path="/person/:id"
-            element={<PersonDetailPage />}
-          />
-
+          {/* STATUS HISTORY */}
           <Route
             path="/status-history"
             element={<StatusHistoryPage />}
@@ -161,10 +124,7 @@ function App() {
         </Route>
 
         {/* NOT FOUND */}
-        <Route
-          path="*"
-          element={<NotFound />}
-        />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>
   );
