@@ -59,7 +59,7 @@ const initialForm: PersonnelForm = {
   phone: "",
 };
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE_OPTIONS = [8, 15, 35, 50, "all"] as const;
 
 const rankOptions = [
   "พ.ต.อ.",
@@ -125,6 +125,7 @@ export default function OrganizationPersonnel() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number | "all">(8);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -185,19 +186,22 @@ export default function OrganizationPersonnel() {
       });
   }, [personnel, search]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredPersonnel.length / PAGE_SIZE),
-  );
+  const totalPages =
+    pageSize === "all"
+      ? 1
+      : Math.max(1, Math.ceil(filteredPersonnel.length / pageSize));
 
-  const paginatedPersonnel = filteredPersonnel.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
+  const paginatedPersonnel =
+    pageSize === "all"
+      ? filteredPersonnel
+      : filteredPersonnel.slice(
+          (currentPage - 1) * pageSize,
+          currentPage * pageSize,
+        );
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search]);
+  }, [search, pageSize]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -254,7 +258,10 @@ export default function OrganizationPersonnel() {
       return;
     }
 
-    if (form.phone.trim() && !/^[0-9+\-\s()]{8,20}$/.test(form.phone.trim())) {
+    if (
+      form.phone.trim() &&
+      !/^[0-9+\-\s()]{8,20}$/.test(form.phone.trim())
+    ) {
       Swal.fire({
         icon: "warning",
         title: "หมายเลขโทรศัพท์ไม่ถูกต้อง",
@@ -526,7 +533,11 @@ export default function OrganizationPersonnel() {
                       className="group transition hover:bg-blue-50/40"
                     >
                       <td className="px-5 py-4 text-sm text-slate-400">
-                        {(currentPage - 1) * PAGE_SIZE + index + 1}
+                        {(pageSize === "all"
+                          ? 0
+                          : (currentPage - 1) * pageSize) +
+                          index +
+                          1}
                       </td>
 
                       <td className="px-5 py-4">
@@ -606,42 +617,84 @@ export default function OrganizationPersonnel() {
 
           {!loading && filteredPersonnel.length > 0 && (
             <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-slate-500">
-                แสดง{" "}
+              <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                <span>แสดง</span>
+
                 <span className="font-medium text-slate-800">
-                  {(currentPage - 1) * PAGE_SIZE + 1}
+                  {pageSize === "all"
+                    ? 1
+                    : (currentPage - 1) * pageSize + 1}
                 </span>
-                {" - "}
+
+                <span>-</span>
+
                 <span className="font-medium text-slate-800">
-                  {Math.min(currentPage * PAGE_SIZE, filteredPersonnel.length)}
+                  {pageSize === "all"
+                    ? filteredPersonnel.length
+                    : Math.min(
+                        currentPage * pageSize,
+                        filteredPersonnel.length,
+                      )}
                 </span>
-                {" จาก "}
+
+                <span>จาก</span>
+
                 <span className="font-medium text-slate-800">
                   {filteredPersonnel.length}
                 </span>
-                {" รายการ"}
-              </p>
 
-              <div className="flex items-center justify-center gap-2">
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => p - 1)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <ChevronLeft size={18} />
-                </button>
+                <span>รายการ</span>
+              </div>
 
-                <span className="min-w-20 text-center text-sm font-medium text-slate-700">
-                  หน้า {currentPage} / {totalPages}
-                </span>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-500">แสดง</span>
 
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((p) => p + 1)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <ChevronRight size={18} />
-                </button>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      setPageSize(
+                        value === "all" ? "all" : Number(value),
+                      );
+                      setCurrentPage(1);
+                    }}
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  >
+                    {PAGE_SIZE_OPTIONS.map((size) => (
+                      <option key={size} value={size}>
+                        {size === "all" ? "ทั้งหมด" : size}
+                      </option>
+                    ))}
+                  </select>
+
+                  <span className="text-sm text-slate-500">รายการ</span>
+                </div>
+
+                {pageSize !== "all" && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => p - 1)}
+                      className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+
+                    <span className="min-w-20 text-center text-sm font-medium text-slate-700">
+                      หน้า {currentPage} / {totalPages}
+                    </span>
+
+                    <button
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                      className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -666,7 +719,11 @@ export default function OrganizationPersonnel() {
               <div className="relative flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-white">
-                    {editingId ? <Pencil size={21} /> : <UserRound size={23} />}
+                    {editingId ? (
+                      <Pencil size={21} />
+                    ) : (
+                      <UserRound size={23} />
+                    )}
                   </div>
 
                   <div>
@@ -707,7 +764,9 @@ export default function OrganizationPersonnel() {
                       <input
                         list="rank-options"
                         value={form.rank}
-                        onChange={(e) => handleChange("rank", e.target.value)}
+                        onChange={(e) =>
+                          handleChange("rank", e.target.value)
+                        }
                         placeholder="เลือกหรือพิมพ์ยศ..."
                         className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                       />
@@ -762,7 +821,10 @@ export default function OrganizationPersonnel() {
 
                 <div className="border-t border-slate-100 pt-5">
                   <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
-                    <BriefcaseBusiness size={17} className="text-amber-600" />
+                    <BriefcaseBusiness
+                      size={17}
+                      className="text-amber-600"
+                    />
                     ข้อมูลตำแหน่งและหน้าที่
                   </h3>
 
@@ -793,7 +855,9 @@ export default function OrganizationPersonnel() {
                       </label>
                       <input
                         value={form.duty}
-                        onChange={(e) => handleChange("duty", e.target.value)}
+                        onChange={(e) =>
+                          handleChange("duty", e.target.value)
+                        }
                         placeholder="เช่น ปฏิบัติหน้าที่หัวหน้างานสอบสวน"
                         className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
                       />
@@ -814,7 +878,9 @@ export default function OrganizationPersonnel() {
                     <input
                       type="tel"
                       value={form.phone}
-                      onChange={(e) => handleChange("phone", e.target.value)}
+                      onChange={(e) =>
+                        handleChange("phone", e.target.value)
+                      }
                       placeholder="เช่น 0812345678"
                       maxLength={20}
                       className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-50"
@@ -845,7 +911,11 @@ export default function OrganizationPersonnel() {
                     </>
                   ) : (
                     <>
-                      {editingId ? <Pencil size={16} /> : <Plus size={17} />}
+                      {editingId ? (
+                        <Pencil size={16} />
+                      ) : (
+                        <Plus size={17} />
+                      )}
                       {editingId ? "บันทึกการแก้ไข" : "เพิ่มเจ้าหน้าที่"}
                     </>
                   )}
