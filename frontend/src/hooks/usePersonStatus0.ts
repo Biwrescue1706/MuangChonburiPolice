@@ -1,29 +1,49 @@
-import { generatePDF } from "../utils/generatePDF";
-import { useEffect, useState } from "react";
+import { generatePDF, type GeneratePDFData } from "../utils/generatePDF";
+import { useCallback, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import api from "../api/axios";
 import { toast } from "../utils/toast";
 
+export interface PersonStatus0 extends GeneratePDFData {
+  personId: string;
+  status: number;
+}
+
+interface PersonApiResponse {
+  data?: PersonStatus0[];
+}
+
+interface ApiError {
+  response?: {
+    data?: {
+      error?: string;
+    };
+  };
+}
+
+interface BulkStatusResponse {
+  updated: number;
+}
+
 export const usePersonStatus0 = () => {
-  const [persons, setPersons] = useState<any[]>([]);
+  const [persons, setPersons] = useState<PersonStatus0[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectMode, setSelectMode] = useState(false);
 
-  const fetchPersons = async () => {
+  const fetchPersons = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get("/person/getall?status=0");
-      setPersons(res.data.data || []);
+      const res = await api.get<PersonApiResponse>("/person/getall?status=0");
+      setPersons(res.data.data ?? []);
     } catch {
       toast("error", "โหลดข้อมูลไม่สำเร็จ");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // ✅ export PDF (เพิ่ม loading กัน user กดรัว)
-  const handleExportPDF = async (person: any) => {
+  const handleExportPDF = async (person: PersonStatus0) => {
     try {
       await generatePDF(person);
     } catch (err) {
@@ -34,11 +54,11 @@ export const usePersonStatus0 = () => {
 
   useEffect(() => {
     fetchPersons();
-  }, []);
+  }, [fetchPersons]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
@@ -46,11 +66,11 @@ export const usePersonStatus0 = () => {
     if (selectedIds.length === persons.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(persons.map((p) => p.personId));
+      setSelectedIds(persons.map((person) => person.personId));
     }
   };
 
-  const handleUpdateStatus = async (p: any) => {
+  const handleUpdateStatus = async (person: PersonStatus0) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการส่ง?",
       icon: "question",
@@ -60,18 +80,26 @@ export const usePersonStatus0 = () => {
     if (!confirm.isConfirmed) return;
 
     try {
-      await api.patch(`/person/${p.personId}/status`, { status: 1 });
+      await api.patch(`/person/${person.personId}/status`, {
+        status: 1,
+      });
+
       toast("success", "ส่งเรียบร้อย");
-      fetchPersons();
-    } catch (err: any) {
-      toast("error", "ส่งไม่สำเร็จ", err?.response?.data?.error);
+      await fetchPersons();
+    } catch (err) {
+      const error = err as ApiError;
+      toast("error", "ส่งไม่สำเร็จ", error.response?.data?.error);
     }
   };
 
   const handleBulkSend = async () => {
-    if (!selectMode) return toast("warning", "กรุณากดเลือกก่อน");
-    if (selectedIds.length === 0)
+    if (!selectMode) {
+      return toast("warning", "กรุณากดเลือกก่อน");
+    }
+
+    if (selectedIds.length === 0) {
       return toast("warning", "เลือกข้อมูลก่อน");
+    }
 
     const confirm = await Swal.fire({
       title: "ยืนยันการส่ง?",
@@ -83,20 +111,21 @@ export const usePersonStatus0 = () => {
     if (!confirm.isConfirmed) return;
 
     try {
-      const res = await api.patch("/person/bulk/status", {
+      const res = await api.patch<BulkStatusResponse>("/person/bulk/status", {
         personIds: selectedIds,
         status: 1,
       });
 
       setSelectedIds([]);
       toast("success", `ส่งแล้ว ${res.data.updated} รายการ`);
-      fetchPersons();
-    } catch (err: any) {
-      toast("error", "ส่งไม่สำเร็จ", err?.response?.data?.error);
+      await fetchPersons();
+    } catch (err) {
+      const error = err as ApiError;
+      toast("error", "ส่งไม่สำเร็จ", error.response?.data?.error);
     }
   };
 
-  const handleDelete = async (p: any) => {
+  const handleDelete = async (person: PersonStatus0) => {
     const confirm = await Swal.fire({
       title: "ยืนยันการลบ?",
       icon: "warning",
@@ -106,11 +135,15 @@ export const usePersonStatus0 = () => {
     if (!confirm.isConfirmed) return;
 
     try {
-      await api.delete(`/person/${p.personId}`);
+      await api.delete(`/person/${person.personId}`);
+
+      setSelectedIds((prev) => prev.filter((id) => id !== person.personId));
+
       toast("success", "ลบเรียบร้อย");
-      fetchPersons();
-    } catch (err: any) {
-      toast("error", "ลบไม่สำเร็จ", err?.response?.data?.error);
+      await fetchPersons();
+    } catch (err) {
+      const error = err as ApiError;
+      toast("error", "ลบไม่สำเร็จ", error.response?.data?.error);
     }
   };
 
@@ -127,5 +160,6 @@ export const usePersonStatus0 = () => {
     handleBulkSend,
     handleDelete,
     handleExportPDF,
+    refetch: fetchPersons,
   };
 };
