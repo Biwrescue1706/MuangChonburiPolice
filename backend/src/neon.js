@@ -5,14 +5,26 @@ import pg from "pg";
 
 const { Pool } = pg;
 
+const connectionString = process.env.NEON_DIRECT_URL;
+
+if (!connectionString) {
+  throw new Error("ไม่พบ NEON_DIRECT_URL ใน .env");
+}
+
 const pool = new Pool({
-  connectionString: process.env.NEON_DIRECT_URL,
+  connectionString,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+  max: 10,
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
 });
 
 const adapter = new PrismaPg(pool);
 
-const prisma = new PrismaClient({
+const neonPrisma = new PrismaClient({
   adapter,
 });
 
-export default prisma;
+export default neonPrisma;
