@@ -1,9 +1,5 @@
 // src/utils/generatePDF.ts
-import {
-  PDFDocument,
-  type PDFPage,
-  type PDFFont,
-} from "pdf-lib";
+import { PDFDocument, type PDFPage, type PDFFont } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
 export interface GeneratePDFData {
@@ -43,9 +39,7 @@ export interface GeneratePDFData {
   moneyText?: string | number | null;
 }
 
-export const generatePDF = async (
-  p: GeneratePDFData,
-): Promise<void> => {
+export const generatePDF = async (p: GeneratePDFData): Promise<void> => {
   const templateResponse = await fetch("/แบบพิมพ์มือ.pdf");
 
   if (!templateResponse.ok) {
@@ -66,9 +60,7 @@ export const generatePDF = async (
   const fontBytes = await fontResponse.arrayBuffer();
   const font = await pdfDoc.embedFont(fontBytes);
 
-  const fontBoldResponse = await fetch(
-    "/fonts/THSarabunNew-Bold.ttf",
-  );
+  const fontBoldResponse = await fetch("/fonts/THSarabunNew-Bold.ttf");
 
   if (!fontBoldResponse.ok) {
     throw new Error("ไม่สามารถโหลดฟอนต์ THSarabunNew-Bold.ttf ได้");
@@ -83,22 +75,16 @@ export const generatePDF = async (
     throw new Error("ไฟล์ PDF ต้องมีอย่างน้อย 2 หน้า");
   }
 
-  const safe = (
-    value: string | number | null | undefined,
-  ): string =>
-    value === null || value === undefined || value === ""
-      ? "-"
-      : String(value);
+  const safe = (value: string | number | null | undefined): string =>
+    value === null || value === undefined || value === "" ? "-" : String(value);
 
-  const clean = (
-    value: string | number | null | undefined,
-  ): string =>
+  const clean = (value: string | number | null | undefined): string =>
     safe(value)
       .replace(/[\\/:*?"<>|]/g, "")
       .trim()
       .replace(/\s+/g, "-");
 
-  // รักษาวันที่ตามส่วนวันที่ต้นทาง ไม่แปลงผ่านเขตเวลา
+  // รักษาวันที่ต้นทาง ไม่แปลงผ่านเขตเวลา
   const formatFingerprintDate = (
     value: string | number | null | undefined,
   ): string => {
@@ -108,9 +94,7 @@ export const generatePDF = async (
 
     const text = String(value).trim();
 
-    const match = text.match(
-      /^(\d{4})-(\d{2})-(\d{2})(?:$|T|\s)/,
-    );
+    const match = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|T|\s)/);
 
     if (!match) {
       return text;

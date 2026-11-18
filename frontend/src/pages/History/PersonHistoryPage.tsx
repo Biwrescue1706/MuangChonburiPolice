@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+// src/pages/History/PersonHistoryPage.tsx
+
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -16,6 +18,7 @@ import {
   ClipboardList,
   Sparkles,
 } from "lucide-react";
+
 import usePersonHistory from "../../hooks/usePersonHistory";
 import useSelection from "../../hooks/useSelection";
 import usePersonActions from "../../hooks/usePersonActions";
@@ -25,6 +28,7 @@ import PersonTable from "../../components/statusPerson/PersonTable";
 export default function PersonHistoryPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
   const statusParam = searchParams.get("status");
 
   const [firstName, setFirstName] = useState("");
@@ -35,10 +39,15 @@ export default function PersonHistoryPage() {
   );
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1280);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1280);
+    };
 
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const { persons, allPersons, loading, fetchPersons } = usePersonHistory(
@@ -66,25 +75,37 @@ export default function PersonHistoryPage() {
       fetchPersons,
     });
 
-  const statusCounts = {
-    all: allPersons.length,
-    s0: allPersons.filter((p) => p.status === 0).length,
-    s1: allPersons.filter((p) => p.status === 1).length,
-    s2: allPersons.filter((p) => p.status === 2).length,
-    s3: allPersons.filter((p) => p.status === 3).length,
-    s4: allPersons.filter((p) => p.status === 4).length,
-  };
+  const statusCounts = useMemo(
+    () => ({
+      all: allPersons.length,
+      s0: allPersons.filter((p) => p.status === 0).length,
+      s1: allPersons.filter((p) => p.status === 1).length,
+      s2: allPersons.filter((p) => p.status === 2).length,
+      s3: allPersons.filter((p) => p.status === 3).length,
+      s4: allPersons.filter((p) => p.status === 4).length,
+    }),
+    [allPersons],
+  );
 
-  const sortedPersons = [...persons].sort((a, b) => {
-    if (a.status !== b.status) return a.status - b.status;
+  const sortedPersons = useMemo(() => {
+    return [...persons].sort((a, b) => {
+      if (a.status !== b.status) {
+        return a.status - b.status;
+      }
 
-    const bookA = Number(a.receiptBookNo) || 0;
-    const bookB = Number(b.receiptBookNo) || 0;
+      const bookA = Number(a.receiptBookNo) || 0;
+      const bookB = Number(b.receiptBookNo) || 0;
 
-    if (bookA !== bookB) return bookA - bookB;
+      if (bookA !== bookB) {
+        return bookA - bookB;
+      }
 
-    return (Number(a.receiptNo) || 0) - (Number(b.receiptNo) || 0);
-  });
+      const receiptA = Number(a.receiptNo) || 0;
+      const receiptB = Number(b.receiptNo) || 0;
+
+      return receiptA - receiptB;
+    });
+  }, [persons]);
 
   const statusFilters = [
     {
@@ -180,6 +201,26 @@ export default function PersonHistoryPage() {
 
   const hasSearch = firstName.trim() !== "" || lastName.trim() !== "";
 
+  const selectableCount = persons.filter((person) => person.status < 4).length;
+
+  const allSelected =
+    selectableCount > 0 && selectedIds.length === selectableCount;
+
+  const handleToggleSelectMode = () => {
+    setSelectMode((prev) => !prev);
+    setSelectedIds([]);
+  };
+
+  const handleStatusFilter = (value: string | null) => {
+    if (value === null) {
+      setSearchParams({});
+    } else {
+      setSearchParams({ status: value });
+    }
+
+    setSelectedIds([]);
+  };
+
   return (
     <div className="min-h-screen bg-[#f6f7fb]">
       <main className="mx-auto max-w-[1600px] px-3 pb-12 pt-5 sm:px-6 sm:pt-7 lg:px-8">
@@ -202,8 +243,11 @@ export default function PersonHistoryPage() {
 
         <section className="relative mb-6 overflow-hidden rounded-[26px] bg-[#70152f] shadow-[0_12px_35px_rgba(112,21,47,0.16)]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,210,160,0.22),transparent_30%),radial-gradient(circle_at_65%_110%,rgba(255,255,255,0.10),transparent_35%)]" />
+
           <div className="absolute -right-12 -top-24 h-72 w-72 rounded-full border border-white/10" />
+
           <div className="absolute -right-2 -top-14 h-52 w-52 rounded-full border border-white/10" />
+
           <div className="absolute -bottom-28 right-[35%] h-56 w-56 rounded-full bg-[#d68b70]/10 blur-3xl" />
 
           <div className="relative flex flex-col justify-between gap-7 p-5 sm:p-8 lg:flex-row lg:items-center lg:px-10 lg:py-9">
@@ -226,7 +270,9 @@ export default function PersonHistoryPage() {
                   <span className="h-2 w-2 rounded-full bg-[#f1c58d]" />
                   ข้อมูลบุคคลในระบบ
                 </span>
+
                 <span className="h-1 w-1 rounded-full bg-white/40" />
+
                 <span>จัดการข้อมูลได้ในหน้าเดียว</span>
               </div>
             </div>
@@ -235,12 +281,15 @@ export default function PersonHistoryPage() {
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#f3d9ad] text-[#75431f] shadow-lg">
                 <Users size={27} strokeWidth={1.8} />
               </div>
+
               <div>
                 <p className="text-xs font-medium text-white/65">
                   บุคคลทั้งหมด
                 </p>
+
                 <p className="mt-1 text-3xl font-bold text-white">
                   {statusCounts.all.toLocaleString("th-TH")}
+
                   <span className="ml-2 text-xs font-medium text-white/65">
                     รายการ
                   </span>
@@ -255,10 +304,12 @@ export default function PersonHistoryPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f8eaf0] text-[#851b3b]">
               <Search size={19} />
             </div>
+
             <div>
               <h2 className="text-sm font-bold text-slate-800">
                 ค้นหาข้อมูลบุคคล
               </h2>
+
               <p className="mt-1 text-xs text-slate-400">
                 ค้นหาจากชื่อและนามสกุล
               </p>
@@ -270,6 +321,7 @@ export default function PersonHistoryPage() {
               <label className="mb-2 block text-xs font-bold text-slate-600">
                 ชื่อ
               </label>
+
               <input
                 type="text"
                 value={firstName}
@@ -283,6 +335,7 @@ export default function PersonHistoryPage() {
               <label className="mb-2 block text-xs font-bold text-slate-600">
                 นามสกุล
               </label>
+
               <input
                 type="text"
                 value={lastName}
@@ -312,6 +365,7 @@ export default function PersonHistoryPage() {
               <h2 className="text-sm font-bold text-slate-800">
                 สถานะการดำเนินงาน
               </h2>
+
               <p className="mt-1 text-xs text-slate-400">
                 เลือกสถานะที่ต้องการดูข้อมูล
               </p>
@@ -320,7 +374,7 @@ export default function PersonHistoryPage() {
             {statusParam && (
               <button
                 type="button"
-                onClick={() => setSearchParams({})}
+                onClick={() => handleStatusFilter(null)}
                 className="self-start rounded-lg bg-[#f8eaf0] px-3 py-2 text-xs font-bold text-[#851b3b] transition hover:bg-[#f2dce5]"
               >
                 ดูสถานะทั้งหมด
@@ -338,13 +392,7 @@ export default function PersonHistoryPage() {
                 <button
                   key={filter.label}
                   type="button"
-                  onClick={() => {
-                    if (filter.value === null) {
-                      setSearchParams({});
-                    } else {
-                      setSearchParams({ status: filter.value });
-                    }
-                  }}
+                  onClick={() => handleStatusFilter(filter.value)}
                   className={`group flex min-h-[88px] flex-col justify-between rounded-xl border p-3 text-left transition-all duration-200 ${
                     active
                       ? `${colors.active} shadow-md`
@@ -367,6 +415,7 @@ export default function PersonHistoryPage() {
                     <span className="text-[11px] font-semibold leading-4">
                       {filter.label}
                     </span>
+
                     <span className="text-lg font-bold">
                       {filter.count.toLocaleString("th-TH")}
                     </span>
@@ -382,10 +431,12 @@ export default function PersonHistoryPage() {
             <div>
               <div className="flex items-center gap-2">
                 <div className="h-5 w-1 rounded-full bg-[#851b3b]" />
+
                 <h2 className="text-base font-bold text-slate-800">
                   รายการข้อมูลบุคคล
                 </h2>
               </div>
+
               <p className="mt-1.5 pl-3 text-xs text-slate-500">
                 พบข้อมูลทั้งหมด{" "}
                 <span className="font-bold text-[#851b3b]">
@@ -403,10 +454,7 @@ export default function PersonHistoryPage() {
 
               <button
                 type="button"
-                onClick={() => {
-                  setSelectMode((prev) => !prev);
-                  setSelectedIds([]);
-                }}
+                onClick={handleToggleSelectMode}
                 className={`flex h-9 items-center gap-2 rounded-lg px-4 text-xs font-bold transition ${
                   selectMode
                     ? "bg-slate-800 text-white shadow-sm"
@@ -425,12 +473,14 @@ export default function PersonHistoryPage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
                   <ClipboardList size={19} />
                 </div>
+
                 <div>
                   <p className="text-sm font-bold text-blue-900">
                     เลือกรายการที่ต้องการดำเนินการ
                   </p>
+
                   <p className="mt-0.5 text-xs text-blue-700">
-                    เลือกแล้ว {selectedIds.length} รายการ
+                    เลือกแล้ว {selectedIds.length} / {selectableCount} รายการ
                   </p>
                 </div>
               </div>
@@ -439,12 +489,10 @@ export default function PersonHistoryPage() {
                 <button
                   type="button"
                   onClick={handleSelectAll}
-                  className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-100"
+                  disabled={selectableCount === 0}
+                  className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {selectedIds.length ===
-                  persons.filter((p) => p.status < 4).length
-                    ? "ยกเลิกทั้งหมด"
-                    : "เลือกทั้งหมด"}
+                  {allSelected ? "ยกเลิกทั้งหมด" : "เลือกทั้งหมด"}
                 </button>
 
                 <button
@@ -469,6 +517,7 @@ export default function PersonHistoryPage() {
                   selectMode={selectMode}
                   selectedIds={selectedIds}
                   toggleSelect={toggleSelect}
+                  handleSelectAll={handleSelectAll}
                   handleDelete={handleDelete}
                   handleUpdateStatus={handleUpdateStatus}
                   handleExportPDF={handleExportPDF}
@@ -483,25 +532,9 @@ export default function PersonHistoryPage() {
                   selectedIds={selectedIds}
                   toggleSelect={toggleSelect}
                   handleSelectAll={handleSelectAll}
-                  handleDelete={(person) =>
-                    handleDelete(
-                      person as unknown as Parameters<typeof handleDelete>[0],
-                    )
-                  }
-                  handleUpdateStatus={(person) =>
-                    handleUpdateStatus(
-                      person as unknown as Parameters<
-                        typeof handleUpdateStatus
-                      >[0],
-                    )
-                  }
-                  handleExportPDF={(person) =>
-                    handleExportPDF(
-                      person as unknown as Parameters<
-                        typeof handleExportPDF
-                      >[0],
-                    )
-                  }
+                  handleDelete={handleDelete}
+                  handleUpdateStatus={handleUpdateStatus}
+                  handleExportPDF={handleExportPDF}
                 />
               </div>
             )}

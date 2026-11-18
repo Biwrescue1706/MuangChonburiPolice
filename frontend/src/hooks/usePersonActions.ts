@@ -9,16 +9,15 @@ import {
 } from "../utils/generatePDF";
 import api from "../api/axios";
 
-interface Person {
+interface Person extends Partial<GeneratePDFData> {
   personId: string;
   status: number;
-  prefix?: string | null;
-  fullName?: string | null;
   [key: string]: unknown;
 }
 
 interface ApiErrorResponse {
   error?: string;
+  message?: string;
 }
 
 interface UsePersonActionsProps {
@@ -36,13 +35,50 @@ function getApiError(err: unknown): string | undefined {
   }
 
   const axiosError = err as AxiosError<ApiErrorResponse>;
-  return axiosError.response?.data?.error;
+
+  return (
+    axiosError.response?.data?.error ??
+    axiosError.response?.data?.message ??
+    axiosError.message
+  );
 }
 
 function toPDFData(person: Person): GeneratePDFData {
   return {
+    fingerprintDate: person.fingerprintDate ?? null,
+    organizationName: person.organizationName ?? null,
     prefix: person.prefix ?? null,
     fullName: person.fullName ?? null,
+    birthDate: person.birthDate ?? null,
+    fullNameWithRank: person.fullNameWithRank ?? null,
+    rank: person.rank ?? null,
+    purpose: person.purpose ?? null,
+    requestingAgency: person.requestingAgency ?? null,
+    citizenId: person.citizenId ?? null,
+    birthDay: person.birthDay ?? null,
+    birthMonth: person.birthMonth ?? null,
+    birthYear: person.birthYear ?? null,
+    nationality: person.nationality ?? null,
+    ethnicity: person.ethnicity ?? null,
+    height: person.height ?? null,
+    weight: person.weight ?? null,
+    bodyType: person.bodyType ?? null,
+    skinColor: person.skinColor ?? null,
+    distinguishingMarks: person.distinguishingMarks ?? null,
+    behavior: person.behavior ?? null,
+    address: person.address ?? null,
+    occupation: person.occupation ?? null,
+    workplaceAddress: person.workplaceAddress ?? null,
+    father: person.father ?? null,
+    mother: person.mother ?? null,
+    spouse: person.spouse ?? null,
+    fullNameOrg: person.fullNameOrg ?? null,
+    position: person.position ?? null,
+    receiptBookNo: person.receiptBookNo ?? null,
+    receiptNo: person.receiptNo ?? null,
+    receiptDate: person.receiptDate ?? null,
+    money: person.money ?? null,
+    moneyText: person.moneyText ?? null,
   };
 }
 
@@ -60,6 +96,8 @@ export default function usePersonActions({
         title: "ยืนยันการลบ?",
         icon: "warning",
         showCancelButton: true,
+        confirmButtonText: "ยืนยัน",
+        cancelButtonText: "ยกเลิก",
       });
 
       if (!confirm.isConfirmed) return;
@@ -86,6 +124,8 @@ export default function usePersonActions({
         text: `${person.status} → ${nextStatus}`,
         icon: "question",
         showCancelButton: true,
+        confirmButtonText: "ยืนยัน",
+        cancelButtonText: "ยกเลิก",
       });
 
       if (!confirm.isConfirmed) return;
@@ -120,6 +160,8 @@ export default function usePersonActions({
       text: `จำนวน ${selectedIds.length} รายการ`,
       icon: "question",
       showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
     });
 
     if (!confirm.isConfirmed) return;
@@ -167,8 +209,14 @@ export default function usePersonActions({
 
   const handleExportPDF = useCallback(async (person: Person) => {
     try {
-      await generatePDF(toPDFData(person));
-    } catch {
+      const pdfData = toPDFData(person);
+
+      console.log("PDF person data:", person);
+      console.log("PDF mapped data:", pdfData);
+
+      await generatePDF(pdfData);
+    } catch (err) {
+      console.error("สร้าง PDF ไม่สำเร็จ:", err);
       toast("error", "สร้าง PDF ไม่สำเร็จ");
     }
   }, []);

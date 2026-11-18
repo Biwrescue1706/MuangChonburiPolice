@@ -1,59 +1,74 @@
+// src/hooks/usePersonHistory.ts
+
 import { useCallback, useEffect, useState } from "react";
+import type { GeneratePDFData } from "../utils/generatePDF";
 import api from "../api/axios";
 
-export interface PersonHistory {
+export interface PersonHistory extends Omit<
+  Partial<GeneratePDFData>,
+  "purpose"
+> {
   personId: string;
   status: number;
 
+  prefix?: string | null;
   firstName?: string | null;
   lastName?: string | null;
-  prefix?: string | null;
   fullName?: string | null;
+  purpose?: string | null;
+  requestingAgency?: string | null;
 
   receiptBookNo?: string | number | null;
   receiptNo?: string | number | null;
   receiptDate?: string | null;
+
+  priority?: number | null;
+  returnDate?: string | null;
+  deleteAt?: string | null;
 
   [key: string]: unknown;
 }
 
 interface PersonApiResponse {
   data?: PersonHistory[];
+  message?: string;
+}
+
+interface UsePersonHistoryReturn {
+  persons: PersonHistory[];
+  allPersons: PersonHistory[];
+  loading: boolean;
+  fetchPersons: () => Promise<void>;
 }
 
 export default function usePersonHistory(
   statusParam: string | null,
   firstName: string,
   lastName: string,
-) {
+): UsePersonHistoryReturn {
   const [persons, setPersons] = useState<PersonHistory[]>([]);
   const [allPersons, setAllPersons] = useState<PersonHistory[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const [debounceFirstName, setDebounceFirstName] = useState("");
-  const [debounceLastName, setDebounceLastName] = useState("");
+  const [debounceFirstName, setDebounceFirstName] = useState(firstName);
+  const [debounceLastName, setDebounceLastName] = useState(lastName);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       setDebounceFirstName(firstName.trim());
       setDebounceLastName(lastName.trim());
-    }, 500);
+    }, 300);
 
-    return () => clearTimeout(timer);
+    return () => window.clearTimeout(timer);
   }, [firstName, lastName]);
 
   const fetchPersons = useCallback(async () => {
     try {
       setLoading(true);
 
-      const allRes = await api.get<PersonApiResponse>("/person/getall");
-      const allData = Array.isArray(allRes.data?.data) ? allRes.data.data : [];
-
-      setAllPersons(allData);
-
       const params = new URLSearchParams();
 
-      if (statusParam !== null) {
+      if (statusParam !== null && statusParam !== "") {
         params.append("status", statusParam);
       }
 
@@ -67,22 +82,29 @@ export default function usePersonHistory(
 
       const query = params.toString();
 
-      const res = await api.get<PersonApiResponse>(
-        `/person/getall${query ? `?${query}` : ""}`,
-      );
+      const [allRes, filteredRes] = await Promise.all([
+        api.get<PersonApiResponse>("/person/getall"),
+        api.get<PersonApiResponse>(`/person/getall${query ? `?${query}` : ""}`),
+      ]);
 
-      const data = Array.isArray(res.data?.data) ? res.data.data : [];
+      const allData = Array.isArray(allRes.data?.data) ? allRes.data.data : [];
 
-      setPersons(data);
+      const filteredData = Array.isArray(filteredRes.data?.data)
+        ? filteredRes.data.data
+        : [];
+
+      setAllPersons(allData);
+      setPersons(filteredData);
 
       console.log("Person History API:", {
         total: allData.length,
-        filtered: data.length,
-        sample: data[0] ?? null,
+        filtered: filteredData.length,
+        sample: filteredData[0] ?? null,
       });
-    } catch (err) {
-      console.error("โหลดข้อมูลประวัติบุคคลไม่สำเร็จ:", err);
+    } catch (error) {
+      console.error("Fetch person history error:", error);
       setPersons([]);
+      setAllPersons([]);
     } finally {
       setLoading(false);
     }

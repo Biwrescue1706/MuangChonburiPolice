@@ -23,6 +23,7 @@ interface Person {
   priority?: number | null;
   returnDate?: string | null;
   deleteAt?: string | null;
+  [key: string]: unknown;
 }
 
 interface Props {
@@ -32,9 +33,9 @@ interface Props {
   selectedIds: string[];
   toggleSelect: (id: string, status: number) => void;
   handleSelectAll: () => void;
-  handleDelete: (person: Person) => void;
-  handleUpdateStatus: (person: Person) => void;
-  handleExportPDF: (person: Person) => void;
+  handleDelete: (person: Person) => void | Promise<void>;
+  handleUpdateStatus: (person: Person) => void | Promise<void>;
+  handleExportPDF: (person: Person) => void | Promise<void>;
 }
 
 function ActionButton({
@@ -197,13 +198,11 @@ export default function PersonTable({
               <th className={thClass}>ความเร่งด่วน</th>
 
               {hasReturnDate && <th className={thClass}>วันคืน</th>}
-
               {hasDeleteDate && <th className={thClass}>วันหมดอายุเอกสาร</th>}
 
               <th className={thClass}>ดูรายละเอียด</th>
 
               {hasPdfButton && <th className={thClass}>PDF แบบพิมพ์มือ</th>}
-
               {hasSendButton && <th className={thClass}>แก้ไข</th>}
 
               <th className={thClass}>ลบ</th>
@@ -357,7 +356,7 @@ export default function PersonTable({
                                 return;
                               }
 
-                              handleExportPDF(person);
+                              void handleExportPDF(person);
                             }}
                           />
                         )}
@@ -390,7 +389,7 @@ export default function PersonTable({
                         icon={<Trash2 size={16} />}
                         label="ลบ"
                         className="bg-red-600 hover:bg-red-700"
-                        onClick={() => handleDelete(person)}
+                        onClick={() => void handleDelete(person)}
                       />
                     </div>
                   </td>
@@ -405,7 +404,7 @@ export default function PersonTable({
                             className={`flex min-w-[52px] flex-col items-center justify-center gap-1 rounded-lg px-1.5 py-2 text-xs font-bold text-white shadow-sm transition hover:brightness-95 active:scale-95 ${getStatusButtonStyle(
                               person.status,
                             )}`}
-                            onClick={() => handleUpdateStatus(person)}
+                            onClick={() => void handleUpdateStatus(person)}
                           >
                             <Send size={16} />
                             <span className="whitespace-normal break-words text-center text-[10px] leading-tight">
