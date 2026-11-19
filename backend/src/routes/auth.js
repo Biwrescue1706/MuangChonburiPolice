@@ -24,15 +24,23 @@ if (
 
 // Cookie configuration
 const getCookieOptions = (req) => {
-  const isLocal =
+  const origin = req.get("origin") || "";
+
+  const isLocalApi =
     req.hostname === "localhost" ||
     req.hostname === "127.0.0.1";
 
+  const isLocalFrontend =
+    /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
   return {
     httpOnly: true,
-    secure: !isLocal,
-    sameSite: "lax",
+    secure: !isLocalApi,
+    sameSite: isLocalFrontend && !isLocalApi ? "none" : "lax",
     path: "/",
+    ...(!isLocalApi
+      ? { domain: ".smartdorm-biwboong.shop" }
+      : {}),
   };
 };
 
