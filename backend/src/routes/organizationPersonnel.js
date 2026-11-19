@@ -1,6 +1,7 @@
 
 import express from "express";
 import neonPrisma from "../neon.js";
+import { middleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -41,7 +42,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // เพิ่มข้อมูลเจ้าหน้าที่
-router.post("/", async (req, res) => {
+router.post("/", middleware, async (req, res) => {
     try {
         const {
             rank,
@@ -87,7 +88,7 @@ router.post("/", async (req, res) => {
 });
 
 // แก้ไขข้อมูลเจ้าหน้าที่
-router.put("/:id", async (req, res) => {
+router.put("/:id", middleware, async (req, res) => {
     try {
         const {
             rank,
@@ -152,7 +153,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // ลบข้อมูลเจ้าหน้าที่
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", middleware, async (req, res) => {
     try {
         const existing = await neonPrisma.organizationpersonnel.findUnique({
             where: {
