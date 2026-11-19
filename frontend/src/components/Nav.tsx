@@ -85,6 +85,12 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
+    path: "/organization-personnel",
+    label: "บุคลากรหน่วยงาน",
+    description: "จัดการข้อมูลบุคลากรหน่วยงาน",
+    icon: "person",
+  },
+  {
     path: "/settings",
     label: "ตั้งค่า",
     description: "จัดการการตั้งค่าระบบ",

@@ -15,13 +15,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const verify = useCallback(async () => {
     try {
       const res = await api.get("/auth/verify");
+
       const verifiedAdmin = res.data.admin ?? null;
 
       setAdmin(verifiedAdmin);
+
       return verifiedAdmin;
     } catch (err: unknown) {
       const error = err as {
-        response?: { status?: number };
+        response?: {
+          status?: number;
+        };
       };
 
       if (error.response?.status !== 401) {
@@ -29,6 +33,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       setAdmin(null);
+
       return null;
     } finally {
       setLoading(false);
@@ -36,8 +41,42 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   useEffect(() => {
-    void verify();
-  }, [verify]);
+    let active = true;
+
+    const checkAuth = async () => {
+      try {
+        const res = await api.get("/auth/verify");
+
+        if (active) {
+          setAdmin(res.data.admin ?? null);
+        }
+      } catch (err: unknown) {
+        const error = err as {
+          response?: {
+            status?: number;
+          };
+        };
+
+        if (active) {
+          setAdmin(null);
+
+          if (error.response?.status !== 401) {
+            console.error("Verify error:", err);
+          }
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void checkAuth();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const login = async (username: string, password: string) => {
     try {
@@ -53,7 +92,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const verifiedAdmin = await verify();
 
       if (!verifiedAdmin) {
-        throw new Error("เข้าสู่ระบบแล้ว แต่ไม่สามารถยืนยัน Session ได้");
+        throw new Error(
+          "เข้าสู่ระบบแล้ว แต่ไม่สามารถยืนยัน Session ได้ กรุณาตรวจสอบ Cookie",
+        );
       }
 
       toast(
@@ -63,7 +104,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       );
     } catch (err: unknown) {
       const error = err as {
-        response?: { data?: { error?: string } };
+        response?: {
+          data?: {
+            error?: string;
+          };
+        };
         message?: string;
       };
 
