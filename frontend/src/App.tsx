@@ -45,7 +45,7 @@ function App() {
 
       <Routes>
         <Route
-          path="/organization-personnel-view"
+          path="/org"
           element={<OrganizationPersonnelView />}
         />
         {/* PUBLIC */}
