@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Search,
   Users,
@@ -12,6 +13,7 @@ import {
   UserRound,
   ClipboardList,
   Contact,
+  LogIn,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import api from "../api/axios";
@@ -174,7 +176,7 @@ export default function OrganizationPersonnelView() {
           <div className="absolute -right-10 -top-20 h-64 w-64 rounded-full bg-blue-400/10" />
           <div className="absolute -bottom-24 right-48 h-56 w-56 rounded-full bg-cyan-300/10" />
 
-          <div className="relative flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+          <div className="relative flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
             <div>
               <div className="mb-3 flex items-center gap-2 text-blue-200">
                 <ShieldCheck size={20} />
@@ -192,16 +194,33 @@ export default function OrganizationPersonnelView() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white">
-              <Users size={27} />
-              <div>
-                <p className="text-xs text-blue-100 sm:text-sm">
-                  เจ้าหน้าที่ทั้งหมด
-                </p>
-                <p className="text-xl font-semibold sm:text-2xl">
-                  {personnel.length.toLocaleString("th-TH")} คน
-                </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              {/* จำนวนเจ้าหน้าที่ */}
+              <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-white">
+                <Users size={27} />
+                <div>
+                  <p className="text-xs text-blue-100 sm:text-sm">
+                    เจ้าหน้าที่ทั้งหมด
+                  </p>
+                  <p className="text-xl font-semibold sm:text-2xl">
+                    {personnel.length.toLocaleString("th-TH")} คน
+                  </p>
+                </div>
               </div>
+
+              {/* ปุ่มเข้าสู่ระบบ */}
+              <Link
+                to="/"
+                state={{
+                  from: {
+                    pathname: "/organization-personnel",
+                  },
+                }}
+                className="flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-base font-semibold text-blue-900 shadow-md transition hover:bg-blue-50 active:scale-95"
+              >
+                <LogIn size={20} />
+                เข้าสู่ระบบ
+              </Link>
             </div>
           </div>
         </div>
@@ -311,7 +330,7 @@ export default function OrganizationPersonnelView() {
             </select>
           </div>
 
-          {/* Mobile Cards: below 768px */}
+          {/* Mobile Cards */}
           <div className="space-y-3 p-3 md:hidden">
             {loading ? (
               <div className="py-16 text-center">
@@ -341,7 +360,6 @@ export default function OrganizationPersonnelView() {
                   key={item.personnelId}
                   className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition active:bg-slate-50"
                 >
-                  {/* Card Header */}
                   <div className="flex items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-white p-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-xl font-semibold text-white shadow-sm">
                       {getInitials(item)}
@@ -362,9 +380,7 @@ export default function OrganizationPersonnelView() {
                     </div>
                   </div>
 
-                  {/* Card Details */}
                   <div className="space-y-4 p-4">
-                    {/* Position */}
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                         <BriefcaseBusiness size={19} />
@@ -380,7 +396,6 @@ export default function OrganizationPersonnelView() {
                       </div>
                     </div>
 
-                    {/* Duty */}
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
                         <Contact size={19} />
@@ -396,7 +411,6 @@ export default function OrganizationPersonnelView() {
                       </div>
                     </div>
 
-                    {/* Phone */}
                     <div className="flex items-start gap-3 border-t border-slate-100 pt-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
                         <Phone size={19} />
@@ -427,7 +441,7 @@ export default function OrganizationPersonnelView() {
             )}
           </div>
 
-          {/* Desktop Table: 768px and above */}
+          {/* Desktop Table */}
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[850px] text-left">
               <thead>

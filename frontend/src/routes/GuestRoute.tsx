@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -8,6 +8,11 @@ type GuestRouteProps = {
 
 export default function GuestRoute({ children }: GuestRouteProps) {
   const { admin, loading } = useAuth();
+  const location = useLocation();
+
+  const from =
+    (location.state as { from?: { pathname?: string } } | null)?.from
+      ?.pathname || "/dashboard";
 
   const text = "กำลังรอการตอบกลับจาก Server ...";
 
@@ -89,7 +94,7 @@ export default function GuestRoute({ children }: GuestRouteProps) {
   }
 
   if (admin) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={from} replace />;
   }
 
   return <>{children}</>;

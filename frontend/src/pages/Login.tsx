@@ -1,12 +1,17 @@
-//src/pages/Login.tsx
+// src/pages/Login.tsx
 import { useEffect, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { toast } from "../utils/toast";
 
 export default function Login() {
   const { login, admin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from =
+    (location.state as { from?: { pathname?: string } } | null)?.from
+      ?.pathname || "/dashboard";
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -15,9 +20,9 @@ export default function Login() {
 
   useEffect(() => {
     if (admin) {
-      navigate("/dashboard", { replace: true });
+      navigate(from, { replace: true });
     }
-  }, [admin, navigate]);
+  }, [admin, navigate, from]);
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -54,7 +59,6 @@ export default function Login() {
     <main className="flex min-h-screen items-center justify-center bg-[#f4f5f6] px-4 py-8 sm:px-6">
       <div className="w-full max-w-[1000px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_12px_40px_rgba(25,25,25,0.07)]">
         <div className="grid min-h-[580px] grid-cols-1 min-[900px]:grid-cols-[0.92fr_1.08fr]">
-          {/* Information panel */}
           <section className="relative hidden overflow-hidden bg-[#71001d] p-10 text-white min-[900px]:flex min-[900px]:flex-col min-[900px]:justify-between min-[1100px]:p-12">
             <div className="pointer-events-none absolute -right-28 -top-24 h-80 w-80 rounded-full border border-white/[0.10]" />
             <div className="pointer-events-none absolute -bottom-36 -left-28 h-96 w-96 rounded-full border border-white/[0.08]" />
@@ -105,9 +109,7 @@ export default function Login() {
             </div>
           </section>
 
-          {/* Login panel */}
           <section className="flex flex-col justify-center px-6 py-9 sm:px-10 sm:py-12 min-[1100px]:px-14">
-            {/* Mobile logo */}
             <div className="mb-8 flex items-center gap-3 min-[900px]:hidden">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white">
                 <img
@@ -142,7 +144,6 @@ export default function Login() {
             </div>
 
             <form onSubmit={submit} className="space-y-5">
-              {/* Username */}
               <div>
                 <label
                   htmlFor="username"
@@ -186,7 +187,6 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Password */}
               <div>
                 <label
                   htmlFor="password"
@@ -270,7 +270,6 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Forgot password */}
               <div className="flex justify-end">
                 <button
                   type="button"
@@ -281,7 +280,6 @@ export default function Login() {
                 </button>
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
