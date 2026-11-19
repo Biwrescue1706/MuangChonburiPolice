@@ -36,6 +36,7 @@ import CreateForeigner from "./pages/Foreigner/CreateForeigner";
 import ForeignerHistory from "./pages/Foreigner/ForeignerHistory";
 import ForeignerDetail from "./pages/Foreigner/ForeignerDetail";
 import EditForeigner from "./pages/Foreigner/EditForeigner";
+import OrganizationPersonnelView from "./pages/OrganizationPersonnelView";
 
 function App() {
   return (
@@ -43,6 +44,10 @@ function App() {
       <RouteLoading />
 
       <Routes>
+        <Route
+          path="/organization-personnel-view"
+          element={<OrganizationPersonnelView />}
+        />
         {/* PUBLIC */}
         <Route
           path="/"
@@ -89,10 +94,7 @@ function App() {
 
           {/* FORENSIC */}
           <Route path="/forensic-scan" element={<ForensicScanPage />} />
-          <Route
-            path="/forensic-status/:id"
-            element={<ForensicStatusPage />}
-          />
+          <Route path="/forensic-status/:id" element={<ForensicStatusPage />} />
 
           {/* FOREIGNER */}
           <Route path="/foreigner" element={<ForeignerHistory />} />
@@ -101,10 +103,7 @@ function App() {
           <Route path="/foreigner/create" element={<CreateForeigner />} />
 
           {/* STATUS HISTORY */}
-          <Route
-            path="/status-history"
-            element={<StatusHistoryPage />}
-          />
+          <Route path="/status-history" element={<StatusHistoryPage />} />
 
           {/* FORENSIC SUBMISSION */}
           <Route
